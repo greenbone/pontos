@@ -86,13 +86,12 @@ first time.
   ```sh
   mkdir pontos-install-test
   cd pontos-install-test
-  git init
   python3 -m venv test-env
   source ./test-env/bin/activate
   pip install -U pip  # ensure the environment uses a recent version of pip
   pip install --pre -I --extra-index-url https://test.pypi.org/simple/ pontos
   python -c "from pontos.version import __version__; print(__version__)"
-  pontos check
+  python -m pontos.version show
   ```
 
 * Remove test environment
