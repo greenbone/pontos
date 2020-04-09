@@ -1,14 +1,14 @@
 ![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_logo_resilience_horizontal.png)
 
-# Greenbone Python Utilities and Tools for Version Handling <!-- omit in toc -->
+# Pontos - Greenbone Python Utilities and Tools <!-- omit in toc -->
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/pontos-version.svg)](https://github.com/greenbone/pontos-version/releases)
-[![PyPI release](https://img.shields.io/pypi/v/pontos-version.svg)](https://pypi.org/project/pontos-version/)
-[![code test coverage](https://codecov.io/gh/greenbone/pontos-version/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/pontos-version)
-[![CircleCI](https://circleci.com/gh/greenbone/pontos-version/tree/master.svg?style=svg)](https://circleci.com/gh/greenbone/pontos-version/tree/master)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/pontos.svg)](https://github.com/greenbone/pontos/releases)
+[![PyPI release](https://img.shields.io/pypi/v/pontos.svg)](https://pypi.org/project/pontos/)
+[![code test coverage](https://codecov.io/gh/greenbone/pontos/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/pontos)
+[![CircleCI](https://circleci.com/gh/greenbone/pontos/tree/master.svg?style=svg)](https://circleci.com/gh/greenbone/pontos/tree/master)
 
-The **pontos-version** Python package is a collection of utilities, tools and APIs
-for managing version information maintained by [Greenbone Networks].
+The **pontos** Python package is a collection of utilities, tools, classes and
+function for maintained by [Greenbone Networks].
 
 Pontos is the German name of the Greek titan [Pontus](https://en.wikipedia.org/wiki/Pontus_(mythology)),
 the titan of the sea.
@@ -38,27 +38,27 @@ pip 19.0 or later is required.
 > these tools are provided by your distribution, you may need to explicitly use
 > the Python 3 version of the tool, e.g. **`pip3`**.
 
-You can install the latest stable release of **pontos-version** from the Python
+You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pip]
 
-    pip install --user pontos-version
+    pip install --user pontos
 
 ### Install using poetry
 
-Because **pontos-version** is a Python library you most likely need a tool to
+Because **pontos** is a Python library you most likely need a tool to
 handle Python package dependencies and Python environments. Therefore we
 strongly recommend using [pipenv] or [poetry].
 
-You can install the latest stable release of **pontos-version** and add it as
+You can install the latest stable release of **pontos** and add it as
 a dependency for your current project using [poetry]
 
-    poetry add pontos-version
+    poetry add pontos
 
 For installation via pipenv please take a look at their [documentation][pipenv].
 
 ## Development
 
-**pontos-version** uses [poetry] for its own dependency management and build
+**pontos** uses [poetry] for its own dependency management and build
 process.
 
 First install poetry via pip
@@ -69,7 +69,7 @@ Afterwards run
 
     poetry install
 
-in the checkout directory of **pontos-version** (the directory containing the
+in the checkout directory of **pontos** (the directory containing the
 `pyproject.toml` file) to install all dependencies including the packages only
 required for development.
 
@@ -89,9 +89,9 @@ This project is maintained by [Greenbone Networks GmbH][Greenbone Networks]
 ## Contributing
 
 Your contributions are highly appreciated. Please
-[create a pull request](https://github.com/greenbone/pontos-version/pulls)
+[create a pull request](https://github.com/greenbone/pontos/pulls)
 on GitHub. Bigger changes need to be discussed with the development team via the
-[issues section at GitHub](https://github.com/greenbone/pontos-version/issues)
+[issues section at GitHub](https://github.com/greenbone/pontos/issues)
 first.
 
 ## License
