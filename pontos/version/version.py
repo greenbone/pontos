@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import importlib
 import re
 
 from pathlib import Path
@@ -150,7 +151,20 @@ __version__ = "{}"\n"""
         print(*args)
 
     def get_current_version(self) -> str:
-        raise NotImplementedError()
+        version_module_name = self.version_file_path.stem
+        module_parts = list(self.version_file_path.parts[:-1]) + [
+            version_module_name
+        ]
+        module_name = '.'.join(module_parts)
+        try:
+            version_module = importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            raise VersionError(
+                'Could not load version from {}. Import failed.'.format(
+                    module_name
+                )
+            )
+        return version_module.__version__
 
     def update_version_file(self, new_version: str) -> None:
         """
