@@ -28,7 +28,7 @@ class UpdateVersionFileTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
 
-        cmd = VersionCommand(name='foo', version_file_path=fake_path)
+        cmd = VersionCommand(version_file_path=fake_path)
         cmd.update_version_file('22.04dev1')
 
         text = fake_path.write_text.call_args[0][0]

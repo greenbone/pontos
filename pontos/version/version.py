@@ -109,30 +109,21 @@ class VersionCommand:
 
 __version__ = "{}"\n"""
 
-    pyproject_toml_path = Path.cwd() / 'pyproject.toml'
-
     def __init__(
         self,
         *,
         version_file_path: Path = None,
-        pyproject_toml_path: Path = None,
-        name: str = None
+        pyproject_toml_path: Path = None
     ):
-        if version_file_path:
-            self.version_file_path = version_file_path
+        self.version_file_path = version_file_path
 
-        if pyproject_toml_path:
-            self.pyproject_toml_path = pyproject_toml_path
-
-        if name:
-            self.name = name
+        self.pyproject_toml_path = pyproject_toml_path
 
         self._configure_parser()
 
     def _configure_parser(self):
         self.parser = argparse.ArgumentParser(
-            description='Version handling utilities for {}.'.format(self.name),
-            prog='version',
+            description='Version handling utilities.', prog='version',
         )
 
         subparsers = self.parser.add_subparsers(

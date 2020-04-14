@@ -31,7 +31,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = ""
 
-        cmd = VersionCommand(name='foo', pyproject_toml_path=fake_path)
+        cmd = VersionCommand(pyproject_toml_path=fake_path)
 
         cmd.update_pyproject_version('20.04dev1')
 
@@ -46,7 +46,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = "[tool]"
 
-        cmd = VersionCommand(name='foo', pyproject_toml_path=fake_path)
+        cmd = VersionCommand(pyproject_toml_path=fake_path)
         cmd.update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
@@ -60,7 +60,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = "[tool.poetry]"
 
-        cmd = VersionCommand(name='foo', pyproject_toml_path=fake_path)
+        cmd = VersionCommand(pyproject_toml_path=fake_path)
         cmd.update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
@@ -74,7 +74,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
 
-        cmd = VersionCommand(name='foo', pyproject_toml_path=fake_path)
+        cmd = VersionCommand(pyproject_toml_path=fake_path)
         cmd.update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
