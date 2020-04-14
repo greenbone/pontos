@@ -28,7 +28,7 @@ class PrintCurrentVersionTestCase(unittest.TestCase):
         VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
-        cmd = VersionCommand(name='foo')
+        cmd = VersionCommand()
         cmd.print_current_version()
 
         print_mock.assert_called_with('1.2.3')

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import importlib
 import re
 
 from pathlib import Path
@@ -109,30 +110,21 @@ class VersionCommand:
 
 __version__ = "{}"\n"""
 
-    pyproject_toml_path = Path.cwd() / 'pyproject.toml'
-
     def __init__(
         self,
         *,
         version_file_path: Path = None,
-        pyproject_toml_path: Path = None,
-        name: str = None
+        pyproject_toml_path: Path = None
     ):
-        if version_file_path:
-            self.version_file_path = version_file_path
+        self.version_file_path = version_file_path
 
-        if pyproject_toml_path:
-            self.pyproject_toml_path = pyproject_toml_path
-
-        if name:
-            self.name = name
+        self.pyproject_toml_path = pyproject_toml_path
 
         self._configure_parser()
 
     def _configure_parser(self):
         self.parser = argparse.ArgumentParser(
-            description='Version handling utilities for {}.'.format(self.name),
-            prog='version',
+            description='Version handling utilities.', prog='version',
         )
 
         subparsers = self.parser.add_subparsers(
@@ -159,7 +151,20 @@ __version__ = "{}"\n"""
         print(*args)
 
     def get_current_version(self) -> str:
-        raise NotImplementedError()
+        version_module_name = self.version_file_path.stem
+        module_parts = list(self.version_file_path.parts[:-1]) + [
+            version_module_name
+        ]
+        module_name = '.'.join(module_parts)
+        try:
+            version_module = importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            raise VersionError(
+                'Could not load version from {}. Import failed.'.format(
+                    module_name
+                )
+            )
+        return version_module.__version__
 
     def update_version_file(self, new_version: str) -> None:
         """
@@ -277,15 +282,41 @@ __version__ = "{}"\n"""
 
 
 class PontosVersionCommand(VersionCommand):
+    def __init__(self, *, pyproject_toml_path=None):
+        if not pyproject_toml_path:
+            pyproject_toml_path = Path.cwd() / 'pyproject.toml'
 
-    name = 'pontos'
-    version_file_path = Path.cwd() / 'pontos' / 'version' / '__version__.py'
-    pyproject_toml_path = Path.cwd() / 'pyproject.toml'
+        if not pyproject_toml_path.exists():
+            raise VersionError(
+                '{} file not found.'.format(str(pyproject_toml_path))
+            )
 
-    def get_current_version(self) -> str:
-        # import version only here to allow creating __version__.py file
-        from .__version__ import (  # pylint: disable=import-outside-toplevel
-            __version__,
+        pyproject_toml = tomlkit.parse(pyproject_toml_path.read_text())
+
+        if (
+            'tool' not in pyproject_toml
+            or 'pontos' not in pyproject_toml['tool']
+            or 'version' not in pyproject_toml['tool']['pontos']
+        ):
+            raise VersionError(
+                '[tool.pontos.version] section missing in {}.'.format(
+                    str(pyproject_toml_path)
+                )
+            )
+
+        pontos_version_settings = pyproject_toml['tool']['pontos']['version']
+
+        try:
+            version_file_path = Path(
+                pontos_version_settings['version-module-file']
+            )
+        except tomlkit.exceptions.NonExistentKey:
+            raise VersionError(
+                'version-module-file key not set in [tool.pontos.version] '
+                'section of {}.'.format(str(pyproject_toml_path))
+            ) from None
+
+        super().__init__(
+            version_file_path=version_file_path,
+            pyproject_toml_path=pyproject_toml_path,
         )
-
-        return __version__

@@ -17,25 +17,52 @@
 
 import unittest
 
-from pontos.version.version import PontosVersionCommand
-from pontos.version import __version__ as current_version
+from pathlib import Path
+from unittest.mock import MagicMock
+
+from pontos.version.version import PontosVersionCommand, VersionError
+
+from . import use_cwd
 
 
-class PontosToolsVersionCommandTestCase(unittest.TestCase):
-    def test_get_current_version(self):
-        cmd = PontosVersionCommand()
-        self.assertEqual(cmd.get_current_version(), current_version)
+class PontosVersionCommandTestCase(unittest.TestCase):
+    def test_missing_pyproject_toml_file(self):
+        with use_cwd(Path(__file__).parent), self.assertRaisesRegex(
+            VersionError, r'^.* not found\.$'
+        ):
+            PontosVersionCommand()
 
-    def test_name(self):
-        cmd = PontosVersionCommand()
-        self.assertEqual(cmd.name, 'pontos')
+    def test_missing_tool_pontos_version_section(self):
+        pyproject_toml_path = MagicMock(spec=Path).return_value
+        pyproject_toml_path.exists.return_value = True
+        pyproject_toml_path.read_text.return_value = '[tool.pontos]'
 
-    def test_version_file_path(self):
-        cmd = PontosVersionCommand()
-        self.assertRegex(
-            str(cmd.version_file_path), '^.*/pontos/version/__version__.py$'
+        with self.assertRaisesRegex(
+            VersionError, r'^\[tool\.pontos\.version\] section missing in .*\.$'
+        ):
+            PontosVersionCommand(pyproject_toml_path=pyproject_toml_path)
+
+    def test_missing_version_module_file_key(self):
+        pyproject_toml_path = MagicMock(spec=Path).return_value
+        pyproject_toml_path.exists.return_value = True
+        pyproject_toml_path.read_text.return_value = (
+            '[tool.pontos.version]\nname="foo"'
         )
 
-    def test_pyproject_toml_path(self):
-        cmd = PontosVersionCommand()
-        self.assertRegex(str(cmd.pyproject_toml_path), '^.*/pyproject.toml$')
+        with self.assertRaisesRegex(
+            VersionError,
+            r'^version-module-file key not set in \[tool\.pontos\.version\] '
+            r'section .*\.$',
+        ):
+            PontosVersionCommand(pyproject_toml_path=pyproject_toml_path)
+
+    def test_with_all_settings(self):
+        pyproject_toml_path = MagicMock(spec=Path).return_value
+        pyproject_toml_path.exists.return_value = True
+        pyproject_toml_path.read_text.return_value = (
+            '[tool.pontos.version]\nversion-module-file="foo/__version__.py"'
+        )
+
+        cmd = PontosVersionCommand(pyproject_toml_path=pyproject_toml_path)
+
+        self.assertEqual(cmd.version_file_path, Path('foo') / '__version__.py')

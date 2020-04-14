@@ -27,7 +27,7 @@ class VerifyVersionTestCase(unittest.TestCase):
     def test_current_version_not_pep440_compliant(self):
         fake_version_py = Path('foo.py')
         VersionCommand.get_current_version = MagicMock(return_value='1.02.03')
-        cmd = VersionCommand(name='foo', version_file_path=fake_version_py)
+        cmd = VersionCommand(version_file_path=fake_version_py)
 
         with self.assertRaisesRegex(
             VersionError, 'The version .* in foo.py is not PEP 440 compliant.',
@@ -42,9 +42,7 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
         cmd = VersionCommand(
-            name='foo',
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
         )
 
         with self.assertRaisesRegex(
@@ -64,9 +62,7 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
         cmd = VersionCommand(
-            name='foo',
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
         )
         cmd.verify_version('current')
 
@@ -81,9 +77,7 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
 
         cmd = VersionCommand(
-            name='foo',
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
         )
 
         with self.assertRaisesRegex(
@@ -103,9 +97,7 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
         cmd = VersionCommand(
-            name='foo',
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
         )
         cmd.verify_version('1.2.3')
 
