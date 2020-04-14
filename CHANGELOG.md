@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* Specify the path to the version file in the `pyproject.toml` and not in a
+  derived `VersionCommand` anymore. This will allow to use pontos version as
+  a development dependency only [#2](https://github.com/greenbone/pontos/pull/2)
+
 ### Fixed
 
 ### Removed
