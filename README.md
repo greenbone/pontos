@@ -8,7 +8,7 @@
 [![CircleCI](https://circleci.com/gh/greenbone/pontos/tree/master.svg?style=svg)](https://circleci.com/gh/greenbone/pontos/tree/master)
 
 The **pontos** Python package is a collection of utilities, tools, classes and
-function for maintained by [Greenbone Networks].
+functions maintained by [Greenbone Networks].
 
 Pontos is the German name of the Greek titan [Pontus](https://en.wikipedia.org/wiki/Pontus_(mythology)),
 the titan of the sea.
