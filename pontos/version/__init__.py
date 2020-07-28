@@ -26,6 +26,8 @@ from .version import (
     get_version_from_pyproject_toml,
 )
 
+from .cmake_version import CMakeVersionParser, CMakeVersionCommand
+
 __all__ = [
     '__version__',
     'VersionCommand',
@@ -34,4 +36,5 @@ __all__ = [
     'strip_version',
     'is_version_pep440_compliant',
     'get_version_from_pyproject_toml',
+    'CMakeVersionCommand',
 ]

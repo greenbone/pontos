@@ -103,6 +103,39 @@ def is_version_pep440_compliant(version: str) -> bool:
     return version == safe_version(version)
 
 
+def initialize_default_parser() -> argparse.ArgumentParser:
+    """
+    Returns a default argument parser containing:
+    - verify
+    - show
+    - update
+    """
+    parser = argparse.ArgumentParser(
+        description='Version handling utilities.', prog='version',
+    )
+
+    subparsers = parser.add_subparsers(
+        title='subcommands',
+        description='valid subcommands',
+        help='additional help',
+        dest='command',
+    )
+
+    verify_parser = subparsers.add_parser('verify')
+    verify_parser.add_argument('version', help='version string to compare')
+
+    subparsers.add_parser('show')
+
+    update_parser = subparsers.add_parser('update')
+    update_parser.add_argument('version', help='version string to use')
+    update_parser.add_argument(
+        '--force',
+        help="don't check if version is already set",
+        action="store_true",
+    )
+    return parser
+
+
 class VersionCommand:
     TEMPLATE = """# pylint: disable=invalid-name
 
@@ -123,29 +156,7 @@ __version__ = "{}"\n"""
         self._configure_parser()
 
     def _configure_parser(self):
-        self.parser = argparse.ArgumentParser(
-            description='Version handling utilities.', prog='version',
-        )
-
-        subparsers = self.parser.add_subparsers(
-            title='subcommands',
-            description='valid subcommands',
-            help='additional help',
-            dest='command',
-        )
-
-        verify_parser = subparsers.add_parser('verify')
-        verify_parser.add_argument('version', help='version string to compare')
-
-        subparsers.add_parser('show')
-
-        update_parser = subparsers.add_parser('update')
-        update_parser.add_argument('version', help='version string to use')
-        update_parser.add_argument(
-            '--force',
-            help="don't check if version is already set",
-            action="store_true",
-        )
+        self.parser = initialize_default_parser()
 
     def _print(self, *args) -> None:
         print(*args)

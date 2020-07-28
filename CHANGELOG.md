@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+ 
+* add possibility to update the version within a cmake project.
+* add possibility to execute main script via poetry run version
 
 ### Changed
+* `__main__` checks if there is CMakeLists.txt or pyproject.toml in path.
+   Based on that it decide which version command it will execute.
 
 ### Fixed
 
