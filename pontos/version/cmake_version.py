@@ -28,6 +28,7 @@ from .version import (
 
 class CMakeVersionCommand:
     __cmake_filepath = None
+    __quiet = False
 
     def __init__(self, *, cmake_lists_path: Path = None):
         if not cmake_lists_path:
@@ -41,22 +42,26 @@ class CMakeVersionCommand:
         self.parser = initialize_default_parser()
 
     def run(self, args=None) -> Union[int, str]:
-        args = self.parser.parse_args(args)
+        commandline_arguments = self.parser.parse_args(args)
 
-        if not getattr(args, 'command', None):
+        if not getattr(commandline_arguments, 'command', None):
             self.parser.print_usage()
             return 0
-
+        self.__quiet = commandline_arguments.quiet
         try:
-            if args.command == 'update':
-                self.update_version(args.version,)
-            elif args.command == 'show':
+            if commandline_arguments.command == 'update':
+                self.update_version(commandline_arguments.version,)
+            elif commandline_arguments.command == 'show':
                 self.print_current_version()
-            elif args.command == 'verify':
-                self.verify_version(args.version)
+            elif commandline_arguments.command == 'verify':
+                self.verify_version(commandline_arguments.version)
         except VersionError as e:
             return str(e)
         return 0
+
+    def __print(self, *args):
+        if not self.__quiet:
+            print(*args)
 
     def update_version(self, version: str):
         content = self.__cmake_filepath.read_text()
@@ -64,19 +69,21 @@ class CMakeVersionCommand:
         previous_version = cmvp.get_current_version()
         new_content = cmvp.update_version(version)
         self.__cmake_filepath.write_text(new_content)
-        print('Updated version from {} to {}'.format(previous_version, version))
+        self.__print(
+            'Updated version from {} to {}'.format(previous_version, version)
+        )
 
     def print_current_version(self):
         content = self.__cmake_filepath.read_text()
         cmvp = CMakeVersionParser(content)
-        print(cmvp.get_current_version())
+        self.__print(cmvp.get_current_version())
 
     def verify_version(self, version: str):
         if not is_version_pep440_compliant(version):
             raise VersionError(
                 "Version {} is not PEP 440 compliant.".format(version)
             )
-        print('OK')
+        self.__print('OK')
 
 
 class CMakeVersionParser:

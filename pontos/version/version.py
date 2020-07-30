@@ -113,6 +113,9 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description='Version handling utilities.', prog='version',
     )
+    parser.add_argument(
+        '--quiet', help='don\'t print messages', action="store_true"
+    )
 
     subparsers = parser.add_subparsers(
         title='subcommands',
@@ -123,7 +126,6 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 
     verify_parser = subparsers.add_parser('verify')
     verify_parser.add_argument('version', help='version string to compare')
-
     subparsers.add_parser('show')
 
     update_parser = subparsers.add_parser('update')
@@ -143,6 +145,8 @@ class VersionCommand:
 
 __version__ = "{}"\n"""
 
+    __quiet = False
+
     def __init__(
         self,
         *,
@@ -159,7 +163,8 @@ __version__ = "{}"\n"""
         self.parser = initialize_default_parser()
 
     def _print(self, *args) -> None:
-        print(*args)
+        if not self.__quiet:
+            print(*args)
 
     def get_current_version(self) -> str:
         version_module_name = self.version_file_path.stem
@@ -270,12 +275,14 @@ __version__ = "{}"\n"""
     def print_current_version(self) -> None:
         self._print(self.get_current_version())
 
-    def run(self) -> Union[int, str]:
-        args = self.parser.parse_args()
+    def run(self, args=None) -> Union[int, str]:
+        args = self.parser.parse_args(args)
 
         if not getattr(args, 'command', None):
             self.parser.print_usage()
             return 0
+
+        self.__quiet = args.quiet
 
         try:
             if args.command == 'update':
