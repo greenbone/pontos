@@ -60,7 +60,7 @@ def update(
 
     def may_add_skeleton(
         heading_count: int, first_headline_state: int, markdown: str
-    ) -> (int, str):
+    ) -> Tuple[int, str]:
         if first_headline_state == -1 and heading_count == 1:
             return 0, markdown
         if first_headline_state == 0 and heading_count > 1:
