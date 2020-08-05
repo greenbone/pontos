@@ -28,7 +28,7 @@ the titan of the sea.
 
 ### Requirements
 
-Python 3.5 and later is supported.
+Python 3.7 and later is supported.
 
 ### Install using pip
 
