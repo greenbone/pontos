@@ -44,7 +44,7 @@ __UNRELEASED_SKELETON = """## [Unreleased]
 
 
 def update(
-    markdown,
+    markdown: str,
     new_version: str,
     project_name: str,
     git_tag_prefix: str = 'v',
@@ -59,7 +59,7 @@ def update(
     """
 
     def may_add_skeleton(
-        heading_count, first_headline_state, markdown
+        heading_count: int, first_headline_state: int, markdown: str
     ) -> (int, str):
         if first_headline_state == -1 and heading_count == 1:
             return 0, markdown
@@ -140,7 +140,7 @@ __CHANGELOG_SCANNER = __build_scanner()
 
 
 def _tokenize(
-    markdown,
+    markdown: str,
 ) -> List[
     Tuple[int, str, int, str],
 ]:

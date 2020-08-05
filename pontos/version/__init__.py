@@ -57,4 +57,5 @@ __all__ = [
     'is_version_pep440_compliant',
     'get_version_from_pyproject_toml',
     'CMakeVersionCommand',
+    'PontosVersionCommand',
 ]

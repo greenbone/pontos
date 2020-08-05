@@ -5,7 +5,7 @@ import os
 import json
 import shutil
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, Dict, List, Union
 
 import requests
 from pontos import version
@@ -19,7 +19,7 @@ def build_release_dict(
     target_commitish: str = '',  # needed when tag is not there yet
     draft: bool = False,
     prerelease: bool = False,
-):
+) -> Dict[str, Union[str, bool]]:
     """
     builds the dict for release post on github, see:
     https://docs.github.com/en/rest/reference/repos#create-a-release
@@ -47,13 +47,15 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '--release-version',
         help='Will release changelog as version. Must be PEP 440 compliant',
+        required=True,
     )
     parser.add_argument(
         '--next-release-version',
         help='Sets the next PEP 440 compliant version in project definition.',
+        required=True,
     )
     parser.add_argument(
-        '--project', help='The github project',
+        '--project', help='The github project', required=True,
     )
     parser.add_argument(
         '--space', default='greenbone', help='user/team name in github',
@@ -78,17 +80,6 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 def parse(args=None):
     parser = initialize_default_parser()
     commandline_arguments = parser.parse_args(args)
-    needed_attr = [
-        'command',
-        'release_version',
-        'next_release_version',
-        'project',
-    ]
-    for attr in needed_attr:
-        if not getattr(commandline_arguments, attr, None):
-            parser.print_usage()
-            return None
-
     token = (
         os.environ['GITHUB_TOKEN']
         if not args or not 'testcases' in args

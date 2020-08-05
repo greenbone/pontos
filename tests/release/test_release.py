@@ -81,31 +81,6 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertFalse(released)
 
-    def test_not_release_on_missing_version(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_version = MagicMock(spec=version)
-        fake_changelog = MagicMock(spec=changelog)
-        incoming = []
-        args = [
-            '--next-release-version',
-            '0.0.2dev',
-            '--project',
-            'testcases',
-            'release',
-        ]
-        runner = lambda x: incoming.append(x)
-        released = release.main(
-            shell_cmd_runner=runner,
-            _path=fake_path_class,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
-        self.assertFalse(released)
-
     def test_not_release_when_no_project_found(self):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
