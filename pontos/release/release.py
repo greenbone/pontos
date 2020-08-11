@@ -272,6 +272,7 @@ class GithubRelease:
             print("Wrong reponse status code: {}".format(response.status_code))
             print(json.dumps(response.text, indent=4, sort_keys=True))
             return False
+        self.__path(".release.txt.md").unlink()
         github_json = json.loads(response.text)
         zip_path = download(github_json['zipball_url'], git_version + ".zip")
         tar_path = download(github_json['tarball_url'], git_version + ".tar.gz")
