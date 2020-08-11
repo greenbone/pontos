@@ -8,13 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
- 
-* add possibility to update the version within a cmake project.
-* add possibility to execute version script via poetry run version
-* add CHANGELOD.md handling (upating unreleased, get unreleased information)
-* add release command to to a release 
+
+* Add possibility to update the version within a cmake project.
+* Add possibility to execute version script via poetry run version
+* Add CHANGELOG.md handling (updating unreleased, get unreleased information)
+* Add release command to make a release
+* Add prepare release command
 
 ### Changed
+
 * `__main__` checks if there is CMakeLists.txt or pyproject.toml in path.
    Based on that it decide which version command it will execute.
 
