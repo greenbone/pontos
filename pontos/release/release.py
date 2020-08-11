@@ -324,7 +324,7 @@ def main(
     def execute(
         command: str,
         release_version: str,
-        next_release_version: str,
+        _: str,
         project: str,
         space: str,
         signing_key: str,
@@ -334,7 +334,7 @@ def main(
         if command == 'prepare':
             return prepare(
                 release_version,
-                next_release_version,
+                release_version,
                 project,
                 space,
                 signing_key,
