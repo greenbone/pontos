@@ -125,6 +125,12 @@ def prepare(
     _changelog: changelog,
 ):
     print("in prepare")
+    git_tags = shell_cmd_runner('git tag -l')
+
+    git_version = "{}{}".format(git_tag_prefix, release_version)
+    if git_version.encode() in git_tags.stdout.splitlines():
+        raise ValueError('git tag {} is already taken.'.format(git_version))
+
     executed, filename = _version.main(
         False, args=["--quiet", "update", nextversion]
     )
@@ -344,7 +350,9 @@ class GithubRelease:
 
 def main(
     git_tag_prefix: str = "v",
-    shell_cmd_runner=lambda x: subprocess.run(x, shell=True, check=True),
+    shell_cmd_runner=lambda x: subprocess.run(
+        x, shell=True, check=True, stdout=subprocess.PIPE
+    ),
     _path: Path = Path,
     _requests: requests = requests,
     _version: version = version,

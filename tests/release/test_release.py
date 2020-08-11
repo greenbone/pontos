@@ -4,13 +4,20 @@ import unittest
 from unittest.mock import MagicMock
 from pathlib import Path
 import sys
+from dataclasses import dataclass
 import requests
 
 sys.modules['shutil'] = MagicMock()
 from pontos import version, release, changelog
 
 
+@dataclass
+class StdOutput:
+    stdout: bytes
+
+
 class ReleaseTestCase(unittest.TestCase):
+
     valid_gh_release_response = (
         '{"zipball_url": "zip", "tarball_url": "tar", "upload_url":"upload"}'
     )
@@ -26,7 +33,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        incoming = []
         args = [
             '--release-version',
             '0.0.1',
@@ -36,7 +42,7 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             'prepare',
         ]
-        runner = lambda x: incoming.append(x)
+        runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
@@ -47,6 +53,32 @@ class ReleaseTestCase(unittest.TestCase):
             args=args,
         )
         self.assertTrue(released)
+
+    def test_fail_if_tag_is_already_taken(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_requests = MagicMock(spec=requests)
+        fake_version = MagicMock(spec=version)
+        fake_changelog = MagicMock(spec=changelog)
+        args = [
+            '--release-version',
+            '0.0.1',
+            '--next-release-version',
+            '0.0.2dev',
+            '--project',
+            'testcases',
+            'prepare',
+        ]
+        runner = lambda x: StdOutput('v0.0.1'.encode())
+        with self.assertRaises(ValueError):
+            release.main(
+                shell_cmd_runner=runner,
+                _path=fake_path_class,
+                _requests=fake_requests,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
 
     def test_release_successfully(self):
         fake_path_class = MagicMock(spec=Path)
@@ -59,7 +91,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        incoming = []
         args = [
             '--release-version',
             '0.0.1',
@@ -69,7 +100,7 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             'release',
         ]
-        runner = lambda x: incoming.append(x)
+        runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
@@ -92,7 +123,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        incoming = []
         args = [
             '--release-version',
             '0.0.1',
@@ -102,7 +132,7 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             'release',
         ]
-        runner = lambda x: incoming.append(x)
+        runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
@@ -121,7 +151,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, '')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        incoming = []
         args = [
             '--release-version',
             '0.0.1',
@@ -131,7 +160,7 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             'prepare',
         ]
-        runner = lambda x: incoming.append(x)
+        runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
@@ -150,7 +179,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        incoming = []
         args = [
             '--release-version',
             '0.0.1',
@@ -160,7 +188,7 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             'prepare',
         ]
-        runner = lambda x: incoming.append(x)
+        runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
