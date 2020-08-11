@@ -242,8 +242,16 @@ class GithubRelease:
         print("Commiting changes")
         self.__run("git add {}".format(project_filename))
         self.__run("git add *__version__.py || echo 'ignoring __version__'")
-        self.__run("git add CHANGELOG.md")
         commit_msg = 'automatic release to {}'.format(release_version)
+        self.__run(
+            "git commit -S{} -m '{}'".format(
+                self.git_signing_key or '', commit_msg
+            ),
+        )
+        self.__run("git add CHANGELOG.md")
+        commit_msg = 'update changelog after release of {}'.format(
+            release_version
+        )
         self.__run(
             "git commit -S{} -m '{}'".format(
                 self.git_signing_key or '', commit_msg
