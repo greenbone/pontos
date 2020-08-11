@@ -73,6 +73,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         dest='command',
     )
 
+    subparsers.add_parser('prepare')
     subparsers.add_parser('release')
     return parser
 
@@ -102,7 +103,7 @@ def parse(args=None):
     )
 
 
-def run(
+def prepare(
     release_version: str,
     nextversion: str,
     project: str,
@@ -117,7 +118,7 @@ def run(
     _version: version,
     _changelog: changelog,
 ):
-    print("in release")
+    print("in prepare")
     executed, filename = _version.main(
         False, args=["--quiet", "update", nextversion]
     )
@@ -152,6 +153,35 @@ def run(
     return git.commit(filename, release_version, changelog_text)
 
 
+def release(
+    release_version: str,
+    project: str,
+    space: str,
+    signing_key: str,
+    username: str,
+    token: str,
+    git_tag_prefix: str,
+    shell_cmd_runner: Callable,
+    _path: Path,
+    _requests: requests,
+    _version: version,
+    _changelog: changelog,
+):
+    print("in release")
+    git = GithubRelease(
+        token,
+        username,
+        project,
+        signing_key,
+        space=space,
+        tag_prefix=git_tag_prefix,
+        run_cmd=shell_cmd_runner,
+        path=_path,
+        gh_requests=_requests,
+    )
+    return git.create_release(release_version)
+
+
 class GithubRelease:
     space = None
     project = None
@@ -161,6 +191,7 @@ class GithubRelease:
     signing_key = None
     __run = None
     __path = None
+
     __requests = None
 
     def __init__(
@@ -204,11 +235,18 @@ class GithubRelease:
         self.__run("git commit -S -m '{}'".format(commit_msg),)
         git_version = "{}{}".format(self.tag_prefix, release_version)
         self.__run("git tag -s {} -m '{}'".format(git_version, commit_msg),)
-        print("Pushing changes")
-        self.__run("git push --follow-tags")
-        return self.create_release(git_version, changelog_text)
 
-    def create_release(self, git_version: str, changelog_text: str) -> bool:
+        release_text = self.__path(".release.txt.md")
+        release_text.write_text(changelog_text)
+        print(
+            "Please verify git tag {}, commit and release text in {}".format(
+                git_version, release_text
+            )
+        )
+        print("Afterwards please execute release")
+        return True
+
+    def create_release(self, release_version: str) -> bool:
         def download(url, filename):
             file_path = self.__path("/tmp/{}".format(filename))
             with self.__requests.get(url, stream=True) as resp:
@@ -216,6 +254,11 @@ class GithubRelease:
                     shutil.copyfileobj(resp.raw, download_file)
             return file_path
 
+        git_version = "{}{}".format(self.tag_prefix, release_version)
+        changelog_text = self.__path(".release.txt.md").read_text()
+
+        print("Pushing changes")
+        self.__run("git push --follow-tags")
         print("Creating release")
         release_info = build_release_dict(git_version, changelog_text)
         headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -287,8 +330,8 @@ def main(
         user: str,
         token: str,
     ):
-        if command == 'release':
-            return run(
+        if command == 'prepare':
+            return prepare(
                 release_version,
                 next_release_version,
                 project,
@@ -303,6 +346,23 @@ def main(
                 _version,
                 _changelog,
             )
+        if command == 'release':
+            print("command release")
+            return release(
+                release_version,
+                project,
+                space,
+                signing_key,
+                user,
+                token,
+                git_tag_prefix,
+                shell_cmd_runner,
+                _path,
+                _requests,
+                _version,
+                _changelog,
+            )
+
         raise ValueError("Unknown command: {}".format(command))
 
     values = parse(args)
@@ -310,7 +370,7 @@ def main(
         return sys.exit(1) if leave else False
     if not execute(*values):
         return sys.exit(1) if leave else False
-    return execute(*values)
+    return sys.exit(0) if leave else True
 
 
 if __name__ == '__main__':

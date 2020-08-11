@@ -34,7 +34,7 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.2dev',
             '--project',
             'testcases',
-            'release',
+            'prepare',
         ]
         runner = lambda x: incoming.append(x)
         released = release.main(
@@ -96,7 +96,7 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.2dev',
             '--project',
             'testcases',
-            'release',
+            'prepare',
         ]
         runner = lambda x: incoming.append(x)
         released = release.main(
@@ -125,7 +125,7 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.2dev',
             '--project',
             'testcases',
-            'release',
+            'prepare',
         ]
         runner = lambda x: incoming.append(x)
         released = release.main(
