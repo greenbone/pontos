@@ -65,6 +65,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         default='0ED1E580',
         help='The key to sign zip, tarballs of a release',
     )
+    parser.add_argument(
+        '--git-signing-key',
+        help='The key to sign the commits and tag for a release',
+    )
 
     subparsers = parser.add_subparsers(
         title='subcommands',
@@ -98,6 +102,7 @@ def parse(args=None):
         commandline_arguments.project,
         commandline_arguments.space,
         commandline_arguments.signing_key,
+        commandline_arguments.git_signing_key,
         user,
         token,
     )
@@ -109,6 +114,7 @@ def prepare(
     project: str,
     space: str,
     signing_key: str,
+    git_signing_key: str,
     username: str,
     token: str,
     git_tag_prefix: str,
@@ -144,6 +150,7 @@ def prepare(
         username,
         project,
         signing_key,
+        git_signing_key=git_signing_key,
         space=space,
         tag_prefix=git_tag_prefix,
         run_cmd=shell_cmd_runner,
@@ -158,6 +165,7 @@ def release(
     project: str,
     space: str,
     signing_key: str,
+    git_signing_key: str,
     username: str,
     token: str,
     git_tag_prefix: str,
@@ -173,6 +181,7 @@ def release(
         username,
         project,
         signing_key,
+        git_signing_key=git_signing_key,
         space=space,
         tag_prefix=git_tag_prefix,
         run_cmd=shell_cmd_runner,
@@ -189,6 +198,7 @@ class GithubRelease:
     user = None
     tag_prefix = None
     signing_key = None
+    git_signing_key = None
     __run = None
     __path = None
 
@@ -200,6 +210,7 @@ class GithubRelease:
         user: str,
         project: str,
         signing_key: str,
+        git_signing_key: str = None,
         space: str = 'greenbone',
         tag_prefix: str = 'v',
         run_cmd=lambda x: subprocess.run(x, shell=True, check=True),
@@ -211,6 +222,7 @@ class GithubRelease:
         self.space = space
         self.tag_prefix = tag_prefix
         self.signing_key = signing_key
+        self.git_signing_key = git_signing_key
         self.__run = run_cmd
         self.__path = path
         self.__requests = gh_requests
@@ -232,9 +244,20 @@ class GithubRelease:
         self.__run("git add *__version__.py || echo 'ignoring __version__'")
         self.__run("git add CHANGELOG.md")
         commit_msg = 'automatic release to {}'.format(release_version)
-        self.__run("git commit -S -m '{}'".format(commit_msg),)
+        self.__run(
+            "git commit -S{} -m '{}'".format(
+                self.git_signing_key or '', commit_msg
+            ),
+        )
         git_version = "{}{}".format(self.tag_prefix, release_version)
-        self.__run("git tag -s {} -m '{}'".format(git_version, commit_msg),)
+        if self.git_signing_key:
+            self.__run(
+                "git tag -u {} {} -m '{}'".format(
+                    self.git_signing_key, git_version, commit_msg
+                ),
+            )
+        else:
+            self.__run("git tag -s {} -m '{}'".format(git_version, commit_msg),)
 
         release_text = self.__path(".release.txt.md")
         release_text.write_text(changelog_text)
@@ -328,6 +351,7 @@ def main(
         project: str,
         space: str,
         signing_key: str,
+        git_signing_key: str,
         user: str,
         token: str,
     ):
@@ -338,6 +362,7 @@ def main(
                 project,
                 space,
                 signing_key,
+                git_signing_key,
                 user,
                 token,
                 git_tag_prefix,
@@ -354,6 +379,7 @@ def main(
                 project,
                 space,
                 signing_key,
+                git_signing_key,
                 user,
                 token,
                 git_tag_prefix,
