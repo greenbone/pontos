@@ -69,6 +69,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         '--git-signing-key',
         help='The key to sign the commits and tag for a release',
     )
+    parser.add_argument(
+        '--git-remote-name',
+        help='The git remote name to push the commits and tag to',
+    )
 
     subparsers = parser.add_subparsers(
         title='subcommands',
@@ -103,6 +107,7 @@ def parse(args=None):
         commandline_arguments.space,
         commandline_arguments.signing_key,
         commandline_arguments.git_signing_key,
+        commandline_arguments.git_remote_name,
         user,
         token,
     )
@@ -215,6 +220,7 @@ def release(
     username: str,
     token: str,
     git_tag_prefix: str,
+    git_remote_name: str,
     shell_cmd_runner: Callable,
     _path: Path,
     _requests: requests,
@@ -264,7 +270,12 @@ def release(
     changelog_text = _path(".release.txt.md").read_text()
 
     print("Pushing changes")
-    shell_cmd_runner("git push --follow-tags")
+
+    if git_remote_name:
+        shell_cmd_runner("git push --follow-tags {}".format(git_remote_name))
+    else:
+        shell_cmd_runner("git push --follow-tags")
+
     print("Creating release")
     release_info = build_release_dict(git_version, changelog_text)
     headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -309,6 +320,7 @@ def main(
         space: str,
         signing_key: str,
         git_signing_key: str,
+        git_remote_name: str,
         user: str,
         token: str,
     ):
@@ -337,6 +349,7 @@ def main(
                 user,
                 token,
                 git_tag_prefix,
+                git_remote_name,
                 shell_cmd_runner,
                 _path,
                 _requests,
