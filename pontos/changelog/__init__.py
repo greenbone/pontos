@@ -1,1 +1,1 @@
-from .changelog import update, ChangelogError
+from .changelog import add_skeleton, update, ChangelogError
