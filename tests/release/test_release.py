@@ -1,13 +1,14 @@
 # pylint: disable=C0413,W0108
 
+import shutil
 import unittest
-from unittest.mock import MagicMock
-from pathlib import Path
-import sys
+
 from dataclasses import dataclass
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import requests
 
-sys.modules['shutil'] = MagicMock()
 from pontos import version, release, changelog
 
 
@@ -16,6 +17,10 @@ class StdOutput:
     stdout: bytes
 
 
+_shutil_mock = MagicMock(spec=shutil)
+
+
+@patch("pontos.release.release.shutil", new=_shutil_mock)
 class ReleaseTestCase(unittest.TestCase):
 
     valid_gh_release_response = (
