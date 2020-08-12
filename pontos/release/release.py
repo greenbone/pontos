@@ -108,6 +108,30 @@ def parse(args=None):
     )
 
 
+def update_version(to: str, _version: version) -> (bool, str):
+    executed, filename = _version.main(False, args=["--quiet", "update", to])
+    if not executed:
+        if filename == "":
+            print("No project definition found.")
+        else:
+            print("Unable to update version {} in {}", to, filename)
+    return executed, filename
+
+
+def commit_files(
+    filename: str,
+    commit_msg: str,
+    git_signing_key: str,
+    shell_cmd_runner: Callable,
+):
+    shell_cmd_runner("git add {}".format(filename))
+    shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
+    shell_cmd_runner("git add CHANGELOG.md")
+    shell_cmd_runner(
+        "git commit -S{} -m '{}'".format(git_signing_key or '', commit_msg),
+    )
+
+
 def prepare(
     release_version: str,
     nextversion: str,
@@ -115,8 +139,6 @@ def prepare(
     space: str,
     signing_key: str,
     git_signing_key: str,
-    username: str,
-    token: str,
     git_tag_prefix: str,
     shell_cmd_runner: Callable,
     _path: Path,
@@ -125,24 +147,46 @@ def prepare(
     _changelog: changelog,
 ):
     print("in prepare")
+    # guardian
     git_tags = shell_cmd_runner('git tag -l')
-
     git_version = "{}{}".format(git_tag_prefix, release_version)
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError('git tag {} is already taken.'.format(git_version))
-
-    executed, filename = _version.main(
-        False, args=["--quiet", "update", nextversion]
-    )
+    executed, filename = update_version(release_version, _version)
     if not executed:
-        if filename == "":
-            print("No project definition found.")
-        else:
-            print("Unable to update version {} in {}", nextversion, filename)
         return False
-    print("updated version {} to {}".format(filename, nextversion))
+    print("updated version {} to {}".format(filename, release_version))
     change_log_path = _path.cwd() / 'CHANGELOG.md'
     updated, changelog_text = _changelog.update(
+        change_log_path.read_text(),
+        release_version,
+        git_tag_prefix=git_tag_prefix,
+    )
+    change_log_path.write_text(updated)
+    print("updated CHANGELOG.md")
+
+    print("Commiting changes")
+    commit_msg = 'automatic release to {}'.format(release_version)
+    commit_files(filename, commit_msg, signing_key, shell_cmd_runner)
+
+    if git_signing_key:
+        shell_cmd_runner(
+            "git tag -u {} {} -m '{}'".format(
+                git_signing_key, git_version, commit_msg
+            ),
+        )
+    else:
+        shell_cmd_runner(
+            "git tag -s {} -m '{}'".format(git_version, commit_msg),
+        )
+
+    release_text = _path(".release.txt.md")
+    release_text.write_text(changelog_text)
+    # set to new version add skeleton
+    executed, filename = update_version(nextversion, _version)
+    if not executed:
+        return False
+    updated = _changelog.add_skeleton(
         change_log_path.read_text(),
         release_version,
         project,
@@ -150,20 +194,17 @@ def prepare(
         git_space=space,
     )
     change_log_path.write_text(updated)
-    print("updated CHANGELOG.md")
-    git = GithubRelease(
-        token,
-        username,
-        project,
-        signing_key,
-        git_signing_key=git_signing_key,
-        space=space,
-        tag_prefix=git_tag_prefix,
-        run_cmd=shell_cmd_runner,
-        path=_path,
-        gh_requests=_requests,
+    commit_msg = 'set version {}, add empty changelog after {}'.format(
+        nextversion, release_version
     )
-    return git.commit(filename, release_version, changelog_text)
+    commit_files(filename, commit_msg, signing_key, shell_cmd_runner)
+    print(
+        "Please verify git tag {}, commit and release text in {}".format(
+            git_version, release_text
+        )
+    )
+    print("Afterwards please execute release")
+    return True
 
 
 def release(
@@ -171,7 +212,6 @@ def release(
     project: str,
     space: str,
     signing_key: str,
-    git_signing_key: str,
     username: str,
     token: str,
     git_tag_prefix: str,
@@ -181,158 +221,22 @@ def release(
     _version: version,
     _changelog: changelog,
 ):
-    print("in release")
-    git = GithubRelease(
-        token,
-        username,
-        project,
-        signing_key,
-        git_signing_key=git_signing_key,
-        space=space,
-        tag_prefix=git_tag_prefix,
-        run_cmd=shell_cmd_runner,
-        path=_path,
-        gh_requests=_requests,
-    )
-    return git.create_release(release_version)
+    auth = (username, token)
 
-
-class GithubRelease:
-    space = None
-    project = None
-    token = None
-    user = None
-    tag_prefix = None
-    signing_key = None
-    git_signing_key = None
-    __run = None
-    __path = None
-
-    __requests = None
-
-    def __init__(
-        self,
-        token: str,
-        user: str,
-        project: str,
-        signing_key: str,
-        git_signing_key: str = None,
-        space: str = 'greenbone',
-        tag_prefix: str = 'v',
-        run_cmd=lambda x: subprocess.run(x, shell=True, check=True),
-        path: Path = Path,
-        gh_requests: requests = requests,
-    ):
-        self.auth = (user, token)
-        self.project = project
-        self.space = space
-        self.tag_prefix = tag_prefix
-        self.signing_key = signing_key
-        self.git_signing_key = git_signing_key
-        self.__run = run_cmd
-        self.__path = path
-        self.__requests = gh_requests
-
-    def commit(
-        self, project_filename: str, release_version: str, changelog_text: str,
-    ) -> bool:
-        """
-        commit adds:
-        - filename
-        - CHANGELOG.md
-        commits those changes, creates a tag based on:
-        - release_version
-        - tag_prefix
-        pushes those changes into remote repository and creates a release.
-        """
-        print("Commiting changes")
-        self.__run("git add {}".format(project_filename))
-        self.__run("git add *__version__.py || echo 'ignoring __version__'")
-        commit_msg = 'automatic release to {}'.format(release_version)
-        self.__run(
-            "git commit -S{} -m '{}'".format(
-                self.git_signing_key or '', commit_msg
-            ),
-        )
-        self.__run("git add CHANGELOG.md")
-        commit_msg = 'update changelog after release of {}'.format(
-            release_version
-        )
-        self.__run(
-            "git commit -S{} -m '{}'".format(
-                self.git_signing_key or '', commit_msg
-            ),
-        )
-        git_version = "{}{}".format(self.tag_prefix, release_version)
-        if self.git_signing_key:
-            self.__run(
-                "git tag -u {} {} -m '{}'".format(
-                    self.git_signing_key, git_version, commit_msg
-                ),
-            )
-        else:
-            self.__run("git tag -s {} -m '{}'".format(git_version, commit_msg),)
-
-        release_text = self.__path(".release.txt.md")
-        release_text.write_text(changelog_text)
-        print(
-            "Please verify git tag {}, commit and release text in {}".format(
-                git_version, release_text
-            )
-        )
-        print("Afterwards please execute release")
-        return True
-
-    def create_release(self, release_version: str) -> bool:
-        def download(url, filename):
-            file_path = self.__path("/tmp/{}".format(filename))
-            with self.__requests.get(url, stream=True) as resp:
-                with file_path.open(mode='wb') as download_file:
-                    shutil.copyfileobj(resp.raw, download_file)
-            return file_path
-
-        git_version = "{}{}".format(self.tag_prefix, release_version)
-        changelog_text = self.__path(".release.txt.md").read_text()
-
-        print("Pushing changes")
-        self.__run("git push --follow-tags")
-        print("Creating release")
-        release_info = build_release_dict(git_version, changelog_text)
-        headers = {'Accept': 'application/vnd.github.v3+json'}
-        base_url = "https://api.github.com/repos/{}/{}/releases".format(
-            self.space, self.project
-        )
-        response = self.__requests.post(
-            base_url, headers=headers, auth=self.auth, json=release_info
-        )
-        if response.status_code != 201:
-            print("Wrong reponse status code: {}".format(response.status_code))
-            print(json.dumps(response.text, indent=4, sort_keys=True))
-            return False
-        self.__path(".release.txt.md").unlink()
-        github_json = json.loads(response.text)
-        zip_path = download(github_json['zipball_url'], git_version + ".zip")
-        tar_path = download(github_json['tarball_url'], git_version + ".tar.gz")
-        print("Signing {}".format([zip_path, tar_path]))
-        gpg_cmd = "gpg --default-key {} --detach-sign --armor {}"
-        self.__run(gpg_cmd.format(self.signing_key, zip_path))
-        self.__run(gpg_cmd.format(self.signing_key, tar_path))
-        return self.upload_assets([zip_path, tar_path], github_json)
-
-    def upload_assets(self, pathnames: List[str], github_json: str) -> bool:
+    def upload_assets(pathnames: List[str], github_json: str) -> bool:
         print("Uploading assets: {}".format(pathnames))
         asset_url = github_json['upload_url'].replace('{?name,label}', '')
-        paths = [self.__path('{}.asc'.format(p)) for p in pathnames]
+        paths = [_path('{}.asc'.format(p)) for p in pathnames]
         upload_headers = {
             'Accept': 'application/vnd.github.v3+json',
             'content-type': 'application/octet-stream',
         }
         for path in paths:
             to_upload = path.read_bytes()
-            resp = self.__requests.post(
+            resp = _requests.post(
                 "{}?name={}".format(asset_url, path.name),
                 headers=upload_headers,
-                auth=self.auth,
+                auth=auth,
                 data=to_upload,
             )
             if resp.status_code != 201:
@@ -346,6 +250,43 @@ class GithubRelease:
             else:
                 print("uploaded: {}".format(path.name))
         return True
+
+    print("in release")
+
+    def download(url, filename):
+        file_path = _path("/tmp/{}".format(filename))
+        with _requests.get(url, stream=True) as resp:
+            with file_path.open(mode='wb') as download_file:
+                shutil.copyfileobj(resp.raw, download_file)
+        return file_path
+
+    git_version = "{}{}".format(git_tag_prefix, release_version)
+    changelog_text = _path(".release.txt.md").read_text()
+
+    print("Pushing changes")
+    shell_cmd_runner("git push --follow-tags")
+    print("Creating release")
+    release_info = build_release_dict(git_version, changelog_text)
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+    base_url = "https://api.github.com/repos/{}/{}/releases".format(
+        space, project
+    )
+    response = _requests.post(
+        base_url, headers=headers, auth=auth, json=release_info
+    )
+    if response.status_code != 201:
+        print("Wrong reponse status code: {}".format(response.status_code))
+        print(json.dumps(response.text, indent=4, sort_keys=True))
+        return False
+    _path(".release.txt.md").unlink()
+    github_json = json.loads(response.text)
+    zip_path = download(github_json['zipball_url'], git_version + ".zip")
+    tar_path = download(github_json['tarball_url'], git_version + ".tar.gz")
+    print("Signing {}".format([zip_path, tar_path]))
+    gpg_cmd = "gpg --default-key {} --detach-sign --armor {}"
+    shell_cmd_runner(gpg_cmd.format(signing_key, zip_path))
+    shell_cmd_runner(gpg_cmd.format(signing_key, tar_path))
+    return upload_assets([zip_path, tar_path], github_json)
 
 
 def main(
@@ -363,7 +304,7 @@ def main(
     def execute(
         command: str,
         release_version: str,
-        _: str,
+        next_release_version: str,
         project: str,
         space: str,
         signing_key: str,
@@ -374,13 +315,11 @@ def main(
         if command == 'prepare':
             return prepare(
                 release_version,
-                release_version,
+                next_release_version,
                 project,
                 space,
                 signing_key,
                 git_signing_key,
-                user,
-                token,
                 git_tag_prefix,
                 shell_cmd_runner,
                 _path,
@@ -395,7 +334,6 @@ def main(
                 project,
                 space,
                 signing_key,
-                git_signing_key,
                 user,
                 token,
                 git_tag_prefix,

@@ -43,12 +43,33 @@ __UNRELEASED_SKELETON = """## [Unreleased]
 """
 
 
-def update(
+def add_skeleton(
     markdown: str,
     new_version: str,
     project_name: str,
     git_tag_prefix: str = 'v',
     git_space: str = 'greenbone',
+) -> str:
+    git_tag = "{}{}".format(git_tag_prefix, new_version)
+    tokens = _tokenize(markdown)
+    updated_markdown = ""
+
+    for tt, _, tc in tokens:
+        if tt == 'heading' and new_version in tc:
+            prepared_skeleton = __UNRELEASED_SKELETON.format(
+                git_space, project_name, git_tag
+            )
+            updated_markdown += prepared_skeleton + tc
+        else:
+            updated_markdown += tc
+
+    return updated_markdown
+
+
+def update(
+    markdown: str,
+    new_version: str,
+    git_tag_prefix: str = 'v',
     containing_version: str = None,
 ) -> Tuple[str, str]:
     """
@@ -58,16 +79,13 @@ def update(
     returns updated markdown and change log for further processing.
     """
 
-    def may_add_skeleton(
+    def find_state(
         heading_count: int, first_headline_state: int, markdown: str
     ) -> Tuple[int, str]:
         if first_headline_state == -1 and heading_count == 1:
             return 0, markdown
         if first_headline_state == 0 and heading_count > 1:
-            prepared_skeleton = __UNRELEASED_SKELETON.format(
-                git_space, project_name, git_tag
-            )
-            return 1, markdown + prepared_skeleton
+            return 1, markdown
         return first_headline_state, markdown
 
     git_tag = "{}{}".format(git_tag_prefix, new_version)
@@ -79,7 +97,7 @@ def update(
     first_headline_state = -1  # -1 initial, 0 found, 1 handled
 
     for tt, heading_count, tc in tokens:
-        first_headline_state, updated_markdown = may_add_skeleton(
+        first_headline_state, updated_markdown = find_state(
             heading_count, first_headline_state, updated_markdown
         )
         if tt == 'unreleased':

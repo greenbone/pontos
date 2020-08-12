@@ -1,4 +1,3 @@
-from .release import GithubRelease, main
+from .release import main
 
-
-__all__ = ['GithubRelease', 'main']
+__all__ = ['main']
