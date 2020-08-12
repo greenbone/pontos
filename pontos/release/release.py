@@ -125,6 +125,12 @@ def prepare(
     _changelog: changelog,
 ):
     print("in prepare")
+    git_tags = shell_cmd_runner('git tag -l')
+
+    git_version = "{}{}".format(git_tag_prefix, release_version)
+    if git_version.encode() in git_tags.stdout.splitlines():
+        raise ValueError('git tag {} is already taken.'.format(git_version))
+
     executed, filename = _version.main(
         False, args=["--quiet", "update", nextversion]
     )
@@ -242,8 +248,16 @@ class GithubRelease:
         print("Commiting changes")
         self.__run("git add {}".format(project_filename))
         self.__run("git add *__version__.py || echo 'ignoring __version__'")
-        self.__run("git add CHANGELOG.md")
         commit_msg = 'automatic release to {}'.format(release_version)
+        self.__run(
+            "git commit -S{} -m '{}'".format(
+                self.git_signing_key or '', commit_msg
+            ),
+        )
+        self.__run("git add CHANGELOG.md")
+        commit_msg = 'update changelog after release of {}'.format(
+            release_version
+        )
         self.__run(
             "git commit -S{} -m '{}'".format(
                 self.git_signing_key or '', commit_msg
@@ -336,7 +350,9 @@ class GithubRelease:
 
 def main(
     git_tag_prefix: str = "v",
-    shell_cmd_runner=lambda x: subprocess.run(x, shell=True, check=True),
+    shell_cmd_runner=lambda x: subprocess.run(
+        x, shell=True, check=True, stdout=subprocess.PIPE
+    ),
     _path: Path = Path,
     _requests: requests = requests,
     _version: version = version,
