@@ -27,8 +27,8 @@ class ChangelogError(Exception):
     """
 
 
-__UNRELEASED_MATCHER = re.compile("unreleased", re.IGNORECASE)
-__MASTER_MATCHER = re.compile("master")
+__UNRELEASED_MATCHER = re.compile('unreleased', re.IGNORECASE)
+__MASTER_MATCHER = re.compile('master')
 
 __UNRELEASED_SKELETON = """## [Unreleased]
 ### Added
@@ -50,9 +50,9 @@ def add_skeleton(
     git_tag_prefix: str = 'v',
     git_space: str = 'greenbone',
 ) -> str:
-    git_tag = "{}{}".format(git_tag_prefix, new_version)
+    git_tag = '{}{}'.format(git_tag_prefix, new_version)
     tokens = _tokenize(markdown)
-    updated_markdown = ""
+    updated_markdown = ''
 
     for tt, _, tc in tokens:
         if tt == 'heading' and new_version in tc:
@@ -79,50 +79,70 @@ def update(
     returns updated markdown and change log for further processing.
     """
 
-    def find_state(
-        heading_count: int, first_headline_state: int, markdown: str
-    ) -> Tuple[int, str]:
-        if first_headline_state == -1 and heading_count == 1:
-            return 0, markdown
-        if first_headline_state == 0 and heading_count > 1:
-            return 1, markdown
-        return first_headline_state, markdown
-
-    git_tag = "{}{}".format(git_tag_prefix, new_version)
+    git_tag = '{}{}'.format(git_tag_prefix, new_version)
     tokens = _tokenize(markdown)
-    hc = 0
-    changelog = ""
-    updated_markdown = ""
-    may_changelog_relevant = True
-    first_headline_state = -1  # -1 initial, 0 found, 1 handled
-
-    for tt, heading_count, tc in tokens:
-        first_headline_state, updated_markdown = find_state(
-            heading_count, first_headline_state, updated_markdown
-        )
+    unreleased_heading_count = 0
+    changelog = ''
+    updated_markdown = ''
+    current_state = []
+    previous_state = []
+    unreleased = []
+    for tt, hc, tc in tokens:
+        previous_state = current_state.copy()
         if tt == 'unreleased':
             if (
                 containing_version and containing_version in tc
             ) or not containing_version:
-                hc = heading_count
-                if new_version:
-                    tc = __UNRELEASED_MATCHER.sub(new_version, tc)
-                    tc += " - {}".format(date.today().isoformat())
-        elif heading_count > 0 and hc > 0 and heading_count <= hc:
-            may_changelog_relevant = False
-        if tt == 'unreleased_link' and new_version:
-            tc = __UNRELEASED_MATCHER.sub(new_version, tc)
-            tc = __MASTER_MATCHER.sub(git_tag, tc)
-
-        updated_markdown += tc
-        if may_changelog_relevant:
-            append_word = hc > 0
-            if append_word:
-                changelog += tc
+                unreleased_heading_count = hc
+                current_state = [tt]
+        elif (
+            hc > 0
+            and unreleased_heading_count > 0
+            and hc <= unreleased_heading_count
+        ):
+            current_state = []
+        if 'unreleased' not in current_state and 'unreleased' in previous_state:
+            changelog = _prepare_changelog(unreleased, new_version, git_tag)
+            updated_markdown += changelog
+        if 'unreleased' not in current_state:
+            updated_markdown += tc
+        if 'unreleased' in current_state:
+            unreleased.append((tt, hc, tc))
     return (
         updated_markdown if changelog else "",
         changelog,
     )
+
+
+def _prepare_changelog(
+    tokens: List[Tuple[str, int, str]], new_version: str, git_tag: str
+) -> str:
+    current = ''
+    previous = ''
+    output = ''
+    keyword_text = ''
+    for tt, _, tc in tokens:
+        previous = current
+        if tt == 'unreleased':
+            if new_version:
+                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
+                tc += ' - {}'.format(date.today().isoformat())
+            output += tc
+        elif tt == 'unreleased_link':
+            if new_version:
+                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
+                tc = __MASTER_MATCHER.sub(git_tag, tc)
+            output += tc + '\n'
+        elif 'kw_' in tt:
+            if keyword_text.strip().count('\n') > 0:
+                output += keyword_text
+            keyword_text = tc
+            current = tt
+        elif 'kw_' in previous:
+            keyword_text += tc
+        else:
+            output += tc
+    return output
 
 
 def __build_scanner():
@@ -139,17 +159,17 @@ def __build_scanner():
 
     return re.Scanner(
         [
-            (r'#{1,} Added', token_handler('added')),
-            (r'#{1,} Changed', token_handler("changed")),
-            (r'#{1,} Deprecated', token_handler("deprecated")),
-            (r'#{1,} Removed', token_handler("removed")),
-            (r'#{1,} Fixed', token_handler("fixed")),
-            (r'#{1,} Security', token_handler("security")),
-            (r'#{1,}.*(?=[Uu]nreleased).*', token_handler("unreleased")),
-            (r'\[[Uu]nreleased\].*', token_handler("unreleased_link"),),
-            (r'#{1,} .*', token_handler("heading")),
-            (r'\n', token_handler("newline")),
-            (r'..*', token_handler("any")),
+            (r'#{1,} [Aa]dded', token_handler('kw_added')),
+            (r'#{1,} [Cc]hanged', token_handler('kw_changed')),
+            (r'#{1,} [Dd]eprecated', token_handler('kw_deprecated')),
+            (r'#{1,} [Rr]emoved', token_handler('kw_removed')),
+            (r'#{1,} [Ff]ixed', token_handler('kw_fixed')),
+            (r'#{1,} [Ss]ecurity', token_handler('kw_security')),
+            (r'#{1,}.*(?=[Uu]nreleased).*', token_handler('unreleased')),
+            (r'\[[Uu]nreleased\].*', token_handler('unreleased_link'),),
+            (r'#{1,} .*', token_handler('heading')),
+            (r'\n', token_handler('newline')),
+            (r'..*', token_handler('any')),
         ]
     )
 
