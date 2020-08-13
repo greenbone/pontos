@@ -28,7 +28,6 @@ so much
 so little
 ### changed
 I don't recognize it anymore
-### security
 [1.2.3]: https://github.com/greenbone/pontos/compare/v1.0.0...v1.2.3""".format(
             date.today().isoformat()
         )

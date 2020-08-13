@@ -27,6 +27,13 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
+
+
+
+     
+
+
+
 [Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master 
 """
         test_md = """
@@ -42,8 +49,19 @@ something, somehing
         """.format(
             unreleased
         )
+        changed = """
+## Unreleased
+### fixed
+so much
+### added
+so little
+### changed
+I don't recognize it anymore
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master 
+"""
+
         _, result = changelog.update(test_md, '', '')
-        self.assertEqual(result.strip(), unreleased.strip())
+        self.assertEqual(result.strip(), changed.strip())
 
 
 def test_find_unreleased_information_no_other_version(self):
