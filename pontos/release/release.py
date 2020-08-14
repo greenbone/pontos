@@ -170,7 +170,7 @@ def prepare(
     change_log_path.write_text(updated)
     print("updated CHANGELOG.md")
 
-    print("Commiting changes")
+    print("Committing changes")
     commit_msg = 'automatic release to {}'.format(release_version)
     commit_files(filename, commit_msg, signing_key, shell_cmd_runner)
 
@@ -247,7 +247,7 @@ def release(
             )
             if resp.status_code != 201:
                 print(
-                    "Wrong reponse status {} while uploading {}".format(
+                    "Wrong response status {} while uploading {}".format(
                         resp.status_code, path.name
                     )
                 )
@@ -286,7 +286,7 @@ def release(
         base_url, headers=headers, auth=auth, json=release_info
     )
     if response.status_code != 201:
-        print("Wrong reponse status code: {}".format(response.status_code))
+        print("Wrong response status code: {}".format(response.status_code))
         print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
     _path(".release.txt.md").unlink()
