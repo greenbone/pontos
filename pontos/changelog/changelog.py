@@ -108,6 +108,11 @@ def update(
             updated_markdown += tc
         if 'unreleased' in current_state:
             unreleased.append((tt, hc, tc))
+
+    if 'unreleased' in current_state and unreleased:
+        changelog = _prepare_changelog(unreleased, new_version, git_tag)
+        updated_markdown += changelog
+
     return (
         updated_markdown if changelog else "",
         changelog,
