@@ -303,7 +303,12 @@ def release(
 def main(
     git_tag_prefix: str = "v",
     shell_cmd_runner=lambda x: subprocess.run(
-        x, shell=True, check=True, stdout=subprocess.PIPE
+        x,
+        shell=True,
+        check=True,
+        errors="utf-8",  # use utf-8 encoding for error output
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     ),
     _path: Path = Path,
     _requests: requests = requests,
@@ -362,8 +367,17 @@ def main(
     values = parse(args)
     if not values:
         return sys.exit(1) if leave else False
-    if not execute(*values):
-        return sys.exit(1) if leave else False
+
+    try:
+        if not execute(*values):
+            return sys.exit(1) if leave else False
+    except subprocess.CalledProcessError as e:
+        print(
+            f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     return sys.exit(0) if leave else True
 
 
