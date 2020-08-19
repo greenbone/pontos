@@ -82,7 +82,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '--signing-key',
         default='0ED1E580',
-        help='The key to sign zip, tarballs of a release',
+        help='The key to sign zip, tarballs of a release. Default %(default)s.',
     )
     parser.add_argument(
         '--git-signing-key',
