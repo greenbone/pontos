@@ -126,6 +126,7 @@ def _prepare_changelog(
     previous = ''
     output = ''
     keyword_text = ''
+    unreleased_link = ''
     for tt, _, tc in tokens:
         previous = current
         if tt == 'unreleased':
@@ -137,7 +138,7 @@ def _prepare_changelog(
             if new_version:
                 tc = __UNRELEASED_MATCHER.sub(new_version, tc)
                 tc = __MASTER_MATCHER.sub(git_tag, tc)
-            output += tc + '\n'
+            unreleased_link += tc + '\n\n'
         elif 'kw_' in tt:
             if keyword_text.strip().count('\n') > 0:
                 output += keyword_text
@@ -147,6 +148,9 @@ def _prepare_changelog(
             keyword_text += tc
         else:
             output += tc
+    if keyword_text.strip().count('\n') > 0:
+        output += keyword_text.strip() + '\n\n'
+    output += unreleased_link
     return output
 
 
