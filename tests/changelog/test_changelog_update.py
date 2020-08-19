@@ -1,9 +1,31 @@
-import unittest
 from datetime import date
+from pathlib import Path
+import unittest
+
 from pontos import changelog
 
 
 class ChangelogUpdateTestCase(unittest.TestCase):
+    def test_markdown_based_on_example(self):
+        own_path = Path(__file__).absolute()
+        test_directory = own_path.__str__()[0 : (len(own_path.name) * -1)]
+        path = test_directory + 'unreleased_changelog_example.md'
+        expeced_changelog = Path(
+            test_directory + 'expected_changelog.md'
+        ).read_text()
+        expeced_release_notes = Path(
+            test_directory + 'expected_release_notes.md'
+        ).read_text()
+        expeced_changelog = expeced_changelog.format(date.today().isoformat())
+        expeced_release_notes = expeced_release_notes.format(
+            date.today().isoformat()
+        )
+
+        test_md = Path(path).read_text()
+        updated, release_notes = changelog.update(test_md, '1.2.3', 'hidden')
+        self.assertEqual(expeced_changelog, updated)
+        self.assertEqual(expeced_release_notes, release_notes)
+
     def test_markdown_empty_updated_and_changelog_on_no_unreleased(self):
         test_md = """
 # Changelog
@@ -77,6 +99,7 @@ something, somehing
 - unreleased
 - not unreleased
 {}
+
 ## 1.0.0
 ### added
 - cool stuff 1
@@ -117,6 +140,7 @@ something, somehing
 - unreleased
 - not unreleased
 {}
+
 ## 1.0.0
 ### added
 - cool stuff 1
