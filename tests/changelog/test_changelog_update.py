@@ -87,6 +87,46 @@ something, somehing
         self.assertEqual(released_md.strip(), updated.strip())
         self.assertEqual(released.strip(), release_notes.strip())
 
+    def test_identify_heading_abort_condition_correctly(self):
+        released = """
+## [1.2.3] - {}
+### fixed
+so much
+### added
+so little
+* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
+### changed
+I don't recognize it anymore
+[1.2.3]: https://github.com/greenbone/pontos/compare/v1.0.0...v1.2.3""".format(
+            date.today().isoformat()
+        )
+
+        unreleased = """
+## [Unreleased]
+### fixed
+so much
+### added
+so little
+* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
+### changed
+I don't recognize it anymore
+### security
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master"""
+        test_md_template = """# Changelog
+something, somehing
+- unreleased
+- not unreleased
+{}
+## 1.0.0
+### added
+- cool stuff 1
+- cool stuff 2"""
+        test_md = test_md_template.format(unreleased)
+        released_md = test_md_template.format(released)
+        updated, release_notes = changelog.update(test_md, '1.2.3')
+        self.assertEqual(released_md.strip(), updated.strip())
+        self.assertEqual(released.strip(), release_notes.strip())
+
     def test_add_skeleton_adds_keep_a_changelog_skeleton_before_version(self):
         keep_a_changelog_skeleton = """
 ## [Unreleased]
