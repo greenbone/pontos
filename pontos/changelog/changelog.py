@@ -96,7 +96,7 @@ def update(
                 unreleased_heading_count = hc
                 current_state = [tt]
         elif (
-            hc > 0
+            tt == 'heading' 
             and unreleased_heading_count > 0
             and hc <= unreleased_heading_count
         ):
