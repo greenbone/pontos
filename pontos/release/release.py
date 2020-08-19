@@ -298,7 +298,11 @@ def release(
         shell_cmd_runner("git push --follow-tags")
 
     print("Creating release")
-    release_info = build_release_dict(git_version, changelog_text)
+    release_info = build_release_dict(
+        git_version,
+        changelog_text,
+        name="{} {}".format(project, release_version),
+    )
     headers = {'Accept': 'application/vnd.github.v3+json'}
     base_url = "https://api.github.com/repos/{}/{}/releases".format(
         space, project
