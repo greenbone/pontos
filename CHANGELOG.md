@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 ### Changed
-- set releasename to projectname version
+- set releasename to projectname version [#25](https://github.com/greenbone/pontos/pull/25)
 ### Deprecated
 ### Removed
 ### Fixed
