@@ -126,7 +126,7 @@ version = "7.1.2"
 [[package]]
 category = "dev"
 description = "Cross-platform colored terminal text."
-marker = "sys_platform == \"win32\" or platform_system == \"Windows\" or python_version >= \"3.6\" and python_version < \"4.0\" and platform_system == \"Windows\""
+marker = "platform_system == \"Windows\" or sys_platform == \"win32\" or python_version >= \"3.6\" and python_version < \"4.0\" and platform_system == \"Windows\""
 name = "colorama"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -258,7 +258,7 @@ description = "a python refactoring library..."
 name = "rope"
 optional = false
 python-versions = "*"
-version = "0.16.0"
+version = "0.17.0"
 
 [package.extras]
 dev = ["pytest"]
@@ -318,8 +318,7 @@ python-versions = "*"
 version = "1.12.1"
 
 [metadata]
-content-hash = "ad9ac77e3ddb25bb28fd17356dcbc9cfc18fa7cc36e4dca0bc5b626d6c223077"
-lock-version = "1.0"
+content-hash = "91155f9d5d753bc8023e18d7648808482d52e5934bb04affb004f5dabe06f506"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -450,9 +449,7 @@ requests = [
     {file = "requests-2.24.0.tar.gz", hash = "sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b"},
 ]
 rope = [
-    {file = "rope-0.16.0-py2-none-any.whl", hash = "sha256:ae1fa2fd56f64f4cc9be46493ce54bed0dd12dee03980c61a4393d89d84029ad"},
-    {file = "rope-0.16.0-py3-none-any.whl", hash = "sha256:52423a7eebb5306a6d63bdc91a7c657db51ac9babfb8341c9a1440831ecf3203"},
-    {file = "rope-0.16.0.tar.gz", hash = "sha256:d2830142c2e046f5fc26a022fe680675b6f48f81c7fc1f03a950706e746e9dfe"},
+    {file = "rope-0.17.0.tar.gz", hash = "sha256:658ad6705f43dcf3d6df379da9486529cf30e02d9ea14c5682aa80eb33b649e1"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
