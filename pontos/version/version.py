@@ -175,7 +175,7 @@ __version__ = "{}"\n"""
         try:
             version_module = importlib.import_module(module_name)
         except ModuleNotFoundError:
-            raise VersionError(
+            raise VersionError(  # pylint: disable=raise-missing-from
                 'Could not load version from {}. Import failed.'.format(
                     module_name
                 )
