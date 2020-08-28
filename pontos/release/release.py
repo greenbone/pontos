@@ -23,10 +23,12 @@ import subprocess
 import os
 import json
 import shutil
+
 from pathlib import Path
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Union, Tuple
 
 import requests
+
 from pontos import version
 from pontos import changelog
 
@@ -132,13 +134,15 @@ def parse(args=None):
     )
 
 
-def update_version(to: str, _version: version) -> (bool, str):
+def update_version(to: str, _version: version) -> Tuple[bool, str]:
     executed, filename = _version.main(False, args=["--quiet", "update", to])
+
     if not executed:
         if filename == "":
             print("No project definition found.")
         else:
             print("Unable to update version {} in {}", to, filename)
+
     return executed, filename
 
 
@@ -176,22 +180,29 @@ def prepare(
     git_version = "{}{}".format(git_tag_prefix, release_version)
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError('git tag {} is already taken.'.format(git_version))
+
     executed, filename = update_version(release_version, _version)
     if not executed:
         return False
+
     print("updated version {} to {}".format(filename, release_version))
+
     change_log_path = _path.cwd() / 'CHANGELOG.md'
     updated, changelog_text = _changelog.update(
         change_log_path.read_text(),
         release_version,
         git_tag_prefix=git_tag_prefix,
     )
+
     if not updated:
         raise ValueError("No unreleased text found in CHANGELOG.md")
+
     change_log_path.write_text(updated)
+
     print("updated CHANGELOG.md")
 
     print("Committing changes")
+
     commit_msg = 'automatic release to {}'.format(release_version)
     commit_files(filename, commit_msg, signing_key, shell_cmd_runner)
 
@@ -208,10 +219,12 @@ def prepare(
 
     release_text = _path(".release.txt.md")
     release_text.write_text(changelog_text)
+
     # set to new version add skeleton
     executed, filename = update_version(nextversion, _version)
     if not executed:
         return False
+
     updated = _changelog.add_skeleton(
         change_log_path.read_text(),
         release_version,
@@ -220,16 +233,19 @@ def prepare(
         git_space=space,
     )
     change_log_path.write_text(updated)
+
     commit_msg = 'set version {}, add empty changelog after {}'.format(
         nextversion, release_version
     )
     commit_files(filename, commit_msg, signing_key, shell_cmd_runner)
+
     print(
         "Please verify git tag {}, commit and release text in {}".format(
             git_version, release_text
         )
     )
     print("Afterwards please execute release")
+
     return True
 
 
@@ -252,20 +268,24 @@ def release(
 
     def upload_assets(pathnames: List[str], github_json: str) -> bool:
         print("Uploading assets: {}".format(pathnames))
+
         asset_url = github_json['upload_url'].replace('{?name,label}', '')
         paths = [_path('{}.asc'.format(p)) for p in pathnames]
-        upload_headers = {
+
+        headers = {
             'Accept': 'application/vnd.github.v3+json',
             'content-type': 'application/octet-stream',
         }
+
         for path in paths:
             to_upload = path.read_bytes()
             resp = _requests.post(
                 "{}?name={}".format(asset_url, path.name),
-                headers=upload_headers,
+                headers=headers,
                 auth=auth,
                 data=to_upload,
             )
+
             if resp.status_code != 201:
                 print(
                     "Wrong response status {} while uploading {}".format(
@@ -276,15 +296,19 @@ def release(
                 return False
             else:
                 print("uploaded: {}".format(path.name))
+
         return True
 
     print("in release")
 
     def download(url, filename):
         file_path = _path("/tmp/{}".format(filename))
-        with _requests.get(url, stream=True) as resp:
-            with file_path.open(mode='wb') as download_file:
-                shutil.copyfileobj(resp.raw, download_file)
+
+        with _requests.get(url, stream=True) as resp, file_path.open(
+            mode='wb'
+        ) as download_file:
+            shutil.copyfileobj(resp.raw, download_file)
+
         return file_path
 
     git_version = "{}{}".format(git_tag_prefix, release_version)
@@ -298,12 +322,14 @@ def release(
         shell_cmd_runner("git push --follow-tags")
 
     print("Creating release")
+
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+
     release_info = build_release_dict(
         git_version,
         changelog_text,
         name="{} {}".format(project, release_version),
     )
-    headers = {'Accept': 'application/vnd.github.v3+json'}
     base_url = "https://api.github.com/repos/{}/{}/releases".format(
         space, project
     )
@@ -314,14 +340,19 @@ def release(
         print("Wrong response status code: {}".format(response.status_code))
         print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
+
     _path(".release.txt.md").unlink()
+
     github_json = json.loads(response.text)
     zip_path = download(github_json['zipball_url'], git_version + ".zip")
     tar_path = download(github_json['tarball_url'], git_version + ".tar.gz")
+
     print("Signing {}".format([zip_path, tar_path]))
+
     gpg_cmd = "gpg --default-key {} --detach-sign --armor {}"
     shell_cmd_runner(gpg_cmd.format(signing_key, zip_path))
     shell_cmd_runner(gpg_cmd.format(signing_key, tar_path))
+
     return upload_assets([zip_path, tar_path], github_json)
 
 

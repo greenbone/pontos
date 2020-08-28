@@ -17,8 +17,10 @@
 
 
 import re
+
 from typing import Tuple, Generator, Union
 from pathlib import Path
+
 from .version import (
     is_version_pep440_compliant,
     VersionError,
@@ -47,7 +49,9 @@ class CMakeVersionCommand:
         if not getattr(commandline_arguments, 'command', None):
             self.parser.print_usage()
             return 0
+
         self.__quiet = commandline_arguments.quiet
+
         try:
             if commandline_arguments.command == 'update':
                 self.update_version(commandline_arguments.version,)
@@ -57,6 +61,7 @@ class CMakeVersionCommand:
                 self.verify_version(commandline_arguments.version)
         except VersionError as e:
             return str(e)
+
         return 0
 
     def __print(self, *args):
@@ -83,6 +88,7 @@ class CMakeVersionCommand:
             raise VersionError(
                 "Version {} is not PEP 440 compliant.".format(version)
             )
+
         self.__print('OK')
 
 
@@ -116,15 +122,19 @@ class CMakeVersionParser:
             raise VersionError(
                 "version {} is not pep 440 compliant.".format(new_version)
             )
+
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)
+
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
+
         return '\n'.join(self._cmake_content_lines)
 
     def _find_version_in_cmake(self, content: str) -> Tuple[int, str]:
         in_project = False
         in_version = False
+
         for lineno, token_type, value in self._tokenize(content):
             if token_type == 'word' and value == 'project':
                 in_project = True
@@ -136,6 +146,7 @@ class CMakeVersionParser:
                 return lineno, value
             elif in_project and token_type == 'close_bracket':
                 raise ValueError('unable to find cmake version in project.')
+
         raise ValueError('unable to find cmake project.')
 
     def _tokenize(
@@ -146,7 +157,9 @@ class CMakeVersionParser:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != '':
             print('WARNING: unrecognized cmake tokens: {}'.format(remainder))
+
         line_num = 0
+
         for tok_type, tok_contents in toks:
             line_num += tok_contents.count('\n')
             yield line_num, tok_type, tok_contents.strip()

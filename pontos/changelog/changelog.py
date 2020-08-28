@@ -87,8 +87,10 @@ def update(
     current_state = []
     previous_state = []
     unreleased = []
+
     for tt, hc, tc in tokens:
         previous_state = current_state.copy()
+
         if tt == 'unreleased':
             if (
                 containing_version and containing_version in tc
@@ -101,11 +103,14 @@ def update(
             and hc <= unreleased_heading_count
         ):
             current_state = []
+
         if 'unreleased' not in current_state and 'unreleased' in previous_state:
             changelog = _prepare_changelog(unreleased, new_version, git_tag)
             updated_markdown += changelog
+
         if 'unreleased' not in current_state:
             updated_markdown += tc
+
         if 'unreleased' in current_state:
             unreleased.append((tt, hc, tc))
 
@@ -127,8 +132,10 @@ def _prepare_changelog(
     output = ''
     keyword_text = ''
     unreleased_link = ''
+
     for tt, _, tc in tokens:
         previous = current
+
         if tt == 'unreleased':
             if new_version:
                 tc = __UNRELEASED_MATCHER.sub(new_version, tc)
@@ -148,9 +155,12 @@ def _prepare_changelog(
             keyword_text += tc
         else:
             output += tc
+
     if keyword_text.strip().count('\n') > 0:
         output += keyword_text.strip() + '\n\n'
+
     output += unreleased_link
+
     return output
 
 
@@ -196,4 +206,5 @@ def _tokenize(
         raise ChangelogError(
             "unrecognized tokens in markdown: {}".format(remainder)
         )
+
     return toks
