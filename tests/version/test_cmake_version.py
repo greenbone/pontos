@@ -110,7 +110,9 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
     def test_raise_exception_no_project(self):
         with self.assertRaises(ValueError) as context:
-            CMakeVersionParser("non_project(VERSION 2.3.5)",)
+            CMakeVersionParser(
+                "non_project(VERSION 2.3.5)",
+            )
 
         self.assertEqual(
             str(context.exception), 'unable to find cmake project.'

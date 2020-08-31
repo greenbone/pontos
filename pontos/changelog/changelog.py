@@ -185,7 +185,10 @@ def __build_scanner():
             (r'#{1,} [Ff]ixed', token_handler('kw_fixed')),
             (r'#{1,} [Ss]ecurity', token_handler('kw_security')),
             (r'#{1,}.*(?=[Uu]nreleased).*', token_handler('unreleased')),
-            (r'\[[Uu]nreleased\].*', token_handler('unreleased_link'),),
+            (
+                r'\[[Uu]nreleased\].*',
+                token_handler('unreleased_link'),
+            ),
             (r'#{1,} .*', token_handler('heading')),
             (r'\n', token_handler('newline')),
             (r'..*', token_handler('any')),
@@ -198,9 +201,7 @@ __CHANGELOG_SCANNER = __build_scanner()
 
 def _tokenize(
     markdown: str,
-) -> List[
-    Tuple[int, str, int, str],
-]:
+) -> List[Tuple[int, str, int, str],]:
     toks, remainder = __CHANGELOG_SCANNER.scan(markdown)
     if remainder != '':
         raise ChangelogError(

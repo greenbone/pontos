@@ -30,7 +30,8 @@ class VerifyVersionTestCase(unittest.TestCase):
         cmd = VersionCommand(version_file_path=fake_version_py)
 
         with self.assertRaisesRegex(
-            VersionError, 'The version .* in foo.py is not PEP 440 compliant.',
+            VersionError,
+            'The version .* in foo.py is not PEP 440 compliant.',
         ):
             cmd.verify_version('1.2.3')
 
@@ -42,7 +43,8 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
         cmd = VersionCommand(
-            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py,
+            pyproject_toml_path=fake_path,
         )
 
         with self.assertRaisesRegex(
@@ -62,7 +64,8 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
         cmd = VersionCommand(
-            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py,
+            pyproject_toml_path=fake_path,
         )
         cmd.verify_version('current')
 
@@ -77,7 +80,8 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
 
         cmd = VersionCommand(
-            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py,
+            pyproject_toml_path=fake_path,
         )
 
         with self.assertRaisesRegex(
@@ -97,7 +101,8 @@ class VerifyVersionTestCase(unittest.TestCase):
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
         cmd = VersionCommand(
-            version_file_path=fake_version_py, pyproject_toml_path=fake_path,
+            version_file_path=fake_version_py,
+            pyproject_toml_path=fake_path,
         )
         cmd.verify_version('1.2.3')
 

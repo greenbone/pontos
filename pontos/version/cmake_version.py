@@ -54,7 +54,9 @@ class CMakeVersionCommand:
 
         try:
             if commandline_arguments.command == 'update':
-                self.update_version(commandline_arguments.version,)
+                self.update_version(
+                    commandline_arguments.version,
+                )
             elif commandline_arguments.command == 'show':
                 self.print_current_version()
             elif commandline_arguments.command == 'verify':
@@ -152,7 +154,9 @@ class CMakeVersionParser:
     def _tokenize(
         self, content: str
     ) -> Generator[
-        Tuple[int, str, str], Tuple[int, str, str], Tuple[int, str, str],
+        Tuple[int, str, str],
+        Tuple[int, str, str],
+        Tuple[int, str, str],
     ]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != '':
