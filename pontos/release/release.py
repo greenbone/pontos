@@ -63,7 +63,8 @@ def build_release_dict(
 
 def initialize_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description='Release handling utility.', prog='pontos-release',
+        description='Release handling utility.',
+        prog='pontos-release',
     )
     parser.add_argument(
         '--release-version',
@@ -76,10 +77,14 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         required=True,
     )
     parser.add_argument(
-        '--project', help='The github project', required=True,
+        '--project',
+        help='The github project',
+        required=True,
     )
     parser.add_argument(
-        '--space', default='greenbone', help='user/team name in github',
+        '--space',
+        default='greenbone',
+        help='user/team name in github',
     )
     parser.add_argument(
         '--signing-key',

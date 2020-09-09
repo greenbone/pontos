@@ -199,7 +199,9 @@ class CMakeVersionParser:
     def _tokenize(
         self, content: str
     ) -> Generator[
-        Tuple[int, str, str], Tuple[int, str, str], Tuple[int, str, str],
+        Tuple[int, str, str],
+        Tuple[int, str, str],
+        Tuple[int, str, str],
     ]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != '':
