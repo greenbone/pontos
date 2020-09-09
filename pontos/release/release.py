@@ -63,8 +63,7 @@ def build_release_dict(
 
 def initialize_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description='Release handling utility.',
-        prog='pontos-release',
+        description='Release handling utility.', prog='pontos-release',
     )
     parser.add_argument(
         '--release-version',
@@ -77,14 +76,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         required=True,
     )
     parser.add_argument(
-        '--project',
-        help='The github project',
-        required=True,
+        '--project', help='The github project', required=True,
     )
     parser.add_argument(
-        '--space',
-        default='greenbone',
-        help='user/team name in github',
+        '--space', default='greenbone', help='user/team name in github',
     )
     parser.add_argument(
         '--signing-key',
@@ -139,8 +134,13 @@ def parse(args=None):
     )
 
 
-def update_version(to: str, _version: version) -> Tuple[bool, str]:
-    executed, filename = _version.main(False, args=["--quiet", "update", to])
+def update_version(
+    to: str, _version: version, *, develop: bool
+) -> Tuple[bool, str]:
+    develop_arg = '--develop' if develop else ''
+    executed, filename = _version.main(
+        False, args=["--quiet", develop_arg, "update", to]
+    )
 
     if not executed:
         if filename == "":
@@ -186,7 +186,9 @@ def prepare(
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError('git tag {} is already taken.'.format(git_version))
 
-    executed, filename = update_version(release_version, _version)
+    executed, filename = update_version(
+        release_version, _version, develop=False
+    )
     if not executed:
         return False
 
@@ -226,7 +228,7 @@ def prepare(
     release_text.write_text(changelog_text)
 
     # set to new version add skeleton
-    executed, filename = update_version(nextversion, _version)
+    executed, filename = update_version(nextversion, _version, develop=True)
     if not executed:
         return False
 
