@@ -3,6 +3,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from pontos.version import CMakeVersionParser, VersionError, CMakeVersionCommand
 
+# pylint: disable=W0212
+
 
 class CMakeVersionCommandTestCase(unittest.TestCase):
     def test_raise_exception_file_not_exists(self):
@@ -61,12 +63,16 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
-        fake_path.read_text.return_value = "project(VERSION 21)"
+        fake_path.read_text.return_value = (
+            "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)"
+        )
         CMakeVersionCommand(cmake_lists_path=fake_path).run(
-            args=['update', '22']
+            args=['update', '22', '--develop']
         )
         fake_path.read_text.assert_called_with()
-        fake_path.write_text.assert_called_with('project(VERSION 22)')
+        fake_path.write_text.assert_called_with(
+            'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)'
+        )
 
 
 class CMakeVersionParserTestCase(unittest.TestCase):
@@ -95,6 +101,45 @@ class CMakeVersionParserTestCase(unittest.TestCase):
         under_test = CMakeVersionParser("project\n(\nVERSION\n\t    2.3.4)")
         self.assertEqual(under_test.get_current_version(), '2.3.4')
 
+    def test_find_project_dev_version(self):
+        test_cmake_lists = """
+        project(
+            DESCRIPTION something
+            VERSION 41.41.41
+            LANGUAGES c
+        )
+        set(
+            PROJECT_DEV_VERSION 1
+        )
+        """
+        under_test = CMakeVersionParser(test_cmake_lists)
+        self.assertEqual(under_test._project_dev_version_line_numeber, 7)
+        self.assertEqual(under_test._project_dev_version, '1')
+
+    def test_update_project_dev_version(self):
+        test_cmake_lists = """
+        project(
+            DESCRIPTION something
+            VERSION 41.41.41
+            LANGUAGES c
+        )
+        set(
+            PROJECT_DEV_VERSION 1
+        )
+        """
+        under_test = CMakeVersionParser(test_cmake_lists)
+
+        self.assertEqual(under_test._project_dev_version_line_numeber, 7)
+        self.assertEqual(under_test._project_dev_version, '1')
+        result = under_test.update_version('41.41.41', develop=False)
+        self.assertEqual(under_test._project_dev_version, '0')
+        self.assertEqual(
+            result,
+            test_cmake_lists.replace(
+                'PROJECT_DEV_VERSION 1', 'PROJECT_DEV_VERSION 0'
+            ),
+        )
+
     def test_get_current_version_multiline_project_combined_token(self):
         under_test = CMakeVersionParser(
             "project\n(\nDESCRIPTION something VERSION 2.3.4 LANGUAGES c\n)"
@@ -110,10 +155,8 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
     def test_raise_exception_no_project(self):
         with self.assertRaises(ValueError) as context:
-            CMakeVersionParser(
-                "non_project(VERSION 2.3.5)",
-            )
+            CMakeVersionParser("non_project(VERSION 2.3.5)",)
 
         self.assertEqual(
-            str(context.exception), 'unable to find cmake project.'
+            str(context.exception), 'unable to find cmake version.'
         )

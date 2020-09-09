@@ -111,8 +111,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     - update
     """
     parser = argparse.ArgumentParser(
-        description='Version handling utilities.',
-        prog='version',
+        description='Version handling utilities.', prog='version',
     )
     parser.add_argument(
         '--quiet', help='don\'t print messages', action="store_true"
@@ -134,6 +133,11 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     update_parser.add_argument(
         '--force',
         help="don't check if version is already set",
+        action="store_true",
+    )
+    update_parser.add_argument(
+        '--develop',
+        help="indicates if it is a develop version",
         action="store_true",
     )
     return parser
@@ -192,10 +196,7 @@ __version__ = "{}"\n"""
 
         self.version_file_path.write_text(self.TEMPLATE.format(version))
 
-    def update_pyproject_version(
-        self,
-        new_version: str,
-    ) -> None:
+    def update_pyproject_version(self, new_version: str,) -> None:
         """
         Update the version in the pyproject.toml file
         """
@@ -291,10 +292,7 @@ __version__ = "{}"\n"""
 
         try:
             if args.command == 'update':
-                self.update_version(
-                    args.version,
-                    force=args.force,
-                )
+                self.update_version(args.version, force=args.force)
             elif args.command == 'show':
                 self.print_current_version()
             elif args.command == 'verify':
