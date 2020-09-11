@@ -136,6 +136,11 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         help="don't check if version is already set",
         action="store_true",
     )
+    update_parser.add_argument(
+        '--develop',
+        help="indicates if it is a develop version",
+        action="store_true",
+    )
     return parser
 
 
@@ -291,10 +296,7 @@ __version__ = "{}"\n"""
 
         try:
             if args.command == 'update':
-                self.update_version(
-                    args.version,
-                    force=args.force,
-                )
+                self.update_version(args.version, force=args.force)
             elif args.command == 'show':
                 self.print_current_version()
             elif args.command == 'verify':

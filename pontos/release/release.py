@@ -139,8 +139,13 @@ def parse(args=None):
     )
 
 
-def update_version(to: str, _version: version) -> Tuple[bool, str]:
-    executed, filename = _version.main(False, args=["--quiet", "update", to])
+def update_version(
+    to: str, _version: version, *, develop: bool
+) -> Tuple[bool, str]:
+    develop_arg = '--develop' if develop else ''
+    executed, filename = _version.main(
+        False, args=["--quiet", develop_arg, "update", to]
+    )
 
     if not executed:
         if filename == "":
@@ -186,7 +191,9 @@ def prepare(
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError('git tag {} is already taken.'.format(git_version))
 
-    executed, filename = update_version(release_version, _version)
+    executed, filename = update_version(
+        release_version, _version, develop=False
+    )
     if not executed:
         return False
 
@@ -226,7 +233,7 @@ def prepare(
     release_text.write_text(changelog_text)
 
     # set to new version add skeleton
-    executed, filename = update_version(nextversion, _version)
+    executed, filename = update_version(nextversion, _version, develop=True)
     if not executed:
         return False
 
