@@ -110,7 +110,7 @@ class CMakeVersionParser:
         [
             (r'#.*', lambda _, token: ("comment", token)),
             (r'"[^"]*"', lambda _, token: ("string", token)),
-            (r'"[0-9]+"', lambda _, token: ("int", token)),
+            (r'"[0-9]+"', lambda _, token: ("number", token)),
             (r"\(", lambda _, token: ("open_bracket", token)),
             (r"\)", lambda _, token: ("close_bracket", token)),
             (r'[^ \t\r\n()#"]+', lambda _, token: ("word", token)),
@@ -134,11 +134,11 @@ class CMakeVersionParser:
 
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
-        if self._project_dev_version_line_numeber:
+        if self._project_dev_version_line_number:
             self._cmake_content_lines[
-                self._project_dev_version_line_numeber
+                self._project_dev_version_line_number
             ] = self._cmake_content_lines[
-                self._project_dev_version_line_numeber
+                self._project_dev_version_line_number
             ].replace(
                 str(int(not develop)), str(int(develop))
             )
@@ -180,7 +180,7 @@ class CMakeVersionParser:
             ):
                 in_project_dev_version = True
             elif in_project_dev_version and (
-                token_type == 'word' or token_type == 'int'
+                token_type == 'word' or token_type == 'number'
             ):
                 project_dev_version_line_no = lineno
                 project_dev_version = value

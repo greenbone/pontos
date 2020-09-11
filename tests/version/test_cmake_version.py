@@ -113,7 +113,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
         )
         """
         under_test = CMakeVersionParser(test_cmake_lists)
-        self.assertEqual(under_test._project_dev_version_line_numeber, 7)
+        self.assertEqual(under_test._project_dev_version_line_number, 7)
         self.assertEqual(under_test._project_dev_version, '1')
 
     def test_update_project_dev_version(self):
@@ -129,7 +129,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
         """
         under_test = CMakeVersionParser(test_cmake_lists)
 
-        self.assertEqual(under_test._project_dev_version_line_numeber, 7)
+        self.assertEqual(under_test._project_dev_version_line_number, 7)
         self.assertEqual(under_test._project_dev_version, '1')
         result = under_test.update_version('41.41.41', develop=False)
         self.assertEqual(under_test._project_dev_version, '0')
