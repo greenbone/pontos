@@ -103,7 +103,7 @@ class CMakeVersionParser:
         self._cmake_content_lines = cmake_content_lines.split('\n')
         self._version_line_number = line_no
         self._current_version = current_version
-        self._project_dev_version_line_numeber = pd_line_no
+        self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
     __cmake_scanner = re.Scanner(
