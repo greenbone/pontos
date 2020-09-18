@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add handling of PROJECT_DEV_VERSION in CMakeLists.txt if set [#32](https://github.com/greenbone/pontos/pull/32)
 ### Changed
 - set releasename to projectname version [#25](https://github.com/greenbone/pontos/pull/25)
+- separate signing tar and zipballs from release into a own command `sign` [#](https://github.com/greenbone/pontos/pull/xx)
 ### Deprecated
 ### Removed
 ### Fixed
