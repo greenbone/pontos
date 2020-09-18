@@ -140,6 +140,28 @@ class CMakeVersionParserTestCase(unittest.TestCase):
             ),
         )
 
+    def test_update_project_dev_version_when_succeeded_by_another_set(self):
+        test_cmake_lists = """
+        cmake_minimum_required(VERSION 3.1)
+
+        project(hello_world VERSION 41.41.41)
+        set(PROJECT_DEV_VERSION 1)
+
+        add_executable(app main.c)
+        """
+        under_test = CMakeVersionParser(test_cmake_lists)
+
+        self.assertEqual(under_test._project_dev_version_line_number, 4)
+        self.assertEqual(under_test._project_dev_version, '1')
+        result = under_test.update_version('41.41.41', develop=False)
+        self.assertEqual(under_test._project_dev_version, '0')
+        self.assertEqual(
+            result,
+            test_cmake_lists.replace(
+                'PROJECT_DEV_VERSION 1', 'PROJECT_DEV_VERSION 0'
+            ),
+        )
+
     def test_get_current_version_multiline_project_combined_token(self):
         under_test = CMakeVersionParser(
             "project\n(\nDESCRIPTION something VERSION 2.3.4 LANGUAGES c\n)"

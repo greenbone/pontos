@@ -169,16 +169,18 @@ def parse(args=None):
 def update_version(
     to: str, _version: version, *, develop: bool
 ) -> Tuple[bool, str]:
-    develop_arg = '--develop' if develop else ''
-    executed, filename = _version.main(
-        False, args=["--quiet", develop_arg, "update", to]
-    )
+    args = ['--quiet']
+    args.append('update')
+    args.append(to)
+    if develop:
+        args.append('--develop')
+    executed, filename = _version.main(False, args=args)
 
     if not executed:
         if filename == "":
             print("No project definition found.")
         else:
-            print("Unable to update version {} in {}", to, filename)
+            print("Unable to update version {} in {}".format(to, filename))
 
     return executed, filename
 
