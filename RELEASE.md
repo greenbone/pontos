@@ -42,14 +42,32 @@ first time.
   [testpypi]
   repository = https://test.pypi.org/legacy/
   username = <username>
+  ```
 
-## Prepare testing the Release
+## Create a GitHub Token for uploading the release files
 
-* Fetch upstream changes and create release branch
+This step is only necessary if the token has to be created for the first time or
+if it has been lost.
+
+* Open Github Settings at https://github.com/settings/tokens
+* Create a new token
+* Copy token and store it carefully
+* Export token and GitHub user name in your current shell
 
   ```sh
+  export GITHUB_TOKEN=<token>
+  export GITHUB_NAME=<name>
+  ```
+
+
+## Prepare testing the to be released version
+
+* Fetch upstream changes
+
+  ```sh
+  git remote add upstream git@github.com:greenbone/pontos.git
   git fetch upstream
-  git checkout -b create-new-release upstream/master
+  git rebase update/master
   ```
 
 * Get the current version number
@@ -58,10 +76,10 @@ first time.
   poetry run python -m pontos.version show
   ```
 
-* Update the version number to some alpha version e.g.
+* Update the version number to some dev version e.g.
 
   ```sh
-  poetry run python -m pontos.version update 2.2.3a1
+  poetry run python -m pontos.version update 20.8.2dev1
   ```
 
 ## Uploading to the PyPI Test Instance
@@ -79,22 +97,28 @@ first time.
   twine upload -r testpypi dist/*
   ```
 
-* Check if the package is available at <https://test.pypi.org/project/pontos>
+* Check if the package is available at <https://test.pypi.org/project/pontos>.
 
-* Create a test directory
+## Testing the Uploaded Package
+
+* Create a test directory:
 
   ```sh
   mkdir pontos-install-test
   cd pontos-install-test
   python3 -m venv test-env
-  source ./test-env/bin/activate
+  source test-env/bin/activate
   pip install -U pip  # ensure the environment uses a recent version of pip
   pip install --pre -I --extra-index-url https://test.pypi.org/simple/ pontos
-  python -c "from pontos.version import __version__; print(__version__)"
-  python -m pontos.version show
   ```
 
-* Remove test environment
+* Check install version with a Python script:
+
+  ```sh
+  python3 -c "from gvm import __version__; print(__version__)"
+  ```
+
+* Remove test environment:
 
   ```sh
   deactivate
@@ -104,97 +128,56 @@ first time.
 
 ## Prepare the Release
 
-* Determine new release version number
-
-  If the output is something like  `2.2.3.dev1` or `2.2.3a1`, the new version
-  should be `2.2.3`.
-
-* Update to new version number (`<new-version>` must be replaced by the version
-  from the last step)
+* Run pontos-release prepare
 
   ```sh
-  cd path/to/git/clone/of/pontos
-  poetry run python -m pontos.version update <new-version>
+  poetry run pontos-release --release-version <version> --next-release-version <dev-version> --project pontos --space greenbone --git-signing-key <your-public-gpg-key> --git-remote-name upstream prepare
   ```
 
-* Update the `CHANGELOG.md` file:
-  * Change `[unreleased]` to new release version.
-  * Add a release date.
-  * Update reference to Github diff.
-  * Remove empty sub sections like *Deprecated*.
+* Check git log and tag
 
-* Create a git commit:
+  ```
+  git log -p
 
-  ```sh
-  git add .
-  git commit -m "Prepare release <version>"
+  # is the changelog correct?
+  # does the version look right?
+  # does the tag point to the correct commit?
   ```
 
-## Performing the Release on GitHub
+* If something did go wrong delete the tag, revert the commits and remove the
+  temporary file for the release changelog
 
-* Create a pull request (PR) for the earlier commit:
-
-  ```sh
-  git push origin
   ```
-  Open GitHub and create a PR against <https://github.com/greenbone/pontos>
-
-* Update after PR is merged
-
-  ```sh
-  git fetch upstream
-  git rebase upstream/master master
+  git tag -d v<version>
+  git reset <last-commit-id-before-running-pontos-release> --hard
+  rm .release.txt.md
   ```
 
-* Create a git tag
+## Create the Release
+
+* Run pontos-release release
 
   ```sh
-  git tag v<version>
-  ```
-
-  or even signed with your gpg key
-
-  ```sh
-  git tag -s v<version>
-  ```
-
-* Push tag to GitHub
-
-  ```sh
-  git push --tags upstream
+  poetry run pontos-release --release-version <version> --next-release-version <dev-version> --project pontos --space greenbone --git-signing-key <your-public-gpg-key> --git-remote-name upstream release
   ```
 
 ## Uploading to the 'real' PyPI
 
 * Uploading to PyPI is done automatically by pushing a git tag via CircleCI
 
-* Check if new version is available at <https://pypi.org/project/pontos>
+* Check if new version is available at <https://pypi.org/project/pontos>.
 
-## Bumping `master` Branch to the Next Version
+## Check the Release
 
-* Update to a Development Version
+* Check the Github release:
 
-  The next version should contain an incremented minor version and a dev suffix
-  e.g. 2.3.0.dev1
+  See https://github.com/greenbone/pontos/releases
 
-  ```sh
-  poetry run python -m pontos.version update <next-dev-version>
-  ```
+## Sign tar and zipball
 
-* Create a commit
+* May run pontos-release sign
+
 
   ```sh
-  git commit -m "Update version after <version> release"
+      poetry run pontos-release --release-version <version>  --next-release-version <dev-version> --project pontos --space greenbone sign
   ```
-
-* Push changes to GitHub
-
-  ```sh
-  git push upstream
-  ```
-
-## Announcing the Release
-
-* Create a Github release:
-
-   See https://help.github.com/articles/creating-releases/

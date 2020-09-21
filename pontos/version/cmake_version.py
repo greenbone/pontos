@@ -17,6 +17,7 @@
 
 
 import re
+import traceback
 
 from typing import Tuple, Generator, Union
 from pathlib import Path
@@ -63,6 +64,7 @@ class CMakeVersionCommand:
             elif commandline_arguments.command == 'verify':
                 self.verify_version(commandline_arguments.version)
         except VersionError as e:
+            traceback.print_exc()
             return str(e)
 
         return 0
@@ -72,6 +74,7 @@ class CMakeVersionCommand:
             print(*args)
 
     def update_version(self, version: str, *, develop: bool = False):
+        self.__print("in update: {}, {}".format(version, develop))
         content = self.__cmake_filepath.read_text()
         cmvp = CMakeVersionParser(content)
         previous_version = cmvp.get_current_version()
@@ -131,7 +134,6 @@ class CMakeVersionParser:
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)
-
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
         if self._project_dev_version_line_number:
@@ -184,6 +186,7 @@ class CMakeVersionParser:
             ):
                 project_dev_version_line_no = lineno
                 project_dev_version = value
+                in_project_dev_version = False
             elif in_project and token_type == 'close_bracket':
                 raise ValueError('unable to find cmake version in project.')
 
