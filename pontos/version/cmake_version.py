@@ -17,6 +17,7 @@
 
 
 import re
+import traceback
 
 from typing import Tuple, Generator, Union
 from pathlib import Path
@@ -63,6 +64,7 @@ class CMakeVersionCommand:
             elif commandline_arguments.command == 'verify':
                 self.verify_version(commandline_arguments.version)
         except VersionError as e:
+            traceback.print_exc()
             return str(e)
 
         return 0
@@ -72,6 +74,7 @@ class CMakeVersionCommand:
             print(*args)
 
     def update_version(self, version: str, *, develop: bool = False):
+        self.__print("in update: {}, {}".format(version, develop))
         content = self.__cmake_filepath.read_text()
         cmvp = CMakeVersionParser(content)
         previous_version = cmvp.get_current_version()
@@ -103,14 +106,14 @@ class CMakeVersionParser:
         self._cmake_content_lines = cmake_content_lines.split('\n')
         self._version_line_number = line_no
         self._current_version = current_version
-        self._project_dev_version_line_numeber = pd_line_no
+        self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
     __cmake_scanner = re.Scanner(
         [
             (r'#.*', lambda _, token: ("comment", token)),
             (r'"[^"]*"', lambda _, token: ("string", token)),
-            (r'"[0-9]+"', lambda _, token: ("int", token)),
+            (r'"[0-9]+"', lambda _, token: ("number", token)),
             (r"\(", lambda _, token: ("open_bracket", token)),
             (r"\)", lambda _, token: ("close_bracket", token)),
             (r'[^ \t\r\n()#"]+', lambda _, token: ("word", token)),
@@ -131,14 +134,13 @@ class CMakeVersionParser:
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)
-
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
-        if self._project_dev_version_line_numeber:
+        if self._project_dev_version_line_number:
             self._cmake_content_lines[
-                self._project_dev_version_line_numeber
+                self._project_dev_version_line_number
             ] = self._cmake_content_lines[
-                self._project_dev_version_line_numeber
+                self._project_dev_version_line_number
             ].replace(
                 str(int(not develop)), str(int(develop))
             )
@@ -180,10 +182,11 @@ class CMakeVersionParser:
             ):
                 in_project_dev_version = True
             elif in_project_dev_version and (
-                token_type == 'word' or token_type == 'int'
+                token_type == 'word' or token_type == 'number'
             ):
                 project_dev_version_line_no = lineno
                 project_dev_version = value
+                in_project_dev_version = False
             elif in_project and token_type == 'close_bracket':
                 raise ValueError('unable to find cmake version in project.')
 
