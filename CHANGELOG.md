@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 - project_dev handling was not working when there was a command after the set[#33](https://github.com/greenbone/pontos/pull/33)
+- use git-signing-key instead of signing-key on commit [42](https://github.com/greenbone/pontos/pull/42)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v0.3.0...HEAD
 
