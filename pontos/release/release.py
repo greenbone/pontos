@@ -243,7 +243,7 @@ def prepare(
     commit_files(
         filename,
         commit_msg,
-        release_info.signing_key,
+        release_info.git_signing_key,
         release_info.shell_cmd_runner,
     )
 
@@ -283,7 +283,7 @@ def prepare(
     commit_files(
         filename,
         commit_msg,
-        release_info.signing_key,
+        release_info.git_signing_key,
         release_info.shell_cmd_runner,
     )
 
