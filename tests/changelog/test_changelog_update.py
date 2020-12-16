@@ -134,7 +134,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master"""
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...HEAD"""
         test_md_template = """# Changelog
 something, somehing
 - unreleased
