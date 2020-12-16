@@ -28,7 +28,7 @@ class ChangelogError(Exception):
 
 
 __UNRELEASED_MATCHER = re.compile('unreleased', re.IGNORECASE)
-__MASTER_MATCHER = re.compile('master')
+__MASTER_MATCHER = re.compile('master|HEAD')
 
 __UNRELEASED_SKELETON = """## [Unreleased]
 ### Added
