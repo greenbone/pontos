@@ -70,6 +70,8 @@ version-module-file = "pontos/version/__version__.py"
 [tool.poetry.scripts]
 pontos-version = 'pontos.version:main'
 pontos-release = 'pontos.release.release:main'
+pontos-copyright = 'pontos.copyright:main'
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
