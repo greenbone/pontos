@@ -26,6 +26,9 @@ packages = [
   { include = "poetry.lock", format = "sdist" },
   { include = "poetry.toml", format = "sdist" },
 ]
+include = [
+  "pontos/copyright/templates/"
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -70,6 +73,8 @@ version-module-file = "pontos/version/__version__.py"
 [tool.poetry.scripts]
 pontos-version = 'pontos.version:main'
 pontos-release = 'pontos.release.release:main'
+pontos-copyright = 'pontos.copyright:main'
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
