@@ -30,8 +30,25 @@ from glob import glob
 from pathlib import Path
 from subprocess import SubprocessError, check_output
 
-SUPPORTED_FILE_TYPES = ['.bash', '.c', '.cmake', '.js', '.nasl', '.po', '.py', '.sh', '.txt', '.xml']
-SUPPORTED_LICENCES = ['AGPL-3.0-or-later', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-or-later']
+SUPPORTED_FILE_TYPES = [
+    '.bash',
+    '.c',
+    '.cmake',
+    '.js',
+    '.nasl',
+    '.po',
+    '.py',
+    '.sh',
+    '.txt',
+    '.xml',
+]
+SUPPORTED_LICENCES = [
+    'AGPL-3.0-or-later',
+    'GPL-2.0-only',
+    'GPL-2.0-or-later',
+    'GPL-3.0-or-later',
+]
+
 
 def _get_modified_year(f: Path) -> str:
     return check_output(
@@ -40,6 +57,7 @@ def _get_modified_year(f: Path) -> str:
         shell=True,
         universal_newlines=True,
     ).rstrip()
+
 
 def _find_copyright(
     line: str,
@@ -57,6 +75,7 @@ def _find_copyright(
         )
     return False, None
 
+
 def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     header = None
     if suffix in SUPPORTED_FILE_TYPES:
@@ -68,11 +87,9 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
             print(f"Licence file {licence_file} is not existing.")
     return header
 
+
 def _update_year(
-    file: Path,
-    new_modified_year: str,
-    licence: str,
-    company: str
+    file: Path, new_modified_year: str, licence: str, company: str
 ) -> None:
     # copyright year(s) regex
     regex = re.compile(
@@ -83,7 +100,7 @@ def _update_year(
     with open(file, "r+") as fp:
         try:
             found = False
-            i = 10 # assume that copyright is in the first 10 lines
+            i = 10  # assume that copyright is in the first 10 lines
             while not found and i > 0:
                 line = fp.readline()
                 if line == '':
@@ -94,7 +111,7 @@ def _update_year(
             if i == 0 and not found:
                 header = _add_header(file.suffix, licence, company)
                 if header:
-                    fp.seek(0) # back to beginning of file
+                    fp.seek(0)  # back to beginning of file
                     rest_of_file = fp.read()
                     fp.seek(0)
                     fp.write(header)
@@ -107,7 +124,7 @@ def _update_year(
             if (
                 not copyright_match['modification_year']
                 and copyright_match['creation_year'] < new_modified_year
-                or copyright_match['modification_year'] 
+                or copyright_match['modification_year']
                 and copyright_match['modification_year'] < new_modified_year
             ):
                 copyright_term = (
@@ -115,14 +132,15 @@ def _update_year(
                     f'-{new_modified_year} {copyright_match["company"]}'
                 )
                 new_line = re.sub(regex, copyright_term, line)
-                fp_write = fp.tell() - len(line) # save position to insert
+                fp_write = fp.tell() - len(line)  # save position to insert
                 rest_of_file = fp.read()
                 fp.seek(fp_write)
                 fp.write(new_line)
                 fp.write(rest_of_file)
                 print(
                     f'{file}: Changed Licence Header Copyright Year '
-                    f'{copyright_match["modification_year"]} -> {new_modified_year}'
+                    f'{copyright_match["modification_year"]} -> '
+                    f'{new_modified_year}'
                 )
             else:
                 print(f'{file}: Licence Header is ok.')
@@ -195,7 +213,7 @@ def main():
                     file=file,
                     new_modified_year=mod_year,
                     licence=args.licence,
-                    company=args.company
+                    company=args.company,
                 )
                 continue
             except SubprocessError:
@@ -209,6 +227,7 @@ def main():
             licence=args.licence,
             company=args.company,
         )
+
 
 if __name__ == "__main__":
     main()
