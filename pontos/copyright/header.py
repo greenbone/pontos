@@ -79,8 +79,9 @@ def _update_year(file: Path, new_modified_year: str) -> None:
                 copyright_term = f'Copyright (C) {copyright_match["creation_year"]}-{new_modified_year} {copyright_match["vendor"]}'
                 new_line = re.sub(regex, copyright_term, line)
                 # overriding the line ...
+                fp_write = fp.tell() - len(line)
                 rest_of_file = fp.read()
-                fp.seek(fp.tell() - len(line))
+                fp.seek(fp_write)
                 fp.write(new_line)
                 fp.write(rest_of_file)
                 print(f'Changed Licence Header Copyright Year in {file}: {copyright_match["modification_year"]} -> {new_modified_year}')
