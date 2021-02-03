@@ -95,7 +95,7 @@ def _update_year(
     licence: str,
     company: str,
 ) -> None:
-    with open(file, "r+") as fp:
+    with file.open("r+") as fp:
         try:
             found = False
             i = 10  # assume that copyright is in the first 10 lines
