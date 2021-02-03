@@ -60,7 +60,7 @@ def _find_copyright(
 def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     header = None
     if suffix in SUPPORTED_FILE_TYPES:
-        licence_file = Path(__file__ / licence / f'template{suffix}')
+        licence_file = Path(__file__.parent, licence, f'template{suffix}')
         try:
             header = licence_file.read_text().replace('Company', company)
         except IOError:
@@ -199,12 +199,12 @@ def main():
                     f"{file}: Could not get date of last modification"
                     f" using git, using {str(this_year)} instead."
                 )
-            _update_year(
-                file=file,
-                new_modified_year=this_year,
-                licence=args.licence,
-                company=args.company,
-            )
+        _update_year(
+            file=file,
+            new_modified_year=this_year,
+            licence=args.licence,
+            company=args.company,
+        )
 
 if __name__ == "__main__":
     main()
