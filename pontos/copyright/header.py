@@ -24,10 +24,72 @@ import os
 import argparse
 import re
 
+from typing import Dict, Tuple, Union
 from datetime import datetime
 from glob import glob
 from pathlib import Path
 from subprocess import SubprocessError, check_output
+
+def _get_modified_year(f: Path) -> str:
+    return check_output(
+        f"cd {f.parents[0]} && git log -1 "
+        f"--format='%ad' --date='format:%Y' {f.name}",
+        shell=True,
+        universal_newlines=True,
+    ).rstrip()
+
+def _find_copyright(line: str, regex: re.Pattern) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
+    copyright_match = re.search(regex, line)
+    if copyright_match:
+        return (
+            True,
+            {
+                'creation_year': copyright_match.group(1),
+                'modification_year': copyright_match.group(2),
+                'vendor': copyright_match.group(3),
+            },
+        )
+    return False, None
+
+def _update_year(file: Path, new_modified_year: str) -> None:
+    # copyright year(s) regex
+    regex = re.compile(
+        "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+        "?-? ?(19[0-9]{2}|20[0-9]{2})? (.reenbone*)"
+    )
+
+    with open(file, "r+") as fp:
+        try:
+            found = False
+            i = 10 # assume that copyright is in the first 10 lines
+            while not found and i > 0:
+                line = fp.readline()
+                found, copyright_match = _find_copyright(line=line, regex=regex)
+                i = i - 1
+            if i == 0 and found == False:
+                print(f"No Lincence Header found in {file}")
+                return
+            # replace header and write it to file
+            if (
+                not copyright_match['modification_year']
+                and copyright_match['creation_year'] < new_modified_year
+                or copyright_match['modification_year'] 
+                and copyright_match['modification_year'] < new_modified_year
+            ):
+                copyright_term = f'Copyright (C) {copyright_match["creation_year"]}-{new_modified_year} {copyright_match["vendor"]}'
+                new_line = re.sub(regex, copyright_term, line)
+                # overriding the line ...
+                rest_of_file = fp.read()
+                fp.seek(fp.tell() - len(line))
+                fp.write(new_line)
+                fp.write(rest_of_file)
+                print(f'Changed Licence Header Copyright Year in {file}: {copyright_match["modification_year"]} -> {new_modified_year}')
+            else:
+                print(f'Licence Header of {file} is ok.')
+        except IOError:
+            print(f'Unable to read {file}')
+        except UnicodeDecodeError:
+            print(f'Ignoring file {file}')
 
 
 def main():
@@ -62,82 +124,18 @@ def main():
         print("Specify files to update!")
         sys.exit(1)
 
+    this_year = str(datetime.now().year)
+
     for file in files:
-        year_creation, year_modification, new_year_modification = (
-            None,
-            None,
-            None,
-        )
-        try:
-            content = file.read_text()
-        except Exception:  # pylint: disable=broad-except
-            print(str(file) + ": Unable to read file")
-            continue
-
-        # get copyright year(s)
-        regex = re.compile(
-            "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-            "?-? ?(19[0-9]{2}|20[0-9]{2})? (.reenbone*)"
-        )
-
-        copyright_holder = ""
-
-        try:
-            match = re.search(regex, content[0:500])
-            if match.group(1):
-                year_creation = match.group(1)
-            if match.group(2):
-                year_modification = match.group(2)
-            if match.group(3):
-                copyright_holder = match.group(3)
-        except Exception:  # pylint: disable=broad-except
-            print(str(file) + ": No Copyright information found")
-            continue
-
         if args.changed:
             try:
-                new_year_modification = check_output(
-                    "cd {} && git log -1 --format='%ad' "
-                    "--date='format:%Y' {}".format(file.parents[0], file.name),
-                    shell=True,
-                    universal_newlines=True,
-                ).rstrip()
+                mod_year = _get_modified_year(file)
+                _update_year(file=file, new_modified_year=mod_year)
             except SubprocessError:
-                print(
-                    "Could not get date of last modification using git for "
-                    + str(file)
-                )
-                continue
-
-            if not new_year_modification:
-                continue
-
-            # check if new_year_modification match year regex
-            if re.match("19[0-9]{2}|20[0-9]{2}", new_year_modification) is None:
-                continue
+                print(f"Could not get date of last modification using git for {file}, using {str(this_year)} instead.")
+                _update_year(file=file, new_modified_year=this_year)
         else:
-            new_year_modification = str(datetime.now().year)
-
-        if (
-            not year_modification
-            and year_creation < new_year_modification
-            or year_modification
-            and year_modification < new_year_modification
-        ):
-            print(
-                "{}: {} -> {}".format(
-                    str(file), year_modification, new_year_modification
-                )
-            )
-            copyright_line = "Copyright (C) {}-{} {}".format(
-                year_creation, new_year_modification, copyright_holder
-            )
-
-            # replace header and write file
-            content = re.sub(regex, copyright_line, content)
-            file.write_text(content)
-        else:
-            print(str(file) + ": OK")
+            _update_year(file=file, new_modified_year=this_year)
 
 
 if __name__ == "__main__":
