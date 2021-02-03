@@ -77,7 +77,7 @@ def _update_year(
     # copyright year(s) regex
     regex = re.compile(
         "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-        "?-? ?(19[0-9]{2}|20[0-9]{2})? (.reenbone*)"
+        f"?-? ?(19[0-9]{2}|20[0-9]{2})? ({company})"
     )
 
     with open(file, "r+") as fp:
