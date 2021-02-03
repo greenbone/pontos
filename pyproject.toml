@@ -26,6 +26,9 @@ packages = [
   { include = "poetry.lock", format = "sdist" },
   { include = "poetry.toml", format = "sdist" },
 ]
+include = [
+  "pontos/copyright/templates/"
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
