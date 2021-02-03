@@ -60,7 +60,8 @@ def _find_copyright(
 def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     header = None
     if suffix in SUPPORTED_FILE_TYPES:
-        licence_file = Path(__file__.parent, licence, f'template{suffix}')
+        root = Path(__file__.parent)
+        licence_file = root / licence / f'template{suffix}'
         try:
             header = licence_file.read_text().replace('Company', company)
         except IOError:
