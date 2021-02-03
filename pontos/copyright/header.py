@@ -89,14 +89,12 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
 
 
 def _update_year(
-    file: Path, new_modified_year: str, licence: str, company: str
+    file: Path,
+    regex: re.Pattern,
+    new_modified_year: str,
+    licence: str,
+    company: str,
 ) -> None:
-    # copyright year(s) regex
-    regex = re.compile(
-        "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-        f"?-? ?(19[0-9]{2}|20[0-9]{2})? ({company})"
-    )
-
     with open(file, "r+") as fp:
         try:
             found = False
@@ -205,12 +203,18 @@ def main():
 
     this_year = str(datetime.now().year)
 
+    regex = re.compile(
+        "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+        f"?-? ?(19[0-9]{2}|20[0-9]{2})? ({args.company})"
+    )
+
     for file in files:
         if args.changed:
             try:
                 mod_year = _get_modified_year(file)
                 _update_year(
                     file=file,
+                    regex=regex,
                     new_modified_year=mod_year,
                     licence=args.licence,
                     company=args.company,
@@ -223,6 +227,7 @@ def main():
                 )
         _update_year(
             file=file,
+            regex=regex,
             new_modified_year=this_year,
             licence=args.licence,
             company=args.company,
