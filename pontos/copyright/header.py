@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Script to update the year of last modification
-in the license header of source code files.
+in the license header of source code files.\n
+Also it appends a header if it is missing in the file.
 """
 
 import sys
@@ -51,6 +52,7 @@ SUPPORTED_LICENCES = [
 
 
 def _get_modified_year(f: Path) -> str:
+    """ In case of the changed arg, update year to last modifed year """
     return check_output(
         f"cd {f.parents[0]} && git log -1 "
         f"--format='%ad' --date='format:%Y' {f.name}",
@@ -63,6 +65,7 @@ def _find_copyright(
     line: str,
     regex: re.Pattern,
 ) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
+    """ Match the line for the regex """
     copyright_match = re.search(regex, line)
     if copyright_match:
         return (
@@ -77,6 +80,11 @@ def _find_copyright(
 
 
 def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
+    """Tries to add the header to the file.
+    Requirements:
+      - file type must be supported
+      - licence file must exist
+    """
     header = None
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
@@ -88,13 +96,18 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     return header
 
 
-def _update_year(
+def _update_file(
     file: Path,
     regex: re.Pattern,
     new_modified_year: str,
     licence: str,
     company: str,
 ) -> None:
+    """Function to update the given file.
+    Checks if header exists. If not it adds an
+    header to that file, else it checks if year
+    is up to date
+    """
     with file.open("r+") as fp:
         try:
             found = False
@@ -149,6 +162,8 @@ def _update_year(
 
 
 def parse_args():
+    """ Parsing the args """
+
     parser = argparse.ArgumentParser(
         description="Update copyright in source file headers.",
         prog="pontos-copyright",
@@ -216,7 +231,7 @@ def main() -> None:
         if args.changed:
             try:
                 mod_year = _get_modified_year(file)
-                _update_year(
+                _update_file(
                     file=file,
                     regex=regex,
                     new_modified_year=mod_year,
@@ -229,7 +244,7 @@ def main() -> None:
                     f"{file}: Could not get date of last modification"
                     f" using git, using {str(this_year)} instead."
                 )
-        _update_year(
+        _update_file(
             file=file,
             regex=regex,
             new_modified_year=this_year,
