@@ -30,6 +30,9 @@ from glob import glob
 from pathlib import Path
 from subprocess import SubprocessError, check_output
 
+SUPPORTED_FILE_TYPES = ['.bash', '.c', '.cmake', '.js', '.nasl', '.po', '.py', '.sh', '.txt', '.xml']
+SUPPORTED_LICENCES = ['AGPL-3.0-or-later', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-or-later']
+
 def _get_modified_year(f: Path) -> str:
     return check_output(
         f"cd {f.parents[0]} && git log -1 "
@@ -38,7 +41,10 @@ def _get_modified_year(f: Path) -> str:
         universal_newlines=True,
     ).rstrip()
 
-def _find_copyright(line: str, regex: re.Pattern) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
+def _find_copyright(
+    line: str,
+    regex: re.Pattern,
+) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
     copyright_match = re.search(regex, line)
     if copyright_match:
         return (
@@ -46,12 +52,27 @@ def _find_copyright(line: str, regex: re.Pattern) -> Tuple[bool, Union[Dict[str,
             {
                 'creation_year': copyright_match.group(1),
                 'modification_year': copyright_match.group(2),
-                'vendor': copyright_match.group(3),
+                'company': copyright_match.group(3),
             },
         )
     return False, None
 
-def _update_year(file: Path, new_modified_year: str) -> None:
+def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
+    header = None
+    if suffix in SUPPORTED_FILE_TYPES:
+        licence_file = Path(__file__ / licence / f'template{suffix}')
+        try:
+            header = licence_file.read_text().replace('Company', company)
+        except IOError:
+            print(f"Licence file {licence_file} is not existing.")
+    return header
+
+def _update_year(
+    file: Path,
+    new_modified_year: str,
+    licence: str,
+    company: str
+) -> None:
     # copyright year(s) regex
     regex = re.compile(
         "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
@@ -66,8 +87,17 @@ def _update_year(file: Path, new_modified_year: str) -> None:
                 line = fp.readline()
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
-            if i == 0 and found == False:
-                print(f"No Lincence Header found in {file}")
+            if i == 0 and not found:
+                header = _add_header(file.suffix, licence, company)
+                if header:
+                    fp.seek(0) # back to beginning of file
+                    rest_of_file = fp.read()
+                    fp.seek(0)
+                    fp.write(header)
+                    fp.write(rest_of_file)
+                    print(f"{file}: Added licence header to ")
+                else:
+                    print(f"{file}: No licence header found in")
                 return
             # replace header and write it to file
             if (
@@ -76,38 +106,64 @@ def _update_year(file: Path, new_modified_year: str) -> None:
                 or copyright_match['modification_year'] 
                 and copyright_match['modification_year'] < new_modified_year
             ):
-                copyright_term = f'Copyright (C) {copyright_match["creation_year"]}-{new_modified_year} {copyright_match["vendor"]}'
+                copyright_term = (
+                    f'Copyright (C) {copyright_match["creation_year"]}'
+                    f'-{new_modified_year} {copyright_match["company"]}'
+                )
                 new_line = re.sub(regex, copyright_term, line)
-                # overriding the line ...
-                fp_write = fp.tell() - len(line)
+                fp_write = fp.tell() - len(line) # save position to insert
                 rest_of_file = fp.read()
                 fp.seek(fp_write)
                 fp.write(new_line)
                 fp.write(rest_of_file)
-                print(f'Changed Licence Header Copyright Year in {file}: {copyright_match["modification_year"]} -> {new_modified_year}')
+                print(
+                    f'{file}: Changed Licence Header Copyright Year '
+                    f'{copyright_match["modification_year"]} -> {new_modified_year}'
+                )
             else:
-                print(f'Licence Header of {file} is ok.')
+                print(f'{file}: Licence Header is ok.')
         except IOError:
-            print(f'Unable to read {file}')
+            print(f'{file}: Unable to read')
         except UnicodeDecodeError:
-            print(f'Ignoring file {file}')
+            print(f'{file}: Ignoring binary file.')
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Update copyright in source file headers",
+        description="Update copyright in source file headers.",
         prog="pontos-copyright",
     )
+
     parser.add_argument(
         "-c",
         "--changed",
         action="store_true",
-        help="Only update actually changed files",
+        help="Only update actually changed files.",
     )
+
+    parser.add_argument(
+        "-l",
+        "--licence",
+        choices=SUPPORTED_LICENCES,
+        default='GPL-3.0-or-later',
+        help="Add header f files",
+    )
+
+    parser.add_argument(
+        "--company",
+        default='Greenbone Networks GmbH',
+        help=(
+            "If a header will be added to file, \n"
+            "it will be licenced by company."
+        ),
+    )
+
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-f", "--files", nargs="+", help="Files to update")
+    group.add_argument("-f", "--files", nargs="+", help="Files to update.")
     group.add_argument(
-        "-d", "--directory", help="Directory to find files to update"
+        "-d",
+        "--directory",
+        help="Directory to find files to update recursively.",
     )
     args = parser.parse_args()
 
@@ -131,13 +187,24 @@ def main():
         if args.changed:
             try:
                 mod_year = _get_modified_year(file)
-                _update_year(file=file, new_modified_year=mod_year)
+                _update_year(
+                    file=file,
+                    new_modified_year=mod_year,
+                    licence=args.licence,
+                    company=args.company
+                )
+                continue
             except SubprocessError:
-                print(f"Could not get date of last modification using git for {file}, using {str(this_year)} instead.")
-                _update_year(file=file, new_modified_year=this_year)
-        else:
-            _update_year(file=file, new_modified_year=this_year)
-
+                print(
+                    f"{file}: Could not get date of last modification"
+                    f" using git, using {str(this_year)} instead."
+                )
+            _update_year(
+                file=file,
+                new_modified_year=this_year,
+                licence=args.licence,
+                company=args.company,
+            )
 
 if __name__ == "__main__":
     main()
