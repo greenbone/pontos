@@ -148,7 +148,7 @@ def _update_year(
             print(f'{file}: Ignoring binary file.')
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Update copyright in source file headers.",
         prog="pontos-copyright",
@@ -185,7 +185,11 @@ def main():
         "--directory",
         help="Directory to find files to update recursively.",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
 
     if args.directory:
         # get files to update
