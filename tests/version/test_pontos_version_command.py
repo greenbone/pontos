@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Pontos Networks GmbH
+# Copyright (C) 2020 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
