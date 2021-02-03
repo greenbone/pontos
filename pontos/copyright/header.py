@@ -61,7 +61,7 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     header = None
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
-        licence_file = root / licence / f'template{suffix}'
+        licence_file = root / 'templates' / licence / f'template{suffix}'
         try:
             header = licence_file.read_text().replace('Company', company)
         except IOError:
@@ -86,6 +86,9 @@ def _update_year(
             i = 10 # assume that copyright is in the first 10 lines
             while not found and i > 0:
                 line = fp.readline()
+                if line == '':
+                    i = 0
+                    continue
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
             if i == 0 and not found:
@@ -94,6 +97,7 @@ def _update_year(
                     fp.seek(0) # back to beginning of file
                     rest_of_file = fp.read()
                     fp.seek(0)
+                    print(header)
                     fp.write(header)
                     fp.write(rest_of_file)
                     print(f"{file}: Added licence header to ")
