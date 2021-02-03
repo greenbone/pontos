@@ -97,12 +97,11 @@ def _update_year(
                     fp.seek(0) # back to beginning of file
                     rest_of_file = fp.read()
                     fp.seek(0)
-                    print(header)
                     fp.write(header)
                     fp.write(rest_of_file)
-                    print(f"{file}: Added licence header to ")
+                    print(f"{file}: Added licence header.")
                 else:
-                    print(f"{file}: No licence header found in")
+                    print(f"{file}: No licence header found.")
                 return
             # replace header and write it to file
             if (
