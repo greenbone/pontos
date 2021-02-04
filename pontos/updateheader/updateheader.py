@@ -224,7 +224,7 @@ def main() -> None:
 
     regex = re.compile(
         "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-        f"?-? ?(19[0-9]{2}|20[0-9]{2})? ({args.company})"
+        f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
     )
 
     for file in files:
