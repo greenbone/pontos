@@ -183,11 +183,12 @@ def parse_args():
         prog="pontos-copyright",
     )
 
-    date_group = parser.add_mutually_exclusive_group(required=True)
+    date_group = parser.add_mutually_exclusive_group()
     date_group.add_argument(
         "-c",
         "--changed",
         action="store_true",
+        default=False,
         help=(
             "Update modified year using git log modified year. \n"
             "This will probably not changed all files to current year!",
