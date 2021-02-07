@@ -22,14 +22,14 @@ Also it appends a header if it is missing in the file.
 
 import sys
 import os
-import argparse
+from argparse import ArgumentParser, Namespace
 import re
 
+from subprocess import CalledProcessError, run
 from typing import Dict, Tuple, Union
 from datetime import datetime
 from glob import glob
 from pathlib import Path
-from subprocess import SubprocessError, check_output
 
 SUPPORTED_FILE_TYPES = [
     '.bash',
@@ -53,12 +53,18 @@ SUPPORTED_LICENCES = [
 
 def _get_modified_year(f: Path) -> str:
     """ In case of the changed arg, update year to last modifed year """
-    return check_output(
-        f"cd {f.parents[0]} && git log -1 "
-        f"--format='%ad' --date='format:%Y' {f.name}",
-        shell=True,
-        universal_newlines=True,
-    ).rstrip()
+    try:
+        cmd = ['git', 'log', '-1', '--format=%ad', '--date=format:%Y', str(f)]
+        proc = run(
+            cmd,
+            text=True,
+            capture_output=True,
+            check=True,
+            universal_newlines=True,
+        )
+        return proc.stdout.rstrip()
+    except CalledProcessError as e:
+        raise e
 
 
 def _find_copyright(
@@ -99,15 +105,23 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
 def _update_file(
     file: Path,
     regex: re.Pattern,
-    new_modified_year: str,
-    licence: str,
-    company: str,
+    args: Namespace,
 ) -> None:
     """Function to update the given file.
     Checks if header exists. If not it adds an
     header to that file, else it checks if year
     is up to date
     """
+
+    if args.changed:
+        try:
+            args.year = _get_modified_year(file)
+        except CalledProcessError:
+            print(
+                f"{file}: Could not get date of last modification"
+                f" using git, using {str(args.year)} instead."
+            )
+
     with file.open("r+") as fp:
         try:
             found = False
@@ -120,7 +134,7 @@ def _update_file(
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
             if i == 0 and not found:
-                header = _add_header(file.suffix, licence, company)
+                header = _add_header(file.suffix, args.licence, args.company)
                 if header:
                     fp.seek(0)  # back to beginning of file
                     rest_of_file = fp.read()
@@ -134,13 +148,13 @@ def _update_file(
             # replace header and write it to file
             if (
                 not copyright_match['modification_year']
-                and copyright_match['creation_year'] < new_modified_year
+                and copyright_match['creation_year'] < args.year
                 or copyright_match['modification_year']
-                and copyright_match['modification_year'] < new_modified_year
+                and copyright_match['modification_year'] < args.year
             ):
                 copyright_term = (
                     f'Copyright (C) {copyright_match["creation_year"]}'
-                    f'-{new_modified_year} {copyright_match["company"]}'
+                    f'-{args.year} {copyright_match["company"]}'
                 )
                 new_line = re.sub(regex, copyright_term, line)
                 fp_write = fp.tell() - len(line)  # save position to insert
@@ -151,7 +165,7 @@ def _update_file(
                 print(
                     f'{file}: Changed Licence Header Copyright Year '
                     f'{copyright_match["modification_year"]} -> '
-                    f'{new_modified_year}'
+                    f'{args.year}'
                 )
             else:
                 print(f'{file}: Licence Header is ok.')
@@ -164,16 +178,29 @@ def _update_file(
 def parse_args():
     """ Parsing the args """
 
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description="Update copyright in source file headers.",
         prog="pontos-copyright",
     )
 
-    parser.add_argument(
+    date_group = parser.add_mutually_exclusive_group(required=True)
+    date_group.add_argument(
         "-c",
         "--changed",
         action="store_true",
-        help="Only update actually changed files.",
+        help=(
+            "Update modified year using git log modified year. \n"
+            "This will probably not changed all files to current year!",
+        ),
+    )
+    date_group.add_argument(
+        "-y",
+        "--year",
+        default=str(datetime.now().year),
+        help=(
+            "If year is set, modified year will be \n"
+            "set to the specified year."
+        ),
     )
 
     parser.add_argument(
@@ -193,9 +220,11 @@ def parse_args():
         ),
     )
 
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-f", "--files", nargs="+", help="Files to update.")
-    group.add_argument(
+    files_group = parser.add_mutually_exclusive_group(required=True)
+    files_group.add_argument(
+        "-f", "--files", nargs="+", help="Files to update."
+    )
+    files_group.add_argument(
         "-d",
         "--directory",
         help="Directory to find files to update recursively.",
@@ -220,37 +249,13 @@ def main() -> None:
         print("Specify files to update!")
         sys.exit(1)
 
-    this_year = str(datetime.now().year)
-
     regex = re.compile(
         "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
         f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
     )
 
     for file in files:
-        if args.changed:
-            try:
-                mod_year = _get_modified_year(file)
-                _update_file(
-                    file=file,
-                    regex=regex,
-                    new_modified_year=mod_year,
-                    licence=args.licence,
-                    company=args.company,
-                )
-                continue
-            except SubprocessError:
-                print(
-                    f"{file}: Could not get date of last modification"
-                    f" using git, using {str(this_year)} instead."
-                )
-        _update_file(
-            file=file,
-            regex=regex,
-            new_modified_year=this_year,
-            licence=args.licence,
-            company=args.company,
-        )
+        _update_file(file=file, regex=regex, args=args)
 
 
 if __name__ == "__main__":
