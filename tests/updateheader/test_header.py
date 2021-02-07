@@ -18,6 +18,8 @@
 
 import struct
 import re
+
+from io import StringIO
 from subprocess import CompletedProcess, CalledProcessError
 
 from pathlib import Path
@@ -244,3 +246,31 @@ class UpdateHeaderTestCase(TestCase):
             update_file(file=test_file, regex=regex, args=args)
 
         test_file.unlink()
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_update_file_changed(self, mock_stdout):
+        args = Namespace()
+        args.company = 'Greenbone Networks GmbH'
+        args.year = '1995'
+        args.changed = True
+        args.licence = 'AGPL-3.0-or-later'
+
+        regex = re.compile(
+            "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
+        )
+
+        test_file = Path(__file__).parent / "test.py"
+        if test_file.exists():
+            test_file.unlink()
+
+        with self.assertRaises(FileNotFoundError):
+            update_file(file=test_file, regex=regex, args=args)
+
+        ret = mock_stdout.getvalue()
+        self.assertEqual(
+            ret,
+            f"{test_file}: Could not get date of last "
+            f"modification using git, using {args.year} instead.\n"
+            f"{test_file}: File is not existing.\n",
+        )
