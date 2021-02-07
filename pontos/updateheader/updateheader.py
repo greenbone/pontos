@@ -91,15 +91,15 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
       - file type must be supported
       - licence file must exist
     """
-    header = None
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
         licence_file = root / 'templates' / licence / f'template{suffix}'
         try:
-            header = licence_file.read_text().replace('Company', company)
-        except IOError:
-            print(f"Licence file {licence_file} is not existing.")
-    return header
+            return licence_file.read_text().replace('Company', company)
+        except FileNotFoundError as e:
+            raise e
+    else:
+        raise ValueError
 
 
 def _update_file(
@@ -122,8 +122,8 @@ def _update_file(
                 f" using git, using {str(args.year)} instead."
             )
 
-    with file.open("r+") as fp:
-        try:
+    try:
+        with file.open("r+") as fp:
             found = False
             i = 10  # assume that copyright is in the first 10 lines
             while not found and i > 0:
@@ -134,17 +134,29 @@ def _update_file(
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
             if i == 0 and not found:
-                header = _add_header(file.suffix, args.licence, args.company)
-                if header:
-                    fp.seek(0)  # back to beginning of file
-                    rest_of_file = fp.read()
-                    fp.seek(0)
-                    fp.write(header)
-                    fp.write(rest_of_file)
-                    print(f"{file}: Added licence header.")
-                else:
-                    print(f"{file}: No licence header found.")
-                return
+                try:
+                    header = _add_header(
+                        file.suffix, args.licence, args.company
+                    )
+                    if header:
+                        fp.seek(0)  # back to beginning of file
+                        rest_of_file = fp.read()
+                        fp.seek(0)
+                        fp.write(header)
+                        fp.write(rest_of_file)
+                        print(f"{file}: Added licence header.")
+                        return 0
+                except ValueError:
+                    print(
+                        f"{file}: No licence header for the"
+                        " format {file.suffix} found.",
+                    )
+                except FileNotFoundError:
+                    print(
+                        f"{file}: Licence file for {args.licence} "
+                        "is not existing."
+                    )
+                return 1
             # replace header and write it to file
             if (
                 not copyright_match['modification_year']
@@ -167,12 +179,17 @@ def _update_file(
                     f'{copyright_match["modification_year"]} -> '
                     f'{args.year}'
                 )
+
+                return 0
             else:
                 print(f'{file}: Licence Header is ok.')
-        except IOError:
-            print(f'{file}: Unable to read')
-        except UnicodeDecodeError:
-            print(f'{file}: Ignoring binary file.')
+                return 0
+    except FileNotFoundError as e:
+        print(f'{file}: File is not existing.')
+        raise e
+    except UnicodeDecodeError as e:
+        print(f'{file}: Ignoring binary file.')
+        raise e
 
 
 def parse_args():
