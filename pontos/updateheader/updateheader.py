@@ -193,7 +193,7 @@ def _update_file(
         raise e
 
 
-def parse_args():
+def _parse_args(args=None):
     """ Parsing the args """
 
     parser = ArgumentParser(
@@ -248,11 +248,11 @@ def parse_args():
         "--directory",
         help="Directory to find files to update recursively.",
     )
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def main() -> None:
-    args = parse_args()
+    args = _parse_args()
 
     if args.directory:
         # get files to update
@@ -263,6 +263,7 @@ def main() -> None:
         ]
     elif args.files:
         files = [Path(name) for name in args.files]
+
     else:
         # should never happen
         print("Specify files to update!")
@@ -274,7 +275,12 @@ def main() -> None:
     )
 
     for file in files:
-        _update_file(file=file, regex=regex, args=args)
+        try:
+            _update_file(file=file, regex=regex, args=args)
+        except (FileNotFoundError, UnicodeDecodeError, ValueError):
+            continue
+
+    return 0
 
 
 if __name__ == "__main__":

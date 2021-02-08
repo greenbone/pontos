@@ -32,6 +32,8 @@ from pontos.updateheader.updateheader import (
     _find_copyright as find_copyright,
     _add_header as add_header,
     _update_file as update_file,
+    _parse_args as parse_args,
+    main,
 )
 
 
@@ -349,3 +351,114 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         test_file.unlink()
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_update_header_ok_in_file(self, mock_stdout):
+        self.args.year = '2021'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+
+        header = """# -*- coding: utf-8 -*-
+# Copyright (C) 2021 Greenbone Networks GmbH
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+        test_file = self.path / "test.py"
+        if test_file.exists():
+            test_file.unlink()
+
+        test_file.write_text(header)
+
+        code = update_file(file=test_file, regex=self.regex, args=self.args)
+
+        self.assertEqual(code, 0)
+        ret = mock_stdout.getvalue()
+        self.assertEqual(
+            ret,
+            f"{test_file}: Licence Header is ok.\n",
+        )
+        self.assertIn(
+            '# Copyright (C) 2021 Greenbone Networks GmbH',
+            test_file.read_text(),
+        )
+
+        test_file.unlink()
+
+    def test_argparser_files(self):
+        self.args.year = '2021'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+
+        args = ['-f', 'test.py', '-y', '2021', '-l', 'AGPL-3.0-or-later']
+
+        args = parse_args(args)
+        self.assertIsNotNone(args)
+        self.assertEqual(args.company, self.args.company)
+        self.assertEqual(args.files, ['test.py'])
+        self.assertEqual(args.year, self.args.year)
+        self.assertEqual(args.licence, self.args.licence)
+
+    def test_argparser_dir(self):
+        self.args.year = '2020'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+
+        args = ['-d', '.', '-c', '-l', 'AGPL-3.0-or-later']
+
+        args = parse_args(args)
+        self.assertIsNotNone(args)
+        self.assertEqual(args.company, self.args.company)
+        self.assertEqual(args.directory, '.')
+        self.assertTrue(args.changed)
+        self.assertEqual(args.year, '2021')
+        self.assertEqual(args.licence, self.args.licence)
+
+    @patch('pontos.updateheader.updateheader._parse_args')
+    def test_main(self, argparser_mock):
+        self.args.year = '2021'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.files = ['test.py']
+        self.args.directory = None
+
+        argparser_mock.return_value = self.args
+
+        code = main()
+
+        # I have no idea how or why test main ...
+        self.assertEqual(code, 0)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    @patch('pontos.updateheader.updateheader._parse_args')
+    def test_main_never_happen(self, argparser_mock, mock_stdout):
+        self.args.year = '2021'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.files = None
+        self.args.directory = None
+
+        argparser_mock.return_value = self.args
+
+        # I have no idea how or why test main ...
+        with self.assertRaises(SystemExit):
+            main()
+
+        ret = mock_stdout.getvalue()
+        self.assertEqual(
+            ret,
+            "Specify files to update!\n",
+        )
