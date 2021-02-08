@@ -280,6 +280,8 @@ def main() -> None:
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
 
+    return 0
+
 
 if __name__ == "__main__":
     main()
