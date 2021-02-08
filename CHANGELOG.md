@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.2.0] - 2021-02-08
 
 ### Added
 - New command called `pontos-update-header` to update years in copyright headers [#58](https://github.com/greenbone/pontos/pull/58)
@@ -15,11 +15,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 - Renamed `pontos-copyright` to `pontos-update-header`. This tool now adds copyright header to files, if missing. [#59](https://github.com/greenbone/pontos/pull/59)
 - Change versioning to [Calendar Versioning](https://calver.org)[#61](https://github.com/greenbone/pontos/pull/61)
 
-### Deprecated
-### Removed
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v0.3.1...HEAD
+[21.2.0]: https://github.com/greenbone/pontos/compare/v0.3.1...v21.2.0
 
 ## [0.3.1] - 2021-01-05
 
