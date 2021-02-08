@@ -32,6 +32,7 @@ from pontos.updateheader.updateheader import (
     _find_copyright as find_copyright,
     _add_header as add_header,
     _update_file as update_file,
+    _parse_args as parse_args,
 )
 
 
@@ -349,3 +350,32 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         test_file.unlink()
+
+    def test_argparser_files(self):
+        self.args.year = '2021'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+
+        args = ['-f', 'test.py', '-y', '2021', '-l', 'AGPL-3.0-or-later']
+
+        args = parse_args(args)
+        self.assertIsNotNone(args)
+        self.assertEqual(args.company, self.args.company)
+        self.assertEqual(args.files, ['test.py'])
+        self.assertEqual(args.year, self.args.year)
+        self.assertEqual(args.licence, self.args.licence)
+
+    def test_argparser_dir(self):
+        self.args.year = '2020'
+        self.args.changed = False
+        self.args.licence = 'AGPL-3.0-or-later'
+
+        args = ['-d', '.', '-c', '-l', 'AGPL-3.0-or-later']
+
+        args = parse_args(args)
+        self.assertIsNotNone(args)
+        self.assertEqual(args.company, self.args.company)
+        self.assertEqual(args.directory, '.')
+        self.assertTrue(args.changed)
+        self.assertEqual(args.year, '2021')
+        self.assertEqual(args.licence, self.args.licence)
