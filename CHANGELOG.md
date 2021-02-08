@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- New command called pontos-copyright to update years in copyright headers [#58](https://github.com/greenbone/pontos/pull/58)
+- New command called `pontos-update-header` to update years in copyright headers [#58](https://github.com/greenbone/pontos/pull/58)
+- Tests for `pontos-update-header` added. [#59](https://github.com/greenbone/pontos/pull/59)
 
 ### Changed
+- Renamed `pontos-copyright` to `pontos-update-header`. This tool now adds copyright header to files, if missing. [#59](https://github.com/greenbone/pontos/pull/59)
+
 ### Deprecated
 ### Removed
 ### Fixed

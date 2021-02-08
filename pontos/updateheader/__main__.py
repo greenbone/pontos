@@ -17,7 +17,7 @@
 
 # pylint: disable=invalid-name
 
-from pontos import copyright  # pylint: disable=redefined-builtin
+from pontos import updateheader
 
 if __name__ == '__main__':
-    copyright.main()
+    updateheader.main()
