@@ -22,13 +22,14 @@ Also it appends a header if it is missing in the file.
 
 import sys
 import os
-from argparse import ArgumentParser, Namespace
 import re
+
+from argparse import ArgumentParser, Namespace
+from datetime import datetime
+from glob import glob
 
 from subprocess import CalledProcessError, run
 from typing import Dict, Tuple, Union
-from datetime import datetime
-from glob import glob
 from pathlib import Path
 
 SUPPORTED_FILE_TYPES = [
@@ -149,7 +150,7 @@ def _update_file(
                 except ValueError:
                     print(
                         f"{file}: No licence header for the"
-                        " format {file.suffix} found.",
+                        f" format {file.suffix} found.",
                     )
                 except FileNotFoundError:
                     print(
