@@ -14,6 +14,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Changed
 - Renamed `pontos-copyright` to `pontos-update-header`. This tool now adds copyright header to files, if missing. [#59](https://github.com/greenbone/pontos/pull/59)
 - Change versioning to [Calendar Versioning](https://calver.org)[#61](https://github.com/greenbone/pontos/pull/61)
+
 ### Deprecated
 ### Removed
 ### Fixed
