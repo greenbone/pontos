@@ -53,7 +53,7 @@ SUPPORTED_LICENCES = [
 
 
 def _get_modified_year(f: Path) -> str:
-    """ In case of the changed arg, update year to last modifed year """
+    """ In case of the changed arg, update year to last modified year """
     try:
         cmd = ['git', 'log', '-1', '--format=%ad', '--date=format:%Y', str(f)]
         proc = run(
