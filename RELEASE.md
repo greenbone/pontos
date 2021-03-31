@@ -115,7 +115,7 @@ if it has been lost.
 * Check install version with a Python script:
 
   ```sh
-  python3 -c "from gvm import __version__; print(__version__)"
+  python3 -c "from pontos.version import __version__; print(__version__)"
   ```
 
 * Remove test environment:
