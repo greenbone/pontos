@@ -5,17 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
-### Added
+## [21.3.0] - 2021-03-31
 ### Changed
 - Update dependencies to allow to use tomlkit >= 0.5.11 [#73](https://github.com/greenbone/pontos/pull/73)
 
-### Deprecated
-### Removed
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.2.0...HEAD
-
+[21.3.0]: https://github.com/greenbone/pontos/compare/v21.2.0...v21.3.0
 
 ## [21.2.0] - 2021-02-08
 
