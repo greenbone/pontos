@@ -76,10 +76,10 @@ if it has been lost.
   poetry run python -m pontos.version show
   ```
 
-* Update the version number to some dev version e.g.
+* Update the version number to some alpha version e.g.
 
   ```sh
-  poetry run python -m pontos.version update 20.8.2dev1
+  poetry run python -m pontos.version update 22.8.2a1
   ```
 
 ## Uploading to the PyPI Test Instance
