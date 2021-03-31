@@ -32,7 +32,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-tomlkit = "^0.5.11"
+tomlkit = ">=0.5.11"
 packaging = "^20.3"
 requests = "^2.24.0"
 
