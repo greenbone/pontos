@@ -7,7 +7,11 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+
 ### Changed
+- Refactored release module and changed the arguments of release, prepare and
+  sign commands [#80](https://github.com/greenbone/pontos/pull/80)
+
 ### Deprecated
 ### Removed
 ### Fixed
