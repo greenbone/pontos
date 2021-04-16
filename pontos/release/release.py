@@ -315,9 +315,9 @@ def prepare(
         return False
 
     updated = changelog_module.add_skeleton(
-        change_log_path.read_text(),
-        release_version,
-        project,
+        markdown=change_log_path.read_text(),
+        new_version=release_version,
+        project_name=project,
         git_tag_prefix=git_tag_prefix,
         git_space=space,
     )
