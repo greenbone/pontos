@@ -243,7 +243,7 @@ def prepare(
     version_module: version,
     changelog_module: changelog,
     **_kwargs,
-):
+) -> bool:
     project: str = args.project
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
@@ -350,7 +350,7 @@ def release(
     token: str,
     requests_module: requests,
     **_kwargs,
-):
+) -> bool:
     project: str = args.project
     space: str = args.space
     git_remote_name: str = args.git_remote_name
@@ -402,7 +402,7 @@ def sign(
     token: str,
     requests_module: requests,
     **_kwargs,
-):
+) -> bool:
     def download(url, filename):
         file_path = path(f"/tmp/{filename}")
 
