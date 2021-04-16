@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import Callable, Dict, List, Union, Tuple
 
 import requests
-from requests.api import request
 
 from pontos import version
 from pontos import changelog
@@ -200,7 +199,7 @@ def upload_assets(
     pathnames: List[str],
     github_json: Dict,
     path: Path,
-    requests_module: request,
+    requests_module: requests,
 ) -> bool:
     print("Uploading assets: {}".format(pathnames))
 
