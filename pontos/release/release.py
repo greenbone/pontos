@@ -32,6 +32,8 @@ import requests
 from pontos import version
 from pontos import changelog
 
+RELEASE_TEXT_FILE = ".release.txt.md"
+
 
 def build_release_dict(
     release_version: str,
@@ -302,7 +304,7 @@ def prepare(
             "git tag -s {} -m '{}'".format(git_version, commit_msg),
         )
 
-    release_text = path(".release.txt.md")
+    release_text = path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text)
 
     # set to new version add skeleton
@@ -357,7 +359,7 @@ def release(
     git_tag_prefix: str = args.git_tag_prefix
     release_version: str = args.release_version
 
-    changelog_text: str = path(".release.txt.md").read_text()
+    changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
 
     print("Pushing changes")
 
@@ -389,7 +391,7 @@ def release(
         print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
-    path(".release.txt.md").unlink()
+    path(RELEASE_TEXT_FILE).unlink()
     return True
 
 
