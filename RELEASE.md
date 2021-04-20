@@ -131,7 +131,7 @@ if it has been lost.
 * Run pontos-release prepare
 
   ```sh
-  poetry run pontos-release --release-version <version> --next-release-version <dev-version> --project pontos --space greenbone --git-signing-key <your-public-gpg-key> --git-remote-name upstream prepare
+  poetry run pontos-release --project pontos --space greenbone prepare --release-version <version> --next-version <dev-version> --git-signing-key <your-public-gpg-key>
   ```
 
 * Check git log and tag
@@ -158,7 +158,7 @@ if it has been lost.
 * Run pontos-release release
 
   ```sh
-  poetry run pontos-release --release-version <version> --next-release-version <dev-version> --project pontos --space greenbone --git-signing-key <your-public-gpg-key> --git-remote-name upstream release
+  poetry run pontos-release --project pontos --space greenbone release --release-version <version> --git-remote-name upstream
   ```
 
 ## Uploading to the 'real' PyPI
@@ -179,5 +179,5 @@ if it has been lost.
 
 
   ```sh
-      poetry run pontos-release --release-version <version>  --next-release-version <dev-version> --project pontos --space greenbone sign
+      poetry run pontos-release --project pontos --space greenbone sign --release-version <version>
   ```
