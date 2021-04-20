@@ -104,10 +104,8 @@ if it has been lost.
 * Create a test directory:
 
   ```sh
-  mkdir pontos-install-test
-  cd pontos-install-test
-  python3 -m venv test-env
-  source test-env/bin/activate
+  mkdir pontos-install-test && cd pontos-install-test
+  python3 -m venv test-env && source test-env/bin/activate
   pip install -U pip  # ensure the environment uses a recent version of pip
   pip install --pre -I --extra-index-url https://test.pypi.org/simple/ pontos
   ```
@@ -122,8 +120,7 @@ if it has been lost.
 
   ```sh
   deactivate
-  cd ..
-  rm -rf pontos-install-test
+  cd .. && rm -rf pontos-install-test
   ```
 
 ## Prepare the Release
