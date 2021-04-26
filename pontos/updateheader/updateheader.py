@@ -53,7 +53,7 @@ SUPPORTED_LICENCES = [
 
 
 def _get_modified_year(f: Path) -> str:
-    """ In case of the changed arg, update year to last modified year """
+    """In case of the changed arg, update year to last modified year"""
     try:
         cmd = ['git', 'log', '-1', '--format=%ad', '--date=format:%Y', str(f)]
         proc = run(
@@ -72,7 +72,7 @@ def _find_copyright(
     line: str,
     regex: re.Pattern,
 ) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
-    """ Match the line for the regex """
+    """Match the line for the regex"""
     copyright_match = re.search(regex, line)
     if copyright_match:
         return (
@@ -194,7 +194,7 @@ def _update_file(
 
 
 def _parse_args(args=None):
-    """ Parsing the args """
+    """Parsing the args"""
 
     parser = ArgumentParser(
         description="Update copyright in source file headers.",
