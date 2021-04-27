@@ -7,6 +7,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+- Template for header [85](https://github.com/greenbone/pontos/pull/85)
 ### Changed
 ### Deprecated
 ### Removed
