@@ -33,29 +33,30 @@ from typing import Dict, Tuple, Union
 from pathlib import Path
 
 SUPPORTED_FILE_TYPES = [
-    '.bash',
-    '.c',
-    '.cmake',
-    '.js',
-    '.nasl',
-    '.po',
-    '.py',
-    '.sh',
-    '.txt',
-    '.xml',
+    ".bash",
+    ".c",
+    ".h",
+    ".cmake",
+    ".js",
+    ".nasl",
+    ".po",
+    ".py",
+    ".sh",
+    ".txt",
+    ".xml",
 ]
 SUPPORTED_LICENCES = [
-    'AGPL-3.0-or-later',
-    'GPL-2.0-only',
-    'GPL-2.0-or-later',
-    'GPL-3.0-or-later',
+    "AGPL-3.0-or-later",
+    "GPL-2.0-only",
+    "GPL-2.0-or-later",
+    "GPL-3.0-or-later",
 ]
 
 
 def _get_modified_year(f: Path) -> str:
     """In case of the changed arg, update year to last modified year"""
     try:
-        cmd = ['git', 'log', '-1', '--format=%ad', '--date=format:%Y', str(f)]
+        cmd = ["git", "log", "-1", "--format=%ad", "--date=format:%Y", str(f)]
         proc = run(
             cmd,
             text=True,
@@ -78,9 +79,9 @@ def _find_copyright(
         return (
             True,
             {
-                'creation_year': copyright_match.group(1),
-                'modification_year': copyright_match.group(2),
-                'company': copyright_match.group(3),
+                "creation_year": copyright_match.group(1),
+                "modification_year": copyright_match.group(2),
+                "company": copyright_match.group(3),
             },
         )
     return False, None
@@ -94,9 +95,9 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
     """
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
-        licence_file = root / 'templates' / licence / f'template{suffix}'
+        licence_file = root / "templates" / licence / f"template{suffix}"
         try:
-            return licence_file.read_text().replace('Company', company)
+            return licence_file.read_text().replace("Company", company)
         except FileNotFoundError as e:
             raise e
     else:
@@ -129,7 +130,7 @@ def _update_file(
             i = 10  # assume that copyright is in the first 10 lines
             while not found and i > 0:
                 line = fp.readline()
-                if line == '':
+                if line == "":
                     i = 0
                     continue
                 found, copyright_match = _find_copyright(line=line, regex=regex)
@@ -160,10 +161,10 @@ def _update_file(
                 return 1
             # replace header and write it to file
             if (
-                not copyright_match['modification_year']
-                and copyright_match['creation_year'] < args.year
-                or copyright_match['modification_year']
-                and copyright_match['modification_year'] < args.year
+                not copyright_match["modification_year"]
+                and copyright_match["creation_year"] < args.year
+                or copyright_match["modification_year"]
+                and copyright_match["modification_year"] < args.year
             ):
                 copyright_term = (
                     f'Copyright (C) {copyright_match["creation_year"]}'
@@ -176,20 +177,20 @@ def _update_file(
                 fp.write(new_line)
                 fp.write(rest_of_file)
                 print(
-                    f'{file}: Changed Licence Header Copyright Year '
+                    f"{file}: Changed Licence Header Copyright Year "
                     f'{copyright_match["modification_year"]} -> '
-                    f'{args.year}'
+                    f"{args.year}"
                 )
 
                 return 0
             else:
-                print(f'{file}: Licence Header is ok.')
+                print(f"{file}: Licence Header is ok.")
                 return 0
     except FileNotFoundError as e:
-        print(f'{file}: File is not existing.')
+        print(f"{file}: File is not existing.")
         raise e
     except UnicodeDecodeError as e:
-        print(f'{file}: Ignoring binary file.')
+        print(f"{file}: Ignoring binary file.")
         raise e
 
 
@@ -226,13 +227,13 @@ def _parse_args(args=None):
         "-l",
         "--licence",
         choices=SUPPORTED_LICENCES,
-        default='GPL-3.0-or-later',
+        default="GPL-3.0-or-later",
         help="Add header f files",
     )
 
     parser.add_argument(
         "--company",
-        default='Greenbone Networks GmbH',
+        default="Greenbone Networks GmbH",
         help=(
             "If a header will be added to file, \n"
             "it will be licenced by company."
