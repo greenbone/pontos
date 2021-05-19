@@ -1,0 +1,37 @@
+name: Build and test
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: 'ubuntu-latest'
+    strategy:
+        matrix:
+          python-version: 
+            - 3.7
+            - 3.8
+            - 3.9
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade poetry
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Check with black
+        run: poetry run black --check --diff pontos tests
+      - name: Check with pylint
+        run: poetry run pylint pontos tests
+      - name: Check version information
+        run: poetry run python -m pontos.version verify current
