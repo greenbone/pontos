@@ -62,6 +62,7 @@ jobs:
 
   codecov:
     name: Upload coverage to codecov.io
+    needs: test
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
@@ -79,5 +80,3 @@ jobs:
         run: poetry run coverage run -m unittest
       - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@v1
-        with:
-          verbose: true
