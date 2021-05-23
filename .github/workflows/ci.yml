@@ -24,12 +24,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install poetry and dependencies
         uses: greenbone/actions/poetry@v1
-      - name: Check with black
-        run: poetry run black --check --diff pontos tests
-      - name: Check with pylint
-        run: poetry run pylint pontos tests
-      - name: Check version information
-        run: poetry run python -m pontos.version verify current
+      - name: Check with black, pylint and pontos.version
+        uses: greenbone/actions/lint-python@v1
+        with:
+          packages: pontos tests
 
   test:
     name: Run all tests
