@@ -21,6 +21,7 @@ import argparse
 import sys
 import subprocess
 import os
+import re
 import json
 import shutil
 from contextlib import redirect_stdout
@@ -146,8 +147,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     )
     sign_parser.add_argument(
         '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
+        help=(
+            'Will release changelog as version. Must be PEP 440 compliant. '
+            'If not given, it will be read from the changelog.'
+        ),
     )
     sign_parser.add_argument(
         '--git-tag-prefix',
@@ -249,6 +252,8 @@ def upload_assets(
 
 
 def calculate_calendar_version(_version: version) -> Tuple[bool, str]:
+    """find the release version by checking latest version and
+    the today's date"""
     args = ['show']
 
     with redirect_stdout(StringIO()) as version_str:
@@ -412,6 +417,23 @@ def prepare(
     return True
 
 
+def find_release_version_in_changelog(changelog_text: str) -> str:
+    """Find the version string in the changelog text"""
+    try:
+        if changelog_text:
+            today = datetime.date.today()
+            regex = f'({str(today.year % 100)}\\.{str(today.month)}\\.\\d+)'
+            return re.compile(regex).search(changelog_text).group()
+    except AttributeError:
+        try:
+            today = datetime.date.today()
+            regex = r'(\d+\.\d+\.\d+)'
+            return re.compile(regex).search(changelog_text).group()
+        except AttributeError as e:
+            print(e)
+            sys.exit(1)
+
+
 def release(
     shell_cmd_runner: Callable,
     args: argparse.Namespace,
@@ -429,6 +451,8 @@ def release(
     release_version: str = args.release_version
 
     changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
+    if not release_version:
+        release_version = find_release_version_in_changelog(changelog_text)
 
     print("Pushing changes")
 
