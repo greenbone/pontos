@@ -23,10 +23,12 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade poetry
         poetry install
+    - name: Install xmllint
+        run: sudo apt-get install git
     - name: Build and publish
       env:
-        GITHUB_USER: __token__
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_USER: ${{ secrets.BOT_USER }}
+        GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       run: |
         poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} prepare --calendar--git-signing-key $GITHUB_TOKEN
         poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} release
