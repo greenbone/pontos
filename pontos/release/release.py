@@ -23,6 +23,9 @@ import subprocess
 import os
 import json
 import shutil
+from contextlib import redirect_stdout
+from io import StringIO
+import datetime
 
 from pathlib import Path
 from typing import Callable, Dict, List, Union, Tuple
@@ -88,16 +91,24 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 
     prepare_parser = subparsers.add_parser('prepare')
     prepare_parser.set_defaults(func=prepare)
-    prepare_parser.add_argument(
+    version_group = prepare_parser.add_mutually_exclusive_group(required=True)
+    version_group.add_argument(
         '--release-version',
         help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
     )
+    version_group.add_argument(
+        '--calendar',
+        help=(
+            'Automatically calculate calendar release version, from current'
+            ' version and date.'
+        ),
+        action='store_true',
+    )
+
     prepare_parser.add_argument(
         '--next-version',
         help='Sets the next PEP 440 compliant version in project definition '
         'after the release',
-        required=True,
     )
     prepare_parser.add_argument(
         '--git-signing-key',
@@ -237,6 +248,54 @@ def upload_assets(
     return True
 
 
+def calculate_calendar_version(_version: version) -> Tuple[bool, str]:
+    args = ['show']
+
+    with redirect_stdout(StringIO()) as version_str:
+        executed, _ = _version.main(False, args=args)
+
+    current_version = None
+    if executed:
+        current_version = version_str.getvalue()
+        print(f"Found version {current_version}")
+    else:
+        print("No version found, creating initial version")
+
+    today = datetime.date.today()
+    dev = None
+    if current_version:
+        if 'dev' in current_version:
+            year, month, minor, dev = current_version.split('.')
+        else:
+            year, month, minor = current_version.split('.')
+        if not dev:
+            # in case current version is not a dev version
+            # increment it
+            minor = str(int(minor) + 1)
+        if not int(year) == today.year % 100:
+            year = str(today.year % 100)
+            # since current year is higher than version year
+            # set minor to 0
+            minor = str(0)
+        if not int(month) == today.month:
+            month = str(today.month)
+            # since current month is higher than version month
+            # set minor to 0
+            minor = str(0)
+    else:
+        year = str(today.year % 100)
+        month = str(today.month)
+        minor = str(0)
+
+    release_version = ".".join([year, month, minor])
+
+    minor = str(int(minor) + 1)
+
+    next_version = ".".join([year, month, minor, 'dev1'])
+
+    return release_version, next_version
+
+
 def prepare(
     shell_cmd_runner: Callable,
     args: argparse.Namespace,
@@ -250,6 +309,7 @@ def prepare(
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = args.git_signing_key
+    calendar: bool = args.calendar
     release_version: str = args.release_version
     next_version: str = args.next_version
 
@@ -261,6 +321,15 @@ def prepare(
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError('git tag {} is already taken.'.format(git_version))
 
+    if calendar:
+        release_version, next_version = calculate_calendar_version(
+            version_module
+        )
+    else:
+        if not next_version:
+            year, month, minor = release_version.split('.')
+            minor = str(int(minor) + 1)
+            next_version = '.'.join([year, month, minor, 'dev1'])
     executed, filename = update_version(
         release_version, version_module, develop=False
     )
