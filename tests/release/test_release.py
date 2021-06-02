@@ -28,7 +28,10 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from pontos import version, release, changelog
-from pontos.release.release import calculate_calendar_version
+from pontos.release.release import (
+    calculate_calendar_version,
+    find_release_version_in_changelog,
+)
 
 
 @dataclass
@@ -263,6 +266,61 @@ class PrepareTestCase(unittest.TestCase):
         self.assertEqual(
             next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
         )
+
+    def test_find_release_version_in_changelog(self):
+        today = datetime.datetime.today()
+        release_text = f"""
+## [{str(today.year % 100)}.{str(today.month)}.3] - {{}}
+
+### Added
+
+* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
+
+### Changed
+
+* Refactored Gmp classes into mixins [#254](https://github.com/greenbone/python-gvm/pull/254)
+
+### Fixed
+
+* Require method and condition arguments for modify_alert with an event [#267](https://github.com/greenbone/python-gvm/pull/267)
+
+[1.2.3]: https://github.com/greenbone/python-gvm/compare/v1.6.0...hidden1.2.3
+
+        """
+
+        release_version = find_release_version_in_changelog(release_text)
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.3'
+        )
+
+    def test_find_other_release_version_in_changelog(self):
+        release_text = """
+## [1.1.3] - {}
+
+### Added
+
+* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
+
+### Changed
+
+* Refactored Gmp classes into mixins [#254](https://github.com/greenbone/python-gvm/pull/254)
+
+### Fixed
+
+* Require method and condition arguments for modify_alert with an event [#267](https://github.com/greenbone/python-gvm/pull/267)
+
+[1.2.3]: https://github.com/greenbone/python-gvm/compare/v1.6.0...hidden1.2.3
+
+        """
+
+        release_version = find_release_version_in_changelog(release_text)
+        self.assertEqual(release_version, '1.1.3')
+
+    def test_find_release_version_in_changelog_error(self):
+        release_text = "noversion"
+
+        with self.assertRaises(SystemExit):
+            find_release_version_in_changelog(release_text)
 
     def test_not_release_when_no_project_found(self):
         fake_path_class = MagicMock(spec=Path)
