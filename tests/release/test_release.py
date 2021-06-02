@@ -19,6 +19,7 @@
 
 import shutil
 import unittest
+import datetime
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,6 +28,7 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from pontos import version, release, changelog
+from pontos.release.release import calculate_calendar_version
 
 
 @dataclass
@@ -53,6 +55,29 @@ class PrepareTestCase(unittest.TestCase):
             '0.0.1',
             '--next-version',
             '0.0.2dev',
+        ]
+        runner = lambda x: StdOutput('')
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertTrue(released)
+
+    def test_prepare_calendar_successfully(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+        args = [
+            '--project',
+            'testcases',
+            'prepare',
+            '--calendar',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -129,6 +154,115 @@ class PrepareTestCase(unittest.TestCase):
                 leave=False,
                 args=args,
             )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_old(self, stdout_mock):
+        # thats the ugliest mock  I have created. Ever.
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = '20.4.1.dev3'
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        today = datetime.datetime.today()
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
+        )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_old_month(self, stdout_mock):
+        today = datetime.datetime.today()
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = f'{str(today.year % 100)}.4.1.dev3'
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
+        )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_old_year(self, stdout_mock):
+        today = datetime.datetime.today()
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = f'19.{str(today.month)}.1.dev3'
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
+        )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_same_year_month(self, stdout_mock):
+        today = datetime.datetime.today()
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = (
+            f'{str(today.year % 100)}.{str(today.month)}.1.dev3'
+        )
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.1'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.2.dev1'
+        )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_same_year_month_no_dev(
+        self, stdout_mock
+    ):
+        today = datetime.datetime.today()
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = (
+            f'{str(today.year % 100)}.{str(today.month)}.1'
+        )
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.2'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.3.dev1'
+        )
+
+    @patch('pontos.release.release.redirect_stdout')
+    def test_calculate_calendar_version_not_found(self, stdout_mock):
+        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
+        getvalue_mock.return_value = None
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (False, 'MyProject.conf')
+
+        release_version, next_version = calculate_calendar_version(fake_version)
+
+        today = datetime.datetime.today()
+        self.assertEqual(
+            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
+        )
+        self.assertEqual(
+            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
+        )
 
     def test_not_release_when_no_project_found(self):
         fake_path_class = MagicMock(spec=Path)
