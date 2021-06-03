@@ -31,5 +31,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         SIGNING_KEY: ${{ secrets.BOT_SIGNING_KEY }}
       run: |
-        poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} prepare --calendar--git-signing-key $SIGNING_KEY
+        poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} prepare --calendar --git-signing-key $SIGNING_KEY
         poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} release
