@@ -19,7 +19,6 @@
 
 import shutil
 import unittest
-import datetime
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,10 +27,6 @@ from unittest.mock import MagicMock, patch
 import requests
 
 from pontos import version, release, changelog
-from pontos.release.release import (
-    calculate_calendar_version,
-    find_release_version_in_changelog,
-)
 
 
 @dataclass
@@ -54,8 +49,6 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -101,8 +94,6 @@ class PrepareTestCase(unittest.TestCase):
             '0815',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         called = []
 
@@ -134,8 +125,6 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('v0.0.1'.encode())
         with self.assertRaises(
@@ -150,170 +139,6 @@ class PrepareTestCase(unittest.TestCase):
                 args=args,
             )
 
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_old(self, stdout_mock):
-        # thats the ugliest mock  I have created. Ever.
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = '20.4.1.dev3'
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        today = datetime.datetime.today()
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
-        )
-
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_old_month(self, stdout_mock):
-        today = datetime.datetime.today()
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = f'{str(today.year % 100)}.4.1.dev3'
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
-        )
-
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_old_year(self, stdout_mock):
-        today = datetime.datetime.today()
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = f'19.{str(today.month)}.1.dev3'
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
-        )
-
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_same_year_month(self, stdout_mock):
-        today = datetime.datetime.today()
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = (
-            f'{str(today.year % 100)}.{str(today.month)}.1.dev3'
-        )
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.1'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.2.dev1'
-        )
-
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_same_year_month_no_dev(
-        self, stdout_mock
-    ):
-        today = datetime.datetime.today()
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = (
-            f'{str(today.year % 100)}.{str(today.month)}.1'
-        )
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.2'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.3.dev1'
-        )
-
-    @patch('pontos.release.release.redirect_stdout')
-    def test_calculate_calendar_version_not_found(self, stdout_mock):
-        getvalue_mock = stdout_mock.return_value.__enter__.return_value.getvalue
-        getvalue_mock.return_value = None
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (False, 'MyProject.conf')
-
-        release_version, next_version = calculate_calendar_version(fake_version)
-
-        today = datetime.datetime.today()
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.0'
-        )
-        self.assertEqual(
-            next_version, f'{str(today.year % 100)}.{str(today.month)}.1.dev1'
-        )
-
-    def test_find_release_version_in_changelog(self):
-        today = datetime.datetime.today()
-        release_text = f"""
-## [{str(today.year % 100)}.{str(today.month)}.3] - {{}}
-
-### Added
-
-* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
-
-### Changed
-
-* Refactored Gmp classes into mixins [#254](https://github.com/greenbone/python-gvm/pull/254)
-
-### Fixed
-
-* Require method and condition arguments for modify_alert with an event [#267](https://github.com/greenbone/python-gvm/pull/267)
-
-[1.2.3]: https://github.com/greenbone/python-gvm/compare/v1.6.0...hidden1.2.3
-
-        """
-
-        release_version = find_release_version_in_changelog(release_text)
-        self.assertEqual(
-            release_version, f'{str(today.year % 100)}.{str(today.month)}.3'
-        )
-
-    def test_find_other_release_version_in_changelog(self):
-        release_text = """
-## [1.1.3] - {}
-
-### Added
-
-* Added support for GMP 20.08 [#254](https://github.com/greenbone/python-gvm/pull/254)
-
-### Changed
-
-* Refactored Gmp classes into mixins [#254](https://github.com/greenbone/python-gvm/pull/254)
-
-### Fixed
-
-* Require method and condition arguments for modify_alert with an event [#267](https://github.com/greenbone/python-gvm/pull/267)
-
-[1.2.3]: https://github.com/greenbone/python-gvm/compare/v1.6.0...hidden1.2.3
-
-        """
-
-        release_version = find_release_version_in_changelog(release_text)
-        self.assertEqual(release_version, '1.1.3')
-
-    def test_find_release_version_in_changelog_error(self):
-        release_text = "noversion"
-
-        with self.assertRaises(SystemExit):
-            find_release_version_in_changelog(release_text)
-
     def test_not_release_when_no_project_found(self):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
@@ -324,8 +149,6 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -349,8 +172,6 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -389,6 +210,8 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             '--release-version',
             '0.0.1',
+            '--next-version',
+            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -449,13 +272,18 @@ class ReleaseTestCase(unittest.TestCase):
             'testcases',
             '--release-version',
             '0.0.1',
+            '--next-version',
+            '0.0.2.dev1',
             '--git-remote-name',
             'testremote',
         ]
 
+        called = []
+
         def runner(cmd: str):
-            if not 'testremote' in cmd:
-                raise ValueError('unexpected cmd: {}'.format(cmd))
+            called.append(cmd)
+            # if not 'testremote' in cmd:
+            #     raise ValueError('unexpected cmd: {}'.format(cmd))
             return StdOutput('')
 
         released = release.main(
@@ -468,6 +296,15 @@ class ReleaseTestCase(unittest.TestCase):
             args=args,
         )
         self.assertTrue(released)
+
+        self.assertIn('git push --follow-tags testremote', called)
+        self.assertIn('git add MyProject.conf', called)
+        self.assertIn(
+            "git commit -S -m '* Update to version"
+            " 0.0.2.dev1\n* Add empty changelog after 0.0.1'",
+            called,
+        )
+        print(called)
 
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
