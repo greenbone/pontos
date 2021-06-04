@@ -27,8 +27,12 @@ from .version import (
     is_version_pep440_compliant,
     get_version_from_pyproject_toml,
 )
-
 from .cmake_version import CMakeVersionParser, CMakeVersionCommand
+from .helper import (
+    calculate_calendar_version,
+    get_current_version,
+    get_next_dev_version,
+)
 
 
 def main(leave=True, args=None):
@@ -50,12 +54,15 @@ def main(leave=True, args=None):
 
 __all__ = [
     '__version__',
-    'VersionCommand',
-    'VersionError',
+    'calculate_calendar_version',
+    'CMakeVersionCommand',
+    'get_version_from_pyproject_toml',
+    'get_current_version',
+    'get_next_dev_version',
+    'is_version_pep440_compliant',
+    'PontosVersionCommand',
     'safe_version',
     'strip_version',
-    'is_version_pep440_compliant',
-    'get_version_from_pyproject_toml',
-    'CMakeVersionCommand',
-    'PontosVersionCommand',
+    'VersionCommand',
+    'VersionError',
 ]
