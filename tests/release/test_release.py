@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=C0413,W0108
 
+import os
 import shutil
 import unittest
 
@@ -45,6 +46,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--release-version',
@@ -67,6 +70,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--calendar',
@@ -88,6 +93,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--git-signing-key',
@@ -121,6 +128,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_changelog = MagicMock(spec=changelog)
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--release-version',
@@ -145,6 +154,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, '')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--release-version',
@@ -168,6 +179,8 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--release-version',
