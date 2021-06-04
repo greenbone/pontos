@@ -36,8 +36,8 @@ class CalculateNextVersionTestCase(unittest.TestCase):
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
         mocks = [
-            'pontos.release.release.PontosVersionCommand',
-            'pontos.release.release.CMakeVersionCommand',
+            'pontos.version.helper.PontosVersionCommand',
+            'pontos.version.helper.CMakeVersionCommand',
         ]
         current_versions = [
             '20.4.1.dev3',

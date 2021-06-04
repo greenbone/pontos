@@ -51,8 +51,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
@@ -77,8 +75,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--calendar',
         ]
@@ -100,8 +96,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--git-signing-key',
             '0815',
@@ -137,8 +131,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_version = MagicMock(spec=version)
         fake_changelog = MagicMock(spec=changelog)
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
@@ -329,8 +321,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
@@ -356,8 +346,6 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
@@ -396,9 +384,9 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'release',
             '--project',
             'testcases',
-            'release',
             '--release-version',
             '0.0.1',
         ]
@@ -426,9 +414,9 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'release',
             '--project',
             'testcases',
-            'release',
             '--release-version',
             '0.0.1',
         ]
@@ -456,9 +444,9 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'release',
             '--project',
             'testcases',
-            'release',
             '--release-version',
             '0.0.1',
             '--git-remote-name',
@@ -501,9 +489,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'sign',
             '--project',
             'testcases',
-            'sign',
             '--release-version',
             '0.0.1',
         ]
@@ -538,9 +526,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'sign',
             '--project',
             'testcases',
-            'sign',
             '--release-version',
             '0.0.1',
         ]
@@ -575,9 +563,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'sign',
             '--project',
             'testcases',
-            'sign',
             '--release-version',
             '0.0.1',
         ]

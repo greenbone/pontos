@@ -49,7 +49,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
         result = CMakeVersionCommand(cmake_lists_path=fake_path).run(
-            args=['verify', 'su_much_version_so_much_wow']
+            args=['verify', 'so_much_version_so_much_wow']
         )
         self.assertTrue(
             isinstance(result, str), "expected result to be an error string"
@@ -106,7 +106,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
     def test_update_raise_exception_when_version_is_incorrect(self):
         under_test = CMakeVersionParser("project(VERSION 2.3.4)")
         with self.assertRaises(VersionError):
-            under_test.update_version('su_much_version_so_much_wow')
+            under_test.update_version('so_much_version_so_much_wow')
 
     def test_not_confuse_version_outside_project(self):
         under_test = CMakeVersionParser(
