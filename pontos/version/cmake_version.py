@@ -89,6 +89,11 @@ class CMakeVersionCommand:
         cmvp = CMakeVersionParser(content)
         self.__print(cmvp.get_current_version())
 
+    def get_current_version(self) -> str:
+        content = self.__cmake_filepath.read_text()
+        cmvp = CMakeVersionParser(content)
+        return cmvp.get_current_version()
+
     def verify_version(self, version: str):
         if not is_version_pep440_compliant(version):
             raise VersionError(
