@@ -182,16 +182,8 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 def parse(args=None) -> Tuple[str, str, argparse.Namespace]:
     parser = initialize_default_parser()
     commandline_arguments = parser.parse_args(args)
-    token = (
-        os.environ['GITHUB_TOKEN']
-        if not args or not 'testcases' in args
-        else 'TOKEN'
-    )
-    user = (
-        os.environ['GITHUB_USER']
-        if not args or not 'testcases' in args
-        else 'USER'
-    )
+    token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
+    user = os.environ['GITHUB_USER'] if not args else 'USER'
     return (user, token, commandline_arguments)
 
 
