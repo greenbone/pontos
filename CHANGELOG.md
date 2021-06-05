@@ -10,10 +10,11 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 - Template for header [85](https://github.com/greenbone/pontos/pull/85)
 
 ### Changed
-- For `pontos-release` the `--release-version` argument is not required anymore. You can choose between `--release-version` and `--calendar` now.
+- For `pontos-release` the `--release-version` argument is not required anymore. You can choose between `--release-version` and `--calendar` now. [104](https://github.com/greenbone/pontos/pull/104)
   - `--calendar` will automatically look up the next calendar release version number
   - `--release-version` can still be used for setting the release version number manually
-  - `--next-version` is not required anymore, it will be set by calculating the next `dev` version, if not manually set. [104](https://github.com/greenbone/pontos/pull/104)
+  - `--next-version` is not required anymore, it will be set by calculating the next `dev` version, if not manually set.
+- The new Changelog and setting the next version is now done after the release within `pontos-release release` [104](https://github.com/greenbone/pontos/pull/104)
 
 ### Deprecated
 ### Removed
