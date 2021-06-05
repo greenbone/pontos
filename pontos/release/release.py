@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # pontos/release/release.py
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2020 - 2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 import argparse
 import sys
 import subprocess
@@ -30,6 +31,11 @@ from typing import Callable, Dict, List, Union, Tuple
 import requests
 
 from pontos import version
+from pontos.version import (
+    calculate_calendar_version,
+    get_current_version,
+    get_next_dev_version,
+)
 from pontos import changelog
 
 RELEASE_TEXT_FILE = ".release.txt.md"
@@ -68,16 +74,6 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         description='Release handling utility.',
         prog='pontos-release',
     )
-    parser.add_argument(
-        '--project',
-        help='The github project',
-        required=True,
-    )
-    parser.add_argument(
-        '--space',
-        default='greenbone',
-        help='user/team name in github',
-    )
 
     subparsers = parser.add_subparsers(
         title='subcommands',
@@ -88,17 +84,20 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 
     prepare_parser = subparsers.add_parser('prepare')
     prepare_parser.set_defaults(func=prepare)
-    prepare_parser.add_argument(
+    version_group = prepare_parser.add_mutually_exclusive_group(required=True)
+    version_group.add_argument(
         '--release-version',
         help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
     )
-    prepare_parser.add_argument(
-        '--next-version',
-        help='Sets the next PEP 440 compliant version in project definition '
-        'after the release',
-        required=True,
+    version_group.add_argument(
+        '--calendar',
+        help=(
+            'Automatically calculate calendar release version, from current'
+            ' version and date.'
+        ),
+        action='store_true',
     )
+
     prepare_parser.add_argument(
         '--git-signing-key',
         help='The key to sign the commits and tag for a release',
@@ -113,9 +112,20 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
         '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
+        help=(
+            'Will release changelog as version. Must be PEP 440 compliant. '
+            'default: lookup version in project definition.'
+        ),
     )
+
+    release_parser.add_argument(
+        '--next-version',
+        help=(
+            'Sets the next PEP 440 compliant version in project definition '
+            'after the release. default: set to next dev version',
+        ),
+    )
+
     release_parser.add_argument(
         '--git-remote-name',
         help='The git remote name to push the commits and tag to',
@@ -124,6 +134,21 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         '--git-tag-prefix',
         default='v',
         help='Prefix for git tag versions. Default: %(default)s',
+    )
+    release_parser.add_argument(
+        '--git-signing-key',
+        help='The key to sign the commits and tag for a release',
+    )
+
+    release_parser.add_argument(
+        '--project',
+        help='The github project',
+        required=True,
+    )
+    release_parser.add_argument(
+        '--space',
+        default='greenbone',
+        help='user/team name in github',
     )
 
     sign_parser = subparsers.add_parser('sign')
@@ -135,13 +160,22 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     )
     sign_parser.add_argument(
         '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
+        help='Will release changelog as version. Must be PEP 440 compliant.',
     )
     sign_parser.add_argument(
         '--git-tag-prefix',
         default='v',
         help='Prefix for git tag versions. Default: %(default)s',
+    )
+    sign_parser.add_argument(
+        '--project',
+        help='The github project',
+        required=True,
+    )
+    sign_parser.add_argument(
+        '--space',
+        default='greenbone',
+        help='user/team name in github',
     )
     return parser
 
@@ -149,16 +183,8 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 def parse(args=None) -> Tuple[str, str, argparse.Namespace]:
     parser = initialize_default_parser()
     commandline_arguments = parser.parse_args(args)
-    token = (
-        os.environ['GITHUB_TOKEN']
-        if not args or not 'testcases' in args
-        else 'TOKEN'
-    )
-    user = (
-        os.environ['GITHUB_USER']
-        if not args or not 'testcases' in args
-        else 'USER'
-    )
+    token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
+    user = os.environ['GITHUB_USER'] if not args else 'USER'
     return (user, token, commandline_arguments)
 
 
@@ -246,20 +272,22 @@ def prepare(
     changelog_module: changelog,
     **_kwargs,
 ) -> bool:
-    project: str = args.project
-    space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = args.git_signing_key
-    release_version: str = args.release_version
-    next_version: str = args.next_version
+    calendar: bool = args.calendar
 
-    print("in prepare")
+    if calendar:
+        release_version: str = calculate_calendar_version()
+    else:
+        release_version: str = args.release_version
+
+    print(f"Preparing the release {release_version}")
 
     # guardian
     git_tags = shell_cmd_runner('git tag -l')
     git_version = "{}{}".format(git_tag_prefix, release_version)
     if git_version.encode() in git_tags.stdout.splitlines():
-        raise ValueError('git tag {} is already taken.'.format(git_version))
+        raise ValueError(f'git tag {git_version} is already taken.')
 
     executed, filename = update_version(
         release_version, version_module, develop=False
@@ -267,7 +295,7 @@ def prepare(
     if not executed:
         return False
 
-    print("updated version {} to {}".format(filename, release_version))
+    print(f"updated version  in {filename} to {release_version}")
 
     change_log_path = path.cwd() / 'CHANGELOG.md'
     updated, changelog_text = changelog_module.update(
@@ -307,7 +335,76 @@ def prepare(
     release_text = path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text)
 
+    print(
+        f"Please verify git tag {git_version}, "
+        f"commit and release text in {str(release_text)}"
+    )
+    print("Afterwards please execute release")
+
+    return True
+
+
+def release(
+    shell_cmd_runner: Callable,
+    args: argparse.Namespace,
+    *,
+    path: Path,
+    version_module: version,
+    username: str,
+    token: str,
+    requests_module: requests,
+    changelog_module: changelog,
+    **_kwargs,
+) -> bool:
+    project: str = args.project
+    space: str = args.space
+    git_signing_key: str = args.git_signing_key
+    git_remote_name: str = (
+        args.git_remote_name if args.git_remote_name is not None else ''
+    )
+    git_tag_prefix: str = args.git_tag_prefix
+    release_version: str = args.release_version
+    next_version: str = args.next_version
+
+    if not release_version:
+        release_version = get_current_version()
+
+    if not next_version:
+        next_version = get_next_dev_version(release_version)
+
+    print("Pushing changes")
+
+    shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
+
+    print("Creating release")
+    changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
+
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+
+    base_url = "https://api.github.com/repos/{}/{}/releases".format(
+        space, project
+    )
+    git_version = f'{git_tag_prefix}{release_version}'
+    response = requests_module.post(
+        base_url,
+        headers=headers,
+        auth=(username, token),
+        json=build_release_dict(
+            git_version,
+            changelog_text,
+            name="{} {}".format(project, release_version),
+        ),
+    )
+    if response.status_code != 201:
+        print("Wrong response status code: {}".format(response.status_code))
+        print(json.dumps(response.text, indent=4, sort_keys=True))
+        return False
+
+    path(RELEASE_TEXT_FILE).unlink()
+
     # set to new version add skeleton
+    change_log_path = path.cwd() / 'CHANGELOG.md'
+
     executed, filename = update_version(
         next_version, version_module, develop=True
     )
@@ -334,64 +431,6 @@ def prepare(
         shell_cmd_runner,
     )
 
-    print(
-        f"Please verify git tag {git_version}, "
-        f"commit and release text in {str(release_text)}"
-    )
-    print("Afterwards please execute release")
-
-    return True
-
-
-def release(
-    shell_cmd_runner: Callable,
-    args: argparse.Namespace,
-    *,
-    path: Path,
-    username: str,
-    token: str,
-    requests_module: requests,
-    **_kwargs,
-) -> bool:
-    project: str = args.project
-    space: str = args.space
-    git_remote_name: str = args.git_remote_name
-    git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = args.release_version
-
-    changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
-
-    print("Pushing changes")
-
-    if git_remote_name:
-        shell_cmd_runner("git push --follow-tags {}".format(git_remote_name))
-    else:
-        shell_cmd_runner("git push --follow-tags")
-
-    print("Creating release")
-
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-
-    base_url = "https://api.github.com/repos/{}/{}/releases".format(
-        space, project
-    )
-    git_version = f'{git_tag_prefix}{release_version}'
-    response = requests_module.post(
-        base_url,
-        headers=headers,
-        auth=(username, token),
-        json=build_release_dict(
-            git_version,
-            changelog_text,
-            name="{} {}".format(project, release_version),
-        ),
-    )
-    if response.status_code != 201:
-        print("Wrong response status code: {}".format(response.status_code))
-        print(json.dumps(response.text, indent=4, sort_keys=True))
-        return False
-
-    path(RELEASE_TEXT_FILE).unlink()
     return True
 
 

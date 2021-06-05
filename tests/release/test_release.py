@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=C0413,W0108
 
+import os
 import shutil
 import unittest
 
@@ -39,6 +40,10 @@ _shutil_mock = MagicMock(spec=shutil)
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class PrepareTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+
     def test_prepare_successfully(self):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
@@ -46,13 +51,31 @@ class PrepareTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
+        ]
+        runner = lambda x: StdOutput('')
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertTrue(released)
+
+    def test_prepare_calendar_successfully(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+
+        args = [
+            'prepare',
+            '--calendar',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -71,16 +94,13 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--git-signing-key',
             '0815',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         called = []
 
@@ -108,14 +128,11 @@ class PrepareTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_changelog = MagicMock(spec=changelog)
+
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('v0.0.1'.encode())
         with self.assertRaises(
@@ -136,14 +153,11 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, '')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -163,14 +177,11 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+
         args = [
-            '--project',
-            'testcases',
             'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -187,10 +198,13 @@ class PrepareTestCase(unittest.TestCase):
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class ReleaseTestCase(unittest.TestCase):
-
-    valid_gh_release_response = (
-        '{"zipball_url": "zip", "tarball_url": "tar", "upload_url":"upload"}'
-    )
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+        self.valid_gh_release_response = (
+            '{"zipball_url": "zip", "tarball_url":'
+            ' "tar", "upload_url":"upload"}'
+        )
 
     def test_release_successfully(self):
         fake_path_class = MagicMock(spec=Path)
@@ -204,11 +218,13 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'release',
             '--project',
             'testcases',
-            'release',
             '--release-version',
             '0.0.1',
+            '--next-version',
+            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
@@ -234,9 +250,9 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
+            'release',
             '--project',
             'testcases',
-            'release',
             '--release-version',
             '0.0.1',
         ]
@@ -264,18 +280,21 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'release',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
+            '--next-version',
+            '0.0.2.dev1',
             '--git-remote-name',
-            'testremote',
+            'upstream',
         ]
 
+        called = []
+
         def runner(cmd: str):
-            if not 'testremote' in cmd:
-                raise ValueError('unexpected cmd: {}'.format(cmd))
+            called.append(cmd)
             return StdOutput('')
 
         released = release.main(
@@ -289,13 +308,25 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
+        self.assertIn('git push --follow-tags upstream', called)
+        self.assertIn('git add MyProject.conf', called)
+        self.assertIn(
+            "git commit -S -m '* Update to version"
+            " 0.0.2.dev1\n* Add empty changelog after 0.0.1'",
+            called,
+        )
+        print(called)
+
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class SignTestCase(unittest.TestCase):
-
-    valid_gh_release_response = (
-        '{"zipball_url": "zip", "tarball_url": "tar", "upload_url":"upload"}'
-    )
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+        self.valid_gh_release_response = (
+            '{"zipball_url": "zip", "tarball_url":'
+            ' "tar", "upload_url":"upload"}'
+        )
 
     def test_fail_sign_on_invalid_get_response(self):
         fake_path_class = MagicMock(spec=Path)
@@ -309,9 +340,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'sign',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -346,9 +377,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'sign',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -383,9 +414,9 @@ class SignTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            '--project',
-            'testcases',
             'sign',
+            '--project',
+            'bar',
             '--release-version',
             '0.0.1',
         ]
