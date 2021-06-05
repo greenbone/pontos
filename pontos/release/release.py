@@ -112,14 +112,18 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
         '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant',
-        required=True,
+        help=(
+            'Will release changelog as version. Must be PEP 440 compliant. '
+            'default: lookup version in project definition.'
+        ),
     )
 
     release_parser.add_argument(
         '--next-version',
-        help='Sets the next PEP 440 compliant version in project definition '
-        'after the release',
+        help=(
+            'Sets the next PEP 440 compliant version in project definition '
+            'after the release. default: set to next dev version',
+        ),
     )
 
     release_parser.add_argument(
@@ -156,10 +160,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     )
     sign_parser.add_argument(
         '--release-version',
-        help=(
-            'Will release changelog as version. Must be PEP 440 compliant. '
-            'If not given, it will be read from the changelog.'
-        ),
+        help='Will release changelog as version. Must be PEP 440 compliant.',
     )
     sign_parser.add_argument(
         '--git-tag-prefix',
