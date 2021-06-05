@@ -40,14 +40,16 @@ _shutil_mock = MagicMock(spec=shutil)
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class PrepareTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+
     def test_prepare_successfully(self):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
         args = [
             'prepare',
             '--release-version',
@@ -70,8 +72,7 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+
         args = [
             'prepare',
             '--calendar',
@@ -93,8 +94,7 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+
         args = [
             'prepare',
             '--git-signing-key',
@@ -128,8 +128,7 @@ class PrepareTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_changelog = MagicMock(spec=changelog)
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+
         args = [
             'prepare',
             '--release-version',
@@ -154,8 +153,7 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, '')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+
         args = [
             'prepare',
             '--release-version',
@@ -179,8 +177,7 @@ class PrepareTestCase(unittest.TestCase):
         fake_version.main.return_value = (False, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+
         args = [
             'prepare',
             '--release-version',
@@ -201,10 +198,13 @@ class PrepareTestCase(unittest.TestCase):
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class ReleaseTestCase(unittest.TestCase):
-
-    valid_gh_release_response = (
-        '{"zipball_url": "zip", "tarball_url": "tar", "upload_url":"upload"}'
-    )
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+        self.valid_gh_release_response = (
+            '{"zipball_url": "zip", "tarball_url":'
+            ' "tar", "upload_url":"upload"}'
+        )
 
     def test_release_successfully(self):
         fake_path_class = MagicMock(spec=Path)
@@ -282,13 +282,13 @@ class ReleaseTestCase(unittest.TestCase):
         args = [
             'release',
             '--project',
-            'testcases',
+            'foo',
             '--release-version',
             '0.0.1',
             '--next-version',
             '0.0.2.dev1',
             '--git-remote-name',
-            'testremote',
+            'upstream',
         ]
 
         called = []
@@ -310,7 +310,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-        self.assertIn('git push --follow-tags testremote', called)
+        self.assertIn('git push --follow-tags upstream', called)
         self.assertIn('git add MyProject.conf', called)
         self.assertIn(
             "git commit -S -m '* Update to version"
@@ -322,10 +322,13 @@ class ReleaseTestCase(unittest.TestCase):
 
 @patch("pontos.release.release.shutil", new=_shutil_mock)
 class SignTestCase(unittest.TestCase):
-
-    valid_gh_release_response = (
-        '{"zipball_url": "zip", "tarball_url": "tar", "upload_url":"upload"}'
-    )
+    def setUp(self) -> None:
+        os.environ['GITHUB_TOKEN'] = 'foo'
+        os.environ['GITHUB_USER'] = 'bar'
+        self.valid_gh_release_response = (
+            '{"zipball_url": "zip", "tarball_url":'
+            ' "tar", "upload_url":"upload"}'
+        )
 
     def test_fail_sign_on_invalid_get_response(self):
         fake_path_class = MagicMock(spec=Path)
@@ -341,7 +344,7 @@ class SignTestCase(unittest.TestCase):
         args = [
             'sign',
             '--project',
-            'testcases',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -378,7 +381,7 @@ class SignTestCase(unittest.TestCase):
         args = [
             'sign',
             '--project',
-            'testcases',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -415,7 +418,7 @@ class SignTestCase(unittest.TestCase):
         args = [
             'sign',
             '--project',
-            'testcases',
+            'bar',
             '--release-version',
             '0.0.1',
         ]
