@@ -281,12 +281,6 @@ def prepare(
     else:
         release_version: str = args.release_version
 
-    # else:
-    #     if not next_version:
-    #         year, month, minor = release_version.split('.')
-    #         minor = str(int(minor) + 1)
-    #         next_version = '.'.join([year, month, minor, 'dev1'])
-
     print(f"Preparing the release {release_version}")
 
     # guardian

@@ -295,8 +295,6 @@ class ReleaseTestCase(unittest.TestCase):
 
         def runner(cmd: str):
             called.append(cmd)
-            # if not 'testremote' in cmd:
-            #     raise ValueError('unexpected cmd: {}'.format(cmd))
             return StdOutput('')
 
         released = release.main(
