@@ -261,14 +261,16 @@ def release(
         args.git_remote_name if args.git_remote_name is not None else ''
     )
     git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = args.release_version
-    next_version: str = args.next_version
-
-    if not release_version:
-        release_version = get_current_version()
-
-    if not next_version:
-        next_version = get_next_dev_version(release_version)
+    release_version: str = (
+        args.release_version
+        if args.release_version is not None
+        else get_current_version()
+    )
+    next_version: str = (
+        args.next_version
+        if args.next_version is not None
+        else get_next_dev_version(release_version)
+    )
 
     print("Pushing changes")
 
@@ -344,7 +346,11 @@ def sign(
     project: str = get_project_name()
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = args.release_version
+    release_version: str = (
+        args.release_version
+        if args.release_version is not None
+        else get_current_version()
+    )
     signing_key: str = args.signing_key
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
