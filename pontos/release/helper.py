@@ -32,8 +32,9 @@ from pontos import version
 def build_release_dict(
     release_version: str,
     release_changelog: str,
+    *,
     name: str = '',
-    target_commitish: str = '',  # needed when tag is not there yet
+    target_commitish: str = '',
     draft: bool = False,
     prerelease: bool = False,
 ) -> Dict[str, Union[str, bool]]:
@@ -41,6 +42,17 @@ def build_release_dict(
     builds the dict for release post on github, see:
     https://docs.github.com/en/rest/reference/repos#create-a-release
     for more details.
+
+    Arguments:
+        release_version: The version (str) that will be set
+        release_changelog: content of the Changelog (str) for the release
+        name: name (str) of the release, e.g. 'pontos 1.0.0'
+        target_commitish: needed when tag is not there yet (str)
+        draft: If the release is a draft (bool)
+        prerelease: If the release is a pre release (bool)
+
+    Returns:
+        The dictionary containing the release information.
     """
     tag_name = (
         release_version
@@ -94,21 +106,16 @@ def download(
     requests_module: requests,
     path: Path,
 ) -> Path:
-    """Add files to staged and commit staged files.
-
-    url: The url of the file we want to download
-    filename: The name of the file to store the download in
-    requests_module: the python request module
-    path: the python pathlib.Path module
-
+    """Download file in url to filename
 
     Arguments:
-        to: The version (str) that will be set
-        develop: Wether to set version to develop or not (bool)
+        url: The url of the file we want to download
+        filename: The name of the file to store the download in
+        requests_module: the python request module
+        path: the python pathlib.Path module
 
     Returns:
-       executed: True if successfully executed, False else
-       filename: The filename of the project definition
+       Path to the downloaded file
     """
 
     file_path = path(f"/tmp/{filename}")
@@ -166,7 +173,20 @@ def upload_assets(
     path: Path,
     requests_module: requests,
 ) -> bool:
-    """Function to upload assets"""
+    """Function to upload assets
+
+    Arguments:
+        username: The GitHub username to use for the upload
+        token: That username's GitHub token
+        pathnames: List of paths to asset files
+        github_json: The github dictionary, containing relevant information
+            for the uplaod
+        path: the python pathlib.Path module
+        requests_module: the python request module
+
+    Returns:
+        True on success, false else
+    """
     print(f"Uploading assets: {pathnames}")
 
     asset_url = github_json['upload_url'].replace('{?name,label}', '')
