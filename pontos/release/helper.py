@@ -20,6 +20,7 @@
 
 from typing import Callable, Dict, List, Tuple, Union
 import json
+import tempfile
 from pathlib import Path
 import shutil
 
@@ -117,7 +118,7 @@ def download(
        Path to the downloaded file
     """
 
-    file_path = path(f"/tmp/{filename}")
+    file_path = path(tempfile.gettempdir()) / filename
 
     with requests_module.get(url, stream=True) as resp, file_path.open(
         mode='wb'
