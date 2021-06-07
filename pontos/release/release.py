@@ -118,7 +118,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         '--git-signing-key',
         help='The key to sign the commits and tag for a release',
     )
-
+    release_parser.add_argument(
+        '--project',
+        help='The github project',
+    )
     release_parser.add_argument(
         '--space',
         default='greenbone',
@@ -140,6 +143,10 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         '--git-tag-prefix',
         default='v',
         help='Prefix for git tag versions. Default: %(default)s',
+    )
+    sign_parser.add_argument(
+        '--project',
+        help='The github project',
     )
     sign_parser.add_argument(
         '--space',
@@ -252,7 +259,11 @@ def release(
     changelog_module: changelog,
     **_kwargs,
 ) -> bool:
-    project: str = get_project_name()
+    project: str = (
+        args.project
+        if args.project is not None
+        else get_project_name(shell_cmd_runner)
+    )
     space: str = args.space
     git_signing_key: str = (
         args.git_signing_key if args.git_signing_key is not None else ''
@@ -343,7 +354,11 @@ def sign(
     **_kwargs,
 ) -> bool:
 
-    project: str = get_project_name()
+    project: str = (
+        args.project
+        if args.project is not None
+        else get_project_name(shell_cmd_runner)
+    )
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
     release_version: str = (

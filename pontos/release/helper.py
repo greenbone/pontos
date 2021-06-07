@@ -19,7 +19,6 @@
 #
 
 from typing import Callable, Dict, List, Tuple, Union
-from os import popen
 import json
 from pathlib import Path
 import shutil
@@ -128,11 +127,15 @@ def download(
     return file_path
 
 
-def get_project_name() -> str:
+def get_project_name(
+    shell_cmd_runner: Callable,
+    *,
+    remote: str = 'origin',
+) -> str:
     """Get the git repository name"""
     # https://stackoverflow.com/a/42543006
-    stream = popen('basename -s .git `git config --get remote.origin.url`')
-    return stream.read()
+    ret = shell_cmd_runner(f'git remote get-url {remote}')
+    return ret.stdout.split('/')[-1].replace('.git', '').replace('\n', '')
 
 
 def update_version(
