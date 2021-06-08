@@ -27,7 +27,8 @@ from unittest.mock import MagicMock, patch
 
 import requests
 
-from pontos import version, release, changelog
+from pontos.release.helper import version
+from pontos import release, changelog
 
 
 @dataclass
@@ -38,7 +39,7 @@ class StdOutput:
 _shutil_mock = MagicMock(spec=shutil)
 
 
-@patch("pontos.release.release.shutil", new=_shutil_mock)
+@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class PrepareTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
@@ -118,7 +119,7 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
         self.assertIn(
-            "git commit -S0815 -m 'automatic release to 0.0.1'", called
+            "git commit -S 0815 -m 'automatic release to 0.0.1'", called
         )
         self.assertIn(
             "git tag -u 0815 v0.0.1 -m 'automatic release to 0.0.1'", called
@@ -196,7 +197,7 @@ class PrepareTestCase(unittest.TestCase):
         self.assertFalse(released)
 
 
-@patch("pontos.release.release.shutil", new=_shutil_mock)
+@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class ReleaseTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
@@ -219,8 +220,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'release',
-            '--project',
-            'testcases',
             '--release-version',
             '0.0.1',
             '--next-version',
@@ -251,8 +250,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'release',
-            '--project',
-            'testcases',
             '--release-version',
             '0.0.1',
         ]
@@ -281,8 +278,6 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'release',
-            '--project',
-            'foo',
             '--release-version',
             '0.0.1',
             '--next-version',
@@ -311,14 +306,14 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertIn('git push --follow-tags upstream', called)
         self.assertIn('git add MyProject.conf', called)
         self.assertIn(
-            "git commit -S -m '* Update to version"
+            "git commit -S  -m '* Update to version"
             " 0.0.2.dev1\n* Add empty changelog after 0.0.1'",
             called,
         )
         print(called)
 
 
-@patch("pontos.release.release.shutil", new=_shutil_mock)
+@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
@@ -341,8 +336,6 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
-            '--project',
-            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -378,8 +371,6 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
-            '--project',
-            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -415,13 +406,14 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
-            '--project',
-            'bar',
             '--release-version',
             '0.0.1',
         ]
 
-        def runner(_: str):
+        called = []
+
+        def runner(cmd: str):
+            called.append(cmd)
             return StdOutput('')
 
         released = release.main(
