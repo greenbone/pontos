@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.6.0] - 2021-06-08
 ### Added
 - Template for header [#85](https://github.com/greenbone/pontos/pull/85)
 
@@ -16,14 +16,10 @@ and this project adheres to [Calendar Versioning](https://calver.org).
   - `--next-version` is not required anymore, it will be set by calculating the next `dev` version, if not manually set.
 - The new Changelog and setting the next version is now done after the release within `pontos-release release` [#104](https://github.com/greenbone/pontos/pull/104)
 
-### Deprecated
 ### Removed
 - Removed the parameter `--project` in pontos-release, it is now resolved by `get_project_name()` [#105](https://github.com/greenbone/pontos/pull/105)
 
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.4.0...HEAD
-
+[21.6.0]: https://github.com/greenbone/pontos/compare/v21.4.0...v21.6.0
 
 ## [21.4.0] - 2021-04-20
 ### Changed
