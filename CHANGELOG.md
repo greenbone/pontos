@@ -25,9 +25,9 @@ and this project adheres to [Calendar Versioning](https://calver.org).
   - `--release-version` can still be used for setting the release version number manually
   - `--next-version` is not required anymore, it will be set by calculating the next `dev` version, if not manually set.
 - The new Changelog and setting the next version is now done after the release within `pontos-release release` [#104](https://github.com/greenbone/pontos/pull/104)
+- The parameter `--project` in pontos-release, it not required anymore and by default resolved by `get_project_name()` [#105](https://github.com/greenbone/pontos/pull/105)
 
 ### Removed
-- Removed the parameter `--project` in pontos-release, it is now resolved by `get_project_name()` [#105](https://github.com/greenbone/pontos/pull/105)
 
 [21.6.0]: https://github.com/greenbone/pontos/compare/v21.4.0...v21.6.0
 
