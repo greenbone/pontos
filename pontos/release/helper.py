@@ -158,7 +158,7 @@ def update_version(
     args.append(to)
     if develop:
         args.append('--develop')
-    executed, filename = _version.main(False, args=args)
+    executed, filename = _version.main(leave=False, args=args)
 
     if not executed:
         if filename == "":
