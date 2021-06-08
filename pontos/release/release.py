@@ -23,13 +23,20 @@ import sys
 import subprocess
 import os
 import json
-import shutil
 
 from pathlib import Path
-from typing import Callable, Dict, List, Union, Tuple
+from typing import Callable, Tuple
 
 import requests
 
+from pontos.release.helper import (
+    build_release_dict,
+    commit_files,
+    download,
+    get_project_name,
+    update_version,
+    upload_assets,
+)
 from pontos import version
 from pontos.version import (
     calculate_calendar_version,
@@ -39,34 +46,6 @@ from pontos.version import (
 from pontos import changelog
 
 RELEASE_TEXT_FILE = ".release.txt.md"
-
-
-def build_release_dict(
-    release_version: str,
-    release_changelog: str,
-    name: str = '',
-    target_commitish: str = '',  # needed when tag is not there yet
-    draft: bool = False,
-    prerelease: bool = False,
-) -> Dict[str, Union[str, bool]]:
-    """
-    builds the dict for release post on github, see:
-    https://docs.github.com/en/rest/reference/repos#create-a-release
-    for more details.
-    """
-    tag_name = (
-        release_version
-        if release_version.startswith('v')
-        else "v" + release_version
-    )
-    return {
-        'tag_name': tag_name,
-        'target_commitish': target_commitish,
-        'name': name,
-        'body': release_changelog,
-        'draft': draft,
-        'prerelease': prerelease,
-    }
 
 
 def initialize_default_parser() -> argparse.ArgumentParser:
@@ -139,11 +118,9 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         '--git-signing-key',
         help='The key to sign the commits and tag for a release',
     )
-
     release_parser.add_argument(
         '--project',
         help='The github project',
-        required=True,
     )
     release_parser.add_argument(
         '--space',
@@ -170,7 +147,6 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     sign_parser.add_argument(
         '--project',
         help='The github project',
-        required=True,
     )
     sign_parser.add_argument(
         '--space',
@@ -188,81 +164,6 @@ def parse(args=None) -> Tuple[str, str, argparse.Namespace]:
     return (user, token, commandline_arguments)
 
 
-def update_version(
-    to: str, _version: version, *, develop: bool
-) -> Tuple[bool, str]:
-    args = ['--quiet']
-    args.append('update')
-    args.append(to)
-    if develop:
-        args.append('--develop')
-    executed, filename = _version.main(False, args=args)
-
-    if not executed:
-        if filename == "":
-            print("No project definition found.")
-        else:
-            print("Unable to update version {} in {}".format(to, filename))
-
-    return executed, filename
-
-
-def commit_files(
-    filename: str,
-    commit_msg: str,
-    git_signing_key: str,
-    shell_cmd_runner: Callable,
-):
-    shell_cmd_runner("git add {}".format(filename))
-    shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
-    shell_cmd_runner("git add CHANGELOG.md")
-    shell_cmd_runner(
-        "git commit -S{} -m '{}'".format(git_signing_key or '', commit_msg),
-    )
-
-
-def upload_assets(
-    username: str,
-    token: str,
-    pathnames: List[str],
-    github_json: Dict,
-    path: Path,
-    requests_module: requests,
-) -> bool:
-    print("Uploading assets: {}".format(pathnames))
-
-    asset_url = github_json['upload_url'].replace('{?name,label}', '')
-    paths = [path('{}.asc'.format(p)) for p in pathnames]
-
-    headers = {
-        'Accept': 'application/vnd.github.v3+json',
-        'content-type': 'application/octet-stream',
-    }
-    auth = (username, token)
-
-    for path in paths:
-        to_upload = path.read_bytes()
-        resp = requests_module.post(
-            "{}?name={}".format(asset_url, path.name),
-            headers=headers,
-            auth=auth,
-            data=to_upload,
-        )
-
-        if resp.status_code != 201:
-            print(
-                "Wrong response status {} while uploading {}".format(
-                    resp.status_code, path.name
-                )
-            )
-            print(json.dumps(resp.text, indent=4, sort_keys=True))
-            return False
-        else:
-            print("uploaded: {}".format(path.name))
-
-    return True
-
-
 def prepare(
     shell_cmd_runner: Callable,
     args: argparse.Namespace,
@@ -273,7 +174,9 @@ def prepare(
     **_kwargs,
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
-    git_signing_key: str = args.git_signing_key
+    git_signing_key: str = (
+        args.git_signing_key if args.git_signing_key is not None else ''
+    )
     calendar: bool = args.calendar
 
     if calendar:
@@ -281,23 +184,15 @@ def prepare(
     else:
         release_version: str = args.release_version
 
-    # else:
-    #     if not next_version:
-    #         year, month, minor = release_version.split('.')
-    #         minor = str(int(minor) + 1)
-    #         next_version = '.'.join([year, month, minor, 'dev1'])
-
     print(f"Preparing the release {release_version}")
 
     # guardian
     git_tags = shell_cmd_runner('git tag -l')
-    git_version = "{}{}".format(git_tag_prefix, release_version)
+    git_version = f"{git_tag_prefix}{release_version}"
     if git_version.encode() in git_tags.stdout.splitlines():
         raise ValueError(f'git tag {git_version} is already taken.')
 
-    executed, filename = update_version(
-        release_version, version_module, develop=False
-    )
+    executed, filename = update_version(release_version, version_module)
     if not executed:
         return False
 
@@ -319,24 +214,20 @@ def prepare(
 
     print("Committing changes")
 
-    commit_msg = 'automatic release to {}'.format(release_version)
+    commit_msg = f'automatic release to {release_version}'
     commit_files(
         filename,
         commit_msg,
-        git_signing_key,
         shell_cmd_runner,
+        git_signing_key=git_signing_key,
     )
 
     if git_signing_key:
         shell_cmd_runner(
-            "git tag -u {} {} -m '{}'".format(
-                git_signing_key, git_version, commit_msg
-            ),
+            f"git tag -u {git_signing_key} {git_version} -m '{commit_msg}'"
         )
     else:
-        shell_cmd_runner(
-            "git tag -s {} -m '{}'".format(git_version, commit_msg),
-        )
+        shell_cmd_runner(f"git tag -s {git_version} -m '{commit_msg}'")
 
     release_text = path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text)
@@ -362,21 +253,29 @@ def release(
     changelog_module: changelog,
     **_kwargs,
 ) -> bool:
-    project: str = args.project
+    project: str = (
+        args.project
+        if args.project is not None
+        else get_project_name(shell_cmd_runner)
+    )
     space: str = args.space
-    git_signing_key: str = args.git_signing_key
+    git_signing_key: str = (
+        args.git_signing_key if args.git_signing_key is not None else ''
+    )
     git_remote_name: str = (
         args.git_remote_name if args.git_remote_name is not None else ''
     )
     git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = args.release_version
-    next_version: str = args.next_version
-
-    if not release_version:
-        release_version = get_current_version()
-
-    if not next_version:
-        next_version = get_next_dev_version(release_version)
+    release_version: str = (
+        args.release_version
+        if args.release_version is not None
+        else get_current_version()
+    )
+    next_version: str = (
+        args.next_version
+        if args.next_version is not None
+        else get_next_dev_version(release_version)
+    )
 
     print("Pushing changes")
 
@@ -387,9 +286,7 @@ def release(
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
 
-    base_url = "https://api.github.com/repos/{}/{}/releases".format(
-        space, project
-    )
+    base_url = f"https://api.github.com/repos/{space}/{project}/releases"
     git_version = f'{git_tag_prefix}{release_version}'
     response = requests_module.post(
         base_url,
@@ -398,11 +295,11 @@ def release(
         json=build_release_dict(
             git_version,
             changelog_text,
-            name="{} {}".format(project, release_version),
+            name=f"{project} {release_version}",
         ),
     )
     if response.status_code != 201:
-        print("Wrong response status code: {}".format(response.status_code))
+        print(f"Wrong response status code: {response.status_code}")
         print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
@@ -433,8 +330,8 @@ def release(
     commit_files(
         filename,
         commit_msg,
-        git_signing_key,
         shell_cmd_runner,
+        git_signing_key=git_signing_key,
     )
 
     return True
@@ -450,20 +347,19 @@ def sign(
     requests_module: requests,
     **_kwargs,
 ) -> bool:
-    def download(url, filename):
-        file_path = path(f"/tmp/{filename}")
 
-        with requests_module.get(url, stream=True) as resp, file_path.open(
-            mode='wb'
-        ) as download_file:
-            shutil.copyfileobj(resp.raw, download_file)
-
-        return file_path
-
-    project: str = args.project
+    project: str = (
+        args.project
+        if args.project is not None
+        else get_project_name(shell_cmd_runner)
+    )
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = args.release_version
+    release_version: str = (
+        args.release_version
+        if args.release_version is not None
+        else get_current_version()
+    )
     signing_key: str = args.signing_key
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -480,19 +376,32 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        print("Wrong response status code: {}".format(response.status_code))
+        print(f"Wrong response status code: {response.status_code}")
         print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     github_json = json.loads(response.text)
-    zip_path = download(github_json['zipball_url'], git_version + ".zip")
-    tar_path = download(github_json['tarball_url'], git_version + ".tar.gz")
+    zip_path = download(
+        github_json['zipball_url'],
+        f"{git_version}.zip",
+        path=path,
+        requests_module=requests_module,
+    )
+    tar_path = download(
+        github_json['tarball_url'],
+        f"{git_version}.tar.gz",
+        path=path,
+        requests_module=requests_module,
+    )
 
-    print("Signing {}".format([zip_path, tar_path]))
+    print(f"Signing {[zip_path, tar_path]}")
 
-    gpg_cmd = "gpg --default-key {} --detach-sign --armor {}"
-    shell_cmd_runner(gpg_cmd.format(signing_key, zip_path))
-    shell_cmd_runner(gpg_cmd.format(signing_key, tar_path))
+    shell_cmd_runner(
+        f"gpg --default-key {signing_key} --detach-sign --armor {zip_path}"
+    )
+    shell_cmd_runner(
+        f"gpg --default-key {signing_key} --detach-sign --armor {tar_path}"
+    )
 
     return upload_assets(
         username,

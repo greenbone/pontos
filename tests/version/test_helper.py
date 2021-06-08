@@ -30,8 +30,6 @@ from pontos.version import (
 
 class CalculateNextVersionTestCase(unittest.TestCase):
     def test_calculate_calendar_versions(self):
-        # thats the ugliest mock  I have created. Ever.
-
         today = datetime.datetime.today()
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
