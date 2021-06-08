@@ -6,11 +6,14 @@ on:
 
 jobs:
   build-and-release:
+    env:
+      GITHUB_USER: ${{ secrets.BOT_USER }}
+      GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+      SIGNING_KEY: ${{ secrets.BOT_SIGNING_KEY }}
     name: Build and release with pontos
     # If the label 'make release' is set
     # If PR is closed because of an merge
     if: contains( github.event.pull_request.labels.*.name, 'make release') && github.event.pull_request.merged == true
-
     runs-on: 'ubuntu-latest'
     steps:
     - uses: actions/checkout@v2
@@ -22,14 +25,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade poetry
-        poetry install
-    - name: Install git
-      run: sudo apt-get install git
-    - name: Build and publish
-      env:
-        GITHUB_USER: ${{ secrets.BOT_USER }}
-        GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-        SIGNING_KEY: ${{ secrets.BOT_SIGNING_KEY }}
+    - name: Prepare release with pontos
       run: |
-        poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} prepare --calendar --git-signing-key $SIGNING_KEY
-        poetry run pontos-release --project ${{ github.event.repository.name }} --space ${{ github.event.repository.owner }} release
+        poetry run pontos-release prepare --calendar
+    - name: Release with pontos
+      run: |
+        poetry run pontos-release release
