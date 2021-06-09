@@ -334,6 +334,8 @@ def release(
         git_signing_key=git_signing_key,
     )
 
+    shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
+
     return True
 
 
