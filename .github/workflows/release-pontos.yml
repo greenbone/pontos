@@ -7,9 +7,8 @@ on:
 jobs:
   build-and-release:
     env:
-      GITHUB_USER: ${{ secrets.BOT_USER }}
-      GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      SIGNING_KEY: ${{ secrets.BOT_SIGNING_KEY }}
+      GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+      GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
     name: Build and release with pontos
     # If the label 'make release' is set
     # If PR is closed because of an merge
@@ -21,15 +20,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Install dependencies
+    - name: Install poetry and dependencies
+      uses: greenbone/actions/poetry@v1
+    - name: Prepare release with pontos
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade poetry
-    # - name: Prepare release with pontos
-    #   run: |
-    #     poetry run pontos-release prepare --calendar
-    # - name: Release with pontos
-    #   run: |
-    #     poetry run pontos-release release
-    - name: Foo bar
-      run: echo 'foo bar'
+        poetry run pontos-release prepare --calendar
+    - name: Release with pontos
+      run: |
+        poetry run pontos-release release
