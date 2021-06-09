@@ -25,8 +25,8 @@ jobs:
       uses: greenbone/actions/poetry@v1
     - name: Tell git who I am
       run: |
-        git config --global user.name "${GITHUB_USER}"
-        git config --global user.email "${GITHUB_MAIL}"
+        git config --global user.name "${{ env.GITHUB_USER }}"
+        git config --global user.email "${{ env.GITHUB_MAIL }}"
     - name: Prepare release with pontos
       run: |
         poetry run pontos-release prepare --calendar
