@@ -11,6 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+* Fixed releasing with pontos. A push after clearing the CHANGELOG was missing. [#110](https://github.com/greenbone/pontos/pull/110)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.1...HEAD
 
