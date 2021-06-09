@@ -80,7 +80,7 @@ def commit_files(
 
     filename: The filename of file to add and commit
     commit_msg: The commit message for the commit
-    shell_cmd_runner:
+    shell_cmd_runner: The runner for shell commands
     git_signing_key: The signing key to sign this commit
 
     Arguments:
@@ -95,9 +95,12 @@ def commit_files(
     shell_cmd_runner(f"git add {filename}")
     shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
     shell_cmd_runner("git add CHANGELOG.md")
-    shell_cmd_runner(
-        f"git commit -S {git_signing_key} -m '{commit_msg}'",
-    )
+    if git_signing_key is not None:
+        shell_cmd_runner(
+            f"git commit -S {git_signing_key} -m '{commit_msg}'",
+        )
+    else:
+        shell_cmd_runner(f"git commit  -m '{commit_msg}'")
 
 
 def download(
@@ -133,10 +136,30 @@ def get_project_name(
     *,
     remote: str = 'origin',
 ) -> str:
-    """Get the git repository name"""
-    # https://stackoverflow.com/a/42543006
+    """Get the git repository name
+
+    Arguments:
+        shell_cmd_runner: The runner for shell commands
+        remote: the remote to look up the name (str) default: origin
+
+    Returns:
+        project name
+    """
     ret = shell_cmd_runner(f'git remote get-url {remote}')
     return ret.stdout.split('/')[-1].replace('.git', '').replace('\n', '')
+
+
+def find_signing_key(shell_cmd_runner: Callable) -> str:
+    """Find the signing key in the config
+
+    Arguments:
+        shell_cmd_runner: The runner for shell commands
+
+    Returns:
+        git signing key or empty string
+    """
+    git_signing_key = shell_cmd_runner('git config user.signingkey').stdout
+    return git_signing_key if git_signing_key is not None else ''
 
 
 def update_version(
