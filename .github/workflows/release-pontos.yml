@@ -8,6 +8,7 @@ jobs:
   build-and-release:
     env:
       GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+      GITHUB_MAIL: ${{ secrets.GREENBONE_BOT_MAIL }}
       GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
     name: Build and release with pontos
     # If the label 'make release' is set
@@ -22,6 +23,10 @@ jobs:
         python-version: 3.8
     - name: Install poetry and dependencies
       uses: greenbone/actions/poetry@v1
+    - name: Tell git who I am
+      run: |
+        git config --global user.name "${GITHUB_USER}"
+        git config --global user.email "${GITHUB_MAIL}"
     - name: Prepare release with pontos
       run: |
         poetry run pontos-release prepare --calendar
