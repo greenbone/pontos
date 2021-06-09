@@ -33,6 +33,7 @@ from pontos.release.helper import (
     build_release_dict,
     commit_files,
     download,
+    find_signing_key,
     get_project_name,
     update_version,
     upload_assets,
@@ -175,7 +176,9 @@ def prepare(
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = (
-        args.git_signing_key if args.git_signing_key is not None else ''
+        args.git_signing_key
+        if args.git_signing_key is not None
+        else find_signing_key(shell_cmd_runner)
     )
     calendar: bool = args.calendar
 
@@ -260,7 +263,9 @@ def release(
     )
     space: str = args.space
     git_signing_key: str = (
-        args.git_signing_key if args.git_signing_key is not None else ''
+        args.git_signing_key
+        if args.git_signing_key is not None
+        else find_signing_key(shell_cmd_runner)
     )
     git_remote_name: str = (
         args.git_remote_name if args.git_remote_name is not None else ''
