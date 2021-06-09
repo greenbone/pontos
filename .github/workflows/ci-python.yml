@@ -63,3 +63,17 @@ jobs:
         uses: greenbone/actions/poetry@v1
       - name: Calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v1
+  test-git:
+    name: test
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Tell git who I am
+      run: |
+        git config --global user.name "Greenbone Bot"
+        git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
+    - name: Show who I am
+      run: |
+        git config --global user.name
+        git config --global user.email
+
