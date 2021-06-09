@@ -12,8 +12,14 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.0...HEAD
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.1...HEAD
 
+
+## [21.6.1] - 2021-06-09
+### Fixed
+* Fix the previous release
+
+[21.6.1]: https://github.com/greenbone/pontos/compare/v21.6.0...v21.6.1
 
 ## [21.6.0] - 2021-06-08
 ### Added
