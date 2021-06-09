@@ -278,6 +278,8 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'release',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
             '--next-version',
@@ -336,6 +338,8 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -371,6 +375,8 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
@@ -406,6 +412,8 @@ class SignTestCase(unittest.TestCase):
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
             'sign',
+            '--project',
+            'bar',
             '--release-version',
             '0.0.1',
         ]
