@@ -146,7 +146,7 @@ def get_project_name(
         project name
     """
     ret = shell_cmd_runner(f'git remote get-url {remote}')
-    return ret.stdout.split('/')[-1].replace('.git', '').replace('\n', '')
+    return ret.stdout.split('/')[-1].replace('.git', '').strip()
 
 
 def find_signing_key(shell_cmd_runner: Callable) -> str:
@@ -158,8 +158,14 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
     Returns:
         git signing key or empty string
     """
-    git_signing_key = shell_cmd_runner('git config user.signingkey').stdout
-    return git_signing_key if git_signing_key is not None else ''
+
+    git_signing_key = shell_cmd_runner(
+        'git config user.signingkey'
+    ).stdout.strip()
+    # stdout should return "\n" if no key is available
+    # and so git_signing_key should
+    # return '' if no key is available ...
+    return git_signing_key
 
 
 def update_version(
