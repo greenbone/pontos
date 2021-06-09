@@ -12,9 +12,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
     name: Build and release with pontos
     # If the label 'make release' is set. If PR is closed because of an merge
-    if: |
-      contains( github.event.pull_request.labels.*.name, 'make release') && \
-        github.event.pull_request.merged == true
+    if: contains( github.event.pull_request.labels.*.name, 'make release')
+    if: github.event.pull_request.merged == true
     runs-on: 'ubuntu-latest'
     steps:
     - uses: actions/checkout@v2
