@@ -24,7 +24,12 @@ from pathlib import Path
 import shutil
 
 
-from pontos.release.helper import get_project_name, find_signing_key
+from pontos.release.helper import (
+    get_project_name,
+    find_signing_key,
+    update_version,
+)
+from pontos import version
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -107,3 +112,14 @@ class TestHelperFunctions(unittest.TestCase):
         # reset the previously saved signing key ...
         if saved_key is not None:
             self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
+
+    def test_update_version_not_found(self):
+        proj_path = Path.cwd()
+        os.chdir(self.tmpdir)
+        executed, filename = update_version(
+            to='21.4.4', _version=version, develop=True
+        )
+        self.assertFalse(executed)
+        self.assertEqual(filename, '')
+
+        os.chdir(proj_path)
