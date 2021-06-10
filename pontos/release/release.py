@@ -230,7 +230,7 @@ def prepare(
             f"git tag -u {git_signing_key} {git_version} -m '{commit_msg}'"
         )
     else:
-        shell_cmd_runner(f"git tag -s {git_version} -m '{commit_msg}'")
+        shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
 
     release_text = path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text)
