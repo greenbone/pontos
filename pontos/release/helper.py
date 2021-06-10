@@ -23,6 +23,7 @@ import json
 import tempfile
 from pathlib import Path
 import shutil
+import subprocess
 
 import requests
 
@@ -159,13 +160,19 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
         git signing key or empty string
     """
 
-    git_signing_key = shell_cmd_runner(
-        'git config user.signingkey'
-    ).stdout.strip()
+    try:
+        proc = shell_cmd_runner('git config user.signingkey')
+    except subprocess.CalledProcessError as e:
+        # The command `git config user.signingkey` returns
+        # return code 1 if no key is set.
+        # So we will return empty string ...
+        if e.returncode == 1:
+            print("No signing key found.")
+        return ''
     # stdout should return "\n" if no key is available
     # and so git_signing_key should
     # return '' if no key is available ...
-    return git_signing_key
+    return proc.stdout.strip()
 
 
 def update_version(
