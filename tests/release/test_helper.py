@@ -96,7 +96,10 @@ class TestHelperFunctions(unittest.TestCase):
         except subprocess.CalledProcessError:
             saved_key = None
 
-        self.shell_cmd_runner('git config user.signingkey ""')
+        try:
+            self.shell_cmd_runner('git config --unset user.signingkey')
+        except subprocess.CalledProcessError as e:
+            self.assertEqual(e.returncode, 5)
 
         signing_key = find_signing_key(shell_cmd_runner=self.shell_cmd_runner)
         self.assertEqual(signing_key, '')

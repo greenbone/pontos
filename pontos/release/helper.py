@@ -166,7 +166,7 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
         # The command `git config user.signingkey` returns
         # return code 1 if no key is set.
         # So we will return empty string ...
-        if e.returncode == -1:
+        if e.returncode == 1:
             print("No signing key found.")
         return ''
     # stdout should return "\n" if no key is available
