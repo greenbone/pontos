@@ -8,6 +8,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* `pontos-release` will only sign, if key is available. If no key is given, pontos tries to lookup the key in the config.
+
 ### Deprecated
 ### Removed
 ### Fixed
