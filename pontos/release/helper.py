@@ -96,7 +96,7 @@ def commit_files(
     shell_cmd_runner(f"git add {filename}")
     shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
     shell_cmd_runner("git add CHANGELOG.md")
-    if git_signing_key is not None:
+    if git_signing_key is not None and git_signing_key is not '':
         shell_cmd_runner(
             f"git commit -S {git_signing_key} -m '{commit_msg}'",
         )
