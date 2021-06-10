@@ -308,7 +308,7 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertIn('git push --follow-tags upstream', called)
         self.assertIn('git add MyProject.conf', called)
         self.assertIn(
-            "git commit -S  -m '* Update to version"
+            "git commit -m '* Update to version"
             " 0.0.2.dev1\n* Add empty changelog after 0.0.1'",
             called,
         )

@@ -101,7 +101,7 @@ def commit_files(
             f"git commit -S {git_signing_key} -m '{commit_msg}'",
         )
     else:
-        shell_cmd_runner(f"git commit  -m '{commit_msg}'")
+        shell_cmd_runner(f"git commit -m '{commit_msg}'")
 
 
 def download(
