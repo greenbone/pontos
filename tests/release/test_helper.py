@@ -65,10 +65,13 @@ class TestHelperFunctions(unittest.TestCase):
         os.chdir(proj_path)
 
     def test_find_signing_key(self):
-        # save possibly set git signing key temporarly
-        saved_key = self.shell_cmd_runner(
-            'git config user.signingkey'
-        ).stdout.strip()
+        # save possibly set git signing key from user temporarly
+        try:
+            saved_key = self.shell_cmd_runner(
+                'git config user.signingkey'
+            ).stdout.strip()
+        except subprocess.CalledProcessError:
+            saved_key = None
 
         self.shell_cmd_runner(
             'git config user.signingkey '
@@ -80,8 +83,24 @@ class TestHelperFunctions(unittest.TestCase):
             signing_key, '1234567890ABCEDEF1234567890ABCEDEF123456'
         )
 
+        # reset the previously saved signing key ...
+        if saved_key is not None:
+            self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
+
+    def test_find_no_signing_key(self):
+        # save possibly set git signing key from user temporarly
+        try:
+            saved_key = self.shell_cmd_runner(
+                'git config user.signingkey'
+            ).stdout.strip()
+        except subprocess.CalledProcessError:
+            saved_key = None
+
         self.shell_cmd_runner('git config user.signingkey ""')
+
         signing_key = find_signing_key(shell_cmd_runner=self.shell_cmd_runner)
         self.assertEqual(signing_key, '')
 
-        self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
+        # reset the previously saved signing key ...
+        if saved_key is not None:
+            self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
