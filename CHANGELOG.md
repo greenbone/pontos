@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
+## [Unreleased]
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.2...HEAD
+
+
 ## [21.6.2] - 2021-06-11
 ### Changed
 * `pontos-release` will only sign, if key is available. If no key is given, pontos tries to lookup the key in the config.
