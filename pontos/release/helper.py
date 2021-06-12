@@ -28,6 +28,7 @@ import subprocess
 import requests
 
 from pontos import version
+from pontos.terminal import error, warning, info, ok, out
 
 
 def build_release_dict(
@@ -167,7 +168,7 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
         # return code 1 if no key is set.
         # So we will return empty string ...
         if e.returncode == 1:
-            print("No signing key found.")
+            warning("No signing key found.")
         return ''
     # stdout should return "\n" if no key is available
     # and so git_signing_key should
@@ -198,9 +199,9 @@ def update_version(
 
     if not executed:
         if filename == "":
-            print("No project definition found.")
+            error("No project definition found.")
         else:
-            print(f"Unable to update version {to} in {filename}")
+            error(f"Unable to update version {to} in {filename}")
 
     return executed, filename
 
@@ -227,7 +228,7 @@ def upload_assets(
     Returns:
         True on success, false else
     """
-    print(f"Uploading assets: {pathnames}")
+    info(f"Uploading assets: {pathnames}")
 
     asset_url = github_json['upload_url'].replace('{?name,label}', '')
     paths = [path(f'{p}.asc') for p in pathnames]
@@ -248,13 +249,13 @@ def upload_assets(
         )
 
         if resp.status_code != 201:
-            print(
+            error(
                 f"Wrong response status {resp.status_code}"
                 f" while uploading {path.name}"
             )
-            print(json.dumps(resp.text, indent=4, sort_keys=True))
+            out(json.dumps(resp.text, indent=4, sort_keys=True))
             return False
         else:
-            print(f"uploaded: {path.name}")
+            ok(f"uploaded: {path.name}")
 
     return True
