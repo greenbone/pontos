@@ -8,16 +8,22 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
-* `pontos-release` will only sign, if key is available. If no key is given, pontos tries to lookup the key in the config.
-
 ### Deprecated
 ### Removed
+### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.2...HEAD
+
+
+## [21.6.2] - 2021-06-11
+### Changed
+* `pontos-release` will only sign, if key is available. If no key is given, pontos tries to lookup the key in the config.
+
 ### Fixed
 * Fixed commiting when no key is available. [#118](https://github.com/greenbone/pontos/pull/118)
 * Fixed releasing with pontos. A push after clearing the CHANGELOG was missing. [#110](https://github.com/greenbone/pontos/pull/110)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.1...HEAD
-
+[21.6.2]: https://github.com/greenbone/pontos/compare/v21.6.1...v21.6.2
 
 ## [21.6.1] - 2021-06-09
 ### Fixed
