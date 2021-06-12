@@ -442,21 +442,24 @@ def main(
     term = Terminal()
     _set_terminal(term)
 
-    try:
-        if not parsed_args.func(
-            shell_cmd_runner,
-            parsed_args,
-            path=_path,
-            username=username,
-            token=token,
-            changelog_module=_changelog,
-            requests_module=_requests,
-            version_module=_version,
-        ):
-            return sys.exit(1) if leave else False
-    except subprocess.CalledProcessError as e:
-        error(f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}')
-        sys.exit(1)
+    term.bold_info(f'pontos-release => {parsed_args.func.__name__}')
+
+    with term.indent():
+        try:
+            if not parsed_args.func(
+                shell_cmd_runner,
+                parsed_args,
+                path=_path,
+                username=username,
+                token=token,
+                changelog_module=_changelog,
+                requests_module=_requests,
+                version_module=_version,
+            ):
+                return sys.exit(1) if leave else False
+        except subprocess.CalledProcessError as e:
+            error(f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}')
+            sys.exit(1)
 
     return sys.exit(0) if leave else True
 
