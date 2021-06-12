@@ -385,7 +385,7 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        print(f"Wrong response status code: {response.status_code}")
+        error(f"Wrong response status code: {response.status_code}")
         out(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
@@ -403,7 +403,7 @@ def sign(
         requests_module=requests_module,
     )
 
-    print(f"Signing {[zip_path, tar_path]}")
+    info(f"Signing {[zip_path, tar_path]}")
 
     shell_cmd_runner(
         f"gpg --default-key {signing_key} --detach-sign --armor {zip_path}"
