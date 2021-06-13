@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
+## [Unreleased]
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.3...HEAD
+
+
 ## [21.6.3] - 2021-06-13
 ### Added
 * The [autohooks](https://github.com/greenbone/autohooks) Terminal to `pontos`, to have prettier console output. [#127](https://github.com/greenbone/pontos/pull/127)
