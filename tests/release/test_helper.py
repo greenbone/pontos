@@ -20,6 +20,7 @@ import subprocess
 import unittest
 import tempfile
 import os
+import sys
 from pathlib import Path
 import shutil
 
@@ -30,6 +31,10 @@ from pontos.release.helper import (
     update_version,
 )
 from pontos import version
+from pontos.terminal import (
+    _set_terminal,
+)
+from pontos.terminal.terminal import Terminal
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -42,6 +47,7 @@ class TestHelperFunctions(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
+        _set_terminal(Terminal())
 
         self.tmpdir = Path(tempfile.gettempdir()) / 'testrepo'
         self.tmpdir.mkdir(parents=True, exist_ok=True)
@@ -124,8 +130,9 @@ class TestHelperFunctions(unittest.TestCase):
 
         os.chdir(proj_path)
 
-    def test_update_version(self):
+    def test_update_version_no_version_file(self):
         proj_path = Path.cwd()
+        sys.path.append(self.tmpdir)
         os.chdir(self.tmpdir)
 
         module_path = self.tmpdir / "testrepo"
@@ -167,4 +174,5 @@ class TestHelperFunctions(unittest.TestCase):
 
         toml.unlink()
         shutil.rmtree(module_path)
+        sys.path.remove(self.tmpdir)
         os.chdir(proj_path)

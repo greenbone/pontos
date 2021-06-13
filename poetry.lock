@@ -112,7 +112,7 @@ importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
 name = "colorama"
 version = "0.4.4"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -120,7 +120,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "colorful"
 version = "0.5.4"
 description = "Terminal string styling done right, in Python."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -346,7 +346,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "573d26a06963f2d88059fd4dfd1e332da3ba67a2c9af878ef1d7aa467ced6f1b"
+content-hash = "017fd21a66ad6e597920f15c1c936762257243d0417aedd6fd1ed686a5a7edeb"
 
 [metadata.files]
 appdirs = [

@@ -45,6 +45,8 @@ from pontos.version import (
     get_next_dev_version,
 )
 from pontos import changelog
+from pontos.terminal import _set_terminal, error, warning, info, ok, out
+from pontos.terminal.terminal import Terminal
 
 RELEASE_TEXT_FILE = ".release.txt.md"
 
@@ -187,7 +189,7 @@ def prepare(
     else:
         release_version: str = args.release_version
 
-    print(f"Preparing the release {release_version}")
+    info(f"Preparing the release {release_version}")
 
     # guardian
     git_tags = shell_cmd_runner('git tag -l')
@@ -199,7 +201,7 @@ def prepare(
     if not executed:
         return False
 
-    print(f"updated version  in {filename} to {release_version}")
+    ok(f"updated version  in {filename} to {release_version}")
 
     change_log_path = path.cwd() / 'CHANGELOG.md'
     updated, changelog_text = changelog_module.update(
@@ -213,9 +215,9 @@ def prepare(
 
     change_log_path.write_text(updated)
 
-    print("Updated CHANGELOG.md")
+    ok("Updated CHANGELOG.md")
 
-    print("Committing changes")
+    info("Committing changes")
 
     commit_msg = f'automatic release to {release_version}'
     commit_files(
@@ -235,11 +237,11 @@ def prepare(
     release_text = path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text)
 
-    print(
+    warning(
         f"Please verify git tag {git_version}, "
         f"commit and release text in {str(release_text)}"
     )
-    print("Afterwards please execute release")
+    out("Afterwards please execute release")
 
     return True
 
@@ -282,11 +284,11 @@ def release(
         else get_next_dev_version(release_version)
     )
 
-    print("Pushing changes")
+    info("Pushing changes")
 
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
-    print("Creating release")
+    info("Creating release")
     changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -304,8 +306,8 @@ def release(
         ),
     )
     if response.status_code != 201:
-        print(f"Wrong response status code: {response.status_code}")
-        print(json.dumps(response.text, indent=4, sort_keys=True))
+        error(f"Wrong response status code: {response.status_code}")
+        error(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     path(RELEASE_TEXT_FILE).unlink()
@@ -383,8 +385,8 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        print(f"Wrong response status code: {response.status_code}")
-        print(json.dumps(response.text, indent=4, sort_keys=True))
+        error(f"Wrong response status code: {response.status_code}")
+        out(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     github_json = json.loads(response.text)
@@ -401,7 +403,7 @@ def sign(
         requests_module=requests_module,
     )
 
-    print(f"Signing {[zip_path, tar_path]}")
+    info(f"Signing {[zip_path, tar_path]}")
 
     shell_cmd_runner(
         f"gpg --default-key {signing_key} --detach-sign --armor {zip_path}"
@@ -437,25 +439,27 @@ def main(
     args=None,
 ):
     username, token, parsed_args = parse(args)
+    term = Terminal()
+    _set_terminal(term)
 
-    try:
-        if not parsed_args.func(
-            shell_cmd_runner,
-            parsed_args,
-            path=_path,
-            username=username,
-            token=token,
-            changelog_module=_changelog,
-            requests_module=_requests,
-            version_module=_version,
-        ):
-            return sys.exit(1) if leave else False
-    except subprocess.CalledProcessError as e:
-        print(
-            f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}',
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    term.bold_info(f'pontos-release => {parsed_args.func.__name__}')
+
+    with term.indent():
+        try:
+            if not parsed_args.func(
+                shell_cmd_runner,
+                parsed_args,
+                path=_path,
+                username=username,
+                token=token,
+                changelog_module=_changelog,
+                requests_module=_requests,
+                version_module=_version,
+            ):
+                return sys.exit(1) if leave else False
+        except subprocess.CalledProcessError as e:
+            error(f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}')
+            sys.exit(1)
 
     return sys.exit(0) if leave else True
 

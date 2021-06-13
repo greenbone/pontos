@@ -7,6 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* The [autohooks](https://github.com/greenbone/autohooks) Terminal to `pontos`, to have prettier console output. [#127](https://github.com/greenbone/pontos/pull/127)
+
 ### Changed
 ### Deprecated
 ### Removed
