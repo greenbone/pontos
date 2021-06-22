@@ -7,15 +7,19 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
-* `pontos-release prepare` can be used with `--patch`, to create a release with the next patch version. [#131](https://github.com/greenbone/pontos/pull/131)
-
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.3...HEAD
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.4...HEAD
 
+
+## [21.6.4] - 2021-06-22
+### Added
+* `pontos-release prepare` can be used with `--patch`, to create a release with the next patch version. [#131](https://github.com/greenbone/pontos/pull/131)
+
+[21.6.4]: https://github.com/greenbone/pontos/compare/v21.6.3...v21.6.4
 
 ## [21.6.3] - 2021-06-13
 ### Added
