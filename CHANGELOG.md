@@ -7,15 +7,19 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
-* The [autohooks](https://github.com/greenbone/autohooks) Terminal to `pontos`, to have prettier console output. [#127](https://github.com/greenbone/pontos/pull/127)
-
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.2...HEAD
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.3...HEAD
 
+
+## [21.6.3] - 2021-06-13
+### Added
+* The [autohooks](https://github.com/greenbone/autohooks) Terminal to `pontos`, to have prettier console output. [#127](https://github.com/greenbone/pontos/pull/127)
+
+[21.6.3]: https://github.com/greenbone/pontos/compare/v21.6.2...v21.6.3
 
 ## [21.6.2] - 2021-06-11
 ### Changed

@@ -21,7 +21,7 @@ wrapt = ">=1.11,<1.13"
 
 [[package]]
 name = "autohooks"
-version = "21.3.0"
+version = "21.6.0"
 description = "Library for managing git hooks"
 category = "dev"
 optional = false
@@ -46,19 +46,19 @@ black = "*"
 
 [[package]]
 name = "autohooks-plugin-pylint"
-version = "1.2.0"
-description = "Autohooks plugin for code linting via pylint"
+version = "21.6.0"
+description = "An autohooks plugin for python code linting via pylint"
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-autohooks = ">=1.1"
-pylint = "*"
+autohooks = ">=2.2.0"
+pylint = ">=2.8.3,<3.0.0"
 
 [[package]]
 name = "black"
-version = "21.5b2"
+version = "21.6b0"
 description = "The uncompromising code formatter."
 category = "dev"
 optional = false
@@ -346,7 +346,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "017fd21a66ad6e597920f15c1c936762257243d0417aedd6fd1ed686a5a7edeb"
+content-hash = "014cbc98ad9b180c8eccebe8ca20e3c34fa82d0679be72b269ce4d0f5dc4cc99"
 
 [metadata.files]
 appdirs = [
@@ -358,20 +358,20 @@ astroid = [
     {file = "astroid-2.5.6.tar.gz", hash = "sha256:8a398dfce302c13f14bab13e2b14fe385d32b73f4e4853b9bdfb64598baa1975"},
 ]
 autohooks = [
-    {file = "autohooks-21.3.0-py3-none-any.whl", hash = "sha256:7674ff73741825de83a5b3a5fb701528571810e8d67d3800f4d9167be43f1550"},
-    {file = "autohooks-21.3.0.tar.gz", hash = "sha256:9759b446f4f14712f87b1ce30f9d3cb37a78168e75235b381772cc2356296c6d"},
+    {file = "autohooks-21.6.0-py3-none-any.whl", hash = "sha256:756c42f05ea24228d94c3ea3af9ab755547a3bd972edc0cebb8bb11ad6c28169"},
+    {file = "autohooks-21.6.0.tar.gz", hash = "sha256:237d558eb57b599401a68def3a2e1217d16ea3dc1e520ce0f9947bb4a9cb656b"},
 ]
 autohooks-plugin-black = [
     {file = "autohooks-plugin-black-1.2.0.tar.gz", hash = "sha256:e69a18209f3fd584da903e87faf0e3685caa4d51a9e870ddb3c2b1aef93387b8"},
     {file = "autohooks_plugin_black-1.2.0-py3-none-any.whl", hash = "sha256:5099f620e01d3fcfd70195e63f101d003528b40475e921829a9ebde000f2c5ee"},
 ]
 autohooks-plugin-pylint = [
-    {file = "autohooks-plugin-pylint-1.2.0.tar.gz", hash = "sha256:b1acc77b7845622d969ea2bfe5d8a95ae16a80c2282ca43888f522c9be479d10"},
-    {file = "autohooks_plugin_pylint-1.2.0-py3-none-any.whl", hash = "sha256:f08cef7ce4374661a2087e621e8fda411f3b2c19ebb7c92c7ac47b57892f7a3d"},
+    {file = "autohooks-plugin-pylint-21.6.0.tar.gz", hash = "sha256:6f1a486f19c8012618fecd9eaa985f5da3ef5c954b32d823323439547b947302"},
+    {file = "autohooks_plugin_pylint-21.6.0-py3-none-any.whl", hash = "sha256:0d6ab34739d4c494012aa1647c02e6a4fb9474e4050432ee82f378fcd05c70e4"},
 ]
 black = [
-    {file = "black-21.5b2-py3-none-any.whl", hash = "sha256:e5cf21ebdffc7a9b29d73912b6a6a9a4df4ce70220d523c21647da2eae0751ef"},
-    {file = "black-21.5b2.tar.gz", hash = "sha256:1fc0e0a2c8ae7d269dfcf0c60a89afa299664f3e811395d40b1922dff8f854b5"},
+    {file = "black-21.6b0-py3-none-any.whl", hash = "sha256:dfb8c5a069012b2ab1e972e7b908f5fb42b6bbabcba0a788b86dc05067c7d9c7"},
+    {file = "black-21.6b0.tar.gz", hash = "sha256:dc132348a88d103016726fe360cb9ede02cecf99b76e3660ce6c596be132ce04"},
 ]
 certifi = [
     {file = "certifi-2021.5.30-py2.py3-none-any.whl", hash = "sha256:50b1e4f8446b06f41be7dd6338db18e0990601dce795c2b1686458aa7e8fa7d8"},
