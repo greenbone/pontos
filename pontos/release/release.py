@@ -42,6 +42,7 @@ from pontos import version
 from pontos.version import (
     calculate_calendar_version,
     get_current_version,
+    get_next_patch_version,
     get_next_dev_version,
 )
 from pontos import changelog
@@ -77,6 +78,11 @@ def initialize_default_parser() -> argparse.ArgumentParser:
             'Automatically calculate calendar release version, from current'
             ' version and date.'
         ),
+        action='store_true',
+    )
+    version_group.add_argument(
+        '--patch',
+        help=('Release next patch version: ' 'e.g. x.x.3 -> x.x.4'),
         action='store_true',
     )
 
@@ -183,9 +189,12 @@ def prepare(
         else find_signing_key(shell_cmd_runner)
     )
     calendar: bool = args.calendar
+    patch: bool = args.patch
 
     if calendar:
         release_version: str = calculate_calendar_version()
+    elif patch:
+        release_version: str = get_next_patch_version()
     else:
         release_version: str = args.release_version
 
