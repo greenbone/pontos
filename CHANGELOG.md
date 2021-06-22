@@ -7,6 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* `pontos-release prepare` can be used with `--patch`, to create a release with the next patch version. [#131](https://github.com/greenbone/pontos/pull/131)
+
 ### Changed
 ### Deprecated
 ### Removed

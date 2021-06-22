@@ -150,7 +150,9 @@ if it has been lost.
   rm .release.txt.md
   ```
 
-## Create the Release
+## Prepare the Release
+
+### Set the version manually
 
 * Run pontos-release release. If you use a "non-Greenbone" project, you may set
   the argument `--space <my-workspace>`.
@@ -159,20 +161,35 @@ if it has been lost.
   poetry run pontos-release release --release-version <version> --next-version <dev-version> --git-remote-name upstream
   ```
 
-## Create Release without giving a version
+### Let pontos set the next version
 
-* You can also let pontos calculate the next **calendar** version for you. Therefore you can use the `--calendar` argument in prepare:
+* You can let pontos calculate the next **calendar** version for you. Therefore you can use the `--calendar` argument in prepare:
 
   ```sh
   poetry run pontos-release prepare --calendar --git-signing-key <your-public-gpg-key>
   ```
 
+* You can let pontos set the next **patch** version for you. Therefore you can use the `--patch` argument in prepare:
+
+  ```sh
+  poetry run pontos-release prepare --patch --git-signing-key <your-public-gpg-key>
+  ```
+
+### Dev version
+
 * Pontos can also automatically set the next dev version for you. If you do not explicitly set a `--next-version` it will set to the next dev version:
   * e.g. release-version is 0.0.1, pontos will set next-version to 0.0.2.dev1
+
+## Release
+
+  ```sh
+  poetry run pontos-release release --git-remote-name upstream
+  ```
+
 * If you use a "non-Greenbone" project, you may set the argument `--space <my-workspace>`.
 
   ```sh
-  poetry run pontos-release --space greenbone release --git-remote-name upstream
+  poetry run pontos-release --space <my-workspace> release --git-remote-name upstream
   ```
 
 ## Uploading to the 'real' PyPI

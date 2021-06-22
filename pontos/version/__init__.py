@@ -31,6 +31,7 @@ from .cmake_version import CMakeVersionParser, CMakeVersionCommand
 from .helper import (
     calculate_calendar_version,
     get_current_version,
+    get_next_patch_version,
     get_next_dev_version,
 )
 
@@ -58,6 +59,7 @@ __all__ = [
     'CMakeVersionCommand',
     'get_version_from_pyproject_toml',
     'get_current_version',
+    'get_next_patch_version',
     'get_next_dev_version',
     'is_version_pep440_compliant',
     'PontosVersionCommand',
