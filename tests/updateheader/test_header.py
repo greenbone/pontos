@@ -168,9 +168,9 @@ class UpdateHeaderTestCase(TestCase):
             update_file(file=test_file, regex=self.regex, args=self.args)
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            f"{test_file}: File is not existing.\n",
+            f"{test_file}: File is not existing.",
         )
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -186,10 +186,10 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
             f"{test_file}: Licence file for "
-            "AAAGPL-3.0-or-later is not existing.\n",
+            "AAAGPL-3.0-or-later is not existing.",
         )
 
         test_file.unlink()
@@ -207,9 +207,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            f"{test_file}: No licence header for the format .pppy found.\n",
+            f"{test_file}: No licence header for the format .pppy found.",
         )
 
         test_file.unlink()
@@ -234,9 +234,9 @@ class UpdateHeaderTestCase(TestCase):
             self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            f"{test_file}: Ignoring binary file.\n",
+            f"{test_file}: Ignoring binary file.",
         )
 
         test_file.unlink()
@@ -257,11 +257,13 @@ class UpdateHeaderTestCase(TestCase):
 
         ret = mock_stdout.getvalue()
 
-        self.assertEqual(
+        self.assertRegex(ret, f"{test_file}: Could not get date of last ")
+        self.assertRegex(
+            ret, f"modification using git, using {self.args.year} instead."
+        )
+        self.assertRegex(
             ret,
-            f"{test_file}: Could not get date of last "
-            f"modification using git, using {self.args.year} instead.\n"
-            f"{test_file}: File is not existing.\n",
+            f"{test_file}: File is not existing.",
         )
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -297,9 +299,9 @@ class UpdateHeaderTestCase(TestCase):
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            f"{test_file}: Added licence header.\n",
+            f"{test_file}: Added licence header.",
         )
         self.assertEqual(code, 0)
         self.assertEqual(expected_header, test_file.read_text())
@@ -340,10 +342,10 @@ class UpdateHeaderTestCase(TestCase):
 
         self.assertEqual(code, 0)
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
             f"{test_file}: Changed Licence Header "
-            "Copyright Year None -> 2021\n",
+            "Copyright Year None -> 2021",
         )
         self.assertIn(
             '# Copyright (C) 2020-2021 Greenbone Networks GmbH',
@@ -387,9 +389,9 @@ class UpdateHeaderTestCase(TestCase):
 
         self.assertEqual(code, 0)
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            f"{test_file}: Licence Header is ok.\n",
+            f"{test_file}: Licence Header is ok.",
         )
         self.assertIn(
             '# Copyright (C) 2021 Greenbone Networks GmbH',
@@ -458,7 +460,7 @@ class UpdateHeaderTestCase(TestCase):
             main()
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertRegex(
             ret,
-            "Specify files to update!\n",
+            "Specify files to update!",
         )

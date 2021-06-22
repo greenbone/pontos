@@ -32,6 +32,9 @@ from subprocess import CalledProcessError, run
 from typing import Dict, Tuple, Union
 from pathlib import Path
 
+from pontos.terminal import _set_terminal, error, warning, info, ok
+from pontos.terminal.terminal import Terminal
+
 SUPPORTED_FILE_TYPES = [
     ".bash",
     ".c",
@@ -119,7 +122,7 @@ def _update_file(
         try:
             args.year = _get_modified_year(file)
         except CalledProcessError:
-            print(
+            warning(
                 f"{file}: Could not get date of last modification"
                 f" using git, using {str(args.year)} instead."
             )
@@ -146,15 +149,15 @@ def _update_file(
                         fp.seek(0)
                         fp.write(header)
                         fp.write(rest_of_file)
-                        print(f"{file}: Added licence header.")
+                        info(f"{file}: Added licence header.")
                         return 0
                 except ValueError:
-                    print(
+                    error(
                         f"{file}: No licence header for the"
                         f" format {file.suffix} found.",
                     )
                 except FileNotFoundError:
-                    print(
+                    error(
                         f"{file}: Licence file for {args.licence} "
                         "is not existing."
                     )
@@ -176,7 +179,7 @@ def _update_file(
                 fp.seek(fp_write)
                 fp.write(new_line)
                 fp.write(rest_of_file)
-                print(
+                info(
                     f"{file}: Changed Licence Header Copyright Year "
                     f'{copyright_match["modification_year"]} -> '
                     f"{args.year}"
@@ -184,13 +187,13 @@ def _update_file(
 
                 return 0
             else:
-                print(f"{file}: Licence Header is ok.")
+                ok(f"{file}: Licence Header is ok.")
                 return 0
     except FileNotFoundError as e:
-        print(f"{file}: File is not existing.")
+        error(f"{file}: File is not existing.")
         raise e
     except UnicodeDecodeError as e:
-        print(f"{file}: Ignoring binary file.")
+        info(f"{file}: Ignoring binary file.")
         raise e
 
 
@@ -255,31 +258,37 @@ def _parse_args(args=None):
 def main() -> None:
     args = _parse_args()
 
-    if args.directory:
-        # get files to update
-        files = [
-            Path(file)
-            for file in glob(args.directory + "/**/*", recursive=True)
-            if os.path.isfile(file)
-        ]
-    elif args.files:
-        files = [Path(name) for name in args.files]
+    term = Terminal()
+    _set_terminal(term)
 
-    else:
-        # should never happen
-        print("Specify files to update!")
-        sys.exit(1)
+    term.bold_info('pontos-update-header -> Updating file headers')
 
-    regex = re.compile(
-        "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-        f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
-    )
+    with term.indent():
+        if args.directory:
+            # get files to update
+            files = [
+                Path(file)
+                for file in glob(args.directory + "/**/*", recursive=True)
+                if os.path.isfile(file)
+            ]
+        elif args.files:
+            files = [Path(name) for name in args.files]
 
-    for file in files:
-        try:
-            _update_file(file=file, regex=regex, args=args)
-        except (FileNotFoundError, UnicodeDecodeError, ValueError):
-            continue
+        else:
+            # should never happen
+            error("Specify files to update!")
+            sys.exit(1)
+
+        regex = re.compile(
+            "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
+        )
+
+        for file in files:
+            try:
+                _update_file(file=file, regex=regex, args=args)
+            except (FileNotFoundError, UnicodeDecodeError, ValueError):
+                continue
 
     return 0
 
