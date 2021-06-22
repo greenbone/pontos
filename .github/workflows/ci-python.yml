@@ -48,6 +48,7 @@ jobs:
         uses: greenbone/actions/poetry@v1
       - name: Run unit tests
         run: poetry run python -m unittest
+        working-directory: ${{ github.WORKSPACE }}
 
   codecov:
     name: Upload coverage to codecov.io
