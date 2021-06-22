@@ -101,3 +101,25 @@ def calculate_calendar_version() -> str:
             f"'{str(today.year  % 100)}.{str(today.month)}'."
         )
         sys.exit(1)
+
+
+def get_next_patch_version() -> str:
+    """find the correct next patch version by checking latest version"""
+
+    current_version_str: str = get_current_version()
+    current_version = Version(current_version_str)
+
+    if current_version.dev:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro)}'
+        )
+    else:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro + 1)}'
+        )
+
+    return str(release_version)
