@@ -180,6 +180,8 @@ class CMakeVersionParser:
                 in_version = False
             elif token_type == 'word' and value == 'set':
                 in_set = True
+            elif in_set and token_type == 'close_bracket':
+                in_set = False
             elif (
                 in_set
                 and token_type == 'word'
