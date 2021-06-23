@@ -119,10 +119,10 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
         self.assertIn(
-            "git commit -S 0815 -m 'automatic release to 0.0.1'", called
+            "git commit -S 0815 -m 'Automatic release to 0.0.1'", called
         )
         self.assertIn(
-            "git tag -u 0815 v0.0.1 -m 'automatic release to 0.0.1'", called
+            "git tag -u 0815 v0.0.1 -m 'Automatic release to 0.0.1'", called
         )
 
     def test_fail_if_tag_is_already_taken(self):
@@ -308,8 +308,9 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertIn('git push --follow-tags upstream', called)
         self.assertIn('git add MyProject.conf', called)
         self.assertIn(
-            "git commit -m '* Update to version"
-            " 0.0.2.dev1\n* Add empty changelog after 0.0.1'",
+            "git commit -m 'Automatic adjustments after release\n\n"
+            "* Update to version 0.0.2.dev1\n"
+            "* Add empty changelog after 0.0.1'",
             called,
         )
         print(called)
