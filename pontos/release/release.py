@@ -239,7 +239,7 @@ def prepare(
 
     info("Committing changes")
 
-    commit_msg = f'automatic release to {release_version}'
+    commit_msg = f'Automatic release to {release_version}'
     commit_files(
         filename,
         commit_msg,
@@ -351,6 +351,7 @@ def release(
     change_log_path.write_text(updated)
 
     commit_msg = (
+        f'Automatic adjustments after release\n\n'
         f'* Update to version {next_version}\n'
         f'* Add empty changelog after {release_version}'
     )
