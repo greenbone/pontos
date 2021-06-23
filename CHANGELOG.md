@@ -5,18 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.6.7] - 2021-06-23
 ### Added
 * Add header templates for .xsl files [#136](https://github.com/greenbone/pontos/pull/136)
 
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 * Correctly check if `dev` version is set in `get_current_version()`. [#137](https://github.com/greenbone/pontos/pull/137)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.5...HEAD
-
+[21.6.7]: https://github.com/greenbone/pontos/compare/v21.6.5...v21.6.7
 
 ## [21.6.5] - 2021-06-23
 ### Added
