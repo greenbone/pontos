@@ -8,6 +8,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* Improve generated git commit messages for and after a release [#138](https://github.com/greenbone/pontos/pull/138)
+
 ### Deprecated
 ### Removed
 ### Fixed
