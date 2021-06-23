@@ -7,6 +7,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* Added some output to `version` helper. [#134](https://github.com/greenbone/pontos/pull/134)
 ### Changed
 ### Deprecated
 ### Removed
