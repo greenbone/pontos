@@ -7,6 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* Add header templates for .xsl files [#136](https://github.com/greenbone/pontos/pull/136)
+
 ### Changed
 ### Deprecated
 ### Removed
