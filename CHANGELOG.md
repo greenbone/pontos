@@ -8,9 +8,13 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* `pontos-release` checks now if there is a `unreleased` section in the `CHANGELOG.md` for the given release version, instead of using everything that is `unreleased`. If it doesn't find the version, it will look for a general `unreleased` section (like before). [#133](https://github.com/greenbone/pontos/pull/133)
+
 ### Deprecated
 ### Removed
 ### Fixed
+* The replacement of the `unreleased` section in the `CHANGELOG.md`. [#133](https://github.com/greenbone/pontos/pull/133)
+  * e.g. it is able to handle `## [2.1.3] (unreleased)` now and will convert it correctly to `## [2.1.3] - 22.06.2020`
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.4...HEAD
 
