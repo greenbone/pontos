@@ -11,6 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+* Correctly check if `dev` version is set in `get_current_version()`. [#137](https://github.com/greenbone/pontos/pull/137)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.5...HEAD
 
