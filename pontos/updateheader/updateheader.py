@@ -44,6 +44,7 @@ SUPPORTED_FILE_TYPES = [
     ".sh",
     ".txt",
     ".xml",
+    ".xsl",
 ]
 SUPPORTED_LICENCES = [
     "AGPL-3.0-or-later",
