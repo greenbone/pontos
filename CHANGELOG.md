@@ -10,10 +10,12 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 * Added some output to `version` helper. [#134](https://github.com/greenbone/pontos/pull/134)
 ### Changed
 * `pontos-release` checks now if there is a `unreleased` section in the `CHANGELOG.md` for the given release version, instead of using everything that is `unreleased`. If it doesn't find the version, it will look for a general `unreleased` section (like before). [#133](https://github.com/greenbone/pontos/pull/133)
+* Improve setting dev-version after release. [#135](https://github.com/greenbone/pontos/pull/135)
 
 ### Deprecated
 ### Removed
 ### Fixed
+* Fix dev-version check in CMakeLists.txt. [#135](https://github.com/greenbone/pontos/pull/135)
 * The replacement of the `unreleased` section in the `CHANGELOG.md`. [#133](https://github.com/greenbone/pontos/pull/133)
   * e.g. it is able to handle `## [2.1.3] (unreleased)` now and will convert it correctly to `## [2.1.3] - 22.06.2020`
 
