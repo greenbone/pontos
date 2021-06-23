@@ -5,22 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.6.5] - 2021-06-23
 ### Added
 * Added some output to `version` helper. [#134](https://github.com/greenbone/pontos/pull/134)
 ### Changed
 * `pontos-release` checks now if there is a `unreleased` section in the `CHANGELOG.md` for the given release version, instead of using everything that is `unreleased`. If it doesn't find the version, it will look for a general `unreleased` section (like before). [#133](https://github.com/greenbone/pontos/pull/133)
 * Improve setting dev-version after release. [#135](https://github.com/greenbone/pontos/pull/135)
 
-### Deprecated
-### Removed
 ### Fixed
 * Fix dev-version check in CMakeLists.txt. [#135](https://github.com/greenbone/pontos/pull/135)
 * The replacement of the `unreleased` section in the `CHANGELOG.md`. [#133](https://github.com/greenbone/pontos/pull/133)
   * e.g. it is able to handle `## [2.1.3] (unreleased)` now and will convert it correctly to `## [2.1.3] - 22.06.2020`
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.4...HEAD
-
+[21.6.5]: https://github.com/greenbone/pontos/compare/v21.6.4...v21.6.5
 
 ## [21.6.4] - 2021-06-22
 ### Added
