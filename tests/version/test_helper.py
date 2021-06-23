@@ -23,7 +23,11 @@ from unittest.mock import patch
 from pathlib import Path
 
 
-from pontos.version import calculate_calendar_version, get_next_patch_version
+from pontos.version import (
+    calculate_calendar_version,
+    get_next_patch_version,
+    get_next_dev_version,
+)
 
 
 class CalculateNextVersionTestCase(unittest.TestCase):
@@ -73,6 +77,29 @@ class CalculateNextVersionTestCase(unittest.TestCase):
                 proj_file.unlink()
 
         tmp_path.rmdir()
+
+    def test_get_next_dev_version(self):
+        current_versions = [
+            '20.4.1',
+            '20.4.1',
+            '19.1.2',
+            '1.1.1',
+            '20.6.1',
+        ]
+        assert_versions = [
+            '20.4.2',
+            '20.4.2',
+            '19.1.3',
+            '1.1.2',
+            '20.6.2',
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            next_version = get_next_dev_version(current_version)
+
+            self.assertEqual(assert_version, next_version)
 
     def test_get_next_patch_version(self):
         today = datetime.datetime.today()

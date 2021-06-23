@@ -189,22 +189,29 @@ __version__ = "{}"\n"""
 
         return version_module.__version__
 
-    def update_version_file(self, new_version: str) -> None:
+    def update_version_file(
+        self, new_version: str, *, develop: bool = False
+    ) -> None:
         """
         Update the version file with the new version
         """
         version = safe_version(new_version)
-
+        if develop:
+            version = f'{version}.dev1'
         self.version_file_path.write_text(self.TEMPLATE.format(version))
 
     def update_pyproject_version(
         self,
         new_version: str,
+        *,
+        develop: bool = False,
     ) -> None:
         """
         Update the version in the pyproject.toml file
         """
         version = safe_version(new_version)
+        if develop:
+            version = f'{version}.dev1'
 
         pyproject_toml = tomlkit.parse(self.pyproject_toml_path.read_text())
 
@@ -220,7 +227,9 @@ __version__ = "{}"\n"""
 
         self.pyproject_toml_path.write_text(tomlkit.dumps(pyproject_toml))
 
-    def update_version(self, new_version: str, *, force: bool = False) -> None:
+    def update_version(
+        self, new_version: str, *, develop: bool = False, force: bool = False
+    ) -> None:
         if not self.pyproject_toml_path.exists():
             raise VersionError(
                 'Could not find {} file.'.format(str(self.pyproject_toml_path))
@@ -239,14 +248,15 @@ __version__ = "{}"\n"""
             self._print('Version is already up-to-date.')
             return
 
-        self.update_pyproject_version(new_version=new_version)
+        self.update_pyproject_version(new_version=new_version, develop=develop)
 
-        self.update_version_file(new_version=new_version)
+        self.update_version_file(new_version=new_version, develop=develop)
 
+        new_version = safe_version(new_version)
+        if develop:
+            new_version = f'{new_version}.dev1'
         self._print(
-            'Updated version from {} to {}'.format(
-                pyproject_version, safe_version(new_version)
-            )
+            f'Updated version from {pyproject_version} to {new_version}'
         )
 
     def verify_version(self, version: str) -> None:
