@@ -39,7 +39,7 @@ def get_next_dev_version(release_version: str) -> str:
         next_version_obj = Version(
             f'{str(release_version_obj.major)}.'
             f'{str(release_version_obj.minor)}.'
-            f'{str(release_version_obj.micro + 1)}.dev1'
+            f'{str(release_version_obj.micro + 1)}'
         )
         return str(next_version_obj)
     except InvalidVersion as e:
