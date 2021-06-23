@@ -28,6 +28,7 @@ from pontos.version import (
     CMakeVersionCommand,
     VersionError,
 )
+from pontos.terminal import error, ok
 
 
 def get_next_dev_version(release_version: str) -> str:
@@ -56,10 +57,11 @@ def get_current_version() -> str:
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
         if project_definition_path.exists():
+            ok(f"Found {file_name} project definition file.")
             current_version: str = cmd().get_current_version()
             return current_version
 
-    print("No project settings file found")
+    error("No project settings file found")
     sys.exit(1)
 
 
@@ -96,7 +98,7 @@ def calculate_calendar_version() -> str:
             )
         return str(release_version)
     else:
-        print(
+        error(
             f"'{str(current_version)}' is higher than "
             f"'{str(today.year  % 100)}.{str(today.month)}'."
         )
