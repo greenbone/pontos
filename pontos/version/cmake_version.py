@@ -129,6 +129,8 @@ class CMakeVersionParser:
     )
 
     def get_current_version(self) -> str:
+        if self.is_dev_version():
+            return f'{self._current_version}.dev'
         return self._current_version
 
     def update_version(self, new_version: str, *, develop: bool = False) -> str:
@@ -204,6 +206,13 @@ class CMakeVersionParser:
             version,
             project_dev_version_line_no,
             project_dev_version,
+        )
+
+    def is_dev_version(self) -> bool:
+        return (
+            int(self._project_dev_version) == 1
+            if self._project_dev_version
+            else False
         )
 
     def _tokenize(
