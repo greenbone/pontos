@@ -27,7 +27,10 @@ class ChangelogError(Exception):
     """
 
 
-__UNRELEASED_MATCHER = re.compile('unreleased', re.IGNORECASE)
+__UNRELEASED_FOOTER_MATCHER = re.compile('unreleased', re.IGNORECASE)
+__UNRELEASED_HEADER_MATCHER = re.compile(
+    r'[\(\[]{1}[0-9\.]*.*?[Uu]nreleased[\)\]]{1}'
+)
 __MASTER_MATCHER = re.compile('master|HEAD')
 
 __UNRELEASED_SKELETON = """## [Unreleased]
@@ -138,12 +141,12 @@ def _prepare_changelog(
 
         if tt == 'unreleased':
             if new_version:
-                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
+                tc = __UNRELEASED_HEADER_MATCHER.sub(f'[{new_version}]', tc)
                 tc += ' - {}'.format(date.today().isoformat())
             output += tc
         elif tt == 'unreleased_link':
             if new_version:
-                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
+                tc = __UNRELEASED_FOOTER_MATCHER.sub(new_version, tc)
                 tc = __MASTER_MATCHER.sub(git_tag, tc)
             unreleased_link += tc + '\n\n'
         elif 'kw_' in tt:

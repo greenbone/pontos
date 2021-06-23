@@ -213,11 +213,22 @@ def prepare(
     ok(f"updated version  in {filename} to {release_version}")
 
     change_log_path = path.cwd() / 'CHANGELOG.md'
+
+    # Try to get the unreleased section of the specific version
     updated, changelog_text = changelog_module.update(
         change_log_path.read_text(),
         release_version,
         git_tag_prefix=git_tag_prefix,
+        containing_version=release_version,
     )
+
+    if not updated:
+        # Try to get unversioned unrlease section
+        updated, changelog_text = changelog_module.update(
+            change_log_path.read_text(),
+            release_version,
+            git_tag_prefix=git_tag_prefix,
+        )
 
     if not updated:
         raise ValueError("No unreleased text found in CHANGELOG.md")
