@@ -86,7 +86,7 @@ def calculate_calendar_version() -> str:
         current_version.major == today.year % 100
         and current_version.minor == today.month
     ):
-        if not current_version.dev is not None:
+        if current_version.dev is None:
             release_version = Version(
                 f'{str(today.year  % 100)}.{str(today.month)}.'
                 f'{str(current_version.micro + 1)}'
