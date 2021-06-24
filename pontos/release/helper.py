@@ -30,12 +30,14 @@ from packaging.version import InvalidVersion, Version
 import requests
 
 from pontos import version
-from pontos.terminal import error, warning, info, ok, out
+from pontos.terminal import error, warning, info, ok, out, out_flush
 from pontos.version.helper import VersionError
 from pontos.version import (
     PontosVersionCommand,
     CMakeVersionCommand,
 )
+
+DEFAULT_TIMEOUT = 1000
 
 
 def build_release_dict(
@@ -173,11 +175,51 @@ def download(
     file_path: Path = path(tempfile.gettempdir()) / filename
     response = requests_module.get(url, stream=True)
 
-    out(f'Downloading {url}')
+    info(f'Downloading {url}')
 
     with file_path.open(mode='wb') as download_file:
-        for content in response.iter_content():
+        for content in response.iter_content(chunk_size=4096):
             download_file.write(content)
+
+    return file_path
+
+
+def download_asset(
+    url: str,
+    filename: str,
+    requests_module: requests,
+    path: Path,
+    *,
+    timeout: int = DEFAULT_TIMEOUT,
+) -> Path:
+    """Download file in url to filename
+
+    Arguments:
+        url: The url of the file we want to download
+        filename: The name of the file to store the download in
+        requests_module: the python request module
+        path: the python pathlib.Path module
+
+    Returns:
+       Path to the downloaded file
+    """
+
+    file_path: Path = path(tempfile.gettempdir()) / filename
+    response = requests_module.get(url, stream=True, timeout=timeout)
+    total_length = response.headers.get('content-length')
+
+    info(f'Downloading {url}')
+
+    if total_length is not None:  # no content length header
+        with file_path.open(mode='wb') as download_file:
+            dl = 0
+            total_length = int(total_length)
+            for content in response.iter_content(chunk_size=4096):
+                dl += len(content)
+                download_file.write(content)
+                done = int(50 * dl / total_length)
+                out_flush(f"[{'=' * done}{' ' * (50-done)}]")
+    out('')
 
     return file_path
 
@@ -207,7 +249,7 @@ def download_assets(
                 asset_url: str = asset_json.get('browser_download_url', '')
                 name: str = asset_json.get('name', '')
                 if name.endswith('.zip') or name.endswith('.tar.gz'):
-                    asset_path = download(
+                    asset_path = download_asset(
                         asset_url,
                         name,
                         path=path,
