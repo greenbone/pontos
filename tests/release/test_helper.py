@@ -16,25 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import subprocess
-import unittest
-import tempfile
 import os
-import sys
-from pathlib import Path
 import shutil
+import sys
+import tempfile
+import unittest
 
+from pathlib import Path
+from unittest.mock import patch
+
+from pontos.terminal import _set_terminal
+from pontos.terminal.terminal import Terminal
 
 from pontos.release.helper import (
+    calculate_calendar_version,
+    get_next_patch_version,
+    get_next_dev_version,
     get_project_name,
     find_signing_key,
     update_version,
 )
 from pontos import version
-from pontos.terminal import (
-    _set_terminal,
-)
-from pontos.terminal.terminal import Terminal
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -176,3 +180,125 @@ class TestHelperFunctions(unittest.TestCase):
         shutil.rmtree(module_path)
         sys.path.remove(self.tmpdir)
         os.chdir(proj_path)
+
+
+class CalculateHelperVersionTestCase(unittest.TestCase):
+    def setUp(self):
+        _set_terminal(Terminal())
+
+    def test_calculate_calendar_versions(self):
+        today = datetime.datetime.today()
+
+        filenames = ['pyproject.toml', 'CMakeLists.txt']
+        mocks = [
+            'pontos.release.helper.PontosVersionCommand',
+            'pontos.release.helper.CMakeVersionCommand',
+        ]
+        current_versions = [
+            '20.4.1.dev3',
+            f'{str(today.year % 100)}.4.1.dev3',
+            f'19.{str(today.month)}.1.dev3',
+            f'{str(today.year % 100)}.{str(today.month)}.1.dev3',
+            f'{str(today.year % 100)}.{str(today.month)}.1',
+        ]
+        assert_versions = [
+            f'{str(today.year % 100)}.{str(today.month)}.0',
+            f'{str(today.year % 100)}.{str(today.month)}.0',
+            f'{str(today.year % 100)}.{str(today.month)}.0',
+            f'{str(today.year % 100)}.{str(today.month)}.1',
+            f'{str(today.year % 100)}.{str(today.month)}.2',
+        ]
+
+        tmp_path = Path.cwd() / 'tmp'
+
+        for filename, mock in zip(filenames, mocks):
+            for current_version, assert_version in zip(
+                current_versions, assert_versions
+            ):
+                tmp_path.mkdir(parents=True, exist_ok=True)
+                os.chdir(tmp_path)
+                proj_file = Path.cwd() / filename
+                proj_file.touch()
+                with patch(mock) as cmd_mock:
+                    cmd_mock.return_value.get_current_version.return_value = (
+                        current_version
+                    )
+
+                    release_version = calculate_calendar_version()
+
+                    self.assertEqual(release_version, assert_version)
+
+                os.chdir('..')
+                proj_file.unlink()
+
+        tmp_path.rmdir()
+
+    def test_get_next_dev_version(self):
+        current_versions = [
+            '20.4.1',
+            '20.4.1',
+            '19.1.2',
+            '1.1.1',
+            '20.6.1',
+        ]
+        assert_versions = [
+            '20.4.2',
+            '20.4.2',
+            '19.1.3',
+            '1.1.2',
+            '20.6.2',
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            next_version = get_next_dev_version(current_version)
+
+            self.assertEqual(assert_version, next_version)
+
+    def test_get_next_patch_version(self):
+        today = datetime.datetime.today()
+
+        filenames = ['pyproject.toml', 'CMakeLists.txt']
+        mocks = [
+            'pontos.release.helper.PontosVersionCommand',
+            'pontos.release.helper.CMakeVersionCommand',
+        ]
+        current_versions = [
+            '20.4.1.dev3',
+            f'{str(today.year % 100)}.4.1.dev3',
+            f'19.{str(today.month)}.1.dev3',
+            f'{str(today.year % 100)}.{str(today.month)}.1',
+            '20.6.1',
+        ]
+        assert_versions = [
+            '20.4.1',
+            f'{str(today.year % 100)}.4.1',
+            f'19.{str(today.month)}.1',
+            f'{str(today.year % 100)}.{str(today.month)}.2',
+            '20.6.2',
+        ]
+
+        tmp_path = Path.cwd() / 'tmp'
+
+        for filename, mock in zip(filenames, mocks):
+            for current_version, assert_version in zip(
+                current_versions, assert_versions
+            ):
+                tmp_path.mkdir(parents=True, exist_ok=True)
+                os.chdir(tmp_path)
+                proj_file = Path.cwd() / filename
+                proj_file.touch()
+                with patch(mock) as cmd_mock:
+                    cmd_mock.return_value.get_current_version.return_value = (
+                        current_version
+                    )
+
+                    release_version = get_next_patch_version()
+
+                    self.assertEqual(release_version, assert_version)
+
+                os.chdir('..')
+                proj_file.unlink()
+
+        tmp_path.rmdir()

@@ -8,10 +8,12 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* `pontos-version` you can use both `--develop` or a version with `x.x.x.dev1` to set a develop version. [#141](https://github.com/greenbone/pontos/pull/141)
 ### Deprecated
 ### Removed
 ### Fixed
 * Fixed creating signature files for tarballs and zip files from GitHub releases [#142](https://github.com/greenbone/pontos/pull/142)
+* `pontos-release` setting correct version after release in Python projects. [#141](https://github.com/greenbone/pontos/pull/141)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.9...HEAD
 

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable = protected-access
+
 import unittest
 
 from pathlib import Path
@@ -33,7 +35,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
 
         cmd = VersionCommand(pyproject_toml_path=fake_path)
 
-        cmd.update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -47,7 +49,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path.read_text.return_value = "[tool]"
 
         cmd = VersionCommand(pyproject_toml_path=fake_path)
-        cmd.update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -61,7 +63,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path.read_text.return_value = "[tool.poetry]"
 
         cmd = VersionCommand(pyproject_toml_path=fake_path)
-        cmd.update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -75,7 +77,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
 
         cmd = VersionCommand(pyproject_toml_path=fake_path)
-        cmd.update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version('20.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
 

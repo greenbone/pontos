@@ -16,18 +16,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+
+import datetime
 import json
 import subprocess
+import sys
 import tempfile
 
 from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
+from packaging.version import InvalidVersion, Version
 
 import requests
 
 from pontos import version
 from pontos.terminal import error, warning, info, ok, out
+from pontos.version.helper import VersionError
+from pontos.version import (
+    PontosVersionCommand,
+    CMakeVersionCommand,
+)
 
 
 def build_release_dict(
@@ -104,6 +112,46 @@ def commit_files(
         shell_cmd_runner(f"git commit -m '{commit_msg}'")
 
 
+def calculate_calendar_version() -> str:
+    """find the correct next calendar version by checking latest version and
+    the today's date"""
+
+    current_version_str: str = get_current_version()
+    current_version = Version(current_version_str)
+
+    today = datetime.date.today()
+
+    if (
+        current_version.major < today.year % 100
+        or current_version.minor < today.month
+    ):
+        release_version = Version(
+            f'{str(today.year  % 100)}.{str(today.month)}.0'
+        )
+        return str(release_version)
+    elif (
+        current_version.major == today.year % 100
+        and current_version.minor == today.month
+    ):
+        if current_version.dev is None:
+            release_version = Version(
+                f'{str(today.year  % 100)}.{str(today.month)}.'
+                f'{str(current_version.micro + 1)}'
+            )
+        else:
+            release_version = Version(
+                f'{str(today.year  % 100)}.{str(today.month)}.'
+                f'{str(current_version.micro)}'
+            )
+        return str(release_version)
+    else:
+        error(
+            f"'{str(current_version)}' is higher than "
+            f"'{str(today.year  % 100)}.{str(today.month)}'."
+        )
+        sys.exit(1)
+
+
 def download(
     url: str,
     filename: str,
@@ -168,6 +216,62 @@ def download_assets(
                     file_paths.append(asset_path)
 
     return file_paths
+
+
+def get_current_version() -> str:
+    """Get the current Version from a pyproject.toml or
+    a CMakeLists.txt file"""
+
+    available_cmds = [
+        ('CMakeLists.txt', CMakeVersionCommand),
+        ('pyproject.toml', PontosVersionCommand),
+    ]
+    for file_name, cmd in available_cmds:
+        project_definition_path = Path.cwd() / file_name
+        if project_definition_path.exists():
+            ok(f"Found {file_name} project definition file.")
+            current_version: str = cmd().get_current_version()
+            return current_version
+
+    error("No project settings file found")
+    sys.exit(1)
+
+
+def get_next_patch_version() -> str:
+    """find the correct next patch version by checking latest version"""
+
+    current_version_str: str = get_current_version()
+    current_version = Version(current_version_str)
+
+    if current_version.dev is not None:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro)}'
+        )
+    else:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro + 1)}'
+        )
+
+    return str(release_version)
+
+
+def get_next_dev_version(release_version: str) -> str:
+    """Get the next dev Version from a valid version"""
+    # will be a dev1 version
+    try:
+        release_version_obj = Version(release_version)
+        next_version_obj = Version(
+            f'{str(release_version_obj.major)}.'
+            f'{str(release_version_obj.minor)}.'
+            f'{str(release_version_obj.micro + 1)}'
+        )
+        return str(next_version_obj)
+    except InvalidVersion as e:
+        raise (VersionError(e)) from None
 
 
 def get_project_name(

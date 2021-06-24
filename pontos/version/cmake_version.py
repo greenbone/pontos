@@ -22,7 +22,11 @@ import traceback
 from typing import Tuple, Generator, Union
 from pathlib import Path
 
-from .version import (
+from packaging.version import Version
+
+from .helper import (
+    check_develop,
+    safe_version,
     is_version_pep440_compliant,
     VersionError,
     initialize_default_parser,
@@ -138,6 +142,18 @@ class CMakeVersionParser:
             raise VersionError(
                 "version {} is not pep 440 compliant.".format(new_version)
             )
+
+        new_version = safe_version(new_version)
+        if check_develop(new_version):
+            vers = Version(new_version)
+            if vers.dev is not None:
+                new_version = str(
+                    Version(
+                        f'{str(vers.major)}.{str(vers.minor)}'
+                        f'.{str(vers.micro)}'
+                    )
+                )
+            develop = True
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)
