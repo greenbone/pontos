@@ -24,7 +24,7 @@ import sys
 import os
 import re
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, FileType
 from datetime import datetime
 from glob import glob
 
@@ -195,6 +195,34 @@ def _update_file(
         raise e
 
 
+def _get_exclude_list(exclude_file, directory):
+    """Tries to get the list of excluded files.
+    If a file is given, it will be used. Otherwise the given directory will be
+    checked for the default file.
+    """
+    if exclude_file is None:
+        path = os.path.join(directory, ".pontos-header-ignore")
+        try:
+            exclude_file = open(path, "r")
+        except FileNotFoundError:
+            return []
+
+    exclude_lines = exclude_file.readlines()
+    exclude_file.close()
+
+    expanded_globs = [
+        glob(os.path.join(directory, line.replace('\n', '')), recursive=True)
+        for line in exclude_lines
+        if line
+    ]
+
+    return [
+        os.path.abspath(path)
+        for glob_paths in expanded_globs
+        for path in glob_paths
+    ]
+
+
 def _parse_args(args=None):
     """Parsing the args"""
 
@@ -250,13 +278,28 @@ def _parse_args(args=None):
         "--directory",
         help="Directory to find files to update recursively.",
     )
+
+    parser.add_argument(
+        "--exclude-file",
+        help=(
+            "File containing glob patterns for files to"
+            " ignore when finding files to update in a directory."
+            " Will look for '.pontos-header-ignore' in the directory"
+            " if none is given."
+        ),
+        type=FileType('r'),
+    )
+
     return parser.parse_args(args)
 
 
 def main() -> None:
     args = _parse_args()
+    exclude_list = []
 
     if args.directory:
+        # get file paths to exclude
+        exclude_list = _get_exclude_list(args.exclude_file, args.directory)
         # get files to update
         files = [
             Path(file)
@@ -278,7 +321,10 @@ def main() -> None:
 
     for file in files:
         try:
-            _update_file(file=file, regex=regex, args=args)
+            if os.path.abspath(str(file)) in exclude_list:
+                print(f"{file}: Matches exclusion list.")
+            else:
+                _update_file(file=file, regex=regex, args=args)
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
 
