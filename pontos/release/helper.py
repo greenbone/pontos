@@ -293,6 +293,6 @@ def upload_assets(
             out(json.dumps(resp.text, indent=4, sort_keys=True))
             return False
         else:
-            ok(f"uploaded: {file_path.name}")
+            ok(f"Uploaded: {file_path.name}")
 
     return True
