@@ -15,22 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import importlib
-import re
 
 from pathlib import Path
 from typing import Union
 
 import tomlkit
 
-from packaging.version import Version, InvalidVersion
-
-
-class VersionError(Exception):
-    """
-    Some error has occurred during version handling
-    """
+from .helper import (
+    safe_version,
+    check_develop,
+    is_version_pep440_compliant,
+    VersionError,
+    initialize_default_parser,
+)
 
 
 def strip_version(version: str) -> str:
@@ -43,30 +41,6 @@ def strip_version(version: str) -> str:
         return version[1:]
 
     return version
-
-
-def safe_version(version: str) -> str:
-    """
-    Returns the version as a string in `PEP440`_ compliant
-    format.
-
-    .. _PEP440:
-       https://www.python.org/dev/peps/pep-0440
-    """
-    try:
-        return str(Version(version))
-    except InvalidVersion:
-        version = version.replace(' ', '.')
-        return re.sub('[^A-Za-z0-9.]+', '-', version)
-
-
-def check_develop(version: str) -> str:
-    """
-    Checks if the given Version is a develop version
-
-    Returns True if yes, False if not
-    """
-    return True if Version(version).dev is not None else False
 
 
 def get_version_from_pyproject_toml(pyproject_toml_path: Path = None) -> str:
@@ -103,54 +77,6 @@ def versions_equal(new_version: str, old_version: str) -> bool:
     Checks if new_version and old_version are equal
     """
     return safe_version(old_version) == safe_version(new_version)
-
-
-def is_version_pep440_compliant(version: str) -> bool:
-    """
-    Checks if the provided version is a PEP 440 compliant version string
-    """
-    return version == safe_version(version)
-
-
-def initialize_default_parser() -> argparse.ArgumentParser:
-    """
-    Returns a default argument parser containing:
-    - verify
-    - show
-    - update
-    """
-    parser = argparse.ArgumentParser(
-        description='Version handling utilities.',
-        prog='version',
-    )
-    parser.add_argument(
-        '--quiet', help='don\'t print messages', action="store_true"
-    )
-
-    subparsers = parser.add_subparsers(
-        title='subcommands',
-        description='valid subcommands',
-        help='additional help',
-        dest='command',
-    )
-
-    verify_parser = subparsers.add_parser('verify')
-    verify_parser.add_argument('version', help='version string to compare')
-    subparsers.add_parser('show')
-
-    update_parser = subparsers.add_parser('update')
-    update_parser.add_argument('version', help='version string to use')
-    update_parser.add_argument(
-        '--force',
-        help="don't check if version is already set",
-        action="store_true",
-    )
-    update_parser.add_argument(
-        '--develop',
-        help="indicates if it is a develop version",
-        action="store_true",
-    )
-    return parser
 
 
 class VersionCommand:
@@ -202,7 +128,7 @@ __version__ = "{}"\n"""
         """
         Update the version file with the new version
         """
-
+        new_version = safe_version(new_version)
         self.version_file_path.write_text(self.TEMPLATE.format(new_version))
 
     def _update_pyproject_version(
@@ -213,6 +139,7 @@ __version__ = "{}"\n"""
         Update the version in the pyproject.toml file
         """
 
+        new_version = safe_version(new_version)
         pyproject_toml = tomlkit.parse(self.pyproject_toml_path.read_text())
 
         if 'tool' not in pyproject_toml:

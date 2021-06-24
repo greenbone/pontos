@@ -17,111 +17,85 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import datetime
-from pathlib import Path
-import sys
+import re
+import argparse
 
 from packaging.version import Version, InvalidVersion
 
-from pontos.version import (
-    PontosVersionCommand,
-    CMakeVersionCommand,
-    VersionError,
-)
-from pontos.terminal import error, ok
+
+class VersionError(Exception):
+    """
+    Some error has occurred during version handling
+    """
 
 
-def get_next_dev_version(release_version: str) -> str:
-    """Get the next dev Version from a valid version"""
-    # will be a dev1 version
+def check_develop(version: str) -> str:
+    """
+    Checks if the given Version is a develop version
+
+    Returns True if yes, False if not
+    """
+    return True if Version(version).dev is not None else False
+
+
+def is_version_pep440_compliant(version: str) -> bool:
+    """
+    Checks if the provided version is a PEP 440 compliant version string
+    """
+    return version == safe_version(version)
+
+
+def initialize_default_parser() -> argparse.ArgumentParser:
+    """
+    Returns a default argument parser containing:
+    - verify
+    - show
+    - update
+    """
+    parser = argparse.ArgumentParser(
+        description='Version handling utilities.',
+        prog='version',
+    )
+    parser.add_argument(
+        '--quiet', help='don\'t print messages', action="store_true"
+    )
+
+    subparsers = parser.add_subparsers(
+        title='subcommands',
+        description='valid subcommands',
+        help='additional help',
+        dest='command',
+    )
+
+    verify_parser = subparsers.add_parser('verify')
+    verify_parser.add_argument('version', help='version string to compare')
+    subparsers.add_parser('show')
+
+    update_parser = subparsers.add_parser('update')
+    update_parser.add_argument('version', help='version string to use')
+    update_parser.add_argument(
+        '--force',
+        help="don't check if version is already set",
+        action="store_true",
+    )
+    update_parser.add_argument(
+        '--develop',
+        help="indicates if it is a develop version",
+        action="store_true",
+    )
+    return parser
+
+
+def safe_version(version: str) -> str:
+    """
+    Returns the version as a string in `PEP440`_ compliant
+    format.
+
+    .. _PEP440:
+       https://www.python.org/dev/peps/pep-0440
+    """
     try:
-        release_version_obj = Version(release_version)
-        next_version_obj = Version(
-            f'{str(release_version_obj.major)}.'
-            f'{str(release_version_obj.minor)}.'
-            f'{str(release_version_obj.micro + 1)}'
-        )
-        return str(next_version_obj)
-    except InvalidVersion as e:
-        raise (VersionError(e)) from None
-
-
-def get_current_version() -> str:
-    """Get the current Version from a pyproject.toml or
-    a CMakeLists.txt file"""
-
-    available_cmds = [
-        ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PontosVersionCommand),
-    ]
-    for file_name, cmd in available_cmds:
-        project_definition_path = Path.cwd() / file_name
-        if project_definition_path.exists():
-            ok(f"Found {file_name} project definition file.")
-            current_version: str = cmd().get_current_version()
-            return current_version
-
-    error("No project settings file found")
-    sys.exit(1)
-
-
-def calculate_calendar_version() -> str:
-    """find the correct next calendar version by checking latest version and
-    the today's date"""
-
-    current_version_str: str = get_current_version()
-    current_version = Version(current_version_str)
-
-    today = datetime.date.today()
-
-    if (
-        current_version.major < today.year % 100
-        or current_version.minor < today.month
-    ):
-        release_version = Version(
-            f'{str(today.year  % 100)}.{str(today.month)}.0'
-        )
-        return str(release_version)
-    elif (
-        current_version.major == today.year % 100
-        and current_version.minor == today.month
-    ):
-        if current_version.dev is None:
-            release_version = Version(
-                f'{str(today.year  % 100)}.{str(today.month)}.'
-                f'{str(current_version.micro + 1)}'
-            )
-        else:
-            release_version = Version(
-                f'{str(today.year  % 100)}.{str(today.month)}.'
-                f'{str(current_version.micro)}'
-            )
-        return str(release_version)
-    else:
-        error(
-            f"'{str(current_version)}' is higher than "
-            f"'{str(today.year  % 100)}.{str(today.month)}'."
-        )
-        sys.exit(1)
-
-
-def get_next_patch_version() -> str:
-    """find the correct next patch version by checking latest version"""
-
-    current_version_str: str = get_current_version()
-    current_version = Version(current_version_str)
-
-    if current_version.dev is not None:
-        release_version = Version(
-            f'{str(current_version.major)}.'
-            f'{str(current_version.minor)}.'
-            f'{str(current_version.micro)}'
-        )
-    else:
-        release_version = Version(
-            f'{str(current_version.major)}.'
-            f'{str(current_version.minor)}.'
-            f'{str(current_version.micro + 1)}'
-        )
-
-    return str(release_version)
+        return str(Version(version))
+    except InvalidVersion:
+        version = version.replace(' ', '.')
+        return re.sub('[^A-Za-z0-9.]+', '-', version)
