@@ -7,6 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* Add pontos-update-header option to ignore files [#144](https://github.com/greenbone/pontos/pull/144)
+
 ### Changed
 ### Deprecated
 ### Removed
