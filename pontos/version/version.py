@@ -242,8 +242,10 @@ __version__ = "{}"\n"""
         if not self.version_file_path.exists():
             self.version_file_path.touch()
 
-        elif not force and versions_equal(
-            new_version, self.get_current_version()
+        elif (
+            not force
+            and not develop
+            and versions_equal(new_version, self.get_current_version())
         ):
             self._print('Version is already up-to-date.')
             return
@@ -306,7 +308,9 @@ __version__ = "{}"\n"""
 
         try:
             if args.command == 'update':
-                self.update_version(args.version, force=args.force)
+                self.update_version(
+                    args.version, force=args.force, develop=args.develop
+                )
             elif args.command == 'show':
                 self.print_current_version()
             elif args.command == 'verify':
