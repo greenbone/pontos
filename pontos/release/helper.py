@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-from typing import Callable, Dict, List, Tuple, Union
 import json
-import tempfile
-from pathlib import Path
 import shutil
 import subprocess
+import tempfile
+
+from pathlib import Path
+from typing import Callable, Dict, List, Tuple, Union
 
 import requests
 
