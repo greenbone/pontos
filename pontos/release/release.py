@@ -414,15 +414,23 @@ def sign(
         out(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
+    zipball_url = (
+        f"https://github.com/{space}/{project}/archive/refs/"
+        f"tags/{git_version}.zip"
+    )
     github_json = json.loads(response.text)
     zip_path = download(
-        github_json['zipball_url'],
+        zipball_url,
         f"{project}-{release_version}.zip",
         path=path,
         requests_module=requests_module,
     )
+    tarball_url = (
+        f"https://github.com/{space}/{project}/archive/refs/"
+        f"tags/{git_version}.tar.gz"
+    )
     tar_path = download(
-        github_json['tarball_url'],
+        tarball_url,
         f"{project}-{release_version}.tar.gz",
         path=path,
         requests_module=requests_module,

@@ -11,6 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+* Fixed creating signature files for tarballs and zip files from GitHub releases [#142](https://github.com/greenbone/pontos/pull/142)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.9...HEAD
 
