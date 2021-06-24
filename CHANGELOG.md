@@ -5,16 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
-### Added
-### Changed
-### Deprecated
-### Removed
+## [21.6.11] - 2021-06-24
 ### Fixed
 * Use --no-verify on git commit, so `pontos-release` is not interrupted by hooks. [#143](https://github.com/greenbone/pontos/pull/143)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.10...HEAD
-
+[21.6.11]: https://github.com/greenbone/pontos/compare/v21.6.10...v21.6.11
 
 ## [21.6.10] - 2021-06-24
 ### Changed
