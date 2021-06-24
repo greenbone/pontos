@@ -106,10 +106,10 @@ def commit_files(
     shell_cmd_runner("git add CHANGELOG.md")
     if git_signing_key:
         shell_cmd_runner(
-            f"git commit -S {git_signing_key} -m '{commit_msg}'",
+            f"git commit -S {git_signing_key} --no-verify -m '{commit_msg}'",
         )
     else:
-        shell_cmd_runner(f"git commit -m '{commit_msg}'")
+        shell_cmd_runner(f"git commit --no-verify -m '{commit_msg}'")
 
 
 def calculate_calendar_version() -> str:
