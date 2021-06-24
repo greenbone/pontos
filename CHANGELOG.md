@@ -8,6 +8,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* `pontos-version` you can use both `--develop` or a version with `x.x.x.dev1` to set a develop version. [#141](https://github.com/greenbone/pontos/pull/141)
 ### Deprecated
 ### Removed
 ### Fixed
