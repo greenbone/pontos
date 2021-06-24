@@ -416,13 +416,13 @@ def sign(
     github_json = json.loads(response.text)
     zip_path = download(
         github_json['zipball_url'],
-        f"{git_version}.zip",
+        f"{project}-{release_version}.zip",
         path=path,
         requests_module=requests_module,
     )
     tar_path = download(
         github_json['tarball_url'],
-        f"{git_version}.tar.gz",
+        f"{project}-{release_version}.tar.gz",
         path=path,
         requests_module=requests_module,
     )
