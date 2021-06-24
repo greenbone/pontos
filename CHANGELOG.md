@@ -11,6 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+* `pontos-release` setting correct version after release in Python projects. [#141](https://github.com/greenbone/pontos/pull/141)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.9...HEAD
 
