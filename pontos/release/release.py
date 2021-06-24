@@ -406,7 +406,10 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        error(f"Wrong response status code: {response.status_code}")
+        error(
+            f"Wrong response status code {response.status_code} for request "
+            f"{base_url}"
+        )
         out(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
