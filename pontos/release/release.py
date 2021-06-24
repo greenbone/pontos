@@ -442,7 +442,8 @@ def sign(
         info(f"Signing {file_path}")
 
         shell_cmd_runner(
-            f"gpg --default-key {signing_key} --detach-sign --armor {file_path}"
+            f"gpg --default-key {signing_key} --yes --detach-sign --armor "
+            f"{file_path}"
         )
 
     return upload_assets(
