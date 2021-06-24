@@ -438,11 +438,11 @@ def sign(
 
     file_paths.extend(asset_paths)
 
-    for path in file_paths:
-        info(f"Signing {path}")
+    for file_path in file_paths:
+        info(f"Signing {file_path}")
 
         shell_cmd_runner(
-            f"gpg --default-key {signing_key} --detach-sign --armor {path}"
+            f"gpg --default-key {signing_key} --detach-sign --armor {file_path}"
         )
 
     return upload_assets(
