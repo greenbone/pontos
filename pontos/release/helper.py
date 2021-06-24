@@ -19,7 +19,6 @@
 
 import datetime
 import json
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -171,13 +170,14 @@ def download(
        Path to the downloaded file
     """
 
-    file_path = path(tempfile.gettempdir()) / filename
+    file_path: Path = path(tempfile.gettempdir()) / filename
+    response = requests_module.get(url, stream=True)
 
-    with requests_module.get(url, stream=True) as resp, file_path.open(
-        mode='wb'
-    ) as download_file:
-        out(f'Downloading {url}')
-        shutil.copyfileobj(resp.raw, download_file)
+    out(f'Downloading {url}')
+
+    with file_path.open(mode='wb') as download_file:
+        for content in response.iter_content():
+            download_file.write(content)
 
     return file_path
 

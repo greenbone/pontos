@@ -18,12 +18,11 @@
 # pylint: disable=C0413,W0108
 
 import os
-import shutil
 import unittest
 
 from dataclasses import dataclass
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import requests
 
@@ -36,10 +35,6 @@ class StdOutput:
     stdout: bytes
 
 
-_shutil_mock = MagicMock(spec=shutil)
-
-
-@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class PrepareTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
@@ -197,7 +192,6 @@ class PrepareTestCase(unittest.TestCase):
         self.assertFalse(released)
 
 
-@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class ReleaseTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
@@ -316,7 +310,6 @@ class ReleaseTestCase(unittest.TestCase):
         print(called)
 
 
-@patch("pontos.release.helper.shutil", new=_shutil_mock)
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
