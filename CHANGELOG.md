@@ -11,10 +11,15 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.11...HEAD
+
+
+## [21.6.11] - 2021-06-24
+### Fixed
 * Use --no-verify on git commit, so `pontos-release` is not interrupted by hooks. [#143](https://github.com/greenbone/pontos/pull/143)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.10...HEAD
-
+[21.6.11]: https://github.com/greenbone/pontos/compare/v21.6.10...v21.6.11
 
 ## [21.6.10] - 2021-06-24
 ### Changed
