@@ -29,26 +29,25 @@ from typing import Callable, Tuple
 
 import requests
 
-from pontos.release.helper import (
+from pontos import changelog
+from pontos.terminal import _set_terminal, error, warning, info, ok, out
+from pontos.terminal.terminal import Terminal
+from pontos import version
+
+from .helper import (
     build_release_dict,
+    calculate_calendar_version,
     commit_files,
     download,
     find_signing_key,
+    get_current_version,
+    get_next_dev_version,
+    get_next_patch_version,
     get_project_name,
     update_version,
     upload_assets,
     download_assets,
 )
-from pontos import version
-from pontos.version import (
-    calculate_calendar_version,
-    get_current_version,
-    get_next_patch_version,
-    get_next_dev_version,
-)
-from pontos import changelog
-from pontos.terminal import _set_terminal, error, warning, info, ok, out
-from pontos.terminal.terminal import Terminal
 
 RELEASE_TEXT_FILE = ".release.txt.md"
 
