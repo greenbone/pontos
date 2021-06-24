@@ -18,7 +18,6 @@
 # pylint: disable=C0413,W0108
 
 import os
-import shutil
 import unittest
 
 from dataclasses import dataclass
@@ -34,9 +33,6 @@ from pontos import release, changelog
 @dataclass
 class StdOutput:
     stdout: bytes
-
-
-_shutil_mock = MagicMock(spec=shutil)
 
 
 class PrepareTestCase(unittest.TestCase):
