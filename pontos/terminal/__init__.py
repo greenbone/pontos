@@ -58,6 +58,10 @@ def out(message: str):
     __term.print(message)
 
 
+def out_flush(message: str):
+    __term.print_without_newline(message)
+
+
 def _set_terminal(term: Terminal):
     global __term  # pylint: disable=global-statement, invalid-name
     __term = term

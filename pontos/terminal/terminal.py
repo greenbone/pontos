@@ -59,8 +59,13 @@ class Terminal:
         status: Signs,
         color: Callable,
         style: Callable,
+        *,
+        new_line: bool = True,
+        flush: bool = False,
     ) -> None:
         first_line = ''
+        if not new_line:
+            first_line = '\r'
         output = ''
         width = self.get_width()
         if status == Signs.NONE:
@@ -76,7 +81,10 @@ class Terminal:
             message = message[usable_width:]
             output += '{}{}\n'.format(part_line, part)
         output += '{}{}'.format(first_line, message)
-        print(style(output))
+        if new_line:
+            print(style(output))
+        else:
+            print(style(output), end='', flush=flush)
 
     @contextmanager
     def indent(self, indentation: int = 4) -> Generator:
@@ -96,6 +104,14 @@ class Terminal:
     def print(self, *messages: str, style: Callable = cf.reset) -> None:
         message = ''.join(messages)
         self._print_status(message, Signs.NONE, cf.white, style)
+
+    def print_without_newline(
+        self, *messages: str, style: Callable = cf.reset
+    ) -> None:
+        message = ''.join(messages)
+        self._print_status(
+            message, Signs.NONE, cf.white, style, new_line=False, flush=True
+        )
 
     def ok(self, message: str, style: Callable = cf.reset) -> None:
         self._print_status(message, Signs.OK, cf.green, style)
