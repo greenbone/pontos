@@ -128,6 +128,7 @@ def download(
     with requests_module.get(url, stream=True) as resp, file_path.open(
         mode='wb'
     ) as download_file:
+        out(f'Downloading {url}')
         shutil.copyfileobj(resp.raw, download_file)
 
     return file_path
