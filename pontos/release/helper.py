@@ -276,10 +276,10 @@ def upload_assets(
     }
     auth = (username, token)
 
-    for path in paths:
-        to_upload = path.read_bytes()
+    for file_path in paths:
+        to_upload = file_path.read_bytes()
         resp = requests_module.post(
-            f"{asset_url}?name={path.name}",
+            f"{asset_url}?name={file_path.name}",
             headers=headers,
             auth=auth,
             data=to_upload,
@@ -288,11 +288,11 @@ def upload_assets(
         if resp.status_code != 201:
             error(
                 f"Wrong response status {resp.status_code}"
-                f" while uploading {path.name}"
+                f" while uploading {file_path.name}"
             )
             out(json.dumps(resp.text, indent=4, sort_keys=True))
             return False
         else:
-            ok(f"uploaded: {path.name}")
+            ok(f"uploaded: {file_path.name}")
 
     return True
