@@ -258,7 +258,7 @@ def upload_assets(
         token: That username's GitHub token
         pathnames: List of paths to asset files
         github_json: The github dictionary, containing relevant information
-            for the uplaod
+            for the upload
         path: the python pathlib.Path module
         requests_module: the python request module
 
