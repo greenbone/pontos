@@ -134,6 +134,42 @@ def download(
     return file_path
 
 
+def download_assets(
+    assets_url: str,
+    path: Path,
+    requests_module: requests,
+) -> List[str]:
+    """Download all .tar.gz and zip assets of a github release"""
+
+    file_paths = []
+    if not assets_url:
+        return file_paths
+
+    if assets_url:
+        assets_response = requests_module.get(assets_url)
+        if assets_response.status_code != 200:
+            error(
+                f"Wrong response status code {assets_response.status_code} for "
+                f" request {assets_url}"
+            )
+            out(json.dumps(assets_response.text, indent=4, sort_keys=True))
+        else:
+            assets_json = assets_response.json()
+            for asset_json in assets_json:
+                asset_url: str = asset_json.get('browser_download_url', '')
+                name: str = asset_json.get('name', '')
+                if name.endswith('.zip') or name.endswith('.tar.gz'):
+                    asset_path = download(
+                        asset_url,
+                        name,
+                        path=path,
+                        requests_module=requests_module,
+                    )
+                    file_paths.append(asset_path)
+
+    return file_paths
+
+
 def get_project_name(
     shell_cmd_runner: Callable,
     *,

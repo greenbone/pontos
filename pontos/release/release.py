@@ -37,6 +37,7 @@ from pontos.release.helper import (
     get_project_name,
     update_version,
     upload_assets,
+    download_assets,
 )
 from pontos import version
 from pontos.version import (
@@ -429,28 +430,13 @@ def sign(
 
     file_paths = [zip_path, tar_path]
 
-    assets_url = github_json.get('assets_url')
-    if assets_url:
-        assets_response = requests_module.get(assets_url)
-        if response.status_code != 200:
-            error(
-                f"Wrong response status code {response.status_code} for "
-                f" request {assets_url}"
-            )
-            out(json.dumps(response.text, indent=4, sort_keys=True))
-        else:
-            assets_json = assets_response.json()
-            for asset_json in assets_json:
-                asset_url: str = asset_json.get('browser_download_url', '')
-                name: str = asset_json.get('name', '')
-                if name.endswith('.zip') or name.endswith('.tar.gz'):
-                    asset_path = download(
-                        asset_url,
-                        name,
-                        path=path,
-                        requests_module=requests_module,
-                    )
-                    file_paths.append(asset_path)
+    asset_paths = download_assets(
+        github_json.get('assets_url'),
+        path=path,
+        requests_module=requests_module,
+    )
+
+    file_paths.extend(asset_paths)
 
     for path in file_paths:
         info(f"Signing {path}")
