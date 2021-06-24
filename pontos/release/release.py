@@ -37,6 +37,7 @@ from pontos.release.helper import (
     get_project_name,
     update_version,
     upload_assets,
+    download_assets,
 )
 from pontos import version
 from pontos.version import (
@@ -406,37 +407,48 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        error(f"Wrong response status code: {response.status_code}")
+        error(
+            f"Wrong response status code {response.status_code} for request "
+            f"{base_url}"
+        )
         out(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     github_json = json.loads(response.text)
     zip_path = download(
         github_json['zipball_url'],
-        f"{git_version}.zip",
+        f"{project}-{release_version}.zip",
         path=path,
         requests_module=requests_module,
     )
     tar_path = download(
         github_json['tarball_url'],
-        f"{git_version}.tar.gz",
+        f"{project}-{release_version}.tar.gz",
         path=path,
         requests_module=requests_module,
     )
 
-    info(f"Signing {[zip_path, tar_path]}")
+    file_paths = [zip_path, tar_path]
 
-    shell_cmd_runner(
-        f"gpg --default-key {signing_key} --detach-sign --armor {zip_path}"
+    asset_paths = download_assets(
+        github_json.get('assets_url'),
+        path=path,
+        requests_module=requests_module,
     )
-    shell_cmd_runner(
-        f"gpg --default-key {signing_key} --detach-sign --armor {tar_path}"
-    )
+
+    file_paths.extend(asset_paths)
+
+    for file_path in file_paths:
+        info(f"Signing {file_path}")
+
+        shell_cmd_runner(
+            f"gpg --default-key {signing_key} --detach-sign --armor {file_path}"
+        )
 
     return upload_assets(
         username,
         token,
-        [zip_path, tar_path],
+        file_paths,
         github_json,
         path=path,
         requests_module=requests_module,

@@ -7,8 +7,11 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* Sign all tarballs and zip files from the released assets too [#139](https://github.com/greenbone/pontos/pull/139)
+
 ### Changed
 * Improve generated git commit messages for and after a release [#138](https://github.com/greenbone/pontos/pull/138)
+* Signature files now have the filename `<project>-<release-version>.<postfix>.asc` [#139](https://github.com/greenbone/pontos/pull/139)
 
 ### Deprecated
 ### Removed
