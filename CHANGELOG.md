@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
+## [Unreleased]
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.12...HEAD
+
+
 ## [21.6.12] - 2021-06-25
 ### Added
 * `pontos-release`: Added a Progress bar to see download progress of large assets. [#145](https://github.com/greenbone/pontos/pull/145)
