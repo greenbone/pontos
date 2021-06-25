@@ -30,12 +30,16 @@ from packaging.version import InvalidVersion, Version
 import requests
 
 from pontos import version
-from pontos.terminal import error, warning, info, ok, out
+from pontos.terminal import error, warning, info, ok, out, out_flush
+from pontos.terminal.terminal import Signs
 from pontos.version.helper import VersionError
 from pontos.version import (
     PontosVersionCommand,
     CMakeVersionCommand,
 )
+
+DEFAULT_TIMEOUT = 1000
+DEFAULT_CHUNK_SIZE = 4096
 
 
 def build_release_dict(
@@ -157,6 +161,9 @@ def download(
     filename: str,
     requests_module: requests,
     path: Path,
+    *,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    timeout: int = DEFAULT_TIMEOUT,
 ) -> Path:
     """Download file in url to filename
 
@@ -171,13 +178,32 @@ def download(
     """
 
     file_path: Path = path(tempfile.gettempdir()) / filename
-    response = requests_module.get(url, stream=True)
+    response = requests_module.get(url, stream=True, timeout=timeout)
+    total_length = response.headers.get('content-length')
 
-    out(f'Downloading {url}')
+    info(f'Downloading {url}')
 
-    with file_path.open(mode='wb') as download_file:
-        for content in response.iter_content():
-            download_file.write(content)
+    if total_length is not None:  # no content length header
+        with file_path.open(mode='wb') as download_file:
+            dl = 0
+            total_length = int(total_length)
+            for content in response.iter_content(chunk_size=chunk_size):
+                dl += len(content)
+                download_file.write(content)
+                done = int(50 * dl / total_length)
+                out_flush(f"[{'=' * done}{' ' * (50-done)}]")
+    else:
+        with file_path.open(mode='wb') as download_file:
+            spinner = ['-', '\\', '|', '/']
+            i = 0
+            for content in response.iter_content(chunk_size=chunk_size):
+                i = i + 1
+                if i == 4:
+                    i = 0
+                download_file.write(content)
+                out_flush(f"[{spinner[i]}]")
+    out_flush(f"[{Signs.OK}]{' ' * 50}")
+    out('')
 
     return file_path
 

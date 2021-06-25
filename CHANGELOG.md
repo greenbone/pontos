@@ -7,10 +7,14 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* `pontos-release`: Added a Progress bar to see download progress of large assets. [#145](https://github.com/greenbone/pontos/pull/145)
+* `terminal`: Added `out_flush()` that reprints in the same line. [#145](https://github.com/greenbone/pontos/pull/145)
+
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
+* `pontos-release`: Set Chunksize (4096) so big assets will download faster. [#145](https://github.com/greenbone/pontos/pull/145)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.11...HEAD
 
