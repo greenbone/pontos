@@ -38,6 +38,7 @@ from pontos.version import (
 )
 
 DEFAULT_TIMEOUT = 1000
+DEFAULT_CHUNK_SIZE = 4096
 
 
 def build_release_dict(
@@ -159,6 +160,9 @@ def download(
     filename: str,
     requests_module: requests,
     path: Path,
+    *,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    timeout: int = DEFAULT_TIMEOUT,
 ) -> Path:
     """Download file in url to filename
 
@@ -173,12 +177,12 @@ def download(
     """
 
     file_path: Path = path(tempfile.gettempdir()) / filename
-    response = requests_module.get(url, stream=True)
+    response = requests_module.get(url, stream=True, timeout=timeout)
 
     info(f'Downloading {url}')
 
     with file_path.open(mode='wb') as download_file:
-        for content in response.iter_content(chunk_size=4096):
+        for content in response.iter_content(chunk_size=chunk_size):
             download_file.write(content)
 
     return file_path
@@ -190,6 +194,7 @@ def download_asset(
     requests_module: requests,
     path: Path,
     *,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> Path:
     """Download file in url to filename
@@ -214,7 +219,7 @@ def download_asset(
         with file_path.open(mode='wb') as download_file:
             dl = 0
             total_length = int(total_length)
-            for content in response.iter_content(chunk_size=4096):
+            for content in response.iter_content(chunk_size=chunk_size):
                 dl += len(content)
                 download_file.write(content)
                 done = int(50 * dl / total_length)
