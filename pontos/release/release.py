@@ -162,6 +162,15 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         default='greenbone',
         help='user/team name in github',
     )
+
+    sign_parser.add_argument(
+        '--passphrase',
+        default='greenbone',
+        help=(
+            'Use gpg in a headless mode e.g. for '
+            'the CI and use this passphrase for signing.'
+        ),
+    )
     return parser
 
 
@@ -448,10 +457,17 @@ def sign(
     for file_path in file_paths:
         info(f"Signing {file_path}")
 
-        shell_cmd_runner(
-            f"gpg --default-key {signing_key} --yes --detach-sign --armor "
-            f"{file_path}"
-        )
+        if args.passphrase:
+            shell_cmd_runner(
+                f"gpg --pinentry-mode loopback --default-key {signing_key}"
+                f" --yes --detach-sign --passphrase {args.passphrase}"
+                f" --armor {file_path}"
+            )
+        else:
+            shell_cmd_runner(
+                f"gpg --default-key {signing_key} --yes --detach-sign --armor "
+                f"{file_path}"
+            )
 
     return upload_assets(
         username,
@@ -499,7 +515,8 @@ def main(
             ):
                 return sys.exit(1) if leave else False
         except subprocess.CalledProcessError as e:
-            error(f'Could not run command "{e.cmd}". Error was:\n\n{e.stderr}')
+            error(f'Could not run command "{e.cmd}".')
+            out(f'Error was: {e.stderr}')
             sys.exit(1)
 
     return sys.exit(0) if leave else True
