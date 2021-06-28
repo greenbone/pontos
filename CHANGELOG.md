@@ -7,6 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+* `pontos-release`: You can use `sign` now headless (without passphrase prompt) by passing it per arugment. [#148](https://github.com/greenbone/pontos/pull/148)
+
 ### Changed
 ### Deprecated
 ### Removed
