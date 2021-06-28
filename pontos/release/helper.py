@@ -30,7 +30,7 @@ from packaging.version import InvalidVersion, Version
 import requests
 
 from pontos import version
-from pontos.terminal import error, warning, info, ok, out, out_flush
+from pontos.terminal import error, warning, info, ok, out, overwrite
 from pontos.terminal.terminal import Signs
 from pontos.version.helper import VersionError
 from pontos.version import (
@@ -191,7 +191,7 @@ def download(
                 dl += len(content)
                 download_file.write(content)
                 done = int(50 * dl / total_length)
-                out_flush(f"[{'=' * done}{' ' * (50-done)}]")
+                overwrite(f"[{'=' * done}{' ' * (50-done)}]")
     else:
         with file_path.open(mode='wb') as download_file:
             spinner = ['-', '\\', '|', '/']
@@ -201,9 +201,8 @@ def download(
                 if i == 4:
                     i = 0
                 download_file.write(content)
-                out_flush(f"[{spinner[i]}]")
-    out_flush(f"[{Signs.OK}]{' ' * 50}")
-    out('')
+                overwrite(f"[{spinner[i]}]")
+    overwrite(f"[{Signs.OK}]{' ' * 50}", new_line=True)
 
     return file_path
 

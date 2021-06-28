@@ -61,10 +61,10 @@ class Terminal:
         style: Callable,
         *,
         new_line: bool = True,
-        flush: bool = False,
+        overwrite: bool = False,
     ) -> None:
         first_line = ''
-        if not new_line:
+        if overwrite:
             first_line = '\r'
         output = ''
         width = self.get_width()
@@ -84,7 +84,7 @@ class Terminal:
         if new_line:
             print(style(output))
         else:
-            print(style(output), end='', flush=flush)
+            print(style(output), end='', flush=True)
 
     @contextmanager
     def indent(self, indentation: int = 4) -> Generator:
@@ -105,12 +105,17 @@ class Terminal:
         message = ''.join(messages)
         self._print_status(message, Signs.NONE, cf.white, style)
 
-    def print_without_newline(
-        self, *messages: str, style: Callable = cf.reset
+    def print_overwrite(
+        self, *messages: str, style: Callable = cf.reset, new_line: bool = False
     ) -> None:
         message = ''.join(messages)
         self._print_status(
-            message, Signs.NONE, cf.white, style, new_line=False, flush=True
+            message,
+            Signs.NONE,
+            cf.white,
+            style,
+            new_line=new_line,
+            overwrite=True,
         )
 
     def ok(self, message: str, style: Callable = cf.reset) -> None:
