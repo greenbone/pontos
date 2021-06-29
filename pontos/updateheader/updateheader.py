@@ -322,7 +322,7 @@ def main() -> None:
     for file in files:
         try:
             if os.path.abspath(str(file)) in exclude_list:
-                print(f"{file}: Matches exclusion list.")
+                print(f"{file}: Ignoring file from exclusion list.")
             else:
                 _update_file(file=file, regex=regex, args=args)
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
