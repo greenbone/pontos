@@ -11,7 +11,7 @@ jobs:
       GITHUB_MAIL: ${{ secrets.GREENBONE_BOT_MAIL }}
       GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       GPG_KEY: ${{ secrets.GPG_KEY }}
-      GPG_FINGERPRINT: ${{ secrets.FINGERPRINT }}
+      GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
     name: Build and release with pontos
     # If the label 'make release' is set. If PR is closed because of an merge
