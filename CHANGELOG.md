@@ -5,17 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.6.13] - 2021-06-29
 ### Added
 * `pontos-release`: You can use `sign` now headless (without passphrase prompt) by passing it per arugment. [#148](https://github.com/greenbone/pontos/pull/148)
 
-### Changed
-### Deprecated
-### Removed
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.12...HEAD
-
+[21.6.13]: https://github.com/greenbone/pontos/compare/v21.6.12...v21.6.13
 
 ## [21.6.12] - 2021-06-25
 ### Added
