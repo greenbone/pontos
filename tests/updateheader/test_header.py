@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import struct
 import re
 
@@ -32,6 +31,7 @@ from pontos.updateheader.updateheader import (
     _find_copyright as find_copyright,
     _add_header as add_header,
     _update_file as update_file,
+    _get_exclude_list as get_exclude_list,
     _parse_args as parse_args,
     main,
 )
@@ -426,6 +426,21 @@ class UpdateHeaderTestCase(TestCase):
         self.assertTrue(args.changed)
         self.assertEqual(args.year, '2021')
         self.assertEqual(args.licence, self.args.licence)
+
+    def test_get_exclude_list(self):
+        # Try to find the current file from two directories up...
+        test_dirname = Path(__file__) / "../.."
+        # with a relative glob
+        test_ignore_file = Path('ignore.file')
+        test_ignore_file.write_text("*.py\n")
+
+        exclude_list = get_exclude_list(
+            test_ignore_file, test_dirname.resolve()
+        )
+
+        self.assertIn(Path(__file__), exclude_list)
+
+        test_ignore_file.unlink()
 
     @patch('pontos.updateheader.updateheader._parse_args')
     def test_main(self, argparser_mock):

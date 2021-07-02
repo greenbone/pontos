@@ -21,15 +21,13 @@ Also it appends a header if it is missing in the file.
 """
 
 import sys
-import os
 import re
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, FileType
 from datetime import datetime
-from glob import glob
 
 from subprocess import CalledProcessError, run
-from typing import Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from pathlib import Path
 
 SUPPORTED_FILE_TYPES = [
@@ -195,6 +193,31 @@ def _update_file(
         raise e
 
 
+def _get_exclude_list(exclude_file: Path, directory: Path) -> List[Path]:
+    """Tries to get the list of excluded files.
+    If a file is given, it will be used. Otherwise the given directory will be
+    checked for the default file.
+    The ignore file should only contain relative paths like *.py,
+    not absolute as **/*.py
+    """
+
+    if exclude_file is None:
+        exclude_file = Path(directory) / ".pontos-header-ignore"
+    try:
+        exclude_lines = exclude_file.read_text().split('\n')
+    except FileNotFoundError:
+        print("No exclude list file found.")
+        return []
+
+    expanded_globs = [
+        Path(directory).rglob(line.strip()) for line in exclude_lines if line
+    ]
+
+    return [
+        path.absolute() for glob_paths in expanded_globs for path in glob_paths
+    ]
+
+
 def _parse_args(args=None):
     """Parsing the args"""
 
@@ -250,19 +273,33 @@ def _parse_args(args=None):
         "--directory",
         help="Directory to find files to update recursively.",
     )
+
+    parser.add_argument(
+        "--exclude-file",
+        help=(
+            "File containing glob patterns for files to"
+            " ignore when finding files to update in a directory."
+            " Will look for '.pontos-header-ignore' in the directory"
+            " if none is given."
+            "The ignore file should only contain relative paths like *.py,"
+            "not absolute as **/*.py"
+        ),
+        type=FileType('r'),
+    )
+
     return parser.parse_args(args)
 
 
 def main() -> None:
     args = _parse_args()
+    exclude_list = []
 
     if args.directory:
+        directory = Path(args.directory)
+        # get file paths to exclude
+        exclude_list = _get_exclude_list(args.exclude_file, args.directory)
         # get files to update
-        files = [
-            Path(file)
-            for file in glob(args.directory + "/**/*", recursive=True)
-            if os.path.isfile(file)
-        ]
+        files = [Path(file) for file in directory.rglob("*") if file.is_file()]
     elif args.files:
         files = [Path(name) for name in args.files]
 
@@ -278,7 +315,10 @@ def main() -> None:
 
     for file in files:
         try:
-            _update_file(file=file, regex=regex, args=args)
+            if file.absolute() in exclude_list:
+                print(f"{file}: Ignoring file from exclusion list.")
+            else:
+                _update_file(file=file, regex=regex, args=args)
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
 
