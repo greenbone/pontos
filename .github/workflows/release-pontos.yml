@@ -42,7 +42,7 @@ jobs:
     - name: Sign assets with pontos
       run: |
         echo "Signing assets for ${{env.VERSION}}"
-        echo -e "${{ env.GPG_PASSPHRASE }}" >> tmp.file
+        echo -e "${{ env.GPG_KEY }}" >> tmp.file
         gpg --import tmp.file && rm tmp.file
         poetry run pontos-release sign \
           --signing-key ${{ env.GPG_FINGERPRINT }} \

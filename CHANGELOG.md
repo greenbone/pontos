@@ -11,6 +11,7 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+* Do not print passphrase [#150](https://github.com/greenbone/pontos/pull/150)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.0...HEAD
 
