@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import os
 import struct
 import re
 
@@ -431,13 +429,18 @@ class UpdateHeaderTestCase(TestCase):
 
     def test_get_exclude_list(self):
         # Try to find the current file from two directories up...
-        test_dirname = os.path.dirname(__file__) + "/../.."
-        # with a recursive glob
-        mock_ignore_file = StringIO("**/*.py\n")
+        test_dirname = Path(__file__) / "../.."
+        # with a relative glob
+        test_ignore_file = Path('ignore.file')
+        test_ignore_file.write_text("*.py\n")
 
-        exclude_list = get_exclude_list(mock_ignore_file, test_dirname)
+        exclude_list = get_exclude_list(
+            test_ignore_file, test_dirname.resolve()
+        )
 
-        self.assertIn(__file__, exclude_list)
+        self.assertIn(Path(__file__), exclude_list)
+
+        test_ignore_file.unlink()
 
     @patch('pontos.updateheader.updateheader._parse_args')
     def test_main(self, argparser_mock):
