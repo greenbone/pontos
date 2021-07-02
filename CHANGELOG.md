@@ -5,17 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.7.0] - 2021-07-02
 ### Added
 * Add pontos-update-header option to ignore files [#144](https://github.com/greenbone/pontos/pull/144)
 
-### Changed
-### Deprecated
-### Removed
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.13...HEAD
-
+[21.7.0]: https://github.com/greenbone/pontos/compare/v21.6.13...v21.7.0
 
 ## [21.6.13] - 2021-06-29
 ### Added
