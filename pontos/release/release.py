@@ -515,7 +515,10 @@ def main(
             ):
                 return sys.exit(1) if leave else False
         except subprocess.CalledProcessError as e:
-            error(f'Could not run command "{e.cmd}".')
+            if not '--passphrase' in e.cmd:
+                error(f'Could not run command "{e.cmd}".')
+            else:
+                error('Headless signing failed.')
             out(f'Error was: {e.stderr}')
             sys.exit(1)
 
