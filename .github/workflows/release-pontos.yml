@@ -31,7 +31,8 @@ jobs:
       run: |
         git config --global user.name "${{ env.GITHUB_USER }}"
         git config --global user.email "${{ env.GITHUB_MAIL }}"
-        git remote set-url origin https://${{ env.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        git remote set-url origin \
+          https://${{ env.GITHUB_TOKEN }}@github.com/${{ github.repository }}
     - name: Prepare release with pontos
       run: |
         poetry run pontos-release prepare --calendar
@@ -39,12 +40,18 @@ jobs:
     - name: Release with pontos
       run: |
         poetry run pontos-release release
-    - name: Sign assets with pontos
+    - name: Import key from secrets
+      run: |
+        echo -e "${{ env.GPG_KEY }}" >> tmp.file
+        gpg                                        \
+          --pinentry-mode loopback                 \
+          --passphrase ${{ env.GPG_PASSPHRASE }}   \
+          --import tmp.file
+        rm tmp.file
+    - name: Sign with pontos-release sign
       run: |
         echo "Signing assets for ${{env.VERSION}}"
-        echo -e "${{ env.GPG_KEY }}" >> tmp.file
-        gpg --import tmp.file && rm tmp.file
-        poetry run pontos-release sign \
+        poetry run pontos-release sign             \
           --signing-key ${{ env.GPG_FINGERPRINT }} \
-          --passphrase ${{ env.GPG_PASSPHRASE }} \
+          --passphrase ${{ env.GPG_PASSPHRASE }}   \
           --release-version ${{ env.VERSION }}
