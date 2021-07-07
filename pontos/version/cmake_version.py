@@ -78,7 +78,6 @@ class CMakeVersionCommand:
             print(*args)
 
     def update_version(self, version: str, *, develop: bool = False):
-        self.__print("in update: {}, {}".format(version, develop))
         content = self.__cmake_filepath.read_text()
         cmvp = CMakeVersionParser(content)
         previous_version = cmvp.get_current_version()
@@ -134,7 +133,7 @@ class CMakeVersionParser:
 
     def get_current_version(self) -> str:
         if self.is_dev_version():
-            return f'{self._current_version}.dev'
+            return f'{self._current_version}.dev1'
         return self._current_version
 
     def update_version(self, new_version: str, *, develop: bool = False) -> str:
