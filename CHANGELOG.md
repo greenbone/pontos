@@ -11,10 +11,15 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Deprecated
 ### Removed
 ### Fixed
+
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.1...HEAD
+
+
+## [21.7.1] - 2021-07-02
+### Fixed
 * Do not print passphrase [#150](https://github.com/greenbone/pontos/pull/150)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.0...HEAD
-
+[21.7.1]: https://github.com/greenbone/pontos/compare/v21.7.0...v21.7.1
 
 ## [21.7.0] - 2021-07-02
 ### Added
