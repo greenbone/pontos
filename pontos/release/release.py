@@ -165,7 +165,6 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 
     sign_parser.add_argument(
         '--passphrase',
-        default='greenbone',
         help=(
             'Use gpg in a headless mode e.g. for '
             'the CI and use this passphrase for signing.'
