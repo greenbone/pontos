@@ -5,18 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
+## [21.7.3] - 2021-07-20
 ### Added
 - Golang support for `pontos-update-header` [#162](https://github.com/greenbone/pontos/pull/162)
 
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 - `pontos-update-header` will now set the correct current year, when adding a header to a new file [#162](https://github.com/greenbone/pontos/pull/162)
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.2...HEAD
-
+[21.7.3]: https://github.com/greenbone/pontos/compare/v21.7.2...v21.7.3
 
 ## [21.7.2] - 2021-07-07
 ### Removed
