@@ -7,10 +7,13 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 
 ## [Unreleased]
 ### Added
+- Golang support for `pontos-update-header` [#162](https://github.com/greenbone/pontos/pull/162)
+
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
+- `pontos-update-header` will now set the correct current year, when adding a header to a new file [#162](https://github.com/greenbone/pontos/pull/162)
 
 [Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.2...HEAD
 
