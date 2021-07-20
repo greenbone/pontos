@@ -34,6 +34,7 @@ SUPPORTED_FILE_TYPES = [
     ".bash",
     ".c",
     ".h",
+    ".go",
     ".cmake",
     ".js",
     ".nasl",
