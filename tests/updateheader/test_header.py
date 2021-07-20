@@ -112,7 +112,7 @@ class UpdateHeaderTestCase(TestCase):
 
     def test_add_header(self):
         expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -131,7 +131,10 @@ class UpdateHeaderTestCase(TestCase):
 """
 
         header = add_header(
-            suffix=".py", licence='AGPL-3.0-or-later', company=self.args.company
+            suffix=".py",
+            licence='AGPL-3.0-or-later',
+            company=self.args.company,
+            year='2021',
         )
 
         self.assertEqual(header, expected_header)
@@ -143,6 +146,7 @@ class UpdateHeaderTestCase(TestCase):
                 suffix=".prr",
                 licence='AGPL-3.0-or-later',
                 company=self.args.company,
+                year='2021',
             )
 
     def test_add_header_licence_not_found(self):
@@ -152,6 +156,7 @@ class UpdateHeaderTestCase(TestCase):
                 suffix=".py",
                 licence='AAAGPL-3.0-or-later',
                 company=self.args.company,
+                year='2021',
             )
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -271,7 +276,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.licence = 'AGPL-3.0-or-later'
 
         expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 1995 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -287,6 +292,7 @@ class UpdateHeaderTestCase(TestCase):
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 
         test_file = self.path / "test.py"
