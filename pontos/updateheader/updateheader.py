@@ -86,7 +86,9 @@ def _find_copyright(
     return False, None
 
 
-def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
+def _add_header(
+    suffix: str, licence: str, company: str, year: str
+) -> Union[str, None]:
     """Tries to add the header to the file.
     Requirements:
       - file type must be supported
@@ -96,7 +98,11 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
         root = Path(__file__).parent
         licence_file = root / "templates" / licence / f"template{suffix}"
         try:
-            return licence_file.read_text().replace("Company", company)
+            return (
+                licence_file.read_text()
+                .replace("<company>", company)
+                .replace("<year>", year)
+            )
         except FileNotFoundError as e:
             raise e
     else:
@@ -137,13 +143,14 @@ def _update_file(
             if i == 0 and not found:
                 try:
                     header = _add_header(
-                        file.suffix, args.licence, args.company
+                        file.suffix, args.licence, args.company, args.year
                     )
                     if header:
                         fp.seek(0)  # back to beginning of file
                         rest_of_file = fp.read()
                         fp.seek(0)
                         fp.write(header)
+                        fp.write('\n')
                         fp.write(rest_of_file)
                         print(f"{file}: Added licence header.")
                         return 0
