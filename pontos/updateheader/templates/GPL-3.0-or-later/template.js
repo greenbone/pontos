@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Company
+/* Copyright (C) <year> <company>
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
