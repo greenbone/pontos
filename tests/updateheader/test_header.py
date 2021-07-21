@@ -428,7 +428,7 @@ class UpdateHeaderTestCase(TestCase):
         args = parse_args(args)
         self.assertIsNotNone(args)
         self.assertEqual(args.company, self.args.company)
-        self.assertEqual(args.directory, '.')
+        self.assertEqual(args.directories, ['.'])
         self.assertTrue(args.changed)
         self.assertEqual(args.year, '2021')
         self.assertEqual(args.licence, self.args.licence)
@@ -441,7 +441,7 @@ class UpdateHeaderTestCase(TestCase):
         test_ignore_file.write_text("*.py\n")
 
         exclude_list = get_exclude_list(
-            test_ignore_file, test_dirname.resolve()
+            test_ignore_file, [test_dirname.resolve()]
         )
 
         self.assertIn(Path(__file__), exclude_list)
@@ -454,7 +454,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = ['test.py']
-        self.args.directory = None
+        self.args.directories = None
 
         argparser_mock.return_value = self.args
 
@@ -470,7 +470,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = None
-        self.args.directory = None
+        self.args.directories = None
 
         argparser_mock.return_value = self.args
 
