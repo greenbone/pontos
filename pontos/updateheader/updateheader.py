@@ -204,7 +204,7 @@ def _update_file(
 def _get_exclude_list(
     exclude_file: Path, directories: List[Path]
 ) -> List[Path]:
-    """Tries to get the list of excluded files.
+    """Tries to get the list of excluded files / directories.
     If a file is given, it will be used. Otherwise it will be searched
     in the executed root path.
     The ignore file should only contain relative paths like *.py,
@@ -212,7 +212,7 @@ def _get_exclude_list(
     """
 
     if exclude_file is None:
-        exclude_file = ".pontos-header-ignore"
+        exclude_file = Path(".pontos-header-ignore")
     try:
         exclude_lines = exclude_file.read_text().split('\n')
     except FileNotFoundError:
@@ -226,9 +226,16 @@ def _get_exclude_list(
         if line
     ]
 
-    return [
-        path.absolute() for glob_paths in expanded_globs for path in glob_paths
-    ]
+    exclude_list = []
+    for glob_paths in expanded_globs:
+        for path in glob_paths:
+            if path.is_dir():
+                for efile in path.rglob('*'):
+                    exclude_list.append(efile.absolute())
+            else:
+                exclude_list.append(path.absolute())
+
+    return exclude_list
 
 
 def _parse_args(args=None):
@@ -318,10 +325,7 @@ def main() -> None:
         else:
             directories = [Path(args.directories)]
         # get file paths to exclude
-        if args.exclude_file:
-            exclude_list = _get_exclude_list(args.exclude_file, directories)
-        else:
-            exclude_list = []
+        exclude_list = _get_exclude_list(args.exclude_file, directories)
         # get files to update
         files = [
             Path(file)
