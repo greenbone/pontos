@@ -5,18 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org).
 
-## [Unreleased]
-### Added
+## [21.7.4] - 2021-07-21
 ### Changed
 * Allow to pass multiple directories to the `-d`/`--directories` argument [#163](https://github.com/greenbone/pontos/pull/163)
 * Allow to put directory globs into the exclude file and exclude all files from that directory [#163](https://github.com/greenbone/pontos/pull/163)
 
-### Deprecated
-### Removed
-### Fixed
-
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.3...HEAD
-
+[21.7.4]: https://github.com/greenbone/pontos/compare/v21.7.3...v21.7.4
 
 ## [21.7.3] - 2021-07-20
 ### Added
