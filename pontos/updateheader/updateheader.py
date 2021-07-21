@@ -201,16 +201,18 @@ def _update_file(
         raise e
 
 
-def _get_exclude_list(exclude_file: Path, directory: Path) -> List[Path]:
-    """Tries to get the list of excluded files.
-    If a file is given, it will be used. Otherwise the given directory will be
-    checked for the default file.
+def _get_exclude_list(
+    exclude_file: Path, directories: List[Path]
+) -> List[Path]:
+    """Tries to get the list of excluded files / directories.
+    If a file is given, it will be used. Otherwise it will be searched
+    in the executed root path.
     The ignore file should only contain relative paths like *.py,
     not absolute as **/*.py
     """
 
     if exclude_file is None:
-        exclude_file = Path(directory) / ".pontos-header-ignore"
+        exclude_file = Path(".pontos-header-ignore")
     try:
         exclude_lines = exclude_file.read_text().split('\n')
     except FileNotFoundError:
@@ -218,12 +220,22 @@ def _get_exclude_list(exclude_file: Path, directory: Path) -> List[Path]:
         return []
 
     expanded_globs = [
-        Path(directory).rglob(line.strip()) for line in exclude_lines if line
+        directory.rglob(line.strip())
+        for directory in directories
+        for line in exclude_lines
+        if line
     ]
 
-    return [
-        path.absolute() for glob_paths in expanded_globs for path in glob_paths
-    ]
+    exclude_list = []
+    for glob_paths in expanded_globs:
+        for path in glob_paths:
+            if path.is_dir():
+                for efile in path.rglob('*'):
+                    exclude_list.append(efile.absolute())
+            else:
+                exclude_list.append(path.absolute())
+
+    return exclude_list
 
 
 def _parse_args(args=None):
@@ -231,7 +243,7 @@ def _parse_args(args=None):
 
     parser = ArgumentParser(
         description="Update copyright in source file headers.",
-        prog="pontos-copyright",
+        prog="pontos-update-header",
     )
 
     date_group = parser.add_mutually_exclusive_group()
@@ -260,7 +272,11 @@ def _parse_args(args=None):
         "--licence",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
-        help="Add header f files",
+        help=(
+            "Use the passed licence type. Options:\n"
+            "* AGPL-3.0-or-later\n* GPL-3.0-or-later\n"
+            "* GPL-2.0-or-later\n* GPL-2.0-only"
+        ),
     )
 
     parser.add_argument(
@@ -278,8 +294,9 @@ def _parse_args(args=None):
     )
     files_group.add_argument(
         "-d",
-        "--directory",
-        help="Directory to find files to update recursively.",
+        "--directories",
+        nargs="+",
+        help="Directories to find files to update recursively.",
     )
 
     parser.add_argument(
@@ -302,14 +319,25 @@ def main() -> None:
     args = _parse_args()
     exclude_list = []
 
-    if args.directory:
-        directory = Path(args.directory)
+    if args.directories:
+        if isinstance(args.directories, list):
+            directories = [Path(directory) for directory in args.directories]
+        else:
+            directories = [Path(args.directories)]
         # get file paths to exclude
-        exclude_list = _get_exclude_list(args.exclude_file, args.directory)
+        exclude_list = _get_exclude_list(args.exclude_file, directories)
         # get files to update
-        files = [Path(file) for file in directory.rglob("*") if file.is_file()]
+        files = [
+            Path(file)
+            for directory in directories
+            for file in directory.rglob("*")
+            if file.is_file()
+        ]
     elif args.files:
-        files = [Path(name) for name in args.files]
+        if isinstance(args.files, list):
+            files = [Path(name) for name in args.files]
+        else:
+            files = [Path(args.files)]
 
     else:
         # should never happen
