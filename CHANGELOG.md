@@ -8,6 +8,9 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ## [Unreleased]
 ### Added
 ### Changed
+* you can now pass multiple directories to the `-d`/`--directories` argument [#163](https://github.com/greenbone/pontos/pull/163)
+* you can now put directory globs into the exclude file and exclude all files from that directory [#163](https://github.com/greenbone/pontos/pull/163)
+
 ### Deprecated
 ### Removed
 ### Fixed
