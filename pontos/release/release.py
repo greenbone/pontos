@@ -49,7 +49,7 @@ from .helper import (
     download_assets,
 )
 
-RELEASE_TEXT_FILE = ".release.txt.md"
+RELEASE_TEXT_FILE = ".release.md"
 
 
 def initialize_default_parser() -> argparse.ArgumentParser:
@@ -95,6 +95,13 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         default='v',
         help='Prefix for git tag versions. Default: %(default)s',
     )
+    prepare_parser.add_argument(
+        '--changelog',
+        help=(
+            'The CHANGELOG file path, defaults '
+            'to CHANGELOG.md in the repository root directory',
+        ),
+    )
 
     release_parser = subparsers.add_parser('release')
     release_parser.set_defaults(func=release)
@@ -134,7 +141,14 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     release_parser.add_argument(
         '--space',
         default='greenbone',
-        help='user/team name in github',
+        help='User/Team name in github',
+    )
+    release_parser.add_argument(
+        '--changelog',
+        help=(
+            'The CHANGELOG file path, defaults '
+            'to CHANGELOG.md in the repository root directory',
+        ),
     )
 
     sign_parser = subparsers.add_parser('sign')
@@ -221,6 +235,12 @@ def prepare(
     ok(f"updated version  in {filename} to {release_version}")
 
     change_log_path = path.cwd() / 'CHANGELOG.md'
+    if args.changelog:
+        tmp_path = path.cwd() / Path(args.changelog)
+        if tmp_path.is_file():
+            change_log_path = tmp_path
+        else:
+            warning(f"{tmp_path} is not a file.")
 
     # Try to get the unreleased section of the specific version
     updated, changelog_text = changelog_module.update(
@@ -342,6 +362,12 @@ def release(
 
     # set to new version add skeleton
     change_log_path = path.cwd() / 'CHANGELOG.md'
+    if args.changelog:
+        tmp_path = path.cwd() / Path(args.changelog)
+        if tmp_path.is_file():
+            change_log_path = tmp_path
+        else:
+            warning(f"{tmp_path} is not a file.")
 
     executed, filename = update_version(
         next_version, version_module, develop=True
