@@ -17,7 +17,7 @@
 
 # pylint: disable=invalid-name
 
-from pontos import changelog
+from .conventional_commits import main
 
 if __name__ == '__main__':
-    changelog.main()
+    main()
