@@ -7,3 +7,5 @@ commit_types = [
     { message = "^refactor*", group = "Refactor"},
     { message = "^test*", group = "Testing"},
 ]
+
+changelog_dir = "changelog"
