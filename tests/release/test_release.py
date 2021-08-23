@@ -114,7 +114,7 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
         self.assertIn(
-            "git commit -S 0815 --no-verify -m 'Automatic release to 0.0.1'",
+            "git commit -S0815 --no-verify -m 'Automatic release to 0.0.1'",
             called,
         )
         self.assertIn(
@@ -130,11 +130,17 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--release-version',
             '0.0.1',
+            '--project',
+            'bla',
         ]
-        runner = lambda x: StdOutput('v0.0.1'.encode())
-        with self.assertRaises(
-            ValueError, msg='git tag v0.0.1 is already taken'
-        ):
+
+        called = []
+
+        def runner(cmd):
+            called.append(cmd)
+            return StdOutput('v0.0.1'.encode())
+
+        with self.assertRaises(SystemExit):
             release.main(
                 shell_cmd_runner=runner,
                 _path=fake_path_class,
@@ -143,6 +149,8 @@ class PrepareTestCase(unittest.TestCase):
                 leave=False,
                 args=args,
             )
+
+            self.assertIn('git tag v0.0.1 is already taken', called)
 
     def test_not_release_when_no_project_found(self):
         fake_path_class = MagicMock(spec=Path)
