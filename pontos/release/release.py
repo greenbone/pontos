@@ -85,7 +85,7 @@ def release(
 
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
-    info("Creating release")
+    info(f"Creating release for v{release_version}")
     changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -109,14 +109,33 @@ def release(
 
     path(RELEASE_TEXT_FILE).unlink()
 
+    commit_msg = (
+        f'Automatic adjustments after release\n\n'
+        f'* Update to version {next_version}\n'
+    )
+
     # set to new version add skeleton
-    change_log_path = path.cwd() / 'CHANGELOG.md'
-    if args.changelog:
-        tmp_path = path.cwd() / Path(args.changelog)
-        if tmp_path.is_file():
-            change_log_path = tmp_path
-        else:
-            warning(f"{tmp_path} is not a file.")
+    changelog_bool = True
+    if not args.conventional_commits:
+        change_log_path = path.cwd() / 'CHANGELOG.md'
+        if args.changelog:
+            tmp_path = path.cwd() / Path(args.changelog)
+            if tmp_path.is_file():
+                change_log_path = tmp_path
+            else:
+                warning(f"{tmp_path} is not a file.")
+
+        updated = changelog_module.add_skeleton(
+            markdown=change_log_path.read_text(),
+            new_version=release_version,
+            project_name=project,
+            git_tag_prefix=git_tag_prefix,
+            git_space=space,
+        )
+        change_log_path.write_text(updated)
+        changelog_bool = False
+
+        commit_msg += f'* Add empty changelog after {release_version}'
 
     executed, filename = update_version(
         next_version, version_module, develop=True
@@ -124,25 +143,12 @@ def release(
     if not executed:
         return False
 
-    updated = changelog_module.add_skeleton(
-        markdown=change_log_path.read_text(),
-        new_version=release_version,
-        project_name=project,
-        git_tag_prefix=git_tag_prefix,
-        git_space=space,
-    )
-    change_log_path.write_text(updated)
-
-    commit_msg = (
-        f'Automatic adjustments after release\n\n'
-        f'* Update to version {next_version}\n'
-        f'* Add empty changelog after {release_version}'
-    )
     commit_files(
         filename,
         commit_msg,
         shell_cmd_runner,
         git_signing_key=git_signing_key,
+        changelog=changelog_bool,
     )
 
     # pushing the new tag

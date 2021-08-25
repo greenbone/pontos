@@ -161,6 +161,15 @@ def initialize_default_parser() -> ArgumentParser:
             'to CHANGELOG.md in the repository root directory',
         ),
     )
+    release_parser.add_argument(
+        '--conventional-commits',
+        '-CC',
+        help=(
+            'Wether to use conventional commits and create '
+            'the changelog directly from the git log',
+        ),
+        action='store_true',
+    )
 
     sign_parser = subparsers.add_parser('sign')
     sign_parser.set_defaults(func=sign)
