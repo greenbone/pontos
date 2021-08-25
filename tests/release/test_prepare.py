@@ -35,38 +35,26 @@ class StdOutput:
     stdout: bytes
 
 
-class ReleaseTestCase(unittest.TestCase):
+class PrepareTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
         os.environ['GITHUB_USER'] = 'bar'
-        self.valid_gh_release_response = (
-            '{"zipball_url": "zip", "tarball_url":'
-            ' "tar", "upload_url":"upload"}'
-        )
 
-    def test_release_successfully(self):
+    def test_prepare_successfully(self):
         fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 201
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            'release',
+            'prepare',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2dev',
         ]
         runner = lambda x: StdOutput('')
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
-            _requests=fake_requests,
             _version=fake_version,
             _changelog=fake_changelog,
             leave=False,
@@ -74,19 +62,129 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-    def test_not_release_successfully_when_github_create_release_fails(self):
+    def test_prepare_calendar_successfully(self):
         fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 401
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
+
         args = [
-            'release',
+            'prepare',
+            '--calendar',
+        ]
+        runner = lambda x: StdOutput('')
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertTrue(released)
+
+    def test_use_git_signing_key_on_prepare(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+
+        args = [
+            'prepare',
+            '--git-signing-key',
+            '0815',
+            '--release-version',
+            '0.0.1',
+        ]
+        called = []
+
+        def runner(cmd):
+            called.append(cmd)
+            return StdOutput('')
+
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertTrue(released)
+        self.assertIn(
+            "git commit -S0815 --no-verify -m 'Automatic release to 0.0.1'",
+            called,
+        )
+        self.assertIn(
+            "git tag -u 0815 v0.0.1 -m 'Automatic release to 0.0.1'", called
+        )
+
+    def test_fail_if_tag_is_already_taken(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_version = MagicMock(spec=version)
+        fake_changelog = MagicMock(spec=changelog)
+
+        args = [
+            'prepare',
+            '--release-version',
+            '0.0.1',
+            '--project',
+            'bla',
+        ]
+
+        called = []
+
+        def runner(cmd):
+            called.append(cmd)
+            return StdOutput('v0.0.1'.encode())
+
+        with self.assertRaises(SystemExit):
+            release.main(
+                shell_cmd_runner=runner,
+                _path=fake_path_class,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
+
+            self.assertIn('git tag v0.0.1 is already taken', called)
+
+    def test_not_release_when_no_project_found(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (False, '')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+
+        args = [
+            'prepare',
+            '--release-version',
+            '0.0.1',
+        ]
+        runner = lambda x: StdOutput('')
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertFalse(released)
+
+    def test_not_release_when_updating_version_fails(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_requests = MagicMock(spec=requests)
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (False, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+
+        args = [
+            'prepare',
             '--release-version',
             '0.0.1',
         ]
@@ -101,53 +199,3 @@ class ReleaseTestCase(unittest.TestCase):
             args=args,
         )
         self.assertFalse(released)
-
-    def test_release_to_specific_git_remote(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 201
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-        fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
-        args = [
-            'release',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2.dev1',
-            '--git-remote-name',
-            'upstream',
-        ]
-
-        called = []
-
-        def runner(cmd: str):
-            called.append(cmd)
-            return StdOutput('')
-
-        released = release.main(
-            shell_cmd_runner=runner,
-            _path=fake_path_class,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
-        self.assertTrue(released)
-
-        self.assertIn('git push --follow-tags upstream', called)
-        self.assertIn('git add MyProject.conf', called)
-        self.assertIn(
-            "git commit --no-verify -m 'Automatic adjustments after release\n\n"
-            "* Update to version 0.0.2.dev1\n"
-            "* Add empty changelog after 0.0.1'",
-            called,
-        )
-        print(called)
