@@ -82,11 +82,14 @@ class ChangelogBuilder:
             for commit in commits:
                 commit = commit.split(' ', maxsplit=1)
                 for commit_type in commit_types:
-                    reg = re.compile(commit_type['message'], flags=re.I)
+                    reg = re.compile(f'{commit_type["message"]}\\W', flags=re.I)
                     match = reg.match(commit[1])
                     if match:
+                        cleaned_msg = (
+                            commit[1].replace(match.group(0), '').strip()
+                        )
                         info(
-                            f'{commit[1]} [{commit[0]}](https://github.com/'
+                            f'{cleaned_msg} [{commit[0]}](https://github.com/'
                             f'{self.space}/{self.project}/commit/{commit[0]})'
                         )
                         if commit_type['group'] not in commit_dict.keys():
