@@ -35,11 +35,11 @@ jobs:
           https://${{ env.GITHUB_TOKEN }}@github.com/${{ github.repository }}
     - name: Prepare release with pontos
       run: |
-        poetry run pontos-release prepare --calendar
+        poetry run pontos-release prepare --calendar -CC
         echo "VERSION=$(poetry run pontos-version show)" >> $GITHUB_ENV
     - name: Release with pontos
       run: |
-        poetry run pontos-release release
+        poetry run pontos-release release -CC
     - name: Import key from secrets
       run: |
         echo -e "${{ env.GPG_KEY }}" >> tmp.file
