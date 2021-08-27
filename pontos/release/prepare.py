@@ -98,10 +98,11 @@ def prepare(
             project=project,
             config=args.cc_config,
         )
-        changelog_builder = changelog.ChangelogBuilder(
+        changelog_builder = changelog_module.ChangelogBuilder(
             shell_cmd_runner=shell_cmd_runner,
             args=cargs,
         )
+
         output_file = changelog_builder.create_changelog_file()
         ok(f"Created changelog {output}")
         commit_msg = f'Changelog created for release to {release_version}'
@@ -112,7 +113,7 @@ def prepare(
             git_signing_key=git_signing_key,
         )
         changelog_bool = False
-        # Try to get the unreleased section of the specific version
+        # Remove the header for the release text
         changelog_text = output_file.read_text().replace(
             "# Changelog\n\n"
             "All notable changes to this project "
@@ -137,7 +138,7 @@ def prepare(
         )
 
         if not updated:
-            # Try to get unversioned unrlease section
+            # Try to get unversioned unrelease section
             updated, changelog_text = changelog_module.update(
                 change_log_path.read_text(),
                 release_version,
