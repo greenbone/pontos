@@ -98,6 +98,9 @@ class ChangelogBuilder:
         else:
             warning("No conventional commits found.")
             sys.exit(1)
+        if commit_dict == {}:
+            warning("No conventional commits found.")
+            sys.exit(1)
         return commit_dict
 
     def build_changelog_file(self, commit_dict: Dict):

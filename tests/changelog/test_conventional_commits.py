@@ -20,6 +20,7 @@ from argparse import Namespace
 from pathlib import Path
 import unittest
 from dataclasses import dataclass
+from datetime import datetime
 
 from pontos.terminal import _set_terminal
 from pontos.terminal.terminal import Terminal
@@ -36,6 +37,8 @@ class ConventionalCommitsTestCase(unittest.TestCase):
     def test_changelog_builder(self):
 
         _set_terminal(Terminal())
+
+        today = datetime.today().strftime('%Y-%m-%d')
 
         own_path = Path(__file__).absolute().parent
         print(own_path)
@@ -70,11 +73,11 @@ class ConventionalCommitsTestCase(unittest.TestCase):
             shell_cmd_runner=runner,
             args=cargs,
         )
-        expected_output = """# Changelog
+        expected_output = f"""# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.2] - 2021-08-25
+## [0.0.2] - {today}
 
 ## Added
 
