@@ -74,6 +74,33 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
+    def test_release_conventional_commits_successfully(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_requests = MagicMock(spec=requests)
+        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post.status_code = 201
+        fake_post.text = self.valid_gh_release_response
+        fake_requests.post.return_value = fake_post
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+        args = [
+            'release',
+            '-CC',
+        ]
+        runner = lambda x: StdOutput('')
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _requests=fake_requests,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertTrue(released)
+
     def test_not_release_successfully_when_github_create_release_fails(self):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
@@ -150,4 +177,3 @@ class ReleaseTestCase(unittest.TestCase):
             "* Add empty changelog after 0.0.1'",
             called,
         )
-        print(called)
