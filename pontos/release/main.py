@@ -89,6 +89,15 @@ def initialize_default_parser() -> ArgumentParser:
         ),
     )
     prepare_parser.add_argument(
+        '--space',
+        default='greenbone',
+        help='User/Team name in github',
+    )
+    prepare_parser.add_argument(
+        '--project',
+        help='The github project',
+    )
+    prepare_parser.add_argument(
         '--conventional-commits',
         '-CC',
         help=(
@@ -99,6 +108,7 @@ def initialize_default_parser() -> ArgumentParser:
     )
     prepare_parser.add_argument(
         '--conventional-commits-config',
+        dest='cc_config',
         default=Path('changelog.toml'),
         type=FileType('r'),
         help="Conventional commits config file (toml), including conventions.",
