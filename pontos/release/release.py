@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import argparse
+from argparse import FileType, Namespace, ArgumentParser
 import sys
 import subprocess
 import os
@@ -30,30 +30,29 @@ from typing import Callable, Tuple
 import requests
 
 from pontos import changelog
-from pontos.terminal import _set_terminal, error, warning, info, ok, out
+from pontos.terminal import _set_terminal, error, warning, info, out
 from pontos.terminal.terminal import Terminal
 from pontos import version
 
 from .helper import (
     build_release_dict,
-    calculate_calendar_version,
     commit_files,
     download,
     find_signing_key,
     get_current_version,
     get_next_dev_version,
-    get_next_patch_version,
     get_project_name,
     update_version,
     upload_assets,
     download_assets,
 )
+from .prepare import prepare
 
 RELEASE_TEXT_FILE = ".release.md"
 
 
-def initialize_default_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+def initialize_default_parser() -> ArgumentParser:
+    parser = ArgumentParser(
         description='Release handling utility.',
         prog='pontos-release',
     )
@@ -101,6 +100,21 @@ def initialize_default_parser() -> argparse.ArgumentParser:
             'The CHANGELOG file path, defaults '
             'to CHANGELOG.md in the repository root directory',
         ),
+    )
+    prepare_parser.add_argument(
+        '--conventional-commits',
+        '-CC',
+        help=(
+            'Wether to use conventional commits and create '
+            'the changelog directly from the git log',
+        ),
+        action='store_true',
+    )
+    prepare_parser.add_argument(
+        '--conventional-commits-config',
+        default=Path('changelog.toml'),
+        type=FileType('r'),
+        help="Conventional commits config file (toml), including conventions.",
     )
 
     release_parser = subparsers.add_parser('release')
@@ -187,7 +201,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse(args=None) -> Tuple[str, str, argparse.Namespace]:
+def parse(args=None) -> Tuple[str, str, Namespace]:
     parser = initialize_default_parser()
     commandline_arguments = parser.parse_args(args)
     token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
@@ -195,108 +209,9 @@ def parse(args=None) -> Tuple[str, str, argparse.Namespace]:
     return (user, token, commandline_arguments)
 
 
-def prepare(
-    shell_cmd_runner: Callable,
-    args: argparse.Namespace,
-    *,
-    path: Path,
-    version_module: version,
-    changelog_module: changelog,
-    **_kwargs,
-) -> bool:
-    git_tag_prefix: str = args.git_tag_prefix
-    git_signing_key: str = (
-        args.git_signing_key
-        if args.git_signing_key is not None
-        else find_signing_key(shell_cmd_runner)
-    )
-    calendar: bool = args.calendar
-    patch: bool = args.patch
-
-    if calendar:
-        release_version: str = calculate_calendar_version()
-    elif patch:
-        release_version: str = get_next_patch_version()
-    else:
-        release_version: str = args.release_version
-
-    info(f"Preparing the release {release_version}")
-
-    # guardian
-    git_tags = shell_cmd_runner('git tag -l')
-    git_version = f"{git_tag_prefix}{release_version}"
-    if git_version.encode() in git_tags.stdout.splitlines():
-        raise ValueError(f'git tag {git_version} is already taken.')
-
-    executed, filename = update_version(release_version, version_module)
-    if not executed:
-        return False
-
-    ok(f"updated version  in {filename} to {release_version}")
-
-    change_log_path = path.cwd() / 'CHANGELOG.md'
-    if args.changelog:
-        tmp_path = path.cwd() / Path(args.changelog)
-        if tmp_path.is_file():
-            change_log_path = tmp_path
-        else:
-            warning(f"{tmp_path} is not a file.")
-
-    # Try to get the unreleased section of the specific version
-    updated, changelog_text = changelog_module.update(
-        change_log_path.read_text(),
-        release_version,
-        git_tag_prefix=git_tag_prefix,
-        containing_version=release_version,
-    )
-
-    if not updated:
-        # Try to get unversioned unrlease section
-        updated, changelog_text = changelog_module.update(
-            change_log_path.read_text(),
-            release_version,
-            git_tag_prefix=git_tag_prefix,
-        )
-
-    if not updated:
-        raise ValueError("No unreleased text found in CHANGELOG.md")
-
-    change_log_path.write_text(updated)
-
-    ok("Updated CHANGELOG.md")
-
-    info("Committing changes")
-
-    commit_msg = f'Automatic release to {release_version}'
-    commit_files(
-        filename,
-        commit_msg,
-        shell_cmd_runner,
-        git_signing_key=git_signing_key,
-    )
-
-    if git_signing_key:
-        shell_cmd_runner(
-            f"git tag -u {git_signing_key} {git_version} -m '{commit_msg}'"
-        )
-    else:
-        shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
-
-    release_text = path(RELEASE_TEXT_FILE)
-    release_text.write_text(changelog_text)
-
-    warning(
-        f"Please verify git tag {git_version}, "
-        f"commit and release text in {str(release_text)}"
-    )
-    out("Afterwards please execute release")
-
-    return True
-
-
 def release(
     shell_cmd_runner: Callable,
-    args: argparse.Namespace,
+    args: Namespace,
     *,
     path: Path,
     version_module: version,
@@ -396,6 +311,7 @@ def release(
         git_signing_key=git_signing_key,
     )
 
+    # pushing the new tag
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
     return True
@@ -403,7 +319,7 @@ def release(
 
 def sign(
     shell_cmd_runner: Callable,
-    args: argparse.Namespace,
+    args: Namespace,
     *,
     path: Path,
     username: str,

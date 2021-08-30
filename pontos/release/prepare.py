@@ -31,7 +31,10 @@ from .helper import (
     calculate_calendar_version,
     commit_files,
     find_signing_key,
+<<<<<<< HEAD
     get_project_name,
+=======
+>>>>>>> ee23490... refactor: Splitting up the pontos-release into several files: Detach prepare from single file. Wip: Also including conventional commits into prepare
     get_current_version,
     get_next_patch_version,
     update_version,
