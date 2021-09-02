@@ -20,6 +20,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        # because we want the git log for conventional commits, we need to fetch deeper!
+        fetch-depth: 0
         persist-credentials: false
     - name: Set up Python
       uses: actions/setup-python@v2
