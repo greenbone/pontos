@@ -69,7 +69,7 @@ class ChangelogBuilder:
         proc = self.shell_cmd_runner(
             'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline'
         )
-        if proc.stdout and proc.stdout is not '':
+        if proc.stdout and proc.stdout != '':
             return proc.stdout.strip().split('\n')
         return None
 
