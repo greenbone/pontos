@@ -1,0 +1,11 @@
+commit_types = [
+    { message = "^added*", group = "Added"},
+    { message = "^removed*", group = "Removed"},
+    { message = "^changed*", group = "Changed"},
+    { message = "^fix*", group = "Bug Fixes"},
+    { message = "^doc*", group = "Documentation"},
+    { message = "^refactor*", group = "Refactor"},
+    { message = "^test*", group = "Testing"},
+]
+
+changelog_dir = "changelog"

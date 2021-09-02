@@ -74,8 +74,9 @@ version-module-file = "pontos/version/__version__.py"
 
 [tool.poetry.scripts]
 pontos-version = 'pontos.version:main'
-pontos-release = 'pontos.release.release:main'
+pontos-release = 'pontos.release:main'
 pontos-update-header = 'pontos.updateheader:main'
+pontos-changelog = 'pontos.changelog:main'
 
 [build-system]
 requires = ["poetry>=0.12"]

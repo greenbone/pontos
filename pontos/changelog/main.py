@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) 2021 Greenbone Networks GmbH
+# Copyright (C) 2020-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -16,13 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .changelog import add_skeleton, update, ChangelogError
-from .conventional_commits import main, ChangelogBuilder
+# pylint: disable=invalid-name
 
-__all__ = [
-    'add_skeleton',
-    'update',
-    'ChangelogBuilder',
-    'ChangelogError',
-    'main',
-]
+from .conventional_commits import main
+
+if __name__ == '__main__':
+    main()
