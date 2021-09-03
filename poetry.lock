@@ -8,7 +8,7 @@ python-versions = "*"
 
 [[package]]
 name = "astroid"
-version = "2.6.6"
+version = "2.7.3"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
@@ -225,18 +225,31 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
+name = "platformdirs"
+version = "2.3.0"
+description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+docs = ["Sphinx (>=4)", "furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehints (>=1.12)"]
+test = ["appdirs (==1.4.4)", "pytest (>=6)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)"]
+
+[[package]]
 name = "pylint"
-version = "2.9.6"
+version = "2.10.2"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = "~=3.6"
 
 [package.dependencies]
-astroid = ">=2.6.5,<2.7"
+astroid = ">=2.7.2,<2.8"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.7"
+platformdirs = ">=2.2.0"
 toml = ">=0.7.1"
 
 [[package]]
@@ -360,7 +373,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a2901d6d6070cc6bf6dcd3f745b19a587a09fbf5a0d1f8f7b6f7fafe155652e7"
+content-hash = "f5f56fcda7c90112493ae471da1b6ba866da1616eb84cbfb1fec63a775f3a212"
 
 [metadata.files]
 appdirs = [
@@ -368,8 +381,8 @@ appdirs = [
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
 ]
 astroid = [
-    {file = "astroid-2.6.6-py3-none-any.whl", hash = "sha256:ab7f36e8a78b8e54a62028ba6beef7561db4cdb6f2a5009ecc44a6f42b5697ef"},
-    {file = "astroid-2.6.6.tar.gz", hash = "sha256:3975a0bd5373bdce166e60c851cfcbaf21ee96de80ec518c1f4cb3e94c3fb334"},
+    {file = "astroid-2.7.3-py3-none-any.whl", hash = "sha256:dc1e8b28427d6bbef6b8842b18765ab58f558c42bb80540bd7648c98412af25e"},
+    {file = "astroid-2.7.3.tar.gz", hash = "sha256:3b680ce0419b8a771aba6190139a3998d14b413852506d99aff8dc2bf65ee67c"},
 ]
 autohooks = [
     {file = "autohooks-21.7.0-py3-none-any.whl", hash = "sha256:54bda89bbd5b19d83538a110bca0088b38378a4c0e1cf14581792f3e41a5a260"},
@@ -513,9 +526,13 @@ pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
     {file = "pathspec-0.9.0.tar.gz", hash = "sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1"},
 ]
+platformdirs = [
+    {file = "platformdirs-2.3.0-py3-none-any.whl", hash = "sha256:8003ac87717ae2c7ee1ea5a84a1a61e87f3fbd16eb5aadba194ea30a9019f648"},
+    {file = "platformdirs-2.3.0.tar.gz", hash = "sha256:15b056538719b1c94bdaccb29e5f81879c7f7f0f4a153f46086d155dffcd4f0f"},
+]
 pylint = [
-    {file = "pylint-2.9.6-py3-none-any.whl", hash = "sha256:2e1a0eb2e8ab41d6b5dbada87f066492bb1557b12b76c47c2ee8aa8a11186594"},
-    {file = "pylint-2.9.6.tar.gz", hash = "sha256:8b838c8983ee1904b2de66cce9d0b96649a91901350e956d78f289c3bc87b48e"},
+    {file = "pylint-2.10.2-py3-none-any.whl", hash = "sha256:e178e96b6ba171f8ef51fbce9ca30931e6acbea4a155074d80cc081596c9e852"},
+    {file = "pylint-2.10.2.tar.gz", hash = "sha256:6758cce3ddbab60c52b57dcc07f0c5d779e5daf0cf50f6faacbef1d3ea62d2a1"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
