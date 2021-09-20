@@ -100,7 +100,7 @@ def _add_header(
         licence_file = root / "templates" / licence / f"template{suffix}"
         try:
             return (
-                licence_file.read_text()
+                licence_file.read_text(encoding='utf-8')
                 .replace("<company>", company)
                 .replace("<year>", year)
             )
@@ -214,7 +214,7 @@ def _get_exclude_list(
     if exclude_file is None:
         exclude_file = Path(".pontos-header-ignore")
     try:
-        exclude_lines = exclude_file.read_text().split('\n')
+        exclude_lines = exclude_file.read_text(encoding='utf-8').split('\n')
     except FileNotFoundError:
         print("No exclude list file found.")
         return []

@@ -150,12 +150,13 @@ class TestHelperFunctions(unittest.TestCase):
             'name = "testrepo"\n'
             'version = "21.6.2.dev1"\n\n'
             '[tool.pontos.version]\n'
-            'version-module-file = "testrepo/__version__.py"\n'
+            'version-module-file = "testrepo/__version__.py"\n',
+            encoding='utf-8',
         )
         executed, filename = update_version(
             to='21.4.4', _version=version, develop=False
         )
-        toml_text = toml.read_text()
+        toml_text = toml.read_text(encoding='utf-8')
         print(toml_text)
         self.assertEqual(filename, 'pyproject.toml')
         self.assertTrue(executed)
@@ -168,7 +169,7 @@ class TestHelperFunctions(unittest.TestCase):
             'version-module-file = "testrepo/__version__.py"\n',
         )
         self.assertTrue(version_file.exists())
-        version_text = version_file.read_text()
+        version_text = version_file.read_text(encoding='utf-8')
         self.assertEqual(
             version_text,
             '# pylint: disable=invalid-name\n\n'

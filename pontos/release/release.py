@@ -86,7 +86,7 @@ def release(
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
     info(f"Creating release for v{release_version}")
-    changelog_text: str = path(RELEASE_TEXT_FILE).read_text()
+    changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
 
@@ -126,13 +126,13 @@ def release(
                 warning(f"{tmp_path} is not a file.")
 
         updated = changelog_module.add_skeleton(
-            markdown=change_log_path.read_text(),
+            markdown=change_log_path.read_text(encoding='utf-8'),
             new_version=release_version,
             project_name=project,
             git_tag_prefix=git_tag_prefix,
             git_space=space,
         )
-        change_log_path.write_text(updated)
+        change_log_path.write_text(updated, encoding='utf-8')
         changelog_bool = False
 
         commit_msg += f'* Add empty changelog after {release_version}'

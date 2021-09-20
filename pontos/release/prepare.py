@@ -114,7 +114,7 @@ def prepare(
         )
         changelog_bool = False
         # Remove the header for the release text
-        changelog_text = output_file.read_text().replace(
+        changelog_text = output_file.read_text(encoding='utf-8').replace(
             "# Changelog\n\n"
             "All notable changes to this project "
             "will be documented in this file.\n\n",
@@ -131,7 +131,7 @@ def prepare(
 
         # Try to get the unreleased section of the specific version
         updated, changelog_text = changelog_module.update(
-            change_log_path.read_text(),
+            change_log_path.read_text(encoding='utf-8'),
             release_version,
             git_tag_prefix=git_tag_prefix,
             containing_version=release_version,
@@ -140,7 +140,7 @@ def prepare(
         if not updated:
             # Try to get unversioned unrelease section
             updated, changelog_text = changelog_module.update(
-                change_log_path.read_text(),
+                change_log_path.read_text(encoding='utf-8'),
                 release_version,
                 git_tag_prefix=git_tag_prefix,
             )
@@ -149,7 +149,7 @@ def prepare(
             error("No unreleased text found in CHANGELOG.md")
             sys.exit(1)
 
-        change_log_path.write_text(updated)
+        change_log_path.write_text(updated, encoding='utf-8')
 
         ok("Updated CHANGELOG.md")
 
@@ -172,7 +172,7 @@ def prepare(
         shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
 
     release_text = path(RELEASE_TEXT_FILE)
-    release_text.write_text(changelog_text)
+    release_text.write_text(changelog_text, encoding='utf-8')
 
     warning(
         f"Please verify git tag {git_version}, "

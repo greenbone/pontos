@@ -55,7 +55,9 @@ def get_version_from_pyproject_toml(pyproject_toml_path: Path = None) -> str:
     if not pyproject_toml_path.exists():
         raise VersionError(f'{str(pyproject_toml_path)} file not found.')
 
-    pyproject_toml = tomlkit.parse(pyproject_toml_path.read_text())
+    pyproject_toml = tomlkit.parse(
+        pyproject_toml_path.read_text(encoding='utf-8')
+    )
     if (
         'tool' in pyproject_toml
         and 'poetry' in pyproject_toml['tool']
@@ -123,7 +125,9 @@ __version__ = "{}"\n"""
         Update the version file with the new version
         """
         new_version = safe_version(new_version)
-        self.version_file_path.write_text(self.TEMPLATE.format(new_version))
+        self.version_file_path.write_text(
+            self.TEMPLATE.format(new_version), encoding='utf-8'
+        )
 
     def _update_pyproject_version(
         self,
@@ -134,7 +138,9 @@ __version__ = "{}"\n"""
         """
 
         new_version = safe_version(new_version)
-        pyproject_toml = tomlkit.parse(self.pyproject_toml_path.read_text())
+        pyproject_toml = tomlkit.parse(
+            self.pyproject_toml_path.read_text(encoding='utf-8')
+        )
 
         if 'tool' not in pyproject_toml:
             tool_table = tomlkit.table()
@@ -146,7 +152,9 @@ __version__ = "{}"\n"""
 
         pyproject_toml['tool']['poetry']['version'] = new_version
 
-        self.pyproject_toml_path.write_text(tomlkit.dumps(pyproject_toml))
+        self.pyproject_toml_path.write_text(
+            tomlkit.dumps(pyproject_toml), encoding='utf-8'
+        )
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
@@ -248,7 +256,9 @@ class PontosVersionCommand(VersionCommand):
         if not pyproject_toml_path.exists():
             raise VersionError(f'{str(pyproject_toml_path)} file not found.')
 
-        pyproject_toml = tomlkit.parse(pyproject_toml_path.read_text())
+        pyproject_toml = tomlkit.parse(
+            pyproject_toml_path.read_text(encoding='utf-8')
+        )
 
         if (
             'tool' not in pyproject_toml

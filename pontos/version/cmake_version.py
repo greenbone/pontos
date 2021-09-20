@@ -76,20 +76,20 @@ class CMakeVersionCommand:
             print(*args)
 
     def update_version(self, version: str, *, develop: bool = False):
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         previous_version = cmvp.get_current_version()
         new_content = cmvp.update_version(version, develop=develop)
-        self.__cmake_filepath.write_text(new_content)
+        self.__cmake_filepath.write_text(new_content, encoding='utf-8')
         self.__print(f'Updated version from {previous_version} to {version}')
 
     def print_current_version(self):
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         self.__print(cmvp.get_current_version())
 
     def get_current_version(self) -> str:
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         return cmvp.get_current_version()
 
