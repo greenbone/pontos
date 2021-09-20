@@ -51,7 +51,7 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
             get_version_from_pyproject_toml(fake_path)
 
         fake_path.exists.assert_called_with()
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_empty_poerty_section(self):
         fake_path_class = MagicMock(spec=Path)
@@ -66,7 +66,7 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
             get_version_from_pyproject_toml(fake_path)
 
         fake_path.exists.assert_called_with()
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_get_version(self):
         fake_path_class = MagicMock(spec=Path)
@@ -80,4 +80,4 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
         self.assertEqual(version, '1.2.3')
 
         fake_path.exists.assert_called_with()
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')

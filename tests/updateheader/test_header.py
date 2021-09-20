@@ -298,8 +298,6 @@ class UpdateHeaderTestCase(TestCase):
         test_file = self.path / "test.py"
         test_file.touch()
 
-        # test_file.write_text(expected_header)
-
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
         ret = mock_stdout.getvalue()
@@ -308,7 +306,7 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Added licence header.\n",
         )
         self.assertEqual(code, 0)
-        self.assertEqual(expected_header, test_file.read_text())
+        self.assertEqual(expected_header, test_file.read_text(encoding='utf-8'))
         test_file.unlink()
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -340,7 +338,7 @@ class UpdateHeaderTestCase(TestCase):
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header)
+        test_file.write_text(header, encoding='utf-8')
 
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
@@ -353,7 +351,7 @@ class UpdateHeaderTestCase(TestCase):
         )
         self.assertIn(
             '# Copyright (C) 2020-2021 Greenbone Networks GmbH',
-            test_file.read_text(),
+            test_file.read_text(encoding='utf-8'),
         )
 
         test_file.unlink()
@@ -387,7 +385,7 @@ class UpdateHeaderTestCase(TestCase):
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header)
+        test_file.write_text(header, encoding='utf-8')
 
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
@@ -399,7 +397,7 @@ class UpdateHeaderTestCase(TestCase):
         )
         self.assertIn(
             '# Copyright (C) 2021 Greenbone Networks GmbH',
-            test_file.read_text(),
+            test_file.read_text(encoding='utf-8'),
         )
 
         test_file.unlink()
@@ -438,7 +436,7 @@ class UpdateHeaderTestCase(TestCase):
         test_dirname = Path(__file__) / "../.."
         # with a relative glob
         test_ignore_file = Path('ignore.file')
-        test_ignore_file.write_text("*.py\n")
+        test_ignore_file.write_text("*.py\n", encoding='utf-8')
 
         exclude_list = get_exclude_list(
             test_ignore_file, [test_dirname.resolve()]

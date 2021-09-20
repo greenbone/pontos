@@ -243,6 +243,8 @@ class PrepareTestCase(unittest.TestCase):
 
 [21.8.1]: https://github.com/y0urself/test_workflows/compare/21.8.0...21.8.1"""
 
-        self.assertEqual(release_file.read_text(), expected_release_content)
+        self.assertEqual(
+            release_file.read_text(encoding='utf-8'), expected_release_content
+        )
 
         release_file.unlink()

@@ -53,11 +53,11 @@ def get_version_from_pyproject_toml(pyproject_toml_path: Path = None) -> str:
         pyproject_toml_path = path.parent.parent / 'pyproject.toml'
 
     if not pyproject_toml_path.exists():
-        raise VersionError(
-            '{} file not found.'.format(str(pyproject_toml_path))
-        )
+        raise VersionError(f'{str(pyproject_toml_path)} file not found.')
 
-    pyproject_toml = tomlkit.parse(pyproject_toml_path.read_text())
+    pyproject_toml = tomlkit.parse(
+        pyproject_toml_path.read_text(encoding='utf-8')
+    )
     if (
         'tool' in pyproject_toml
         and 'poetry' in pyproject_toml['tool']
@@ -66,9 +66,7 @@ def get_version_from_pyproject_toml(pyproject_toml_path: Path = None) -> str:
         return pyproject_toml['tool']['poetry']['version']
 
     raise VersionError(
-        'Version information not found in {} file.'.format(
-            str(pyproject_toml_path)
-        )
+        f'Version information not found in {str(pyproject_toml_path)} file.'
     )
 
 
@@ -117,9 +115,7 @@ __version__ = "{}"\n"""
             version_module = importlib.import_module(module_name)
         except ModuleNotFoundError:
             raise VersionError(
-                'Could not load version from {}. Import failed.'.format(
-                    module_name
-                )
+                f'Could not load version from {module_name}. Import failed.'
             ) from None
 
         return version_module.__version__
@@ -129,7 +125,9 @@ __version__ = "{}"\n"""
         Update the version file with the new version
         """
         new_version = safe_version(new_version)
-        self.version_file_path.write_text(self.TEMPLATE.format(new_version))
+        self.version_file_path.write_text(
+            self.TEMPLATE.format(new_version), encoding='utf-8'
+        )
 
     def _update_pyproject_version(
         self,
@@ -140,7 +138,9 @@ __version__ = "{}"\n"""
         """
 
         new_version = safe_version(new_version)
-        pyproject_toml = tomlkit.parse(self.pyproject_toml_path.read_text())
+        pyproject_toml = tomlkit.parse(
+            self.pyproject_toml_path.read_text(encoding='utf-8')
+        )
 
         if 'tool' not in pyproject_toml:
             tool_table = tomlkit.table()
@@ -152,7 +152,9 @@ __version__ = "{}"\n"""
 
         pyproject_toml['tool']['poetry']['version'] = new_version
 
-        self.pyproject_toml_path.write_text(tomlkit.dumps(pyproject_toml))
+        self.pyproject_toml_path.write_text(
+            tomlkit.dumps(pyproject_toml), encoding='utf-8'
+        )
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
@@ -189,9 +191,8 @@ __version__ = "{}"\n"""
         current_version = self.get_current_version()
         if not is_version_pep440_compliant(current_version):
             raise VersionError(
-                "The version {} in {} is not PEP 440 compliant.".format(
-                    current_version, str(self.version_file_path)
-                )
+                f"The version {current_version} in "
+                f"{str(self.version_file_path)} is not PEP 440 compliant."
             )
 
         pyproject_version = get_version_from_pyproject_toml(
@@ -200,20 +201,17 @@ __version__ = "{}"\n"""
 
         if pyproject_version != current_version:
             raise VersionError(
-                "The version {} in {} doesn't match the current "
-                "version {}.".format(
-                    pyproject_version,
-                    str(self.pyproject_toml_path),
-                    current_version,
-                )
+                f"The version {pyproject_version} in "
+                f"{str(self.pyproject_toml_path)} doesn't match the current "
+                f"version {current_version}."
             )
 
         if version != 'current':
             provided_version = strip_version(version)
             if provided_version != current_version:
                 raise VersionError(
-                    "Provided version {} does not match the current "
-                    "version {}.".format(provided_version, current_version)
+                    f"Provided version {provided_version} does not match the "
+                    f"current version {current_version}."
                 )
 
         self._print('OK')
@@ -232,7 +230,7 @@ __version__ = "{}"\n"""
 
         if not self.pyproject_toml_path.exists():
             raise VersionError(
-                'Could not find {} file.'.format(str(self.pyproject_toml_path))
+                f'Could not find {str(self.pyproject_toml_path)} file.'
             )
 
         try:
@@ -256,11 +254,11 @@ class PontosVersionCommand(VersionCommand):
             pyproject_toml_path = Path.cwd() / 'pyproject.toml'
 
         if not pyproject_toml_path.exists():
-            raise VersionError(
-                '{} file not found.'.format(str(pyproject_toml_path))
-            )
+            raise VersionError(f'{str(pyproject_toml_path)} file not found.')
 
-        pyproject_toml = tomlkit.parse(pyproject_toml_path.read_text())
+        pyproject_toml = tomlkit.parse(
+            pyproject_toml_path.read_text(encoding='utf-8')
+        )
 
         if (
             'tool' not in pyproject_toml
@@ -268,9 +266,8 @@ class PontosVersionCommand(VersionCommand):
             or 'version' not in pyproject_toml['tool']['pontos']
         ):
             raise VersionError(
-                '[tool.pontos.version] section missing in {}.'.format(
-                    str(pyproject_toml_path)
-                )
+                '[tool.pontos.version] section missing '
+                f'in {str(pyproject_toml_path)}.'
             )
 
         pontos_version_settings = pyproject_toml['tool']['pontos']['version']
@@ -282,7 +279,7 @@ class PontosVersionCommand(VersionCommand):
         except tomlkit.exceptions.NonExistentKey:
             raise VersionError(
                 'version-module-file key not set in [tool.pontos.version] '
-                'section of {}.'.format(str(pyproject_toml_path))
+                f'section of {str(pyproject_toml_path)}.'
             ) from None
 
         super().__init__(

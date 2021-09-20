@@ -104,8 +104,10 @@ All notable changes to this project will be documented in this file.
 
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
         output_file = changelog_builder.create_changelog_file()
-        print(output_file.read_text())
-        self.assertEqual(output_file.read_text(), expected_output)
+        print(output_file.read_text(encoding='utf-8'))
+        self.assertEqual(
+            output_file.read_text(encoding='utf-8'), expected_output
+        )
 
         self.assertIn(
             'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline',

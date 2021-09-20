@@ -44,7 +44,9 @@ class ChangelogBuilder:
         args: Namespace,
     ):
         self.shell_cmd_runner: Callable = shell_cmd_runner
-        self.config: TOMLDocument = tomlkit.parse(args.config.read_text())
+        self.config: TOMLDocument = tomlkit.parse(
+            args.config.read_text(encoding='utf-8')
+        )
         self.project: str = (
             args.project
             if args.project is not None
@@ -146,7 +148,7 @@ class ChangelogBuilder:
                 f'{self.project}/compare/<?>...HEAD'
             )
 
-        self.output_file.write_text(changelog)
+        self.output_file.write_text(changelog, encoding='utf-8')
 
 
 def initialize_default_parser() -> ArgumentParser:

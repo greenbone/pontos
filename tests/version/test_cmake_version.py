@@ -40,7 +40,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.read_text.return_value = ""
         with self.assertRaises(ValueError):
             CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_return_error_string_incorrect_version_on_verify(self):
         fake_path_class = MagicMock(spec=Path)
@@ -73,7 +73,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = "project(VERSION 21)"
         CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_raise_update_version(self):
         fake_path_class = MagicMock(spec=Path)
@@ -86,9 +86,9 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         CMakeVersionCommand(cmake_lists_path=fake_path).run(
             args=['update', '22', '--develop']
         )
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
         fake_path.write_text.assert_called_with(
-            'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)'
+            'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)', encoding='utf-8'
         )
 
 
