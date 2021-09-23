@@ -46,10 +46,10 @@ class ConventionalCommitsTestCase(unittest.TestCase):
         release_version = '0.0.2'
         output = f'v{release_version}.md'
         git_log = (
-            '1234567 Added: foo bar\n'
-            '8abcdef Added: bar baz\n'
-            '1337abc Changed: bar to baz\n'
-            '42a42a4 Removed: foo bar again\n'
+            '1234567 Add: foo bar\n'
+            '8abcdef Add: bar baz\n'
+            '1337abc Change: bar to baz\n'
+            '42a42a4 Remove: foo bar again\n'
             'fedcba8 Test: bar baz testing\n'
             'dead901 Refactor: bar baz ref\n'
             'fedcba8 Fix: bar baz fixing\n'
@@ -80,26 +80,25 @@ All notable changes to this project will be documented in this file.
 ## [0.0.2] - {today}
 
 ## Added
-
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+
 ## Removed
-
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
+
 ## Changed
-
 * bar to baz [1337abc](https://github.com/foo/bar/commit/1337abc)
+
 ## Bug Fixes
-
 * bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
 ## Documentation
-
 * bar baz documenting [d0c4d0c](https://github.com/foo/bar/commit/d0c4d0c)
+
 ## Refactor
-
 * bar baz ref [dead901](https://github.com/foo/bar/commit/dead901)
-## Testing
 
+## Testing
 * bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
 
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""

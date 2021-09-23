@@ -117,7 +117,7 @@ class ChangelogBuilder:
         )
         if self.next_version:
             changelog += (
-                f'## [{self.next_version}] - {date.today().isoformat()}\n\n'
+                f'## [{self.next_version}] - {date.today().isoformat()}\n'
             )
         else:
             changelog += '## [Unreleased]\n\n'
@@ -126,7 +126,7 @@ class ChangelogBuilder:
         # changelog entries
         for commit_type in commit_types:
             if commit_type['group'] in commit_dict.keys():
-                changelog += f"## {commit_type['group']}\n\n"
+                changelog += f"\n## {commit_type['group']}\n"
                 for msg in commit_dict[commit_type['group']]:
                     changelog += f"* {msg}\n"
 
