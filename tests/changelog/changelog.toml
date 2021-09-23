@@ -1,7 +1,7 @@
 commit_types = [
-    { message = "^added", group = "Added"},
-    { message = "^removed", group = "Removed"},
-    { message = "^changed", group = "Changed"},
+    { message = "^add", group = "Added"},
+    { message = "^remove", group = "Removed"},
+    { message = "^change", group = "Changed"},
     { message = "^fix", group = "Bug Fixes"},
     { message = "^doc", group = "Documentation"},
     { message = "^refactor", group = "Refactor"},
