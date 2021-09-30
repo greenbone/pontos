@@ -248,8 +248,9 @@ __version__ = "{}"\n"""
         return 0
 
 
-class PontosVersionCommand(VersionCommand):
-    def __init__(self, *, pyproject_toml_path=None):
+# This class is used for Python Version command(s)
+class PythonVersionCommand(VersionCommand):
+    def __init__(self, *, pyproject_toml_path: Path = None) -> None:
         if not pyproject_toml_path:
             pyproject_toml_path = Path.cwd() / 'pyproject.toml'
 

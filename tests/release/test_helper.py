@@ -192,7 +192,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
         mocks = [
-            'pontos.release.helper.PontosVersionCommand',
+            'pontos.release.helper.PythonVersionCommand',
             'pontos.release.helper.CMakeVersionCommand',
         ]
         current_versions = [
@@ -262,7 +262,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
         mocks = [
-            'pontos.release.helper.PontosVersionCommand',
+            'pontos.release.helper.PythonVersionCommand',
             'pontos.release.helper.CMakeVersionCommand',
         ]
         current_versions = [

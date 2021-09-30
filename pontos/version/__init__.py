@@ -19,7 +19,7 @@ from pathlib import Path
 from .__version__ import __version__
 
 from .version import (
-    PontosVersionCommand,
+    PythonVersionCommand,
     VersionCommand,
     VersionError,
     safe_version,
@@ -33,7 +33,7 @@ from .cmake_version import CMakeVersionParser, CMakeVersionCommand
 def main(leave=True, args=None):
     available_cmds = [
         ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PontosVersionCommand),
+        ('pyproject.toml', PythonVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
@@ -52,7 +52,7 @@ __all__ = [
     'CMakeVersionCommand',
     'get_version_from_pyproject_toml',
     'is_version_pep440_compliant',
-    'PontosVersionCommand',
+    'PythonVersionCommand',
     'safe_version',
     'strip_version',
     'VersionCommand',
