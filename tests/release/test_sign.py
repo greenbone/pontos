@@ -35,7 +35,7 @@ class StdOutput:
     stdout: bytes
 
 
-class ReleaseTestCase(unittest.TestCase):
+class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
         os.environ['GITHUB_USER'] = 'bar'
@@ -44,80 +44,28 @@ class ReleaseTestCase(unittest.TestCase):
             ' "tar", "upload_url":"upload"}'
         )
 
-    def test_release_successfully(self):
+    def test_fail_sign_on_invalid_get_response(self):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 201
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
+        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get.status_code = 404
+        fake_get.text = self.valid_gh_release_response
+        fake_requests.get.return_value = fake_get
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            'release',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2dev',
-        ]
-        runner = lambda x: StdOutput('')
-        released = release.main(
-            shell_cmd_runner=runner,
-            _path=fake_path_class,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
-        self.assertTrue(released)
-
-    def test_release_conventional_commits_successfully(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 201
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-        fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
-        args = [
-            'release',
-            '-CC',
-        ]
-        runner = lambda x: StdOutput('')
-        released = release.main(
-            shell_cmd_runner=runner,
-            _path=fake_path_class,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
-        self.assertTrue(released)
-
-    def test_not_release_successfully_when_github_create_release_fails(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_requests = MagicMock(spec=requests)
-        fake_post = MagicMock(spec=requests.Response).return_value
-        fake_post.status_code = 401
-        fake_post.text = self.valid_gh_release_response
-        fake_requests.post.return_value = fake_post
-        fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
-        fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
-        args = [
-            'release',
+            'sign',
+            '--project',
+            'foo',
             '--release-version',
             '0.0.1',
         ]
-        runner = lambda x: StdOutput('')
+
+        def runner(_: str):
+            return StdOutput('')
+
         released = release.main(
             shell_cmd_runner=runner,
             _path=fake_path_class,
@@ -129,9 +77,50 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertFalse(released)
 
-    def test_release_to_specific_git_remote(self):
+    def test_fail_sign_on_upload_fail(self):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
+        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get.status_code = 200
+        fake_get.text = self.valid_gh_release_response
+        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post.status_code = 500
+        fake_post.text = self.valid_gh_release_response
+        fake_requests.post.return_value = fake_post
+        fake_requests.get.return_value = fake_get
+        fake_version = MagicMock(spec=version)
+        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_changelog = MagicMock(spec=changelog)
+        fake_changelog.update.return_value = ('updated', 'changelog')
+        args = [
+            'sign',
+            '--project',
+            'foo',
+            '--release-version',
+            '0.0.1',
+        ]
+
+        def runner(_: str):
+            return StdOutput('')
+
+        released = release.main(
+            shell_cmd_runner=runner,
+            _path=fake_path_class,
+            _requests=fake_requests,
+            _version=fake_version,
+            _changelog=fake_changelog,
+            leave=False,
+            args=args,
+        )
+        self.assertFalse(released)
+
+    def test_successfully_sign(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_requests = MagicMock(spec=requests)
+        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get.status_code = 200
+        fake_get.text = self.valid_gh_release_response
+        fake_requests.get.return_value = fake_get
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
@@ -141,15 +130,11 @@ class ReleaseTestCase(unittest.TestCase):
         fake_changelog = MagicMock(spec=changelog)
         fake_changelog.update.return_value = ('updated', 'changelog')
         args = [
-            'release',
+            'sign',
             '--project',
-            'foo',
+            'bar',
             '--release-version',
             '0.0.1',
-            '--next-version',
-            '0.0.2.dev1',
-            '--git-remote-name',
-            'upstream',
         ]
 
         called = []
@@ -168,12 +153,3 @@ class ReleaseTestCase(unittest.TestCase):
             args=args,
         )
         self.assertTrue(released)
-
-        self.assertIn('git push --follow-tags upstream', called)
-        self.assertIn('git add MyProject.conf', called)
-        self.assertIn(
-            "git commit --no-verify -m 'Automatic adjustments after release\n\n"
-            "* Update to version 0.0.2.dev1\n"
-            "* Add empty changelog after 0.0.1'",
-            called,
-        )

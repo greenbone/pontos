@@ -41,9 +41,7 @@ class CMakeVersionCommand:
         if not cmake_lists_path:
             cmake_lists_path = Path.cwd() / 'CMakeLists.txt'
         if not cmake_lists_path.exists():
-            raise VersionError(
-                '{} file not found.'.format(str(cmake_lists_path))
-            )
+            raise VersionError(f'{str(cmake_lists_path)} file not found.')
 
         self.__cmake_filepath = cmake_lists_path
         self.parser = initialize_default_parser()
@@ -78,30 +76,26 @@ class CMakeVersionCommand:
             print(*args)
 
     def update_version(self, version: str, *, develop: bool = False):
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         previous_version = cmvp.get_current_version()
         new_content = cmvp.update_version(version, develop=develop)
-        self.__cmake_filepath.write_text(new_content)
-        self.__print(
-            'Updated version from {} to {}'.format(previous_version, version)
-        )
+        self.__cmake_filepath.write_text(new_content, encoding='utf-8')
+        self.__print(f'Updated version from {previous_version} to {version}')
 
     def print_current_version(self):
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         self.__print(cmvp.get_current_version())
 
     def get_current_version(self) -> str:
-        content = self.__cmake_filepath.read_text()
+        content = self.__cmake_filepath.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
         return cmvp.get_current_version()
 
     def verify_version(self, version: str):
         if not is_version_pep440_compliant(version):
-            raise VersionError(
-                "Version {} is not PEP 440 compliant.".format(version)
-            )
+            raise VersionError(f"Version {version} is not PEP 440 compliant.")
 
         self.__print('OK')
 
@@ -139,7 +133,7 @@ class CMakeVersionParser:
     def update_version(self, new_version: str, *, develop: bool = False) -> str:
         if not is_version_pep440_compliant(new_version):
             raise VersionError(
-                "version {} is not pep 440 compliant.".format(new_version)
+                f"version {new_version} is not pep 440 compliant."
             )
 
         new_version = safe_version(new_version)
@@ -239,7 +233,7 @@ class CMakeVersionParser:
     ]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != '':
-            print('WARNING: unrecognized cmake tokens: {}'.format(remainder))
+            print(f'WARNING: unrecognized cmake tokens: {remainder}')
 
         line_num = 0
 

@@ -88,6 +88,7 @@ def commit_files(
     shell_cmd_runner: Callable,
     *,
     git_signing_key: str = '',
+    changelog: bool = False,
 ):
     """Add files to staged and commit staged files.
 
@@ -107,10 +108,11 @@ def commit_files(
 
     shell_cmd_runner(f"git add {filename}")
     shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
-    shell_cmd_runner("git add CHANGELOG.md")
+    if changelog:
+        shell_cmd_runner("git add CHANGELOG.md")
     if git_signing_key:
         shell_cmd_runner(
-            f"git commit -S {git_signing_key} --no-verify -m '{commit_msg}'",
+            f"git commit -S{git_signing_key} --no-verify -m '{commit_msg}'",
         )
     else:
         shell_cmd_runner(f"git commit --no-verify -m '{commit_msg}'")

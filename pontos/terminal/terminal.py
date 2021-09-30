@@ -27,15 +27,15 @@ TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
 
 class Signs(Enum):
-    FAIL = u'\N{HEAVY MULTIPLICATION X}'
-    ERROR = u'\N{MULTIPLICATION SIGN}'
-    WARNING = u'\N{WARNING SIGN}'
-    OK = u'\N{CHECK MARK}'
-    INFO = u'\N{INFORMATION SOURCE}'
+    FAIL = '\N{HEAVY MULTIPLICATION X}'
+    ERROR = '\N{MULTIPLICATION SIGN}'
+    WARNING = '\N{WARNING SIGN}'
+    OK = '\N{CHECK MARK}'
+    INFO = '\N{INFORMATION SOURCE}'
     NONE = ' '
 
     def __str__(self):
-        return '{}'.format(self.value)
+        return f'{self.value}'
 
 
 STATUS_LEN = 2
@@ -71,7 +71,7 @@ class Terminal:
         if status == Signs.NONE:
             first_line += '  '
         else:
-            first_line += '{} '.format(color(status))
+            first_line += f'{color(status)} '
         if self._indent > 0:
             first_line += ' ' * self._indent
         usable_width = width - STATUS_LEN - self._indent
@@ -79,8 +79,8 @@ class Terminal:
             part_line = ' ' * (self._indent + STATUS_LEN)
             part = message[:usable_width]
             message = message[usable_width:]
-            output += '{}{}\n'.format(part_line, part)
-        output += '{}{}'.format(first_line, message)
+            output += f'{part_line}{part}\n'
+        output += f'{first_line}{message}'
         if new_line:
             print(style(output))
         else:

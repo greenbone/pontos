@@ -12,8 +12,24 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.2...HEAD
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.4...HEAD
 
+
+## [21.7.4] - 2021-07-21
+### Changed
+* Allow to pass multiple directories to the `-d`/`--directories` argument [#163](https://github.com/greenbone/pontos/pull/163)
+* Allow to put directory globs into the exclude file and exclude all files from that directory [#163](https://github.com/greenbone/pontos/pull/163)
+
+[21.7.4]: https://github.com/greenbone/pontos/compare/v21.7.3...v21.7.4
+
+## [21.7.3] - 2021-07-20
+### Added
+- Golang support for `pontos-update-header` [#162](https://github.com/greenbone/pontos/pull/162)
+
+### Fixed
+- `pontos-update-header` will now set the correct current year, when adding a header to a new file [#162](https://github.com/greenbone/pontos/pull/162)
+
+[21.7.3]: https://github.com/greenbone/pontos/compare/v21.7.2...v21.7.3
 
 ## [21.7.2] - 2021-07-07
 ### Removed

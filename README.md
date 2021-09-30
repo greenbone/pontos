@@ -5,7 +5,7 @@
 [![GitHub releases](https://img.shields.io/github/release/greenbone/pontos.svg)](https://github.com/greenbone/pontos/releases)
 [![PyPI release](https://img.shields.io/pypi/v/pontos.svg)](https://pypi.org/project/pontos/)
 [![code test coverage](https://codecov.io/gh/greenbone/pontos/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/pontos)
-[![Build and test](https://github.com/greenbone/pontos/actions/workflows/ci.yml/badge.svg)](https://github.com/greenbone/pontos/actions/workflows/ci.yml)
+[![Build and test](https://github.com/greenbone/pontos/actions/workflows/ci-python.yml/badge.svg)](https://github.com/greenbone/pontos/actions/workflows/ci-python.yml)
 
 The **pontos** Python package is a collection of utilities, tools, classes and
 functions maintained by [Greenbone Networks].
@@ -96,7 +96,7 @@ first.
 
 ## License
 
-Copyright (C) 2020 [Greenbone Networks GmbH][Greenbone Networks]
+Copyright (C) 2020-2021 [Greenbone Networks GmbH][Greenbone Networks]
 
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
