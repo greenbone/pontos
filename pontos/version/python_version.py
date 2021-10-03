@@ -191,7 +191,6 @@ class PythonVersionCommand(VersionCommand):
 
         if not self.version_file_path.exists():
             self.version_file_path.touch()
-
         elif not force and versions_equal(
             new_version, self.get_current_version()
         ):
