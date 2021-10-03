@@ -17,23 +17,18 @@
 
 from pathlib import Path
 import subprocess
-from typing import Union
-from packaging import version
 
-from .helper import (
-    VersionError,
-    initialize_default_parser,
-)
+from .helper import VersionError, strip_version
+from .version import VersionCommand
 
 # This class is used for Python Version command(s)
-class GoVersionCommand:
-    def __init__(self, *, go_mod_path: Path = None) -> None:
-        self.go_mod_path = go_mod_path
-        if not self.go_mod_path:
-            self.go_mod_path = Path.cwd() / 'go.mod'
+class GoVersionCommand(VersionCommand):
+    def __init__(self, *, project_file_path: Path = None) -> None:
+        if not project_file_path:
+            project_file_path = Path.cwd() / 'go.mod'
 
-        if not self.go_mod_path.exists():
-            raise VersionError(f'{str(self.go_mod_path)} file not found.')
+        if not project_file_path.exists():
+            raise VersionError(f'{str(project_file_path)} file not found.')
 
         self.shell_cmd_runner = lambda x: subprocess.run(
             x,
@@ -44,55 +39,34 @@ class GoVersionCommand:
             stderr=subprocess.PIPE,
         )
 
-        self._configure_parser()
-
-    def _configure_parser(self):
-        self.parser = initialize_default_parser()
-
-    def _print(self, *args) -> None:
-        if not self.__quiet:
-            print(*args)
+        super().__init__(
+            project_file_path=project_file_path,
+        )
 
     def get_current_version(self) -> str:
+        """Get the current version of this project"""
         try:
             proc = self.shell_cmd_runner(
                 'git describe --tags `git rev-list --tags --max-count=1`'
             )
-            return str(version.parse(proc.stdout))
+            version_str = strip_version(proc.stdout)
+            return version_str if version_str is not None else ""
         except subprocess.CalledProcessError:
             self._print(
                 'No version tag found. Maybe this '
                 'module has not been released at all.'
             )
 
-    def print_current_version(self) -> None:
-        version_str = self.get_current_version()
-        if version_str:
-            self._print(version_str)
+    def verify_version(self, version_str: str) -> None:
+        """Verify the current version of this project"""
+        self._print(
+            'Golang does not provide a file containing the version. '
+            f'Thus {version_str} can not be verified.'
+        )
 
-    def run(self, args=None) -> Union[int, str]:
-        args = self.parser.parse_args(args)
-
-        if not getattr(args, 'command', None):
-            self.parser.print_usage()
-            return 0
-
-        self.__quiet = args.quiet
-
-        if not self.go_mod_path.exists():
-            raise VersionError(f'Could not find {str(self.go_mod_path)} file.')
-
-        try:
-            if args.command == 'update':
-                self._print(
-                    'Updating the version of a go module is not possible.'
-                )
-            elif args.command == 'show':
-                self.print_current_version()
-            elif args.command == 'verify':
-                self._print(
-                    'Golang does not provide a file containing the version. '
-                    'Thus nothing needs to be verified.'
-                )
-        except VersionError as e:
-            return str(e)
+    def update_version(
+        self, new_version: str, *, develop: bool = False, force: bool = False
+    ) -> None:
+        """Update the current version of this project"""
+        _ = (new_version, develop, force)
+        self._print('Updating the version of a go module is not possible.')

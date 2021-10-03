@@ -18,16 +18,8 @@ import sys
 from pathlib import Path
 from .__version__ import __version__
 
-from .version import (
-    PythonVersionCommand,
-    VersionCommand,
-    VersionError,
-    safe_version,
-    strip_version,
-    is_version_pep440_compliant,
-    get_version_from_pyproject_toml,
-)
-from .cmake_version import CMakeVersionParser, CMakeVersionCommand
+from .python_version import PythonVersionCommand
+from .cmake_version import CMakeVersionCommand
 from .go_version import GoVersionCommand
 
 
@@ -47,16 +39,3 @@ def main(leave=True, args=None):
     if leave:
         sys.exit("No command found")
     return False, ""
-
-
-__all__ = [
-    '__version__',
-    'CMakeVersionCommand',
-    'get_version_from_pyproject_toml',
-    'is_version_pep440_compliant',
-    'PythonVersionCommand',
-    'safe_version',
-    'strip_version',
-    'VersionCommand',
-    'VersionError',
-]

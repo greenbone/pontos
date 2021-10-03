@@ -29,20 +29,32 @@ class VersionError(Exception):
     """
 
 
-def check_develop(version: str) -> str:
+def strip_version(version_str: str) -> str:
+    """
+    Strips a leading 'v' from a version string
+
+    E.g. v1.2.3 will be converted to 1.2.3
+    """
+    if version_str and version_str[0] == 'v':
+        return version_str[1:]
+
+    return version_str
+
+
+def check_develop(version_str: str) -> str:
     """
     Checks if the given Version is a develop version
 
     Returns True if yes, False if not
     """
-    return True if Version(version).dev is not None else False
+    return True if Version(version_str).dev is not None else False
 
 
-def is_version_pep440_compliant(version: str) -> bool:
+def is_version_pep440_compliant(version_str: str) -> bool:
     """
     Checks if the provided version is a PEP 440 compliant version string
     """
-    return version == safe_version(version)
+    return version_str == safe_version(version_str)
 
 
 def initialize_default_parser() -> argparse.ArgumentParser:
@@ -86,7 +98,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def safe_version(version: str) -> str:
+def safe_version(version_str: str) -> str:
     """
     Returns the version as a string in `PEP440`_ compliant
     format.
@@ -95,7 +107,14 @@ def safe_version(version: str) -> str:
        https://www.python.org/dev/peps/pep-0440
     """
     try:
-        return str(Version(version))
+        return str(Version(version_str))
     except InvalidVersion:
-        version = version.replace(' ', '.')
-        return re.sub('[^A-Za-z0-9.]+', '-', version)
+        version_str = version_str.replace(' ', '.')
+        return re.sub('[^A-Za-z0-9.]+', '-', version_str)
+
+
+def versions_equal(new_version: str, old_version: str) -> bool:
+    """
+    Checks if new_version and old_version are equal
+    """
+    return safe_version(old_version) == safe_version(new_version)
