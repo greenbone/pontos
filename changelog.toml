@@ -3,9 +3,6 @@ commit_types = [
     { message = "^remove", group = "Removed"},
     { message = "^change", group = "Changed"},
     { message = "^fix", group = "Bug Fixes"},
-    { message = "^doc", group = "Documentation"},
-    { message = "^refactor", group = "Refactor"},
-    { message = "^test", group = "Testing"},
 ]
 
 changelog_dir = "changelog"
