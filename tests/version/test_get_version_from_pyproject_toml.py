@@ -21,7 +21,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version import get_version_from_pyproject_toml, VersionError
+from pontos.version.python_version import PythonVersionCommand
+from pontos.version.helper import VersionError
 
 
 class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
@@ -34,7 +35,7 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
         with self.assertRaisesRegex(
             VersionError, 'pyproject.toml file not found'
         ):
-            get_version_from_pyproject_toml(fake_path)
+            PythonVersionCommand(project_file_path=fake_path)
 
         fake_path.exists.assert_called_with()
 
@@ -43,27 +44,34 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'pyproject.toml'
         fake_path.exists.return_value = True
-        fake_path.read_text.return_value = ''
+        fake_path.read_text.return_value = (
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
 
         with self.assertRaisesRegex(
             VersionError, 'Version information not found in pyproject.toml file'
         ):
-            get_version_from_pyproject_toml(fake_path)
+            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd._get_version_from_pyproject_toml()  # pylint: disable=protected-access
 
         fake_path.exists.assert_called_with()
         fake_path.read_text.assert_called_with(encoding='utf-8')
 
-    def test_empty_poerty_section(self):
+    def test_empty_poetry_section(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'pyproject.toml'
         fake_path.exists.return_value = True
-        fake_path.read_text.return_value = '[tool.poetry]'
+        fake_path.read_text.return_value = """
+        [tool.poetry]
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
         with self.assertRaisesRegex(
             VersionError, 'Version information not found in pyproject.toml file'
         ):
-            get_version_from_pyproject_toml(fake_path)
+            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd._get_version_from_pyproject_toml()  # pylint: disable=protected-access
 
         fake_path.exists.assert_called_with()
         fake_path.read_text.assert_called_with(encoding='utf-8')
@@ -73,9 +81,14 @@ class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'pyproject.toml'
         fake_path.exists.return_value = True
-        fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
-        version = get_version_from_pyproject_toml(fake_path)
+        cmd = PythonVersionCommand(project_file_path=fake_path)
+        # pylint: disable=protected-access
+        version = cmd._get_version_from_pyproject_toml()
 
         self.assertEqual(version, '1.2.3')
 

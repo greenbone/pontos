@@ -17,7 +17,7 @@
 
 import unittest
 
-from pontos.version import safe_version
+from pontos.version.helper import safe_version
 
 
 class SafeVersionTestCase(unittest.TestCase):

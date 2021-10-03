@@ -17,7 +17,7 @@
 
 import unittest
 
-from pontos.version import is_version_pep440_compliant
+from pontos.version.helper import is_version_pep440_compliant
 
 
 class IsVersionPep440CompliantTestCase(unittest.TestCase):
