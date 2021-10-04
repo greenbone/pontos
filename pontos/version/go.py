@@ -17,8 +17,14 @@
 
 from pathlib import Path
 import subprocess
+from subprocess import CalledProcessError
 
-from .helper import VersionError, strip_version, is_version_pep440_compliant
+from .helper import (
+    VersionError,
+    strip_version,
+    is_version_pep440_compliant,
+    versions_equal,
+)
 from .version import VersionCommand
 
 # This class is used for Python Version command(s)
@@ -53,18 +59,23 @@ class GoVersionCommand(VersionCommand):
             )
             version = strip_version(proc.stdout)
             return version if version is not None else ""
-        except subprocess.CalledProcessError:
+        except CalledProcessError as e:
             self._print(
                 'No version tag found. Maybe this '
                 'module has not been released at all.'
             )
+            raise e
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
-        if not is_version_pep440_compliant(version):
-            raise VersionError(f"Version {version} is not PEP 440 compliant.")
+        current_version = self.get_current_version()
+        if not is_version_pep440_compliant(current_version):
+            raise VersionError(
+                f"The version {current_version} is not PEP 440 compliant."
+            )
 
-        self._print('OK')
+        if versions_equal(self.get_current_version(), version):
+            self._print('OK')
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False

@@ -16,14 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=W0212
+
+
 import unittest
 import contextlib
 import io
+import subprocess
 
 from dataclasses import dataclass
 
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from pontos.version.go import GoVersionCommand
 from pontos.version.helper import VersionError
 
@@ -70,3 +74,59 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
                 called,
             )
             self.assertEqual(buf.getvalue(), '21.22\n')
+
+    @patch('pontos.version.go.subprocess', autospec=True)
+    def test_should_raising_exception(self, mock_subprocess):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.__str__.return_value = 'go.mod'
+        fake_path.exists.return_value = True
+
+        mock_subprocess.run.side_effect = subprocess.CalledProcessError(
+            returncode=2,
+            cmd=["'git describe --tags `git rev-list --tags --max-count=1`'"],
+        )
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            result = GoVersionCommand(project_file_path=fake_path).run(
+                args=['show']
+            )
+            print(result)
+
+    def test_verify_branch(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.__str__.return_value = 'go.mod'
+        fake_path.exists.return_value = True
+
+        GoVersionCommand.get_current_version = MagicMock(return_value='21.0.1')
+        print_mock = MagicMock()
+        GoVersionCommand._print = print_mock
+
+        GoVersionCommand(project_file_path=fake_path).run(
+            args=['verify', '21.0.1']
+        )
+
+        print_mock.assert_called_with('OK')
+
+    def test_verify_branch_not_pep(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.__str__.return_value = 'go.mod'
+        fake_path.exists.return_value = True
+
+        GoVersionCommand.get_current_version = MagicMock(return_value='021.02a')
+
+        # with self.assertRaises(
+        #     VersionError,
+        # ):
+        result = GoVersionCommand(project_file_path=fake_path).run(
+            args=['verify', '021.02a']
+        )
+
+        self.assertTrue(
+            isinstance(result, str), "expected result to be an error string"
+        )
+        self.assertEqual(
+            result, 'The version 021.02a is not PEP 440 compliant.'
+        )
