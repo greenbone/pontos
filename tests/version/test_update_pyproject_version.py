@@ -25,7 +25,7 @@ from unittest.mock import MagicMock
 import tomlkit
 
 from pontos.version.helper import VersionError
-from pontos.version.python_version import PythonVersionCommand
+from pontos.version.python import PythonVersionCommand
 
 
 class UpdatePyprojectVersionTestCase(unittest.TestCase):

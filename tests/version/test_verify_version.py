@@ -22,7 +22,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version.python_version import PythonVersionCommand
+from pontos.version.python import PythonVersionCommand
 from pontos.version.helper import VersionError
 
 

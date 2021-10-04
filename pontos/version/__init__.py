@@ -18,9 +18,9 @@ import sys
 from pathlib import Path
 from .__version__ import __version__
 
-from .python_version import PythonVersionCommand
-from .cmake_version import CMakeVersionCommand
-from .go_version import GoVersionCommand
+from .python import PythonVersionCommand
+from .cmake import CMakeVersionCommand
+from .go import GoVersionCommand
 
 
 def main(leave=True, args=None):

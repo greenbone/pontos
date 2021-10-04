@@ -150,7 +150,7 @@ class PythonVersionCommand(VersionCommand):
 
         return version_module.__version__
 
-    def verify_version(self, version_str: str) -> None:
+    def verify_version(self, version: str) -> None:
         current_version = self.get_current_version()
         if not is_version_pep440_compliant(current_version):
             raise VersionError(
@@ -167,8 +167,8 @@ class PythonVersionCommand(VersionCommand):
                 f"version {current_version}."
             )
 
-        if version_str != 'current':
-            provided_version = strip_version(version_str)
+        if version != 'current':
+            provided_version = strip_version(version)
             if provided_version != current_version:
                 raise VersionError(
                     f"Provided version {provided_version} does not match the "

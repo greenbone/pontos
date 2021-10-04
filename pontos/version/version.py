@@ -51,7 +51,7 @@ class VersionCommand:
         """Get the current version of this project"""
         # implementme.
 
-    def verify_version(self, version_str: str) -> None:
+    def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
         # implementme.
 

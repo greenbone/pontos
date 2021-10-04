@@ -18,7 +18,7 @@
 from pathlib import Path
 import subprocess
 
-from .helper import VersionError, strip_version
+from .helper import VersionError, strip_version, is_version_pep440_compliant
 from .version import VersionCommand
 
 # This class is used for Python Version command(s)
@@ -44,25 +44,27 @@ class GoVersionCommand(VersionCommand):
         )
 
     def get_current_version(self) -> str:
-        """Get the current version of this project"""
+        """Get the current version of this project
+        In go the version is only defined within the repository
+        tags, thus we need to check git, what tag is the latest"""
         try:
             proc = self.shell_cmd_runner(
                 'git describe --tags `git rev-list --tags --max-count=1`'
             )
-            version_str = strip_version(proc.stdout)
-            return version_str if version_str is not None else ""
+            version = strip_version(proc.stdout)
+            return version if version is not None else ""
         except subprocess.CalledProcessError:
             self._print(
                 'No version tag found. Maybe this '
                 'module has not been released at all.'
             )
 
-    def verify_version(self, version_str: str) -> None:
+    def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
-        self._print(
-            'Golang does not provide a file containing the version. '
-            f'Thus {version_str} can not be verified.'
-        )
+        if not is_version_pep440_compliant(version):
+            raise VersionError(f"Version {version} is not PEP 440 compliant.")
+
+        self._print('OK')
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False

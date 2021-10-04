@@ -18,7 +18,7 @@
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
-from pontos.version.cmake_version import CMakeVersionParser, CMakeVersionCommand
+from pontos.version.cmake import CMakeVersionParser, CMakeVersionCommand
 from pontos.version.helper import VersionError
 
 # pylint: disable=W0212
