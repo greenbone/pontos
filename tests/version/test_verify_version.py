@@ -135,3 +135,23 @@ class VerifyVersionTestCase(unittest.TestCase):
         cmd.verify_version('1.2.3')
 
         print_mock.assert_called_with('OK')
+
+    def test_verify_branch(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "21.0.1"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
+        fake_path.exists.return_value = True
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='21.0.1'
+        )
+        print_mock = MagicMock()
+        PythonVersionCommand._print = print_mock
+
+        PythonVersionCommand(project_file_path=fake_path).run(
+            args=['verify', '21.0.1']
+        )
+
+        print_mock.assert_called_with('OK')
