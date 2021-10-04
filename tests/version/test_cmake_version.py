@@ -18,7 +18,8 @@
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
-from pontos.version import CMakeVersionParser, VersionError, CMakeVersionCommand
+from pontos.version.cmake import CMakeVersionParser, CMakeVersionCommand
+from pontos.version.helper import VersionError
 
 # pylint: disable=W0212
 
@@ -30,7 +31,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = False
         with self.assertRaises(VersionError):
-            CMakeVersionCommand(cmake_lists_path=fake_path)
+            CMakeVersionCommand(project_file_path=fake_path)
 
     def test_raise_exception_no_project(self):
         fake_path_class = MagicMock(spec=Path)
@@ -39,7 +40,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
         with self.assertRaises(ValueError):
-            CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
+            CMakeVersionCommand(project_file_path=fake_path).run(args=['show'])
         fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_return_error_string_incorrect_version_on_verify(self):
@@ -48,7 +49,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
-        result = CMakeVersionCommand(cmake_lists_path=fake_path).run(
+        result = CMakeVersionCommand(project_file_path=fake_path).run(
             args=['verify', 'so_much_version_so_much_wow']
         )
         self.assertTrue(
@@ -61,7 +62,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
-        result = CMakeVersionCommand(cmake_lists_path=fake_path).run(
+        result = CMakeVersionCommand(project_file_path=fake_path).run(
             args=['verify', '21.4']
         )
         self.assertEqual(0, result)
@@ -72,7 +73,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = "project(VERSION 21)"
-        CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
+        CMakeVersionCommand(project_file_path=fake_path).run(args=['show'])
         fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_raise_update_version(self):
@@ -83,7 +84,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.read_text.return_value = (
             "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)"
         )
-        CMakeVersionCommand(cmake_lists_path=fake_path).run(
+        CMakeVersionCommand(project_file_path=fake_path).run(
             args=['update', '22', '--develop']
         )
         fake_path.read_text.assert_called_with(encoding='utf-8')

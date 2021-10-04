@@ -17,7 +17,7 @@
 
 import unittest
 
-from pontos.version import VersionCommand
+from pontos.version.version import VersionCommand
 
 
 class FooVersionCommand(VersionCommand):

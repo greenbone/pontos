@@ -34,7 +34,7 @@ from pontos.terminal import error, warning, info, ok, out, overwrite
 from pontos.terminal.terminal import Signs
 from pontos.version.helper import VersionError
 from pontos.version import (
-    PontosVersionCommand,
+    PythonVersionCommand,
     CMakeVersionCommand,
 )
 
@@ -251,7 +251,7 @@ def get_current_version() -> str:
 
     available_cmds = [
         ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PontosVersionCommand),
+        ('pyproject.toml', PythonVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name

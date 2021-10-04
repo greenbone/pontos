@@ -29,6 +29,18 @@ class VersionError(Exception):
     """
 
 
+def strip_version(version: str) -> str:
+    """
+    Strips a leading 'v' from a version string
+
+    E.g. v1.2.3 will be converted to 1.2.3
+    """
+    if version and version[0] == 'v':
+        return version[1:]
+
+    return version
+
+
 def check_develop(version: str) -> str:
     """
     Checks if the given Version is a develop version
@@ -99,3 +111,10 @@ def safe_version(version: str) -> str:
     except InvalidVersion:
         version = version.replace(' ', '.')
         return re.sub('[^A-Za-z0-9.]+', '-', version)
+
+
+def versions_equal(new_version: str, old_version: str) -> bool:
+    """
+    Checks if new_version and old_version are equal
+    """
+    return safe_version(old_version) == safe_version(new_version)

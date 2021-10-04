@@ -19,7 +19,7 @@ import unittest
 
 from unittest.mock import MagicMock
 
-from pontos.version import VersionCommand
+from pontos.version.version import VersionCommand
 
 
 class PrintCurrentVersionTestCase(unittest.TestCase):
