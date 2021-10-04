@@ -15,7 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
+import contextlib
+import io
+
 from pathlib import Path
 from unittest.mock import MagicMock
 from pontos.version.cmake import CMakeVersionParser, CMakeVersionCommand
@@ -42,6 +46,12 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             CMakeVersionCommand(project_file_path=fake_path).run(args=['show'])
         fake_path.read_text.assert_called_with(encoding='utf-8')
+
+    def test_raise_exception_file_not_found(self):
+        with self.assertRaises(
+            VersionError, msg="CMakeLists.txt file not found"
+        ):
+            CMakeVersionCommand()
 
     def test_return_error_string_incorrect_version_on_verify(self):
         fake_path_class = MagicMock(spec=Path)
@@ -91,6 +101,21 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.write_text.assert_called_with(
             'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)', encoding='utf-8'
         )
+
+    def test_update_version_equal_not_force(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.__str__.return_value = 'CMakeLists.txt'
+        fake_path.exists.return_value = True
+        fake_path.read_text.return_value = (
+            "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)"
+        )
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            CMakeVersionCommand(project_file_path=fake_path).run(
+                args=['update', '22', '--develop']
+            )
+            self.assertEqual(buf.getvalue(), 'Version is already up-to-date.\n')
+            fake_path.read_text.assert_called_with(encoding='utf-8')
 
 
 class CMakeVersionParserTestCase(unittest.TestCase):
