@@ -69,10 +69,14 @@ class CMakeVersionCommand(VersionCommand):
         return CMakeVersionParser(content).get_current_version()
 
     def verify_version(self, version: str):
-        if not is_version_pep440_compliant(version):
-            raise VersionError(f"Version {version} is not PEP 440 compliant.")
+        current_version = self.get_current_version()
+        if not is_version_pep440_compliant(current_version):
+            raise VersionError(
+                f"The version {current_version} is not PEP 440 compliant."
+            )
 
-        self._print('OK')
+        if versions_equal(self.get_current_version(), version):
+            self._print('OK')
 
 
 class CMakeVersionParser:

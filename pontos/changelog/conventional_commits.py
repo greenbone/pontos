@@ -85,7 +85,9 @@ class ChangelogBuilder:
             for commit in commits:
                 commit = commit.split(' ', maxsplit=1)
                 for commit_type in commit_types:
-                    reg = re.compile(f'{commit_type["message"]}\\W', flags=re.I)
+                    reg = re.compile(
+                        f'{commit_type["message"]}[\\W\\S]', flags=re.I
+                    )
                     match = reg.match(commit[1])
                     if match:
                         cleaned_msg = (
