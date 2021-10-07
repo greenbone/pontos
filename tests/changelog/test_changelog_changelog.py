@@ -27,7 +27,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master 
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main 
 """
 
 
@@ -66,7 +66,7 @@ so much
 so little
 ### changed
 I don't recognize it anymore
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master 
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main 
 """
 
         _, result = changelog.update(test_md, '', '')

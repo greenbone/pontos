@@ -79,7 +79,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master"""
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main"""
 
         test_md = unreleased
         released_md = released
@@ -97,7 +97,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main
 
 ## [1.2.3] - {date.today().isoformat()}
 ### fixed
@@ -118,7 +118,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main
 
 ## [1.2.3] (Unreleased)
 ### fixed
@@ -128,7 +128,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main
 """
 
         released = f"""
@@ -171,7 +171,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...master"""
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main"""
         test_md_template = """# Changelog
 something, somehing
 - unreleased

@@ -68,7 +68,7 @@ if it has been lost.
   ```sh
   git remote add upstream git@github.com:greenbone/pontos.git
   git fetch upstream
-  git rebase update/master
+  git rebase update/main
   ```
 
 * Get the current version number
@@ -141,7 +141,7 @@ You have different options to set the version for your next release within the `
 
 * If you use a "non-Greenbone" project, you must set the argument `--space <my-workspace>`
 * You can set the `--project` argument, to specify the project you want to work with, but pontos can guess the project otherwise
-* If you want to use conventional commits parsed from `git log` you need to set `-CC`/`--conventional-commits` and you will need to provide a [`changelog.toml`](https://github.com/greenbone/pontos/blob/master/changelog.toml), where the conventional commits are defined and pass the path to it with `--conventional-commits-config`, if it is not in the repository root directory
+* If you want to use conventional commits parsed from `git log` you need to set `-CC`/`--conventional-commits` and you will need to provide a [`changelog.toml`](https://github.com/greenbone/pontos/blob/main/changelog.toml), where the conventional commits are defined and pass the path to it with `--conventional-commits-config`, if it is not in the repository root directory
 * You can give an alternative path to the `CHANGELOG.md` via `--changelog`
 * Set a custom git `tag` prefix with `--git-tag-prefix`
 * You may set your git signing key fingerprint with `--git-signing-key`, for signed commits
