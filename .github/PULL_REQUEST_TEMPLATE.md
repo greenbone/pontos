@@ -28,5 +28,5 @@
 <!-- to check an item, place an "x" in the box like so: "- [x] Tests" -->
 
 - [ ] Tests
-- [ ] [CHANGELOG](https://github.com/greenbone/pontos/blob/master/CHANGELOG.md) Entry
+- [ ] [CHANGELOG](https://github.com/greenbone/pontos/blob/main/CHANGELOG.md) Entry
 - [ ] Documentation

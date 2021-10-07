@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Require method and condition arguments for modify_alert with an event [#267](https://github.com/greenbone/python-gvm/pull/267)
 
-[Unreleased]: https://github.com/greenbone/python-gvm/compare/v1.6.0...master
+[Unreleased]: https://github.com/greenbone/python-gvm/compare/v1.6.0...main
 
 ## [1.6.0] - 2020-06-10
 

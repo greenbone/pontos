@@ -31,7 +31,7 @@ __UNRELEASED_FOOTER_MATCHER = re.compile('unreleased', re.IGNORECASE)
 __UNRELEASED_HEADER_MATCHER = re.compile(
     r'[\(\[]{1}[0-9\.]*.*?[Uu]nreleased[\)\]]{1}'
 )
-__MASTER_MATCHER = re.compile('master|HEAD')
+__MASTER_MATCHER = re.compile('master|main|HEAD')
 
 __UNRELEASED_SKELETON = """## [Unreleased]
 ### Added
