@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2020-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -27,7 +27,10 @@ class ChangelogError(Exception):
     """
 
 
-__UNRELEASED_MATCHER = re.compile('unreleased', re.IGNORECASE)
+__UNRELEASED_FOOTER_MATCHER = re.compile('unreleased', re.IGNORECASE)
+__UNRELEASED_HEADER_MATCHER = re.compile(
+    r'[\(\[]{1}[0-9\.]*.*?[Uu]nreleased[\)\]]{1}'
+)
 __MASTER_MATCHER = re.compile('master|HEAD')
 
 __UNRELEASED_SKELETON = """## [Unreleased]
@@ -50,7 +53,7 @@ def add_skeleton(
     git_tag_prefix: str = 'v',
     git_space: str = 'greenbone',
 ) -> str:
-    git_tag = '{}{}'.format(git_tag_prefix, new_version)
+    git_tag = f'{git_tag_prefix}{new_version}'
     tokens = _tokenize(markdown)
     updated_markdown = ''
 
@@ -79,7 +82,7 @@ def update(
     returns updated markdown and change log for further processing.
     """
 
-    git_tag = '{}{}'.format(git_tag_prefix, new_version)
+    git_tag = f'{git_tag_prefix}{new_version}'
     tokens = _tokenize(markdown)
     unreleased_heading_count = 0
     changelog = ''
@@ -138,12 +141,12 @@ def _prepare_changelog(
 
         if tt == 'unreleased':
             if new_version:
-                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
-                tc += ' - {}'.format(date.today().isoformat())
+                tc = __UNRELEASED_HEADER_MATCHER.sub(f'[{new_version}]', tc)
+                tc += f' - {date.today().isoformat()}'
             output += tc
         elif tt == 'unreleased_link':
             if new_version:
-                tc = __UNRELEASED_MATCHER.sub(new_version, tc)
+                tc = __UNRELEASED_FOOTER_MATCHER.sub(new_version, tc)
                 tc = __MASTER_MATCHER.sub(git_tag, tc)
             unreleased_link += tc + '\n\n'
         elif 'kw_' in tt:
@@ -204,8 +207,6 @@ def _tokenize(
 ) -> List[Tuple[int, str, int, str],]:
     toks, remainder = __CHANGELOG_SCANNER.scan(markdown)
     if remainder != '':
-        raise ChangelogError(
-            "unrecognized tokens in markdown: {}".format(remainder)
-        )
+        raise ChangelogError(f"unrecognized tokens in markdown: {remainder}")
 
     return toks

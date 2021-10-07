@@ -17,7 +17,7 @@
 
 import unittest
 
-from pontos.version import strip_version
+from pontos.version.helper import strip_version
 
 
 class StripVersionTestCase(unittest.TestCase):

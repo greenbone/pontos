@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2020-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -17,90 +17,66 @@
 
 
 import re
-import traceback
 
-from typing import Tuple, Generator, Union
+from typing import Tuple, Generator
 from pathlib import Path
 
-from .version import (
+from packaging.version import Version
+
+from .helper import (
+    check_develop,
+    safe_version,
     is_version_pep440_compliant,
     VersionError,
-    initialize_default_parser,
+    versions_equal,
 )
+from .version import VersionCommand
 
 
-class CMakeVersionCommand:
-    __cmake_filepath = None
-    __quiet = False
+class CMakeVersionCommand(VersionCommand):
+    project_file_path = None
 
-    def __init__(self, *, cmake_lists_path: Path = None):
-        if not cmake_lists_path:
-            cmake_lists_path = Path.cwd() / 'CMakeLists.txt'
-        if not cmake_lists_path.exists():
-            raise VersionError(
-                '{} file not found.'.format(str(cmake_lists_path))
-            )
+    def __init__(self, *, project_file_path: Path = None):
+        if not project_file_path:
+            project_file_path = Path.cwd() / 'CMakeLists.txt'
+        if not project_file_path.exists():
+            raise VersionError(f'{str(project_file_path)} file not found.')
 
-        self.__cmake_filepath = cmake_lists_path
-        self.parser = initialize_default_parser()
-
-    def run(self, args=None) -> Union[int, str]:
-        commandline_arguments = self.parser.parse_args(args)
-
-        if not getattr(commandline_arguments, 'command', None):
-            self.parser.print_usage()
-            return 0
-
-        self.__quiet = commandline_arguments.quiet
-
-        try:
-            if commandline_arguments.command == 'update':
-                self.update_version(
-                    commandline_arguments.version,
-                    develop=commandline_arguments.develop,
-                )
-            elif commandline_arguments.command == 'show':
-                self.print_current_version()
-            elif commandline_arguments.command == 'verify':
-                self.verify_version(commandline_arguments.version)
-        except VersionError as e:
-            traceback.print_exc()
-            return str(e)
-
-        return 0
-
-    def __print(self, *args):
-        if not self.__quiet:
-            print(*args)
-
-    def update_version(self, version: str, *, develop: bool = False):
-        self.__print("in update: {}, {}".format(version, develop))
-        content = self.__cmake_filepath.read_text()
-        cmvp = CMakeVersionParser(content)
-        previous_version = cmvp.get_current_version()
-        new_content = cmvp.update_version(version, develop=develop)
-        self.__cmake_filepath.write_text(new_content)
-        self.__print(
-            'Updated version from {} to {}'.format(previous_version, version)
+        super().__init__(
+            project_file_path=project_file_path,
         )
 
-    def print_current_version(self):
-        content = self.__cmake_filepath.read_text()
+    def update_version(
+        self, new_version: str, *, develop: bool = False, force: bool = False
+    ):
+        content = self.project_file_path.read_text(encoding='utf-8')
         cmvp = CMakeVersionParser(content)
-        self.__print(cmvp.get_current_version())
+        previous_version = self.get_current_version()
+
+        if not force and versions_equal(new_version, previous_version):
+            self._print('Version is already up-to-date.')
+            return
+
+        new_content = cmvp.update_version(new_version, develop=develop)
+        self.project_file_path.write_text(new_content, encoding='utf-8')
+        self._print(f'Updated version from {previous_version} to {new_version}')
+
+    def print_current_version(self):
+        self._print(self.get_current_version())
 
     def get_current_version(self) -> str:
-        content = self.__cmake_filepath.read_text()
-        cmvp = CMakeVersionParser(content)
-        return cmvp.get_current_version()
+        content = self.project_file_path.read_text(encoding='utf-8')
+        return CMakeVersionParser(content).get_current_version()
 
     def verify_version(self, version: str):
-        if not is_version_pep440_compliant(version):
+        current_version = self.get_current_version()
+        if not is_version_pep440_compliant(current_version):
             raise VersionError(
-                "Version {} is not PEP 440 compliant.".format(version)
+                f"The version {current_version} is not PEP 440 compliant."
             )
 
-        self.__print('OK')
+        if versions_equal(self.get_current_version(), version):
+            self._print('OK')
 
 
 class CMakeVersionParser:
@@ -129,13 +105,27 @@ class CMakeVersionParser:
     )
 
     def get_current_version(self) -> str:
+        if self.is_dev_version():
+            return f'{self._current_version}.dev1'
         return self._current_version
 
     def update_version(self, new_version: str, *, develop: bool = False) -> str:
         if not is_version_pep440_compliant(new_version):
             raise VersionError(
-                "version {} is not pep 440 compliant.".format(new_version)
+                f"version {new_version} is not pep 440 compliant."
             )
+
+        new_version = safe_version(new_version)
+        if check_develop(new_version):
+            vers = Version(new_version)
+            if vers.dev is not None:
+                new_version = str(
+                    Version(
+                        f'{str(vers.major)}.{str(vers.minor)}'
+                        f'.{str(vers.micro)}'
+                    )
+                )
+            develop = True
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)
@@ -180,6 +170,8 @@ class CMakeVersionParser:
                 in_version = False
             elif token_type == 'word' and value == 'set':
                 in_set = True
+            elif in_set and token_type == 'close_bracket':
+                in_set = False
             elif (
                 in_set
                 and token_type == 'word'
@@ -204,6 +196,13 @@ class CMakeVersionParser:
             project_dev_version,
         )
 
+    def is_dev_version(self) -> bool:
+        return (
+            int(self._project_dev_version) == 1
+            if self._project_dev_version
+            else False
+        )
+
     def _tokenize(
         self, content: str
     ) -> Generator[
@@ -213,7 +212,7 @@ class CMakeVersionParser:
     ]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != '':
-            print('WARNING: unrecognized cmake tokens: {}'.format(remainder))
+            print(f'WARNING: unrecognized cmake tokens: {remainder}')
 
         line_num = 0
 

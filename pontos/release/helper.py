@@ -16,19 +16,30 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 
-from typing import Callable, Dict, List, Tuple, Union
+import datetime
 import json
-import tempfile
-from pathlib import Path
-import shutil
 import subprocess
+import sys
+import tempfile
+
+from pathlib import Path
+from typing import Callable, Dict, List, Tuple, Union
+from packaging.version import InvalidVersion, Version
 
 import requests
 
 from pontos import version
-from pontos.terminal import error, warning, info, ok, out
+from pontos.terminal import error, warning, info, ok, out, overwrite
+from pontos.terminal.terminal import Signs
+from pontos.version.helper import VersionError
+from pontos.version import (
+    PythonVersionCommand,
+    CMakeVersionCommand,
+)
+
+DEFAULT_TIMEOUT = 1000
+DEFAULT_CHUNK_SIZE = 4096
 
 
 def build_release_dict(
@@ -77,6 +88,7 @@ def commit_files(
     shell_cmd_runner: Callable,
     *,
     git_signing_key: str = '',
+    changelog: bool = False,
 ):
     """Add files to staged and commit staged files.
 
@@ -96,13 +108,54 @@ def commit_files(
 
     shell_cmd_runner(f"git add {filename}")
     shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
-    shell_cmd_runner("git add CHANGELOG.md")
+    if changelog:
+        shell_cmd_runner("git add CHANGELOG.md")
     if git_signing_key:
         shell_cmd_runner(
-            f"git commit -S {git_signing_key} -m '{commit_msg}'",
+            f"git commit -S{git_signing_key} --no-verify -m '{commit_msg}'",
         )
     else:
-        shell_cmd_runner(f"git commit -m '{commit_msg}'")
+        shell_cmd_runner(f"git commit --no-verify -m '{commit_msg}'")
+
+
+def calculate_calendar_version() -> str:
+    """find the correct next calendar version by checking latest version and
+    the today's date"""
+
+    current_version_str: str = get_current_version()
+    current_version = Version(current_version_str)
+
+    today = datetime.date.today()
+
+    if (
+        current_version.major < today.year % 100
+        or current_version.minor < today.month
+    ):
+        release_version = Version(
+            f'{str(today.year  % 100)}.{str(today.month)}.0'
+        )
+        return str(release_version)
+    elif (
+        current_version.major == today.year % 100
+        and current_version.minor == today.month
+    ):
+        if current_version.dev is None:
+            release_version = Version(
+                f'{str(today.year  % 100)}.{str(today.month)}.'
+                f'{str(current_version.micro + 1)}'
+            )
+        else:
+            release_version = Version(
+                f'{str(today.year  % 100)}.{str(today.month)}.'
+                f'{str(current_version.micro)}'
+            )
+        return str(release_version)
+    else:
+        error(
+            f"'{str(current_version)}' is higher than "
+            f"'{str(today.year  % 100)}.{str(today.month)}'."
+        )
+        sys.exit(1)
 
 
 def download(
@@ -110,6 +163,9 @@ def download(
     filename: str,
     requests_module: requests,
     path: Path,
+    *,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    timeout: int = DEFAULT_TIMEOUT,
 ) -> Path:
     """Download file in url to filename
 
@@ -123,14 +179,126 @@ def download(
        Path to the downloaded file
     """
 
-    file_path = path(tempfile.gettempdir()) / filename
+    file_path: Path = path(tempfile.gettempdir()) / filename
+    response = requests_module.get(url, stream=True, timeout=timeout)
+    total_length = response.headers.get('content-length')
 
-    with requests_module.get(url, stream=True) as resp, file_path.open(
-        mode='wb'
-    ) as download_file:
-        shutil.copyfileobj(resp.raw, download_file)
+    info(f'Downloading {url}')
+
+    if total_length is not None:  # no content length header
+        with file_path.open(mode='wb') as download_file:
+            dl = 0
+            total_length = int(total_length)
+            for content in response.iter_content(chunk_size=chunk_size):
+                dl += len(content)
+                download_file.write(content)
+                done = int(50 * dl / total_length)
+                overwrite(f"[{'=' * done}{' ' * (50-done)}]")
+    else:
+        with file_path.open(mode='wb') as download_file:
+            spinner = ['-', '\\', '|', '/']
+            i = 0
+            for content in response.iter_content(chunk_size=chunk_size):
+                i = i + 1
+                if i == 4:
+                    i = 0
+                download_file.write(content)
+                overwrite(f"[{spinner[i]}]")
+    overwrite(f"[{Signs.OK}]{' ' * 50}", new_line=True)
 
     return file_path
+
+
+def download_assets(
+    assets_url: str,
+    path: Path,
+    requests_module: requests,
+) -> List[str]:
+    """Download all .tar.gz and zip assets of a github release"""
+
+    file_paths = []
+    if not assets_url:
+        return file_paths
+
+    if assets_url:
+        assets_response = requests_module.get(assets_url)
+        if assets_response.status_code != 200:
+            error(
+                f"Wrong response status code {assets_response.status_code} for "
+                f" request {assets_url}"
+            )
+            out(json.dumps(assets_response.text, indent=4, sort_keys=True))
+        else:
+            assets_json = assets_response.json()
+            for asset_json in assets_json:
+                asset_url: str = asset_json.get('browser_download_url', '')
+                name: str = asset_json.get('name', '')
+                if name.endswith('.zip') or name.endswith('.tar.gz'):
+                    asset_path = download(
+                        asset_url,
+                        name,
+                        path=path,
+                        requests_module=requests_module,
+                    )
+                    file_paths.append(asset_path)
+
+    return file_paths
+
+
+def get_current_version() -> str:
+    """Get the current Version from a pyproject.toml or
+    a CMakeLists.txt file"""
+
+    available_cmds = [
+        ('CMakeLists.txt', CMakeVersionCommand),
+        ('pyproject.toml', PythonVersionCommand),
+    ]
+    for file_name, cmd in available_cmds:
+        project_definition_path = Path.cwd() / file_name
+        if project_definition_path.exists():
+            ok(f"Found {file_name} project definition file.")
+            current_version: str = cmd().get_current_version()
+            return current_version
+
+    error("No project settings file found")
+    sys.exit(1)
+
+
+def get_next_patch_version() -> str:
+    """find the correct next patch version by checking latest version"""
+
+    current_version_str: str = get_current_version()
+    current_version = Version(current_version_str)
+
+    if current_version.dev is not None:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro)}'
+        )
+    else:
+        release_version = Version(
+            f'{str(current_version.major)}.'
+            f'{str(current_version.minor)}.'
+            f'{str(current_version.micro + 1)}'
+        )
+
+    return str(release_version)
+
+
+def get_next_dev_version(release_version: str) -> str:
+    """Get the next dev Version from a valid version"""
+    # will be a dev1 version
+    try:
+        release_version_obj = Version(release_version)
+        next_version_obj = Version(
+            f'{str(release_version_obj.major)}.'
+            f'{str(release_version_obj.minor)}.'
+            f'{str(release_version_obj.micro + 1)}'
+        )
+        return str(next_version_obj)
+    except InvalidVersion as e:
+        raise (VersionError(e)) from None
 
 
 def get_project_name(
@@ -209,7 +377,7 @@ def update_version(
 def upload_assets(
     username: str,
     token: str,
-    pathnames: List[str],
+    file_paths: List[Path],
     github_json: Dict,
     path: Path,
     requests_module: requests,
@@ -219,19 +387,19 @@ def upload_assets(
     Arguments:
         username: The GitHub username to use for the upload
         token: That username's GitHub token
-        pathnames: List of paths to asset files
+        file_paths: List of paths to asset files
         github_json: The github dictionary, containing relevant information
-            for the uplaod
+            for the upload
         path: the python pathlib.Path module
         requests_module: the python request module
 
     Returns:
         True on success, false else
     """
-    info(f"Uploading assets: {pathnames}")
+    info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
     asset_url = github_json['upload_url'].replace('{?name,label}', '')
-    paths = [path(f'{p}.asc') for p in pathnames]
+    paths = [path(f'{str(p)}.asc') for p in file_paths]
 
     headers = {
         'Accept': 'application/vnd.github.v3+json',
@@ -239,10 +407,10 @@ def upload_assets(
     }
     auth = (username, token)
 
-    for path in paths:
-        to_upload = path.read_bytes()
+    for file_path in paths:
+        to_upload = file_path.read_bytes()
         resp = requests_module.post(
-            f"{asset_url}?name={path.name}",
+            f"{asset_url}?name={file_path.name}",
             headers=headers,
             auth=auth,
             data=to_upload,
@@ -251,11 +419,11 @@ def upload_assets(
         if resp.status_code != 201:
             error(
                 f"Wrong response status {resp.status_code}"
-                f" while uploading {path.name}"
+                f" while uploading {file_path.name}"
             )
             out(json.dumps(resp.text, indent=4, sort_keys=True))
             return False
         else:
-            ok(f"uploaded: {path.name}")
+            ok(f"Uploaded: {file_path.name}")
 
     return True

@@ -58,6 +58,10 @@ def out(message: str):
     __term.print(message)
 
 
+def overwrite(message: str, new_line: bool = False):
+    __term.print_overwrite(message, new_line=new_line)
+
+
 def _set_terminal(term: Terminal):
     global __term  # pylint: disable=global-statement, invalid-name
     __term = term

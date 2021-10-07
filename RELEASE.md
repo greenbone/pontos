@@ -4,7 +4,9 @@ Before creating a new release please do a careful consideration about the
 version number for the new release. We are following [Calendar Versioning](https://calver.org)
 and [PEP440](https://www.python.org/dev/peps/pep-0440/).
 
-## Preparing the Required Python Packages
+## Requirements
+
+### Preparing the Required Python Packages
 
 * Install development dependencies
 
@@ -18,7 +20,7 @@ and [PEP440](https://www.python.org/dev/peps/pep-0440/).
   python3 -m pip install --user --upgrade twine
   ```
 
-## Configuring the Access to the Python Package Index (PyPI)
+### Configuring the Access to the Python Package Index (PyPI)
 
 *Note:* This is only necessary for users performing the release process for the
 first time.
@@ -44,7 +46,7 @@ first time.
   username = <username>
   ```
 
-## Create a GitHub Token for uploading the release files
+### Create a GitHub Token for uploading the release files
 
 This step is only necessary if the token has to be created for the first time or
 if it has been lost.
@@ -56,11 +58,10 @@ if it has been lost.
 
   ```sh
   export GITHUB_TOKEN=<token>
-  export GITHUB_NAME=<name>
+  export GITHUB_USER=<name>
   ```
 
-
-## Prepare testing the to be released version
+### Prepare testing the to be released version
 
 * Fetch upstream changes
 
@@ -82,7 +83,7 @@ if it has been lost.
   poetry run python -m pontos.version update 22.8.2a1
   ```
 
-## Uploading to the PyPI Test Instance
+### Uploading to the PyPI Test Instance
 
 * Create a source and wheel distribution:
 
@@ -99,7 +100,7 @@ if it has been lost.
 
 * Check if the package is available at <https://test.pypi.org/project/pontos>.
 
-## Testing the Uploaded Package
+### Testing the Uploaded Package
 
 * Create a test directory:
 
@@ -123,17 +124,61 @@ if it has been lost.
   cd .. && rm -rf pontos-install-test
   ```
 
+---
+
 ## Prepare the Release
 
-* Run pontos-release prepare
+`pontos-release` is a tool for automatic GitHub releases, currently supporting Python and C programming language projects
+
+You have different options to set the version for your next release within the `pontos-release prepare` command:
+* Use `--calendar`, so `pontos` will calculate the next calendar version for you.
+* Use `--patch` and `pontos` will increment the patch version number (`x.x.0 -> x.x.1`)
+* Use `--release-version` to set the release version explicitly
+
+### Arguments for `pontos-release prepare`
+
+`pontos-release prepare` comes with some arguments, that can be set for individual preparation of your release:
+
+* If you use a "non-Greenbone" project, you must set the argument `--space <my-workspace>`
+* You can set the `--project` argument, to specify the project you want to work with, but pontos can guess the project otherwise
+* If you want to use conventional commits parsed from `git log` you need to set `-CC`/`--conventional-commits` and you will need to provide a [`changelog.toml`](https://github.com/greenbone/pontos/blob/master/changelog.toml), where the conventional commits are defined and pass the path to it with `--conventional-commits-config`, if it is not in the repository root directory
+* You can give an alternative path to the `CHANGELOG.md` via `--changelog`
+* Set a custom git `tag` prefix with `--git-tag-prefix`
+* You may set your git signing key fingerprint with `--git-signing-key`, for signed commits
+* Pontos can also automatically set the next dev version for you. If you do not explicitly set a `--next-version` it will set to the next dev version:
+  * e.g. release-version is 0.0.1, pontos will set next-version to 0.0.2.dev1
+
+### Examples
+
+* Run pontos-release prepare with an explicit release version:
 
   ```sh
   poetry run pontos-release prepare --release-version <version> --git-signing-key <your-public-gpg-key>
   ```
 
-* Check git log and tag
+* Let pontos calculate the next **calendar** version for you using the `--calendar` argument in prepare:
 
+  ```sh
+  poetry run pontos-release prepare --calendar --git-signing-key <your-public-gpg-key>
   ```
+
+* Let pontos set the next **patch** version for you using the `--patch` argument in prepare:
+
+  ```sh
+  poetry run pontos-release prepare --patch --git-signing-key <your-public-gpg-key>
+  ```
+
+* Using pontos with conventional commits and calendar:
+
+  ```sh
+  pontos-release prepare --calendar -CC --space foo --project bar
+  ```
+
+### Check if everything is correct after prepare
+
+* Check git log and tag, especially if you use conventional commits
+
+  ```sh
   git log -p
 
   # is the changelog correct?
@@ -144,52 +189,40 @@ if it has been lost.
 * If something did go wrong delete the tag, revert the commits and remove the
   temporary file for the release changelog
 
-  ```
+  ```sh
   git tag -d v<version>
   git reset <last-commit-id-before-running-pontos-release> --hard
-  rm .release.txt.md
+  rm .release.md
   ```
 
-## Prepare the Release
+---
 
-### Set the version manually
+## Release after preparation
 
-* Run pontos-release release. If you use a "non-Greenbone" project, you may set
-  the argument `--space <my-workspace>`.
+Depending on how you prepared your release you may need to use special arguments in the `pontos-release release` command.
 
-  ```sh
-  poetry run pontos-release release --release-version <version> --next-version <dev-version> --git-remote-name upstream
-  ```
+* If you used conventional commits, you need to pass the `-CC`/`--conventional-commits` flag, because you will not generate a `Unreleased` section in the `CHANGELOG.md` file.
+* If you work on a fork, you may need to set `--git-remote-name`, so the release will be placed on the original repository
+* If you use a "non-Greenbone" project, you may set the argument `--space <my-workspace>`.
 
-### Let pontos set the next version
+### Examples
 
-* You can let pontos calculate the next **calendar** version for you. Therefore you can use the `--calendar` argument in prepare:
-
-  ```sh
-  poetry run pontos-release prepare --calendar --git-signing-key <your-public-gpg-key>
-  ```
-
-* You can let pontos set the next **patch** version for you. Therefore you can use the `--patch` argument in prepare:
-
-  ```sh
-  poetry run pontos-release prepare --patch --git-signing-key <your-public-gpg-key>
-  ```
-
-### Dev version
-
-* Pontos can also automatically set the next dev version for you. If you do not explicitly set a `--next-version` it will set to the next dev version:
-  * e.g. release-version is 0.0.1, pontos will set next-version to 0.0.2.dev1
-
-## Release
+* Releasing with `CHANGELOG.md`:
 
   ```sh
   poetry run pontos-release release --git-remote-name upstream
   ```
 
-* If you use a "non-Greenbone" project, you may set the argument `--space <my-workspace>`.
+* Releasing with conventional commits:
 
   ```sh
-  poetry run pontos-release --space <my-workspace> release --git-remote-name upstream
+  poetry run pontos-release release -CC --git-remote-name upstream
+  ```
+
+* Releasing with setting the space and the git remote name:
+
+  ```sh
+  poetry run pontos-release release --space <my-workspace> --git-remote-name upstream
   ```
 
 ## Uploading to the 'real' PyPI

@@ -17,7 +17,7 @@
 
 import unittest
 
-from pontos.version import VersionError
+from pontos.version.helper import VersionError
 
 
 class VersionErrorTestCase(unittest.TestCase):

@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable = protected-access
+
 import unittest
 
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version import VersionCommand
+from pontos.version.python import PythonVersionCommand
 
 
 class UpdateVersionFileTestCase(unittest.TestCase):
@@ -28,8 +30,9 @@ class UpdateVersionFileTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
 
-        cmd = VersionCommand(version_file_path=fake_path)
-        cmd.update_version_file('22.04dev1')
+        cmd = PythonVersionCommand()
+        cmd.version_file_path = fake_path
+        cmd._update_version_file('22.04dev1')
 
         text = fake_path.write_text.call_args[0][0]
 

@@ -13,8 +13,109 @@ and this project adheres to [Calendar Versioning](https://calver.org).
 ### Removed
 ### Fixed
 
-[Unreleased]: https://github.com/greenbone/pontos/compare/v21.6.4...HEAD
+[Unreleased]: https://github.com/greenbone/pontos/compare/v21.7.4...HEAD
 
+
+## [21.7.4] - 2021-07-21
+### Changed
+* Allow to pass multiple directories to the `-d`/`--directories` argument [#163](https://github.com/greenbone/pontos/pull/163)
+* Allow to put directory globs into the exclude file and exclude all files from that directory [#163](https://github.com/greenbone/pontos/pull/163)
+
+[21.7.4]: https://github.com/greenbone/pontos/compare/v21.7.3...v21.7.4
+
+## [21.7.3] - 2021-07-20
+### Added
+- Golang support for `pontos-update-header` [#162](https://github.com/greenbone/pontos/pull/162)
+
+### Fixed
+- `pontos-update-header` will now set the correct current year, when adding a header to a new file [#162](https://github.com/greenbone/pontos/pull/162)
+
+[21.7.3]: https://github.com/greenbone/pontos/compare/v21.7.2...v21.7.3
+
+## [21.7.2] - 2021-07-07
+### Removed
+- Remove debug print in `pontos-version update` for C projects [#156](https://github.com/greenbone/pontos/pull/156)
+
+### Fixed
+- Fixing singing, `--passphrase` shall not have a default, especially not `greenbone` [#156](https://github.com/greenbone/pontos/pull/156)
+
+[21.7.2]: https://github.com/greenbone/pontos/compare/v21.7.1...v21.7.2
+
+## [21.7.1] - 2021-07-02
+### Fixed
+* Do not print passphrase [#150](https://github.com/greenbone/pontos/pull/150)
+
+[21.7.1]: https://github.com/greenbone/pontos/compare/v21.7.0...v21.7.1
+
+## [21.7.0] - 2021-07-02
+### Added
+* Add pontos-update-header option to ignore files [#144](https://github.com/greenbone/pontos/pull/144)
+
+[21.7.0]: https://github.com/greenbone/pontos/compare/v21.6.13...v21.7.0
+
+## [21.6.13] - 2021-06-29
+### Added
+* `pontos-release`: You can use `sign` now headless (without passphrase prompt) by passing it per arugment. [#148](https://github.com/greenbone/pontos/pull/148)
+
+[21.6.13]: https://github.com/greenbone/pontos/compare/v21.6.12...v21.6.13
+
+## [21.6.12] - 2021-06-25
+### Added
+* `pontos-release`: Added a Progress bar to see download progress of large assets. [#145](https://github.com/greenbone/pontos/pull/145)
+* `terminal`: Added `out_flush()` that reprints in the same line. [#145](https://github.com/greenbone/pontos/pull/145)
+
+### Fixed
+* `pontos-release`: Set Chunksize (4096) so big assets will download faster. [#145](https://github.com/greenbone/pontos/pull/145)
+
+[21.6.12]: https://github.com/greenbone/pontos/compare/v21.6.11...v21.6.12
+
+## [21.6.11] - 2021-06-24
+### Fixed
+* Use --no-verify on git commit, so `pontos-release` is not interrupted by hooks. [#143](https://github.com/greenbone/pontos/pull/143)
+
+[21.6.11]: https://github.com/greenbone/pontos/compare/v21.6.10...v21.6.11
+
+## [21.6.10] - 2021-06-24
+### Changed
+* `pontos-version` you can use both `--develop` or a version with `x.x.x.dev1` to set a develop version. [#141](https://github.com/greenbone/pontos/pull/141)
+### Fixed
+* Fixed creating signature files for tarballs and zip files from GitHub releases [#142](https://github.com/greenbone/pontos/pull/142)
+* `pontos-release` setting correct version after release in Python projects. [#141](https://github.com/greenbone/pontos/pull/141)
+
+[21.6.10]: https://github.com/greenbone/pontos/compare/v21.6.9...v21.6.10
+
+## [21.6.9] - 2021-06-24
+### Added
+* Sign all tarballs and zip files from the released assets too [#139](https://github.com/greenbone/pontos/pull/139)
+
+### Changed
+* Improve generated git commit messages for and after a release [#138](https://github.com/greenbone/pontos/pull/138)
+* Signature files now have the filename `<project>-<release-version>.<postfix>.asc` [#139](https://github.com/greenbone/pontos/pull/139)
+
+[21.6.9]: https://github.com/greenbone/pontos/compare/v21.6.7...v21.6.9
+
+## [21.6.7] - 2021-06-23
+### Added
+* Add header templates for .xsl files [#136](https://github.com/greenbone/pontos/pull/136)
+
+### Fixed
+* Correctly check if `dev` version is set in `get_current_version()`. [#137](https://github.com/greenbone/pontos/pull/137)
+
+[21.6.7]: https://github.com/greenbone/pontos/compare/v21.6.5...v21.6.7
+
+## [21.6.5] - 2021-06-23
+### Added
+* Added some output to `version` helper. [#134](https://github.com/greenbone/pontos/pull/134)
+### Changed
+* `pontos-release` checks now if there is a `unreleased` section in the `CHANGELOG.md` for the given release version, instead of using everything that is `unreleased`. If it doesn't find the version, it will look for a general `unreleased` section (like before). [#133](https://github.com/greenbone/pontos/pull/133)
+* Improve setting dev-version after release. [#135](https://github.com/greenbone/pontos/pull/135)
+
+### Fixed
+* Fix dev-version check in CMakeLists.txt. [#135](https://github.com/greenbone/pontos/pull/135)
+* The replacement of the `unreleased` section in the `CHANGELOG.md`. [#133](https://github.com/greenbone/pontos/pull/133)
+  * e.g. it is able to handle `## [2.1.3] (unreleased)` now and will convert it correctly to `## [2.1.3] - 22.06.2020`
+
+[21.6.5]: https://github.com/greenbone/pontos/compare/v21.6.4...v21.6.5
 
 ## [21.6.4] - 2021-06-22
 ### Added

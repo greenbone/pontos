@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Greenbone Networks GmbH
+# Copyright (C) 2019-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -27,15 +27,15 @@ TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
 
 class Signs(Enum):
-    FAIL = u'\N{HEAVY MULTIPLICATION X}'
-    ERROR = u'\N{MULTIPLICATION SIGN}'
-    WARNING = u'\N{WARNING SIGN}'
-    OK = u'\N{CHECK MARK}'
-    INFO = u'\N{INFORMATION SOURCE}'
+    FAIL = '\N{HEAVY MULTIPLICATION X}'
+    ERROR = '\N{MULTIPLICATION SIGN}'
+    WARNING = '\N{WARNING SIGN}'
+    OK = '\N{CHECK MARK}'
+    INFO = '\N{INFORMATION SOURCE}'
     NONE = ' '
 
     def __str__(self):
-        return '{}'.format(self.value)
+        return f'{self.value}'
 
 
 STATUS_LEN = 2
@@ -59,14 +59,19 @@ class Terminal:
         status: Signs,
         color: Callable,
         style: Callable,
+        *,
+        new_line: bool = True,
+        overwrite: bool = False,
     ) -> None:
         first_line = ''
+        if overwrite:
+            first_line = '\r'
         output = ''
         width = self.get_width()
         if status == Signs.NONE:
             first_line += '  '
         else:
-            first_line += '{} '.format(color(status))
+            first_line += f'{color(status)} '
         if self._indent > 0:
             first_line += ' ' * self._indent
         usable_width = width - STATUS_LEN - self._indent
@@ -74,9 +79,12 @@ class Terminal:
             part_line = ' ' * (self._indent + STATUS_LEN)
             part = message[:usable_width]
             message = message[usable_width:]
-            output += '{}{}\n'.format(part_line, part)
-        output += '{}{}'.format(first_line, message)
-        print(style(output))
+            output += f'{part_line}{part}\n'
+        output += f'{first_line}{message}'
+        if new_line:
+            print(style(output))
+        else:
+            print(style(output), end='', flush=True)
 
     @contextmanager
     def indent(self, indentation: int = 4) -> Generator:
@@ -96,6 +104,19 @@ class Terminal:
     def print(self, *messages: str, style: Callable = cf.reset) -> None:
         message = ''.join(messages)
         self._print_status(message, Signs.NONE, cf.white, style)
+
+    def print_overwrite(
+        self, *messages: str, style: Callable = cf.reset, new_line: bool = False
+    ) -> None:
+        message = ''.join(messages)
+        self._print_status(
+            message,
+            Signs.NONE,
+            cf.white,
+            style,
+            new_line=new_line,
+            overwrite=True,
+        )
 
     def ok(self, message: str, style: Callable = cf.reset) -> None:
         self._print_status(message, Signs.OK, cf.green, style)

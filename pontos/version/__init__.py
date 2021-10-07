@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2020-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -18,28 +18,16 @@ import sys
 from pathlib import Path
 from .__version__ import __version__
 
-from .version import (
-    PontosVersionCommand,
-    VersionCommand,
-    VersionError,
-    safe_version,
-    strip_version,
-    is_version_pep440_compliant,
-    get_version_from_pyproject_toml,
-)
-from .cmake_version import CMakeVersionParser, CMakeVersionCommand
-from .helper import (
-    calculate_calendar_version,
-    get_current_version,
-    get_next_patch_version,
-    get_next_dev_version,
-)
+from .python import PythonVersionCommand
+from .cmake import CMakeVersionCommand
+from .go import GoVersionCommand
 
 
 def main(leave=True, args=None):
     available_cmds = [
         ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PontosVersionCommand),
+        ('pyproject.toml', PythonVersionCommand),
+        ('go.mod', GoVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
@@ -51,20 +39,3 @@ def main(leave=True, args=None):
     if leave:
         sys.exit("No command found")
     return False, ""
-
-
-__all__ = [
-    '__version__',
-    'calculate_calendar_version',
-    'CMakeVersionCommand',
-    'get_version_from_pyproject_toml',
-    'get_current_version',
-    'get_next_patch_version',
-    'get_next_dev_version',
-    'is_version_pep440_compliant',
-    'PontosVersionCommand',
-    'safe_version',
-    'strip_version',
-    'VersionCommand',
-    'VersionError',
-]

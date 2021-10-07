@@ -21,15 +21,13 @@ Also it appends a header if it is missing in the file.
 """
 
 import sys
-import os
 import re
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, FileType
 from datetime import datetime
-from glob import glob
 
 from subprocess import CalledProcessError, run
-from typing import Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from pathlib import Path
 
 from pontos.terminal import _set_terminal, error, warning, info, ok
@@ -39,6 +37,7 @@ SUPPORTED_FILE_TYPES = [
     ".bash",
     ".c",
     ".h",
+    ".go",
     ".cmake",
     ".js",
     ".nasl",
@@ -47,6 +46,7 @@ SUPPORTED_FILE_TYPES = [
     ".sh",
     ".txt",
     ".xml",
+    ".xsl",
 ]
 SUPPORTED_LICENCES = [
     "AGPL-3.0-or-later",
@@ -90,7 +90,9 @@ def _find_copyright(
     return False, None
 
 
-def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
+def _add_header(
+    suffix: str, licence: str, company: str, year: str
+) -> Union[str, None]:
     """Tries to add the header to the file.
     Requirements:
       - file type must be supported
@@ -100,7 +102,11 @@ def _add_header(suffix: str, licence: str, company: str) -> Union[str, None]:
         root = Path(__file__).parent
         licence_file = root / "templates" / licence / f"template{suffix}"
         try:
-            return licence_file.read_text().replace("Company", company)
+            return (
+                licence_file.read_text(encoding='utf-8')
+                .replace("<company>", company)
+                .replace("<year>", year)
+            )
         except FileNotFoundError as e:
             raise e
     else:
@@ -141,13 +147,14 @@ def _update_file(
             if i == 0 and not found:
                 try:
                     header = _add_header(
-                        file.suffix, args.licence, args.company
+                        file.suffix, args.licence, args.company, args.year
                     )
                     if header:
                         fp.seek(0)  # back to beginning of file
                         rest_of_file = fp.read()
                         fp.seek(0)
                         fp.write(header)
+                        fp.write('\n')
                         fp.write(rest_of_file)
                         info(f"{file}: Added licence header.")
                         return 0
@@ -197,12 +204,49 @@ def _update_file(
         raise e
 
 
+def _get_exclude_list(
+    exclude_file: Path, directories: List[Path]
+) -> List[Path]:
+    """Tries to get the list of excluded files / directories.
+    If a file is given, it will be used. Otherwise it will be searched
+    in the executed root path.
+    The ignore file should only contain relative paths like *.py,
+    not absolute as **/*.py
+    """
+
+    if exclude_file is None:
+        exclude_file = Path(".pontos-header-ignore")
+    try:
+        exclude_lines = exclude_file.read_text(encoding='utf-8').split('\n')
+    except FileNotFoundError:
+        print("No exclude list file found.")
+        return []
+
+    expanded_globs = [
+        directory.rglob(line.strip())
+        for directory in directories
+        for line in exclude_lines
+        if line
+    ]
+
+    exclude_list = []
+    for glob_paths in expanded_globs:
+        for path in glob_paths:
+            if path.is_dir():
+                for efile in path.rglob('*'):
+                    exclude_list.append(efile.absolute())
+            else:
+                exclude_list.append(path.absolute())
+
+    return exclude_list
+
+
 def _parse_args(args=None):
     """Parsing the args"""
 
     parser = ArgumentParser(
         description="Update copyright in source file headers.",
-        prog="pontos-copyright",
+        prog="pontos-update-header",
     )
 
     date_group = parser.add_mutually_exclusive_group()
@@ -231,7 +275,11 @@ def _parse_args(args=None):
         "--licence",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
-        help="Add header f files",
+        help=(
+            "Use the passed licence type. Options:\n"
+            "* AGPL-3.0-or-later\n* GPL-3.0-or-later\n"
+            "* GPL-2.0-or-later\n* GPL-2.0-only"
+        ),
     )
 
     parser.add_argument(
@@ -249,14 +297,30 @@ def _parse_args(args=None):
     )
     files_group.add_argument(
         "-d",
-        "--directory",
-        help="Directory to find files to update recursively.",
+        "--directories",
+        nargs="+",
+        help="Directories to find files to update recursively.",
     )
+
+    parser.add_argument(
+        "--exclude-file",
+        help=(
+            "File containing glob patterns for files to"
+            " ignore when finding files to update in a directory."
+            " Will look for '.pontos-header-ignore' in the directory"
+            " if none is given."
+            "The ignore file should only contain relative paths like *.py,"
+            "not absolute as **/*.py"
+        ),
+        type=FileType('r'),
+    )
+
     return parser.parse_args(args)
 
 
 def main() -> None:
     args = _parse_args()
+    exclude_list = []
 
     term = Terminal()
     _set_terminal(term)
@@ -264,15 +328,27 @@ def main() -> None:
     term.bold_info('pontos-update-header -> Updating file headers')
 
     with term.indent():
-        if args.directory:
+        if args.directories:
+            if isinstance(args.directories, list):
+                directories = [
+                    Path(directory) for directory in args.directories
+                ]
+            else:
+                directories = [Path(args.directories)]
+            # get file paths to exclude
+            exclude_list = _get_exclude_list(args.exclude_file, directories)
             # get files to update
             files = [
                 Path(file)
-                for file in glob(args.directory + "/**/*", recursive=True)
-                if os.path.isfile(file)
+                for directory in directories
+                for file in directory.rglob("*")
+                if file.is_file()
             ]
         elif args.files:
-            files = [Path(name) for name in args.files]
+            if isinstance(args.files, list):
+                files = [Path(name) for name in args.files]
+            else:
+                files = [Path(args.files)]
 
         else:
             # should never happen
@@ -286,7 +362,10 @@ def main() -> None:
 
         for file in files:
             try:
-                _update_file(file=file, regex=regex, args=args)
+                if file.absolute() in exclude_list:
+                    info(f"{file}: Ignoring file from exclusion list.")
+                else:
+                    _update_file(file=file, regex=regex, args=args)
             except (FileNotFoundError, UnicodeDecodeError, ValueError):
                 continue
 

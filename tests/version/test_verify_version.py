@@ -15,19 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=protected-access
+
 import unittest
 
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version import VersionCommand, VersionError
+from pontos.version.python import PythonVersionCommand
+from pontos.version.helper import VersionError
 
 
 class VerifyVersionTestCase(unittest.TestCase):
     def test_current_version_not_pep440_compliant(self):
         fake_version_py = Path('foo.py')
-        VersionCommand.get_current_version = MagicMock(return_value='1.02.03')
-        cmd = VersionCommand(version_file_path=fake_version_py)
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='1.02.03'
+        )
+        cmd = PythonVersionCommand()
+        cmd.version_file_path = fake_version_py
 
         with self.assertRaisesRegex(
             VersionError,
@@ -39,13 +45,18 @@ class VerifyVersionTestCase(unittest.TestCase):
         fake_version_py = Path('foo.py')
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.1.1"'
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "1.1.1"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
-        VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
-        cmd = VersionCommand(
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='1.2.3'
         )
+        cmd = PythonVersionCommand(
+            project_file_path=fake_path,
+        )
+        cmd.version_file_path = fake_version_py
 
         with self.assertRaisesRegex(
             VersionError,
@@ -57,16 +68,22 @@ class VerifyVersionTestCase(unittest.TestCase):
         fake_version_py = Path('foo.py')
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
         print_mock = MagicMock()
-        VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
-        VersionCommand._print = print_mock  # pylint: disable=protected-access
-
-        cmd = VersionCommand(
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='1.2.3'
         )
+        PythonVersionCommand._print = print_mock
+
+        cmd = PythonVersionCommand(
+            project_file_path=fake_path,
+        )
+        cmd.version_file_path = fake_version_py
+
         cmd.verify_version('current')
 
         print_mock.assert_called_with('OK')
@@ -75,14 +92,19 @@ class VerifyVersionTestCase(unittest.TestCase):
         fake_version_py = Path('foo.py')
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
-        VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
-
-        cmd = VersionCommand(
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='1.2.3'
         )
+
+        cmd = PythonVersionCommand(
+            project_file_path=fake_path,
+        )
+        cmd.version_file_path = fake_version_py
 
         with self.assertRaisesRegex(
             VersionError,
@@ -94,16 +116,42 @@ class VerifyVersionTestCase(unittest.TestCase):
         fake_version_py = Path('foo.py')
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.read_text.return_value = '[tool.poetry]\nversion = "1.2.3"'
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
 
         print_mock = MagicMock()
-        VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
-        VersionCommand._print = print_mock  # pylint: disable=protected-access
-
-        cmd = VersionCommand(
-            version_file_path=fake_version_py,
-            pyproject_toml_path=fake_path,
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='1.2.3'
         )
+        PythonVersionCommand._print = print_mock
+
+        cmd = PythonVersionCommand(
+            project_file_path=fake_path,
+        )
+        cmd.version_file_path = fake_version_py
+
         cmd.verify_version('1.2.3')
+
+        print_mock.assert_called_with('OK')
+
+    def test_verify_branch(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.read_text.return_value = """
+        [tool.poetry]\nversion = "21.0.1"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
+        fake_path.exists.return_value = True
+        PythonVersionCommand.get_current_version = MagicMock(
+            return_value='21.0.1'
+        )
+        print_mock = MagicMock()
+        PythonVersionCommand._print = print_mock
+
+        PythonVersionCommand(project_file_path=fake_path).run(
+            args=['verify', '21.0.1']
+        )
 
         print_mock.assert_called_with('OK')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2020-2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -15,12 +15,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import unittest
-from pathlib import Path
-from unittest.mock import MagicMock
-from pontos.version import CMakeVersionParser, VersionError, CMakeVersionCommand
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
+
+
+import unittest
+import contextlib
+import io
+
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+from pontos.version.cmake import CMakeVersionParser, CMakeVersionCommand
+from pontos.version.helper import VersionError
 
 
 class CMakeVersionCommandTestCase(unittest.TestCase):
@@ -30,7 +36,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = False
         with self.assertRaises(VersionError):
-            CMakeVersionCommand(cmake_lists_path=fake_path)
+            CMakeVersionCommand(project_file_path=fake_path)
 
     def test_raise_exception_no_project(self):
         fake_path_class = MagicMock(spec=Path)
@@ -39,32 +45,53 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
         with self.assertRaises(ValueError):
-            CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
-        fake_path.read_text.assert_called_with()
+            CMakeVersionCommand(project_file_path=fake_path).run(args=['show'])
+        fake_path.read_text.assert_called_with(encoding='utf-8')
+
+    def test_raise_exception_file_not_found(self):
+        with self.assertRaises(
+            VersionError, msg="CMakeLists.txt file not found"
+        ):
+            CMakeVersionCommand()
 
     def test_return_error_string_incorrect_version_on_verify(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
-        fake_path.read_text.return_value = ""
-        result = CMakeVersionCommand(cmake_lists_path=fake_path).run(
+        fake_path.read_text.return_value = (
+            "project(VERSION so_much_version_so_much_wow)\n"
+            "set(PROJECT_DEV_VERSION 0)"
+        )
+
+        result = CMakeVersionCommand(project_file_path=fake_path).run(
             args=['verify', 'so_much_version_so_much_wow']
         )
         self.assertTrue(
             isinstance(result, str), "expected result to be an error string"
         )
+        self.assertEqual(
+            result,
+            'The version so_much_version_so_much_wow is not PEP 440 compliant.',
+        )
 
-    def test_return_0_correct_version_on_verify(self):
+    @patch(
+        'pontos.version.cmake.CMakeVersionCommand.get_current_version',
+        MagicMock(return_value='21.4'),
+    )
+    @patch('pontos.version.cmake.CMakeVersionCommand._print')
+    def test_return_0_correct_version_on_verify(self, print_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = ""
-        result = CMakeVersionCommand(cmake_lists_path=fake_path).run(
+
+        result = CMakeVersionCommand(project_file_path=fake_path).run(
             args=['verify', '21.4']
         )
         self.assertEqual(0, result)
+        print_mock.assert_called_with('OK')
 
     def test_should_call_print_current_version_without_raising_exception(self):
         fake_path_class = MagicMock(spec=Path)
@@ -72,8 +99,8 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.__str__.return_value = 'CMakeLists.txt'
         fake_path.exists.return_value = True
         fake_path.read_text.return_value = "project(VERSION 21)"
-        CMakeVersionCommand(cmake_lists_path=fake_path).run(args=['show'])
-        fake_path.read_text.assert_called_with()
+        CMakeVersionCommand(project_file_path=fake_path).run(args=['show'])
+        fake_path.read_text.assert_called_with(encoding='utf-8')
 
     def test_raise_update_version(self):
         fake_path_class = MagicMock(spec=Path)
@@ -83,13 +110,28 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.read_text.return_value = (
             "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)"
         )
-        CMakeVersionCommand(cmake_lists_path=fake_path).run(
+        CMakeVersionCommand(project_file_path=fake_path).run(
             args=['update', '22', '--develop']
         )
-        fake_path.read_text.assert_called_with()
+        fake_path.read_text.assert_called_with(encoding='utf-8')
         fake_path.write_text.assert_called_with(
-            'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)'
+            'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)', encoding='utf-8'
         )
+
+    def test_update_version_equal_not_force(self):
+        fake_path_class = MagicMock(spec=Path)
+        fake_path = fake_path_class.return_value
+        fake_path.__str__.return_value = 'CMakeLists.txt'
+        fake_path.exists.return_value = True
+        fake_path.read_text.return_value = (
+            "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)"
+        )
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            CMakeVersionCommand(project_file_path=fake_path).run(
+                args=['update', '22', '--develop']
+            )
+            self.assertEqual(buf.getvalue(), 'Version is already up-to-date.\n')
+            fake_path.read_text.assert_called_with(encoding='utf-8')
 
 
 class CMakeVersionParserTestCase(unittest.TestCase):

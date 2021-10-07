@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import struct
 import re
 
@@ -32,6 +31,7 @@ from pontos.updateheader.updateheader import (
     _find_copyright as find_copyright,
     _add_header as add_header,
     _update_file as update_file,
+    _get_exclude_list as get_exclude_list,
     _parse_args as parse_args,
     main,
 )
@@ -112,7 +112,7 @@ class UpdateHeaderTestCase(TestCase):
 
     def test_add_header(self):
         expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -131,7 +131,10 @@ class UpdateHeaderTestCase(TestCase):
 """
 
         header = add_header(
-            suffix=".py", licence='AGPL-3.0-or-later', company=self.args.company
+            suffix=".py",
+            licence='AGPL-3.0-or-later',
+            company=self.args.company,
+            year='2021',
         )
 
         self.assertEqual(header, expected_header)
@@ -143,6 +146,7 @@ class UpdateHeaderTestCase(TestCase):
                 suffix=".prr",
                 licence='AGPL-3.0-or-later',
                 company=self.args.company,
+                year='2021',
             )
 
     def test_add_header_licence_not_found(self):
@@ -152,6 +156,7 @@ class UpdateHeaderTestCase(TestCase):
                 suffix=".py",
                 licence='AAAGPL-3.0-or-later',
                 company=self.args.company,
+                year='2021',
             )
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -273,7 +278,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.licence = 'AGPL-3.0-or-later'
 
         expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
+# Copyright (C) 1995 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -289,12 +294,11 @@ class UpdateHeaderTestCase(TestCase):
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 
         test_file = self.path / "test.py"
         test_file.touch()
-
-        # test_file.write_text(expected_header)
 
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
@@ -304,7 +308,7 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Added licence header.",
         )
         self.assertEqual(code, 0)
-        self.assertEqual(expected_header, test_file.read_text())
+        self.assertEqual(expected_header, test_file.read_text(encoding='utf-8'))
         test_file.unlink()
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -336,7 +340,7 @@ class UpdateHeaderTestCase(TestCase):
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header)
+        test_file.write_text(header, encoding='utf-8')
 
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
@@ -349,7 +353,7 @@ class UpdateHeaderTestCase(TestCase):
         )
         self.assertIn(
             '# Copyright (C) 2020-2021 Greenbone Networks GmbH',
-            test_file.read_text(),
+            test_file.read_text(encoding='utf-8'),
         )
 
         test_file.unlink()
@@ -383,7 +387,7 @@ class UpdateHeaderTestCase(TestCase):
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header)
+        test_file.write_text(header, encoding='utf-8')
 
         code = update_file(file=test_file, regex=self.regex, args=self.args)
 
@@ -395,7 +399,7 @@ class UpdateHeaderTestCase(TestCase):
         )
         self.assertIn(
             '# Copyright (C) 2021 Greenbone Networks GmbH',
-            test_file.read_text(),
+            test_file.read_text(encoding='utf-8'),
         )
 
         test_file.unlink()
@@ -424,10 +428,25 @@ class UpdateHeaderTestCase(TestCase):
         args = parse_args(args)
         self.assertIsNotNone(args)
         self.assertEqual(args.company, self.args.company)
-        self.assertEqual(args.directory, '.')
+        self.assertEqual(args.directories, ['.'])
         self.assertTrue(args.changed)
         self.assertEqual(args.year, '2021')
         self.assertEqual(args.licence, self.args.licence)
+
+    def test_get_exclude_list(self):
+        # Try to find the current file from two directories up...
+        test_dirname = Path(__file__) / "../.."
+        # with a relative glob
+        test_ignore_file = Path('ignore.file')
+        test_ignore_file.write_text("*.py\n", encoding='utf-8')
+
+        exclude_list = get_exclude_list(
+            test_ignore_file, [test_dirname.resolve()]
+        )
+
+        self.assertIn(Path(__file__), exclude_list)
+
+        test_ignore_file.unlink()
 
     @patch('pontos.updateheader.updateheader._parse_args')
     def test_main(self, argparser_mock):
@@ -435,7 +454,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = ['test.py']
-        self.args.directory = None
+        self.args.directories = None
 
         argparser_mock.return_value = self.args
 
@@ -451,7 +470,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = None
-        self.args.directory = None
+        self.args.directories = None
 
         argparser_mock.return_value = self.args
 
