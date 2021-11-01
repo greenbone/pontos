@@ -86,7 +86,7 @@ class ChangelogBuilder:
                 commit = commit.split(' ', maxsplit=1)
                 for commit_type in commit_types:
                     reg = re.compile(
-                        f'{commit_type["message"]} ?[:-|]', flags=re.I
+                        fr'{commit_type["message"]}\s?[:|-]', flags=re.I
                     )
                     match = reg.match(commit[1])
                     if match:
