@@ -48,6 +48,8 @@ class ConventionalCommitsTestCase(unittest.TestCase):
         git_log = (
             '1234567 Add: foo bar\n'
             '8abcdef Add: bar baz\n'
+            '8abcd3f Add bar baz\n'
+            '8abcd3d Adding bar baz\n'
             '1337abc Change: bar to baz\n'
             '42a42a4 Remove: foo bar again\n'
             'fedcba8 Test: bar baz testing\n'
