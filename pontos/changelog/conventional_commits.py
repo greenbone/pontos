@@ -106,7 +106,7 @@ class ChangelogBuilder:
         else:
             warning("No conventional commits found.")
             sys.exit(1)
-        if commit_dict == {}:
+        if not commit_dict:
             warning("No conventional commits found.")
             sys.exit(1)
         return commit_dict
