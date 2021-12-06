@@ -97,7 +97,7 @@ class ChangelogBuilder:
                             f'{cleaned_msg} [{commit[0]}](https://github.com/'
                             f'{self.space}/{self.project}/commit/{commit[0]})'
                         )
-                        if commit_type['group'] not in commit_dict.keys():
+                        if commit_type['group'] not in commit_dict:
                             commit_dict[commit_type['group']] = []
                         commit_dict[commit_type['group']].append(
                             f'{cleaned_msg} [{commit[0]}](https://github.com/'
