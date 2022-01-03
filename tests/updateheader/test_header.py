@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import struct
 import re
 
@@ -428,7 +429,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(args.company, self.args.company)
         self.assertEqual(args.directories, ['.'])
         self.assertTrue(args.changed)
-        self.assertEqual(args.year, '2021')
+        self.assertEqual(args.year, str(datetime.datetime.now().year))
         self.assertEqual(args.licence, self.args.licence)
 
     def test_get_exclude_list(self):
