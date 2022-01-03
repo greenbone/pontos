@@ -32,7 +32,8 @@ class VerifyVersionTestCase(unittest.TestCase):
         PythonVersionCommand.get_current_version = MagicMock(
             return_value='1.02.03'
         )
-        cmd = PythonVersionCommand()
+        fake_pyproject = Path(__file__).parent.parent / 'fake_pyproject.toml'
+        cmd = PythonVersionCommand(project_file_path=fake_pyproject)
         cmd.version_file_path = fake_version_py
 
         with self.assertRaisesRegex(
