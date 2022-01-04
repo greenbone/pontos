@@ -30,7 +30,8 @@ class UpdateVersionFileTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
 
-        cmd = PythonVersionCommand()
+        fake_pyproject = Path(__file__).parent.parent / 'fake_pyproject.toml'
+        cmd = PythonVersionCommand(project_file_path=fake_pyproject)
         cmd.version_file_path = fake_path
         cmd._update_version_file('22.04dev1')
 

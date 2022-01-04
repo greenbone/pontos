@@ -1,0 +1,2 @@
+[tool.pontos.version]
+version-module-file = "foo/bar/__version__.py"

@@ -157,7 +157,6 @@ class TestHelperFunctions(unittest.TestCase):
             to='21.4.4', _version=version, develop=False
         )
         toml_text = toml.read_text(encoding='utf-8')
-        print(toml_text)
         self.assertEqual(filename, 'pyproject.toml')
         self.assertTrue(executed)
         self.assertEqual(
@@ -196,14 +195,12 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             'pontos.release.helper.CMakeVersionCommand',
         ]
         current_versions = [
-            '20.4.1.dev3',
-            f'{str(today.year % 100)}.4.1.dev3',
+            '21.4.1.dev3',
             f'19.{str(today.month)}.1.dev3',
             f'{str(today.year % 100)}.{str(today.month)}.1.dev3',
             f'{str(today.year % 100)}.{str(today.month)}.1',
         ]
         assert_versions = [
-            f'{str(today.year % 100)}.{str(today.month)}.0',
             f'{str(today.year % 100)}.{str(today.month)}.0',
             f'{str(today.year % 100)}.{str(today.month)}.0',
             f'{str(today.year % 100)}.{str(today.month)}.1',
@@ -226,7 +223,6 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
                     )
 
                     release_version = calculate_calendar_version()
-
                     self.assertEqual(release_version, assert_version)
 
                 os.chdir('..')
