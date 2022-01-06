@@ -157,3 +157,16 @@ class GitTestCase(unittest.TestCase):
         git.cherry_pick("foo")
 
         exec_git_mock.assert_called_once_with("cherry-pick", "foo", cwd=None)
+
+    @patch("pontos.git.git._exec_git")
+    def test_list_tags(self, exec_git_mock):
+        exec_git_mock.return_value = "v1.0\nv2.0\nv2.1\n"
+        git = Git()
+        tags = git.list_tags()
+
+        exec_git_mock.assert_called_once_with("tag", "-l", cwd=None)
+
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "v1.0")
+        self.assertEqual(tags[1], "v2.0")
+        self.assertEqual(tags[2], "v2.1")

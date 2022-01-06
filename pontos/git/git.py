@@ -18,7 +18,7 @@
 import subprocess
 
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 class GitError(subprocess.CalledProcessError):
@@ -200,3 +200,9 @@ class Git:
             commit: Git reference (e.g. sha) of the commit
         """
         _exec_git("cherry-pick", commit, cwd=self._cwd)
+
+    def list_tags(self) -> List[str]:
+        """
+        List all available tags
+        """
+        return _exec_git("tag", "-l", cwd=self._cwd).splitlines()
