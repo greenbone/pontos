@@ -145,6 +145,13 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("push", "foo", "bar", cwd=None)
 
     @patch("pontos.git.git._exec_git")
+    def test_push_with_follow_tags(self, exec_git_mock):
+        git = Git()
+        git.push(follow_tags=True)
+
+        exec_git_mock.assert_called_once_with("push", "--follow-tags", cwd=None)
+
+    @patch("pontos.git.git._exec_git")
     def test_config(self, exec_git_mock):
         git = Git()
         git.config("foo", "bar")

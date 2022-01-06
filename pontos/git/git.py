@@ -168,7 +168,11 @@ class Git:
         )
 
     def push(
-        self, *, remote: Optional[str] = None, branch: Optional[str] = None
+        self,
+        *,
+        remote: Optional[str] = None,
+        branch: Optional[str] = None,
+        follow_tags: bool = False,
     ):
         """
         Push changes to remote repository
@@ -177,8 +181,12 @@ class Git:
             remote: Push changes to the named remote
             branch: Branch to push. Will only be considered in combination with
                     a remote.
+            follow_tags: Push all tags pointing to a commit included in the to
+                         be pushed branch.
         """
         args = ["push"]
+        if follow_tags:
+            args.append("--follow-tags")
         if remote:
             args.append(remote)
             if branch:
