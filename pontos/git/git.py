@@ -213,3 +213,18 @@ class Git:
         List all available tags
         """
         return _exec_git("tag", "-l", cwd=self._cwd).splitlines()
+
+    def add(self, files: Union[str, List[str]]):
+        """
+        Add files to the git staging area
+
+        Args:
+            files: A single file or a list of files to add to the staging area
+        """
+        if isinstance(files, str):
+            files = [files]
+
+        args = ["add"]
+        args.extend(files)
+
+        _exec_git(*args, cwd=self._cwd)

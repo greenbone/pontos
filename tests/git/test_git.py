@@ -179,3 +179,17 @@ class GitTestCase(unittest.TestCase):
         self.assertEqual(tags[0], "v1.0")
         self.assertEqual(tags[1], "v2.0")
         self.assertEqual(tags[2], "v2.1")
+
+    @patch("pontos.git.git._exec_git")
+    def test_add_single_file(self, exec_git_mock):
+        git = Git()
+        git.add("foo")
+
+        exec_git_mock.assert_called_once_with("add", "foo", cwd=None)
+
+    @patch("pontos.git.git._exec_git")
+    def test_add(self, exec_git_mock):
+        git = Git()
+        git.add(["foo", "bar"])
+
+        exec_git_mock.assert_called_once_with("add", "foo", "bar", cwd=None)
