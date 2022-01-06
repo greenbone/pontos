@@ -228,3 +228,28 @@ class Git:
         args.extend(files)
 
         _exec_git(*args, cwd=self._cwd)
+
+    def commit(
+        self,
+        message: str,
+        *,
+        verify: Optional[bool] = None,
+        gpg_signing_key: Optional[str] = None,
+    ):
+        """
+        Create a new commit
+
+        Args:
+            message: Message of the commit
+            verify: Set to False to skip git hooks
+            gpg_signing_key: GPG Key ID to use to sign the commit
+        """
+        args = ["commit"]
+        if verify is False:
+            args.append("--no-verify")
+        if gpg_signing_key:
+            args.append(f"-S{gpg_signing_key}")
+
+        args.extend(["-m", message])
+
+        _exec_git(*args, cwd=self._cwd)

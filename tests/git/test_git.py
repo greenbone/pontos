@@ -193,3 +193,37 @@ class GitTestCase(unittest.TestCase):
         git.add(["foo", "bar"])
 
         exec_git_mock.assert_called_once_with("add", "foo", "bar", cwd=None)
+
+    @patch("pontos.git.git._exec_git")
+    def test_commit(self, exec_git_mock):
+        git = Git()
+        git.commit("Add foo")
+
+        exec_git_mock.assert_called_once_with(
+            "commit", "-m", "Add foo", cwd=None
+        )
+
+    @patch("pontos.git.git._exec_git")
+    def test_commit_with_signing_key(self, exec_git_mock):
+        git = Git()
+        git.commit(
+            "Add foo",
+            gpg_signing_key="8AE4BE429B60A59B311C2E739823FAA60ED1E580",
+        )
+
+        exec_git_mock.assert_called_once_with(
+            "commit",
+            "-S8AE4BE429B60A59B311C2E739823FAA60ED1E580",
+            "-m",
+            "Add foo",
+            cwd=None,
+        )
+
+    @patch("pontos.git.git._exec_git")
+    def test_commit_without_verify(self, exec_git_mock):
+        git = Git()
+        git.commit("Add foo", verify=False)
+
+        exec_git_mock.assert_called_once_with(
+            "commit", "--no-verify", "-m", "Add foo", cwd=None
+        )
