@@ -154,6 +154,15 @@ class GitTestCase(unittest.TestCase):
     @patch("pontos.git.git._exec_git")
     def test_cherry_pick(self, exec_git_mock):
         git = Git()
+        git.cherry_pick(["foo", "bar"])
+
+        exec_git_mock.assert_called_once_with(
+            "cherry-pick", "foo", "bar", cwd=None
+        )
+
+    @patch("pontos.git.git._exec_git")
+    def test_cherry_pick_single_commit(self, exec_git_mock):
+        git = Git()
         git.cherry_pick("foo")
 
         exec_git_mock.assert_called_once_with("cherry-pick", "foo", cwd=None)

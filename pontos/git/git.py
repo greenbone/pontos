@@ -18,7 +18,7 @@
 import subprocess
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class GitError(subprocess.CalledProcessError):
@@ -192,14 +192,21 @@ class Git:
         """
         _exec_git("config", key, value, cwd=self._cwd)
 
-    def cherry_pick(self, commit: str):
+    def cherry_pick(self, commits: Union[str, List[str]]):
         """
-        Apply change of a commit to the current branch
+        Apply changes of a commit(s) to the current branch
 
         Args:
-            commit: Git reference (e.g. sha) of the commit
+            commit: A single git reference (e.g. sha) of the commit or a list
+                    of git references.
         """
-        _exec_git("cherry-pick", commit, cwd=self._cwd)
+        if isinstance(commits, str):
+            commits = [commits]
+
+        args = ["cherry-pick"]
+        args.extend(commits)
+
+        _exec_git(*args, cwd=self._cwd)
 
     def list_tags(self) -> List[str]:
         """
