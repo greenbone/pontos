@@ -52,6 +52,15 @@ class GitTestCase(unittest.TestCase):
         )
 
     @patch("pontos.git.git._exec_git")
+    def test_clone_with_depth(self, exec_git_mock):
+        git = Git()
+        git.clone("http://foo/foo.git", Path("/bar"), depth=1)
+
+        exec_git_mock.assert_called_once_with(
+            "clone", "--depth", 1, "http://foo/foo.git", "/bar", cwd=None
+        )
+
+    @patch("pontos.git.git._exec_git")
     def test_init(self, exec_git_mock):
         git = Git()
         git.init()

@@ -142,6 +142,7 @@ class Git:
         *,
         branch: Optional[str] = None,
         remote: Optional[str] = None,
+        depth: Optional[int] = None,
     ):
         """
         Clone a repository
@@ -157,6 +158,8 @@ class Git:
             args.extend(["-o", remote])
         if branch:
             args.extend(["-b", branch])
+        if depth:
+            args.extend(["--depth", depth])
         args.extend([repo_url, str(destination.absolute())])
 
         _exec_git(
