@@ -15,11 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import unittest
 
+from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from pontos.github.api import GitHubRESTApi
+
+here = Path(__file__).parent
 
 
 class GitHubApiTestCase(unittest.TestCase):
@@ -186,3 +190,27 @@ class GitHubApiTestCase(unittest.TestCase):
             json=None,
         )
         self.assertTrue(exists)
+
+    @patch("pontos.github.api.requests.get")
+    def test_release(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = json.loads(
+            (here / "release-response.json").read_text()
+        )
+
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        data = api.release("greenbone/pontos", "v21.11.0")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0',  # pylint: disable=line-too-long
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json=None,
+        )
+
+        self.assertEqual(data["id"], 52499047)

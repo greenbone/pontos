@@ -194,3 +194,19 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = self.request(api)
         return response.ok
+
+    def release(self, repo: str, tag: str) -> Dict[str, str]:
+        """
+        Get data of a GitHub release by tag
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            HTTPError if the request was invalid
+        """
+        api = f"/repos/{repo}/releases/tags/{tag}"
+        response = self.request(api)
+        response.raise_for_status()
+        return response.json()
