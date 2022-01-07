@@ -146,3 +146,36 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/git/refs/{branch}"
         response = self.request(api, request=requests.delete)
         response.raise_for_status()
+
+    def create_release(
+        self,
+        repo: str,
+        tag: str,
+        *,
+        body: Optional[str] = None,
+        name: Optional[str] = None,
+        target_commitish: Optional[str] = None,
+        draft: Optional[bool] = False,
+        prerelease: Optional[bool] = False,
+    ):
+        """
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            body: Content of the changelog for the release
+            name: name of the release, e.g. 'pontos 1.0.0'
+            target_commitish: Only needed when tag is not there yet
+            draft: If the release is a draft. False by default.
+            prerelease: If the release is a pre release. False by default.
+        """
+        data = {
+            'tag_name': tag,
+            'target_commitish': target_commitish,
+            'name': name,
+            'body': body,
+            'draft': draft,
+            'prerelease': prerelease,
+        }
+        api = f"/repos/{repo}/releases"
+        response = self.request(api, data=data, request=requests.post)
+        response.raise_for_status()

@@ -139,3 +139,30 @@ class GitHubApiTestCase(unittest.TestCase):
             params=None,
             json=None,
         )
+
+    @patch("pontos.github.api.requests.post")
+    def test_create_release(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_release(
+            "foo/bar",
+            "v1.2.3",
+            name="Foo v1.2.3",
+            body="This is a release",
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/releases',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json={
+                'tag_name': 'v1.2.3',
+                'target_commitish': None,
+                'name': 'Foo v1.2.3',
+                'body': 'This is a release',
+                'draft': False,
+                'prerelease': False,
+            },
+        )
