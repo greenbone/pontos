@@ -179,3 +179,18 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/releases"
         response = self.request(api, data=data, request=requests.post)
         response.raise_for_status()
+
+    def release_exists(self, repo: str, tag: str) -> bool:
+        """
+        Check wether a GitHub release exists by tag
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Returns:
+            True if the release exists
+        """
+        api = f"/repos/{repo}/releases/tags/{tag}"
+        response = self.request(api)
+        return response.ok

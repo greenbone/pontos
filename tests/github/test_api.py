@@ -166,3 +166,23 @@ class GitHubApiTestCase(unittest.TestCase):
                 'prerelease': False,
             },
         )
+
+    @patch("pontos.github.api.requests.get")
+    def test_release_exists(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.ok = True
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        exists = api.release_exists("foo/bar", "v1.2.3")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/releases/tags/v1.2.3',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json=None,
+        )
+        self.assertTrue(exists)
