@@ -21,7 +21,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from pontos.github.api import GitHubRESTApi
+from pontos.github.api import GitHubRESTApi, DEFAULT_TIMEOUT
 
 here = Path(__file__).parent
 
@@ -214,3 +214,117 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         self.assertEqual(data["id"], 52499047)
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.requests.get")
+    def test_download_release_tarball(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_file = path_mock()
+        download_progress = api.download_release_tarball(
+            "greenbone/pontos", "v21.11.0", download_file
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            stream=True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response_headers.get.assert_called_once_with('content-length')
+
+        self.assertIsNone(download_progress.length)
+
+        it = iter(download_progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+
+        with self.assertRaises(StopIteration):
+            next(it)
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.requests.get")
+    def test_download_release_tarball_with_content_length(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = "9"
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_file = path_mock()
+        download_progress = api.download_release_tarball(
+            "greenbone/pontos", "v21.11.0", download_file
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            stream=True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response_headers.get.assert_called_once_with('content-length')
+
+        self.assertEqual(download_progress.length, 9)
+
+        it = iter(download_progress)
+        progress = next(it)
+        self.assertEqual(progress, 1 / 3)
+        progress = next(it)
+        self.assertEqual(progress, 2 / 3)
+        progress = next(it)
+        self.assertEqual(progress, 1)
+
+        with self.assertRaises(StopIteration):
+            next(it)
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.requests.get")
+    def test_download_release_zip(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_file = path_mock()
+        download_progress = api.download_release_zip(
+            "greenbone/pontos", "v21.11.0", download_file
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip',  # pylint: disable=line-too-long
+            stream=True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response_headers.get.assert_called_once_with('content-length')
+
+        self.assertIsNone(download_progress.length)
+
+        it = iter(download_progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+
+        with self.assertRaises(StopIteration):
+            next(it)
