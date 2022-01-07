@@ -1,0 +1,141 @@
+# Copyright (C) 2022 Greenbone Networks GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import unittest
+
+from unittest.mock import patch, MagicMock
+
+from pontos.github.api import GitHubRESTApi
+
+
+class GitHubApiTestCase(unittest.TestCase):
+    @patch("pontos.github.api.requests.get")
+    def test_branch_exists(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.ok = True
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        exists = api.branch_exists("foo/bar", "main")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/branches/main',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json=None,
+        )
+        self.assertTrue(exists)
+
+    @patch("pontos.github.api.requests.get")
+    def test_branch_not_exists(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.ok = False
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        exists = api.branch_exists("foo/bar", "main")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/branches/main',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json=None,
+        )
+        self.assertFalse(exists)
+
+    @patch("pontos.github.api.requests.get")
+    def test_pull_request_commits(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = [{"sha": "1"}]
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        commits = api.pull_request_commits("foo/bar", "1")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/1/commits',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params={'per_page': '100'},
+            json=None,
+        )
+
+        self.assertEqual(len(commits), 1)
+        self.assertEqual(commits[0]["sha"], "1")
+
+    @patch("pontos.github.api.requests.post")
+    def test_create_pull_request(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_pull_request(
+            "foo/bar",
+            head_branch="foo",
+            base_branch="main",
+            title="Foo",
+            body="This is bar",
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json={
+                'head': 'foo',
+                'base': 'main',
+                'title': 'Foo',
+                'body': 'This is bar',
+            },
+        )
+
+    @patch("pontos.github.api.requests.post")
+    def test_add_pull_request_comment(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.add_pull_request_comment("foo/bar", "123", "This is a comment")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/issues/123/comments',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json={'body': 'This is a comment'},
+        )
+
+    @patch("pontos.github.api.requests.delete")
+    def test_delete_branch(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.delete_branch("foo/bar", "foo")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/git/refs/foo',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json=None,
+        )
