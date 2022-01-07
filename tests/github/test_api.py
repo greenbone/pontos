@@ -195,7 +195,7 @@ class GitHubApiTestCase(unittest.TestCase):
     def test_release(self, requests_mock: MagicMock):
         response = MagicMock()
         response.json.return_value = json.loads(
-            (here / "release-response.json").read_text()
+            (here / "release-response.json").read_text(encoding="utf-8")
         )
 
         requests_mock.return_value = response
