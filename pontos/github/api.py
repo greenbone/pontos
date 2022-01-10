@@ -104,7 +104,7 @@ class GitHubRESTApi:
         self.token = token
         self.url = url
 
-    def request(
+    def _request(
         self,
         api: str,
         *,
@@ -130,7 +130,7 @@ class GitHubRESTApi:
             branch: Branch name to check
         """
         api = f"/repos/{repo}/branches/{branch}"
-        response = self.request(api)
+        response = self._request(api)
         return response.ok
 
     def pull_request_commits(
@@ -153,7 +153,7 @@ class GitHubRESTApi:
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/commits"
-        response = self.request(api, params=params)
+        response = self._request(api, params=params)
         return response.json()
 
     def create_pull_request(
@@ -185,7 +185,7 @@ class GitHubRESTApi:
             "title": title,
             "body": body,
         }
-        response = self.request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
 
     def add_pull_request_comment(
@@ -204,7 +204,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data = {"body": comment}
-        response = self.request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
 
     def delete_branch(self, repo: str, branch: str):
@@ -219,7 +219,7 @@ class GitHubRESTApi:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/git/refs/{branch}"
-        response = self.request(api, request=requests.delete)
+        response = self._request(api, request=requests.delete)
         response.raise_for_status()
 
     def create_release(
@@ -252,7 +252,7 @@ class GitHubRESTApi:
             'prerelease': prerelease,
         }
         api = f"/repos/{repo}/releases"
-        response = self.request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
 
     def release_exists(self, repo: str, tag: str) -> bool:
@@ -267,7 +267,7 @@ class GitHubRESTApi:
             True if the release exists
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response = self.request(api)
+        response = self._request(api)
         return response.ok
 
     def release(self, repo: str, tag: str) -> Dict[str, str]:
@@ -282,7 +282,7 @@ class GitHubRESTApi:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response = self.request(api)
+        response = self._request(api)
         response.raise_for_status()
         return response.json()
 
