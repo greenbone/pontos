@@ -42,7 +42,14 @@ class DownloadProgressIterable:
         """
         return self._length
 
-    def _download(self):
+    @property
+    def destination(self) -> Path:
+        """
+        Destination path of the to be downloaded file
+        """
+        return self._destination
+
+    def _download(self) -> Iterator[Optional[float]]:
         dl = 0
         with self._destination.open("wb") as f:
             for content in self._content_iterator:
