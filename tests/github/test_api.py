@@ -21,7 +21,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from pontos.github.api import GitHubRESTApi, DEFAULT_TIMEOUT
+from pontos.github.api import GitHubRESTApi, DEFAULT_TIMEOUT, download
 
 here = Path(__file__).parent
 
@@ -325,6 +325,95 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertIsNone(progress)
         progress = next(it)
         self.assertIsNone(progress)
+
+        with self.assertRaises(StopIteration):
+            next(it)
+
+
+class DownloadTestCase(unittest.TestCase):
+    @patch("pontos.github.api.requests.get")
+    def test_download_without_destination(
+        self,
+        requests_mock: MagicMock,
+    ):
+        response = MagicMock()
+        response.iter_content.return_value = [b"foo", b"bar", b"baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        requests_mock.return_value = response
+
+        download_progress = download(
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz"  # pylint: disable=line-too-long
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            stream=True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response_headers.get.assert_called_once_with('content-length')
+
+        self.assertIsNone(download_progress.length)
+        self.assertEqual(download_progress.destination, Path("v21.11.0.tar.gz"))
+
+        it = iter(download_progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+        progress = next(it)
+        self.assertIsNone(progress)
+
+        with self.assertRaises(StopIteration):
+            next(it)
+
+        download_progress.destination.unlink(True)
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.requests.get")
+    def test_download_with_content_length(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = "9"
+        requests_mock.return_value = response
+
+        download_file = path_mock()
+        file_mock = MagicMock()
+        file_mock.__enter__.return_value = file_mock
+        download_file.open.return_value = file_mock
+
+        download_progress = download(
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+            download_file,
+        )
+
+        requests_mock.assert_called_once_with(
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+            stream=True,
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response_headers.get.assert_called_once_with('content-length')
+
+        self.assertEqual(download_progress.length, 9)
+
+        it = iter(download_progress)
+
+        progress = next(it)
+        self.assertEqual(progress, 1 / 3)
+        file_mock.write.assert_called_with("foo")
+
+        progress = next(it)
+        self.assertEqual(progress, 2 / 3)
+        file_mock.write.assert_called_with("bar")
+
+        progress = next(it)
+        self.assertEqual(progress, 1)
+        file_mock.write.assert_called_with("baz")
 
         with self.assertRaises(StopIteration):
             next(it)

@@ -74,7 +74,7 @@ class DownloadProgressIterable:
 
 def download(
     url: str,
-    destination: Path,
+    destination: Optional[Path] = None,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -83,7 +83,8 @@ def download(
 
     Arguments:
         url: The url of the file we want to download
-        destination: Path of the file to store the download in
+        destination: Path of the file to store the download in. If set it will
+                     be derived from the passed URL.
         chunk_size: Download file in chunks of this size
         timeout: Connection timeout
 
@@ -95,6 +96,7 @@ def download(
         percent for each downloaded chunk or None for each chunk if the progress
         is unknown.
     """
+    destination = Path(url.split('/')[-1]) if not destination else destination
 
     response = requests.get(url, stream=True, timeout=timeout)
     response.raise_for_status()
