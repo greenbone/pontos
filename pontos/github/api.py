@@ -35,7 +35,11 @@ class DownloadProgressIterable:
         self._destination = destination
 
     @property
-    def length(self):
+    def length(self) -> Optional[int]:
+        """
+        Size in bytes of the to be downloaded file or None if the size is not
+        available
+        """
         return self._length
 
     def _download(self):
