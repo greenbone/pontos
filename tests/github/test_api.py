@@ -368,7 +368,7 @@ class DownloadTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(it)
 
-        download_progress.destination.unlink(True)
+        download_progress.destination.unlink()
 
     @patch("pontos.github.api.Path")
     @patch("pontos.github.api.requests.get")
