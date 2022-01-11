@@ -95,10 +95,13 @@ class GitHubEvent:
 
     def __init__(self, event_path: Path):
         content = event_path.read_text(encoding="utf-8")
-        event_data = json.loads(content) if content else {}
-        pull_request_data = event_data.get("pull_request")
+        self._event_data = json.loads(content) if content else {}
+        pull_request_data = self._event_data.get("pull_request")
         self.pull_request = (
             GitHubPullRequestEvent(pull_request_data)
             if pull_request_data
             else None
         )
+
+    def __str__(self) -> str:
+        return json.dumps(self._event_data, indent=2)
