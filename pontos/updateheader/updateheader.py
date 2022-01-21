@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021 Greenbone Networks GmbH
+# Copyright (C) 2019-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -141,6 +141,7 @@ def _update_file(
                     continue
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
+            # header not found, add header
             if i == 0 and not found:
                 try:
                     header = _add_header(
@@ -166,7 +167,7 @@ def _update_file(
                         "is not existing."
                     )
                 return 1
-            # replace header and write it to file
+            # replace found header and write it to file
             if (
                 not copyright_match["modification_year"]
                 and copyright_match["creation_year"] < args.year
