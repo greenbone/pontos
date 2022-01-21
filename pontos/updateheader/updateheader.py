@@ -253,8 +253,8 @@ def _parse_args(args=None):
         action="store_true",
         default=False,
         help=(
-            "Update modified year using git log modified year. \n"
-            "This will probably not changed all files to current year!",
+            "Update modified year using git log modified year. "
+            "This will not changed all files to current year!"
         ),
     )
     date_group.add_argument(
@@ -262,7 +262,7 @@ def _parse_args(args=None):
         "--year",
         default=str(datetime.now().year),
         help=(
-            "If year is set, modified year will be \n"
+            "If year is set, modified year will be "
             "set to the specified year."
         ),
     )
@@ -272,18 +272,14 @@ def _parse_args(args=None):
         "--licence",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
-        help=(
-            "Use the passed licence type. Options:\n"
-            "* AGPL-3.0-or-later\n* GPL-3.0-or-later\n"
-            "* GPL-2.0-or-later\n* GPL-2.0-only"
-        ),
+        help=("Use the passed licence type"),
     )
 
     parser.add_argument(
         "--company",
         default="Greenbone Networks GmbH",
         help=(
-            "If a header will be added to file, \n"
+            "If a header will be added to file, "
             "it will be licenced by company."
         ),
     )
@@ -302,10 +298,10 @@ def _parse_args(args=None):
     parser.add_argument(
         "--exclude-file",
         help=(
-            "File containing glob patterns for files to"
-            " ignore when finding files to update in a directory."
-            " Will look for '.pontos-header-ignore' in the directory"
-            " if none is given."
+            "File containing glob patterns for files to "
+            "ignore when finding files to update in a directory. "
+            "Will look for '.pontos-header-ignore' in the directory "
+            "if none is given. "
             "The ignore file should only contain relative paths like *.py,"
             "not absolute as **/*.py"
         ),
@@ -315,7 +311,7 @@ def _parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main() -> None:
+def main(args=None) -> None:
     args = _parse_args()
     exclude_list = []
 
