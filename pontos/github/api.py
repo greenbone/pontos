@@ -184,7 +184,7 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
             head_branch: Branch to create a pull request from
-            base_branch: Branch as as target for the pull
+            base_branch: Branch as target for the pull
             title: Title for the pull request
             body: Description for the pull request. Can be formatted in Markdown
 
