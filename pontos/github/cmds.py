@@ -39,7 +39,7 @@ def pull_request(args: Namespace):
 
         if not git.branch_exists(repo=args.repo, branch=args.target):
             error(
-                f"Head branch {args.target} is not existing or "
+                f"Target branch {args.target} is not existing or "
                 "authorisation failed."
             )
             sys.exit(1)

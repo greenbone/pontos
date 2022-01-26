@@ -17,7 +17,6 @@
 
 from argparse import Namespace
 from pathlib import Path
-import sys
 import unittest
 from unittest.mock import Mock
 
@@ -27,16 +26,10 @@ from pontos.github.cmds import pull_request
 
 class TestArgparsing(unittest.TestCase):
     def setUp(self):
-        # store old arguments
-        self.old_args = sys.argv
         self.term = Mock()
 
-    def tearDown(self) -> None:
-        # reset old arguments
-        sys.argv = self.old_args
-
     def test_parse_args(self):
-        sys.argv = [
+        argv = [
             "pontos-github",
             "pr",
             "foo/bar",
@@ -45,7 +38,7 @@ class TestArgparsing(unittest.TestCase):
             "baz in main",
         ]
 
-        parsed_args = parse_args()
+        parsed_args = parse_args(argv)
 
         template = Path().cwd() / 'pontos/github/pr_template.md'
 
@@ -63,7 +56,7 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args, expected_args)
 
     def test_parse_args_fail(self):
-        sys.argv = ["pontos-github", "pr", "foo/bar"]
+        argv = ["pontos-github", "pr", "foo/bar"]
 
         with self.assertRaises(SystemExit):
-            parse_args()
+            parse_args(argv)
