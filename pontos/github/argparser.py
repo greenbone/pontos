@@ -20,7 +20,6 @@
 from argparse import ArgumentParser, Namespace
 import os
 from pathlib import Path
-import sys
 from typing import List
 
 from pontos.github.cmds import pull_request
@@ -48,6 +47,7 @@ def parse_args(
     subparsers = parser.add_subparsers(
         title='subcommands',
         description='valid subcommands',
+        required=True,
         help='additional help',
         dest='command',
     )
@@ -98,9 +98,5 @@ def parse_args(
             "Default looks for environment variable 'GITHUB_TOKEN'"
         ),
     )
-
-    if len(sys.argv) == 1:
-        parser.print_help(sys.stdout)
-        sys.exit(1)
 
     return parser.parse_args(args)
