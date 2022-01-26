@@ -26,7 +26,8 @@ packages = [
   { include = "poetry.toml", format = "sdist" },
 ]
 include = [
-  "pontos/updateheader/templates/"
+  "pontos/updateheader/templates/",
+  "pontos/github/pr_template.md"
 ]
 
 [tool.poetry.dependencies]
