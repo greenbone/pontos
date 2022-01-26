@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021 Greenbone Networks GmbH
+# Copyright (C) 2019-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -141,6 +141,7 @@ def _update_file(
                     continue
                 found, copyright_match = _find_copyright(line=line, regex=regex)
                 i = i - 1
+            # header not found, add header
             if i == 0 and not found:
                 try:
                     header = _add_header(
@@ -166,7 +167,7 @@ def _update_file(
                         "is not existing."
                     )
                 return 1
-            # replace header and write it to file
+            # replace found header and write it to file
             if (
                 not copyright_match["modification_year"]
                 and copyright_match["creation_year"] < args.year
@@ -253,8 +254,8 @@ def _parse_args(args=None):
         action="store_true",
         default=False,
         help=(
-            "Update modified year using git log modified year. \n"
-            "This will probably not changed all files to current year!",
+            "Update modified year using git log modified year. "
+            "This will not changed all files to current year!"
         ),
     )
     date_group.add_argument(
@@ -262,7 +263,7 @@ def _parse_args(args=None):
         "--year",
         default=str(datetime.now().year),
         help=(
-            "If year is set, modified year will be \n"
+            "If year is set, modified year will be "
             "set to the specified year."
         ),
     )
@@ -272,18 +273,14 @@ def _parse_args(args=None):
         "--licence",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
-        help=(
-            "Use the passed licence type. Options:\n"
-            "* AGPL-3.0-or-later\n* GPL-3.0-or-later\n"
-            "* GPL-2.0-or-later\n* GPL-2.0-only"
-        ),
+        help=("Use the passed licence type"),
     )
 
     parser.add_argument(
         "--company",
         default="Greenbone Networks GmbH",
         help=(
-            "If a header will be added to file, \n"
+            "If a header will be added to file, "
             "it will be licenced by company."
         ),
     )
@@ -302,10 +299,10 @@ def _parse_args(args=None):
     parser.add_argument(
         "--exclude-file",
         help=(
-            "File containing glob patterns for files to"
-            " ignore when finding files to update in a directory."
-            " Will look for '.pontos-header-ignore' in the directory"
-            " if none is given."
+            "File containing glob patterns for files to "
+            "ignore when finding files to update in a directory. "
+            "Will look for '.pontos-header-ignore' in the directory "
+            "if none is given. "
             "The ignore file should only contain relative paths like *.py,"
             "not absolute as **/*.py"
         ),
@@ -315,7 +312,7 @@ def _parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main() -> None:
+def main(args=None) -> None:
     args = _parse_args()
     exclude_list = []
 
