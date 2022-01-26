@@ -30,7 +30,6 @@ class TestArgparsing(unittest.TestCase):
 
     def test_parse_args(self):
         argv = [
-            "pontos-github",
             "pr",
             "foo/bar",
             "baz",
@@ -56,7 +55,7 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args, expected_args)
 
     def test_parse_args_fail(self):
-        argv = ["pontos-github", "pr", "foo/bar"]
+        argv = ["pr", "foo/bar"]
 
         with self.assertRaises(SystemExit):
             parse_args(argv)
