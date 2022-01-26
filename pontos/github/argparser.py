@@ -71,7 +71,7 @@ def parse_args(
     pr_parser.add_argument(
         "target",
         default="main",
-        help=("Branch as as target for the pull"),
+        help="Branch as as target for the pull. Default: %(default)s",
     )
 
     pr_parser.add_argument(
