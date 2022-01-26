@@ -15,23 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 from pontos.github.argparser import parse_args
-from pontos.github.api import GitHubRESTApi
+from pontos.terminal import Terminal, _set_terminal
 
 
 def main(args=None):
     parsed_args = parse_args(args)
-    print(parsed_args)
 
-    git = GitHubRESTApi(token=parsed_args.token)
+    term = Terminal()
+    _set_terminal(term)
 
-    git.create_pull_request(
-        repo=parsed_args.repo,
-        head_branch=parsed_args.head,
-        base_branch=parsed_args.target,
-        title=parsed_args.title,
-        body=parsed_args.body,
-    )
+    term.bold_info(f'pontos-github => {parsed_args.func.__name__}')
+
+    with term.indent():
+        if not parsed_args.token:
+            term.error("A Github User Token is required.")
+            sys.exit(1)
+
+        parsed_args.func(args=parsed_args)
 
 
 if __name__ == "__main__":

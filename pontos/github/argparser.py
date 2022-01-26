@@ -19,14 +19,17 @@
 
 from argparse import ArgumentParser, Namespace
 import os
+from pathlib import Path
+import sys
 from typing import List
+
+from pontos.github.cmds import pull_request
+
+body_template = Path(__file__).parent / "pr_template.md"
 
 
 def from_env(name: str) -> str:
-    if name in os.environ:
-        return os.environ[name]
-    else:
-        return name
+    return os.environ.get(name, name)
 
 
 def parse_args(
@@ -54,6 +57,8 @@ def parse_args(
         'pull-request', aliases=['pr', 'PR', 'pullrequest']
     )
 
+    pr_parser.set_defaults(func=pull_request)
+
     pr_parser.add_argument(
         "repo", help=("GitHub repository (owner/name) to use")
     )
@@ -77,7 +82,7 @@ def parse_args(
     pr_parser.add_argument(
         "-b",
         "--body",
-        default="#empty body",
+        default=body_template.read_text(encoding="utf-8"),
         help=(
             "Description for the pull request. Can be formatted in Markdown."
         ),
@@ -93,5 +98,9 @@ def parse_args(
             "Default looks for environment variable 'GITHUB_TOKEN'"
         ),
     )
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stdout)
+        sys.exit(1)
 
     return parser.parse_args(args)
