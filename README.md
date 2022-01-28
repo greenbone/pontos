@@ -15,6 +15,7 @@ the titan of the sea.
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Tools](#tools)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Install using pip](#install-using-pip)
@@ -23,6 +24,59 @@ the titan of the sea.
 - [Maintainer](#maintainer)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Tools and Utilities
+
+`pontos` comes with a continiously increasing set of features.
+The following commands are currently available:
+
+* `pontos-release` - Release handling utility for C and Python Projects
+>We also provide easy-to-use [GitHub Actions](https://github.com/greenbone/actions/#usage), that we recommended to use instead of manually releasing with pontos-release.
+```bash
+# Prepare the next patch release (x.x.2) of project <foo>, use conventional commits for release notes
+pontos-release prepare --project <foo> -patch -CC
+# Release that patch version of project <foo>
+pontos-release release --project <foo>
+# Sign a release:
+pontos-release sign --project <foo> --release-version 1.2.3 --signing-key 1234567890ABCDEFEDCBA0987654321 [--passphrase <for_that_key>]
+```
+* `pontos-version` - Version handling utility for C, Go and Python Projects
+```bash
+# Update version of this project to 22.1.1
+pontos-version update 22.1.1
+# Show current projects version
+pontos-version show
+```
+* `pontos-update-header` - Handling Copyright header for various file types and licences
+>We also provide an easy-to-use [GitHub Action](https://github.com/greenbone/actions/#usage), that updates copyright year in header of files and creates a Pull Request.
+```bash
+# Update year in Copyright header in files, also add missing headers
+pontos-update-header -d <dir1> <dir2>
+```
+* `pontos-changelog` - Parse conventional commits in the current branch, creating CHANGELOG.md file
+```bash
+# Parse conventional commits and create <changelog_file>
+pontos-changelog -o <changelog-file>
+```
+* pontos-github` - Handling GitHub operations, like Pull Requests (beta)
+```bash
+# create a PR on GitHub
+pontos-github pr <orga/repo> <head> <target> <pr_title> [--body <pr_body>]
+```
+
+* pontos` also comes with a Terminal interface printing prettier outputs
+```python
+import pontos.terminal.terminal
+
+term = terminal.Terminal()
+with term.indent():
+    term.ok("Hello indented World")
+```
+* `pontos` also comes with git and GitHub APIs
+```python
+import pontos.git
+import pontos.github
+```
 
 ## Installation
 

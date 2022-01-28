@@ -85,7 +85,7 @@ def initialize_default_parser() -> ArgumentParser:
         '--changelog',
         help=(
             'The CHANGELOG file path, defaults '
-            'to CHANGELOG.md in the repository root directory',
+            'to CHANGELOG.md in the repository root directory'
         ),
     )
     prepare_parser.add_argument(
@@ -102,7 +102,7 @@ def initialize_default_parser() -> ArgumentParser:
         '-CC',
         help=(
             'Wether to use conventional commits and create '
-            'the changelog directly from the git log',
+            'the changelog directly from the git log'
         ),
         action='store_true',
     )
@@ -128,7 +128,7 @@ def initialize_default_parser() -> ArgumentParser:
         '--next-version',
         help=(
             'Sets the next PEP 440 compliant version in project definition '
-            'after the release. default: set to next dev version',
+            'after the release. default: set to next dev version'
         ),
     )
 
@@ -158,7 +158,7 @@ def initialize_default_parser() -> ArgumentParser:
         '--changelog',
         help=(
             'The CHANGELOG file path, defaults '
-            'to CHANGELOG.md in the repository root directory',
+            'to CHANGELOG.md in the repository root directory'
         ),
     )
     release_parser.add_argument(
@@ -166,7 +166,7 @@ def initialize_default_parser() -> ArgumentParser:
         '-CC',
         help=(
             'Wether to use conventional commits and create '
-            'the changelog directly from the git log',
+            'the changelog directly from the git log'
         ),
         action='store_true',
     )

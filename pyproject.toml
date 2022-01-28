@@ -73,6 +73,7 @@ mode = "poetry"
 version-module-file = "pontos/version/__version__.py"
 
 [tool.poetry.scripts]
+pontos = 'pontos:main'
 pontos-version = 'pontos.version:main'
 pontos-release = 'pontos.release:main'
 pontos-update-header = 'pontos.updateheader:main'
