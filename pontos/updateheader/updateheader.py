@@ -184,6 +184,10 @@ def _update_file(
                 fp.seek(fp_write)
                 fp.write(new_line)
                 fp.write(rest_of_file)
+                # in some cases we replace "YYYY - YYYY" with "YYYY-YYYY"
+                # resulting in 2 characters left at the end of the file
+                # so we truncate the file, just in case!
+                fp.truncate()
                 print(
                     f"{file}: Changed Licence Header Copyright Year "
                     f'{copyright_match["modification_year"]} -> '
