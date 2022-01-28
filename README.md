@@ -15,7 +15,7 @@ the titan of the sea.
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Tools](#tools)
+- [Tools](#tools-and-utilities)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Install using pip](#install-using-pip)
