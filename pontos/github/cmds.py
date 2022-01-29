@@ -43,7 +43,7 @@ def pull_request(args: Namespace):
                 "authorisation failed."
             )
             sys.exit(1)
-        ok(f"Head branch {args.head} is existing.")
+        ok(f"Target branch {args.target} is existing.")
 
         git.create_pull_request(
             repo=args.repo,
