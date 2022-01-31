@@ -22,9 +22,15 @@ import os
 from pathlib import Path
 from typing import List
 
-from pontos.github.cmds import pull_request
+from pontos.github.cmds import file_status, pull_request
 
 body_template = Path(__file__).parent / "pr_template.md"
+
+FILE_STATUS = [
+    "modified",
+    "added",
+    "deleted",
+]
 
 
 def from_env(name: str) -> str:
@@ -89,6 +95,50 @@ def parse_args(
     )
 
     pr_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    # get files
+    file_status_parser = subparsers.add_parser(
+        'file-status', aliases=['status', 'FS']
+    )
+
+    file_status_parser.set_defaults(func=file_status)
+
+    file_status_parser.add_argument(
+        "repo", help=("GitHub repository (owner/name) to use")
+    )
+
+    file_status_parser.add_argument(
+        "pr_number", help="Specify the Pull Request number", type=int
+    )
+
+    file_status_parser.add_argument(
+        "-s",
+        "--status",
+        choices=FILE_STATUS,
+        default=['added', 'modified'],
+        nargs='+',
+        help=("What file status should be returned" "Default: %(default)s"),
+    )
+
+    file_status_parser.add_argument(
+        "-o",
+        "--output",
+        help=(
+            "Specify an output file. "
+            "If none is given, output will be prompted"
+        ),
+    )
+
+    file_status_parser.add_argument(
         "-t",
         "--token",
         default="GITHUB_TOKEN",

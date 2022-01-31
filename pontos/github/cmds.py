@@ -21,14 +21,14 @@ import sys
 import requests
 
 from pontos.github.api import GitHubRESTApi
-from pontos.terminal import error, ok
+from pontos.terminal import error, info, ok, out, warning
 
 
 def pull_request(args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
-    # check if branches exist
     try:
+        # check if branches exist
         if not git.branch_exists(repo=args.repo, branch=args.head):
             error(
                 f"Head branch {args.head} is not existing "
@@ -57,3 +57,39 @@ def pull_request(args: Namespace):
         sys.exit(1)
 
     ok("Pull Request created.")
+
+
+def file_status(args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if PR is existing
+        if not git.pull_request_exists(
+            repo=args.repo, pr_number=args.pr_number
+        ):
+            error(
+                f"PR {args.pr_number} is not existing "
+                "or authorisation failed."
+            )
+            sys.exit(1)
+        ok(f"PR {args.pr_number} is existing.")
+
+        if 'modified' in args.status:
+            modified_files = git.get_modified_files_in_pr(
+                repo=args.repo, pr_number=args.pr_number
+            )
+            info("Modified:")
+            for modified in modified_files:
+                out(str(modified.resolve()))
+        if 'added' in args.status:
+            added_files = git.get_added_files_in_pr(
+                repo=args.repo, pr_number=args.pr_number
+            )
+            info("Added:")
+            for added in added_files:
+                out(str(added.resolve()))
+        if 'deleted' in args.status:
+            warning("Currently not implemented.")
+    except requests.exceptions.RequestException as e:
+        error(str(e))
+        sys.exit(1)

@@ -146,6 +146,18 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.ok
 
+    def pull_request_exists(self, repo: str, pr_number: int) -> bool:
+        """
+        Check if a single branch in a repository exists
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pr_number: Pull request number to check
+        """
+        api = f"/repos/{repo}/pulls/{str(pr_number)}"
+        response = self._request(api)
+        return response.ok
+
     def pull_request_commits(self, repo: str, pr_number: int) -> Dict[str, str]:
         """
         Get all commit information of a pull request
