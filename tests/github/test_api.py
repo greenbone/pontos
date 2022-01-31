@@ -329,6 +329,70 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(it)
 
+    @patch("pontos.github.api.requests.get")
+    def test_modified_files_in_pr(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = json.loads(
+            (here / "pr-files.json").read_text(encoding="utf-8")
+        )
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        files = api.get_modified_files_in_pr("foo/bar", "1")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params={'per_page': '100'},
+            json=None,
+        )
+
+        self.assertEqual(
+            files,
+            [
+                Path("gvm/protocols/gmpv2110/__init__.py"),
+                Path("tests/protocols/gmpv2110/entities/test_users.py"),
+                Path("tests/protocols/gmpv2110/entities/users/__init__.py"),
+                Path(
+                    "tests/protocols/gmpv2110/"
+                    "entities/users/test_modify_user.py"
+                ),
+            ],
+        )
+
+    @patch("pontos.github.api.requests.get")
+    def test_added_files_in_pr(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = json.loads(
+            (here / "pr-files.json").read_text(encoding="utf-8")
+        )
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        files = api.get_added_files_in_pr("foo/bar", "1")
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params={'per_page': '100'},
+            json=None,
+        )
+
+        self.assertEqual(
+            files,
+            [
+                Path("gvm/protocols/gmpv2110/entities/users.py"),
+                Path(
+                    "tests/protocols/gmpv2110/entities/"
+                    "users/test_create_user.py"
+                ),
+            ],
+        )
+
 
 class DownloadTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.get")
