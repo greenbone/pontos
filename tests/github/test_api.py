@@ -73,7 +73,7 @@ class GitHubApiTestCase(unittest.TestCase):
         response.json.return_value = [{"sha": "1"}]
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        commits = api.pull_request_commits("foo/bar", "1")
+        commits = api.pull_request_commits("foo/bar", pr_number=1)
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/commits',
@@ -117,7 +117,9 @@ class GitHubApiTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
-        api.add_pull_request_comment("foo/bar", "123", "This is a comment")
+        api.add_pull_request_comment(
+            "foo/bar", pr_number=123, comment="This is a comment"
+        )
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/issues/123/comments',
@@ -337,7 +339,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_modified_files_in_pr("foo/bar", "1")
+        files = api.get_modified_files_in_pr("foo/bar", pr_number=1)
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/files',
@@ -370,7 +372,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_added_files_in_pr("foo/bar", "1")
+        files = api.get_added_files_in_pr("foo/bar", pr_number=1)
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/files',

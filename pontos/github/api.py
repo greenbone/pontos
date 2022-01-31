@@ -146,9 +146,7 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.ok
 
-    def pull_request_commits(
-        self, repo: str, pull_request: str
-    ) -> Dict[str, str]:
+    def pull_request_commits(self, repo: str, pr_number: int) -> Dict[str, str]:
         """
         Get all commit information of a pull request
 
@@ -157,7 +155,7 @@ class GitHubRESTApi:
 
         Args:
             repo: GitHub repository (owner/name) to use
-            pull_request: Pull request number
+            pr_number: Pull request number
 
         Returns:
             Information about the commits in the pull request as a dict
@@ -165,7 +163,7 @@ class GitHubRESTApi:
         # per default github only shows 35 commits and at max it is only
         # possible to receive 100
         params = {"per_page": "100"}
-        api = f"/repos/{repo}/pulls/{pull_request}/commits"
+        api = f"/repos/{repo}/pulls/{str(pr_number)}/commits"
         response = self._request(api, params=params)
         return response.json()
 
@@ -201,21 +199,19 @@ class GitHubRESTApi:
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
 
-    def add_pull_request_comment(
-        self, repo: str, pull_request: str, comment: str
-    ):
+    def add_pull_request_comment(self, repo: str, pr_number: int, comment: str):
         """
         Add a comment to a pull request on GitHub
 
         Args:
             repo: GitHub repository (owner/name) to use
-            pull_request: Pull request number where to add a comment
+            pr_number: Pull request number where to add a comment
             comment: The actual comment message. Can be formatted in Markdown.
 
         Raises:
             HTTPError if the request was invalid
         """
-        api = f"/repos/{repo}/issues/{pull_request}/comments"
+        api = f"/repos/{repo}/issues/{str(pr_number)}/comments"
         data = {"body": comment}
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
