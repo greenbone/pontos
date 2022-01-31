@@ -22,7 +22,6 @@ from pontos.terminal import Terminal, _set_terminal
 
 def main(args=None):
     parsed_args = parse_args(args)
-    print(parsed_args)
 
     term = Terminal()
     _set_terminal(term)

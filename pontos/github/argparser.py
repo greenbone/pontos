@@ -17,7 +17,7 @@
 
 """ Argument parser for pontos-github """
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, FileType, Namespace
 import os
 from pathlib import Path
 from typing import List
@@ -132,9 +132,12 @@ def parse_args(
     file_status_parser.add_argument(
         "-o",
         "--output",
+        type=FileType('w', encoding="utf-8"),
         help=(
             "Specify an output file. "
             "If none is given, output will be prompted"
+            "The file will contain all files, with status "
+            "changes, as given, separated by a newline"
         ),
     )
 

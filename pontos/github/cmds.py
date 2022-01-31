@@ -78,16 +78,25 @@ def file_status(args: Namespace):
             modified_files = git.get_modified_files_in_pr(
                 repo=args.repo, pr_number=args.pr_number
             )
+            modified_files = [
+                str(modified.resolve()) for modified in modified_files
+            ]
             info("Modified:")
             for modified in modified_files:
-                out(str(modified.resolve()))
+                out(modified)
+            if args.output:
+                args.output.write("\n".join(modified_files) + "\n")
+
         if 'added' in args.status:
             added_files = git.get_added_files_in_pr(
                 repo=args.repo, pr_number=args.pr_number
             )
+            added_files = [str(added.resolve()) for added in added_files]
             info("Added:")
             for added in added_files:
-                out(str(added.resolve()))
+                out(added)
+            if args.output:
+                args.output.write("\n".join(added_files) + "\n")
         if 'deleted' in args.status:
             warning("Currently not implemented.")
     except requests.exceptions.RequestException as e:
