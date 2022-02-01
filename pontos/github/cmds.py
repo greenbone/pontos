@@ -21,7 +21,7 @@ import sys
 import requests
 
 from pontos.github.api import GitHubRESTApi
-from pontos.terminal import error, info, ok, out, warning
+from pontos.terminal import error, info, ok, out
 
 
 def pull_request(args: Namespace):
@@ -74,31 +74,17 @@ def file_status(args: Namespace):
             sys.exit(1)
         ok(f"PR {args.pr_number} is existing.")
 
-        if 'modified' in args.status:
-            modified_files = git.get_modified_files_in_pr(
-                repo=args.repo, pr_number=args.pr_number
-            )
-            modified_files = [
-                str(modified.resolve()) for modified in modified_files
-            ]
-            info("Modified:")
-            for modified in modified_files:
-                out(modified)
+        file_dict = git.get_files_in_pr(
+            repo=args.repo, pr_number=args.pr_number, status_list=args.status
+        )
+        for status in args.status:
+            info(f'{status}:')
+            files = [str(f.resolve()) for f in file_dict[status]]
+            for file_string in files:
+                out(file_string)
             if args.output:
-                args.output.write("\n".join(modified_files) + "\n")
+                args.output.write("\n".join(files) + "\n")
 
-        if 'added' in args.status:
-            added_files = git.get_added_files_in_pr(
-                repo=args.repo, pr_number=args.pr_number
-            )
-            added_files = [str(added.resolve()) for added in added_files]
-            info("Added:")
-            for added in added_files:
-                out(added)
-            if args.output:
-                args.output.write("\n".join(added_files) + "\n")
-        if 'deleted' in args.status:
-            warning("Currently not implemented.")
     except requests.exceptions.RequestException as e:
         error(str(e))
         sys.exit(1)

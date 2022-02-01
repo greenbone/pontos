@@ -341,7 +341,9 @@ class GitHubRESTApi:
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download(api, destination)
 
-    def get_modified_files_in_pr(self, repo: str, pr_number: int) -> List[Path]:
+    def get_files_in_pr(
+        self, repo: str, pr_number: int, status_list: List[str]
+    ) -> List[Path]:
         """
         Get all modified files of a pull request
 
@@ -351,6 +353,7 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
             pr_number: Pull request number
+            status_list: List of status change types that should be included
 
         Returns:
             Information about the commits in the pull request as a dict
@@ -361,36 +364,12 @@ class GitHubRESTApi:
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{str(pr_number)}/files"
         response = self._request(api, params=params)
+        file_dict = {}
+        for status in status_list:
+            file_dict[status] = [
+                Path(f['filename'])
+                for f in response.json()
+                if f['status'] == status
+            ]
 
-        return [
-            Path(f['filename'])
-            for f in response.json()
-            if f['status'] == "modified"
-        ]
-
-    def get_added_files_in_pr(self, repo: str, pr_number: int) -> List[Path]:
-        """
-        Get all added files of a pull request
-
-        Hint: At maximum GitHub allows to receive 100 commits. If a pull request
-        contains more then 100 commits only the first 100 are returned.
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            pr_number: Pull request number
-
-        Returns:
-            Information about the commits in the pull request as a dict
-        """
-        # per default github only shows 35 commits and at max it is only
-        # possible to receive 100
-        # might add the page parameter, to get the files 101-202 and so on
-        params = {"per_page": "100"}
-        api = f"/repos/{repo}/pulls/{str(pr_number)}/files"
-        response = self._request(api, params=params)
-
-        return [
-            Path(f['filename'])
-            for f in response.json()
-            if f['status'] == "added"
-        ]
+        return file_dict
