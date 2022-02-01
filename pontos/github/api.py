@@ -154,7 +154,7 @@ class GitHubRESTApi:
             repo: GitHub repository (owner/name) to use
             pr_number: Pull request number to check
         """
-        api = f"/repos/{repo}/pulls/{str(pr_number)}"
+        api = f"/repos/{repo}/pulls/{pr_number}"
         response = self._request(api)
         return response.ok
 
@@ -175,7 +175,7 @@ class GitHubRESTApi:
         # per default github only shows 35 commits and at max it is only
         # possible to receive 100
         params = {"per_page": "100"}
-        api = f"/repos/{repo}/pulls/{str(pr_number)}/commits"
+        api = f"/repos/{repo}/pulls/{pr_number}/commits"
         response = self._request(api, params=params)
         return response.json()
 
@@ -223,7 +223,7 @@ class GitHubRESTApi:
         Raises:
             HTTPError if the request was invalid
         """
-        api = f"/repos/{repo}/issues/{str(pr_number)}/comments"
+        api = f"/repos/{repo}/issues/{pr_number}/comments"
         data = {"body": comment}
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
@@ -362,7 +362,7 @@ class GitHubRESTApi:
         # possible to receive 100
         # might add the page parameter, to get the files 101-202 and so on
         params = {"per_page": "100"}
-        api = f"/repos/{repo}/pulls/{str(pr_number)}/files"
+        api = f"/repos/{repo}/pulls/{pr_number}/files"
         response = self._request(api, params=params)
         file_dict = {}
         for status in status_list:
