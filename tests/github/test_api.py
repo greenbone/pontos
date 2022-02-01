@@ -339,7 +339,9 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_modified_files_in_pr("foo/bar", pr_number=1)
+        files = api.get_files_in_pr(
+            "foo/bar", pr_number=1, status_list=['modified']
+        )
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/files',
@@ -353,15 +355,17 @@ class GitHubApiTestCase(unittest.TestCase):
 
         self.assertEqual(
             files,
-            [
-                Path("gvm/protocols/gmpv2110/__init__.py"),
-                Path("tests/protocols/gmpv2110/entities/test_users.py"),
-                Path("tests/protocols/gmpv2110/entities/users/__init__.py"),
-                Path(
-                    "tests/protocols/gmpv2110/"
-                    "entities/users/test_modify_user.py"
-                ),
-            ],
+            {
+                'modified': [
+                    Path("gvm/protocols/gmpv2110/__init__.py"),
+                    Path("tests/protocols/gmpv2110/entities/test_users.py"),
+                    Path("tests/protocols/gmpv2110/entities/users/__init__.py"),
+                    Path(
+                        "tests/protocols/gmpv2110/"
+                        "entities/users/test_modify_user.py"
+                    ),
+                ]
+            },
         )
 
     @patch("pontos.github.api.requests.get")
@@ -372,7 +376,9 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_added_files_in_pr("foo/bar", pr_number=1)
+        files = api.get_files_in_pr(
+            "foo/bar", pr_number=1, status_list=['added']
+        )
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/files',
@@ -386,13 +392,15 @@ class GitHubApiTestCase(unittest.TestCase):
 
         self.assertEqual(
             files,
-            [
-                Path("gvm/protocols/gmpv2110/entities/users.py"),
-                Path(
-                    "tests/protocols/gmpv2110/entities/"
-                    "users/test_create_user.py"
-                ),
-            ],
+            {
+                'added': [
+                    Path("gvm/protocols/gmpv2110/entities/users.py"),
+                    Path(
+                        "tests/protocols/gmpv2110/entities/"
+                        "users/test_create_user.py"
+                    ),
+                ]
+            },
         )
 
 

@@ -94,3 +94,4 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args.token, expected_args.token)
 
         output.close()
+        parsed_args.output.close()
