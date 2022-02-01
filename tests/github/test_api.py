@@ -339,7 +339,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_files_in_pr(
+        files = api.pull_request_files(
             "foo/bar", pr_number=1, status_list=['modified']
         )
 
@@ -376,7 +376,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        files = api.get_files_in_pr(
+        files = api.pull_request_files(
             "foo/bar", pr_number=1, status_list=['added']
         )
 

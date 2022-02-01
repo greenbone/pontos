@@ -37,7 +37,7 @@ class TestArgparsing(unittest.TestCase):
     @patch("pontos.github.cmds.GitHubRESTApi")
     def test_file_status(self, api_mock):
         api_mock.return_value.pull_request_exists.return_value = True
-        api_mock.return_value.get_files_in_pr.return_value = {
+        api_mock.return_value.pull_request_files.return_value = {
             'added': [Path('tests/github/foo/bar')],
             'modified': [
                 Path("tests/github/bar/baz"),

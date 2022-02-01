@@ -74,7 +74,7 @@ def file_status(args: Namespace):
             sys.exit(1)
         ok(f"PR {args.pr_number} is existing.")
 
-        file_dict = git.get_files_in_pr(
+        file_dict = git.pull_request_files(
             repo=args.repo, pr_number=args.pr_number, status_list=args.status
         )
         for status in args.status:

@@ -341,7 +341,7 @@ class GitHubRESTApi:
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download(api, destination)
 
-    def get_files_in_pr(
+    def pull_request_files(
         self, repo: str, pr_number: int, status_list: List[str]
     ) -> List[Path]:
         """
