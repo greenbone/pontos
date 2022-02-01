@@ -21,7 +21,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from pontos.github.api import GitHubRESTApi, DEFAULT_TIMEOUT, download
+from pontos.github.api import (
+    FileStatus,
+    GitHubRESTApi,
+    DEFAULT_TIMEOUT,
+    download,
+)
 
 here = Path(__file__).parent
 
@@ -73,7 +78,7 @@ class GitHubApiTestCase(unittest.TestCase):
         response.json.return_value = [{"sha": "1"}]
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        commits = api.pull_request_commits("foo/bar", pr_number=1)
+        commits = api.pull_request_commits("foo/bar", pull_request=1)
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/commits',
@@ -118,7 +123,7 @@ class GitHubApiTestCase(unittest.TestCase):
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.add_pull_request_comment(
-            "foo/bar", pr_number=123, comment="This is a comment"
+            "foo/bar", pull_request=123, comment="This is a comment"
         )
 
         requests_mock.assert_called_once_with(
@@ -340,7 +345,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
         files = api.pull_request_files(
-            "foo/bar", pr_number=1, status_list=['modified']
+            "foo/bar", pull_request=1, status_list=[FileStatus.MODIFIED]
         )
 
         requests_mock.assert_called_once_with(
@@ -377,7 +382,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
         files = api.pull_request_files(
-            "foo/bar", pr_number=1, status_list=['added']
+            "foo/bar", pull_request=1, status_list=[FileStatus.ADDED]
         )
 
         requests_mock.assert_called_once_with(

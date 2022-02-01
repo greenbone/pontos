@@ -65,21 +65,23 @@ def file_status(args: Namespace):
     try:
         # check if PR is existing
         if not git.pull_request_exists(
-            repo=args.repo, pr_number=args.pr_number
+            repo=args.repo, pull_request=args.pull_request
         ):
             error(
-                f"PR {args.pr_number} is not existing "
+                f"PR {args.pull_request} is not existing "
                 "or authorisation failed."
             )
             sys.exit(1)
-        ok(f"PR {args.pr_number} is existing.")
+        ok(f"PR {args.pull_request} is existing.")
 
         file_dict = git.pull_request_files(
-            repo=args.repo, pr_number=args.pr_number, status_list=args.status
+            repo=args.repo,
+            pull_request=args.pull_request,
+            status_list=args.status,
         )
         for status in args.status:
-            info(f'{status}:')
-            files = [str(f.resolve()) for f in file_dict[status]]
+            info(f'{status.value}:')
+            files = [str(f.resolve()) for f in file_dict[status.value]]
             for file_string in files:
                 out(file_string)
             if args.output:

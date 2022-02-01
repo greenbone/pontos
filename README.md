@@ -63,7 +63,7 @@ pontos-changelog -o <changelog-file>
 # create a PR on GitHub
 pontos-github pr <orga/repo> <head> <target> <pr_title> [--body <pr_body>]
 # get modified and deleted files in a PR, store in file test.txt
-pontos-github FS <orga/repo> <pr_number> -s modified deleted -o test.txt
+pontos-github FS <orga/repo> <pull_request> -s modified deleted -o test.txt
 ```
 
 * pontos` also comes with a Terminal interface printing prettier outputs

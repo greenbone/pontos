@@ -22,6 +22,7 @@ import io
 from pathlib import Path
 import unittest
 from unittest.mock import Mock
+from pontos.github.api import FileStatus
 
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import file_status, pull_request
@@ -79,9 +80,9 @@ class TestArgparsing(unittest.TestCase):
             command='FS',
             func=file_status,
             repo='foo/bar',
-            pr_number=8,
+            pull_request=8,
             output=output,
-            status=['added', 'modified'],
+            status=[FileStatus.ADDED, FileStatus.MODIFIED],
             token='GITHUB_TOKEN',
         )
 
@@ -89,7 +90,7 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args.command, expected_args.command)
         self.assertEqual(parsed_args.func, expected_args.func)
         self.assertEqual(parsed_args.repo, expected_args.repo)
-        self.assertEqual(parsed_args.pr_number, expected_args.pr_number)
+        self.assertEqual(parsed_args.pull_request, expected_args.pull_request)
         self.assertEqual(parsed_args.status, expected_args.status)
         self.assertEqual(parsed_args.token, expected_args.token)
 

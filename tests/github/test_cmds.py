@@ -22,6 +22,7 @@ import io
 from pathlib import Path
 import unittest
 from unittest.mock import Mock, patch
+from pontos.github.api import FileStatus
 
 from pontos.github.cmds import file_status
 from pontos.terminal import _set_terminal
@@ -51,9 +52,9 @@ class TestArgparsing(unittest.TestCase):
             command='FS',
             func=file_status,
             repo='foo/bar',
-            pr_number=8,
+            pull_request=8,
             output=output,
-            status=['added', 'modified'],
+            status=[FileStatus.ADDED, FileStatus.MODIFIED],
             token='GITHUB_TOKEN',
         )
 

@@ -23,14 +23,9 @@ from pathlib import Path
 from typing import List
 
 from pontos.github.cmds import file_status, pull_request
+from pontos.github.api import FileStatus
 
 body_template = Path(__file__).parent / "pr_template.md"
-
-FILE_STATUS = [
-    "modified",
-    "added",
-    "deleted",
-]
 
 
 def from_env(name: str) -> str:
@@ -117,14 +112,14 @@ def parse_args(
     )
 
     file_status_parser.add_argument(
-        "pr_number", help="Specify the Pull Request number", type=int
+        "pull_request", help="Specify the Pull Request number", type=int
     )
 
     file_status_parser.add_argument(
         "-s",
         "--status",
-        choices=FILE_STATUS,
-        default=['added', 'modified'],
+        choices=FileStatus,
+        default=[FileStatus.ADDED, FileStatus.MODIFIED],
         nargs='+',
         help=("What file status should be returned" "Default: %(default)s"),
     )
