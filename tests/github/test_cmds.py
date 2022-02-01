@@ -39,8 +39,8 @@ class TestArgparsing(unittest.TestCase):
     def test_file_status(self, api_mock):
         api_mock.return_value.pull_request_exists.return_value = True
         api_mock.return_value.pull_request_files.return_value = {
-            'added': [Path('tests/github/foo/bar')],
-            'modified': [
+            FileStatus.ADDED: [Path('tests/github/foo/bar')],
+            FileStatus.MODIFIED: [
                 Path("tests/github/bar/baz"),
                 Path("tests/github/baz/boo"),
             ],

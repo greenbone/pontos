@@ -361,7 +361,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(
             files,
             {
-                'modified': [
+                FileStatus.MODIFIED: [
                     Path("gvm/protocols/gmpv2110/__init__.py"),
                     Path("tests/protocols/gmpv2110/entities/test_users.py"),
                     Path("tests/protocols/gmpv2110/entities/users/__init__.py"),
@@ -398,7 +398,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(
             files,
             {
-                'added': [
+                FileStatus.ADDED: [
                     Path("gvm/protocols/gmpv2110/entities/users.py"),
                     Path(
                         "tests/protocols/gmpv2110/entities/"

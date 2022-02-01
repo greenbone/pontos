@@ -17,7 +17,7 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional
+from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 import requests
 
@@ -355,7 +355,7 @@ class GitHubRESTApi:
 
     def pull_request_files(
         self, repo: str, pull_request: int, status_list: List[FileStatus]
-    ) -> List[Path]:
+    ) -> Dict[FileStatus, Iterable[Path]]:
         """
         Get all modified files of a pull request
 
@@ -378,7 +378,7 @@ class GitHubRESTApi:
         response = self._request(api, params=params)
         file_dict = {}
         for status in status_list:
-            file_dict[status.value] = [
+            file_dict[status] = [
                 Path(f['filename'])
                 for f in response.json()
                 if f['status'] == status.value

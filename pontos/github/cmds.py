@@ -81,7 +81,7 @@ def file_status(args: Namespace):
         )
         for status in args.status:
             info(f'{status.value}:')
-            files = [str(f.resolve()) for f in file_dict[status.value]]
+            files = [str(f.resolve()) for f in file_dict[status]]
             for file_string in files:
                 out(file_string)
             if args.output:
