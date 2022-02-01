@@ -21,14 +21,14 @@ import sys
 import requests
 
 from pontos.github.api import GitHubRESTApi
-from pontos.terminal import error, ok
+from pontos.terminal import error, info, ok, out
 
 
 def pull_request(args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
-    # check if branches exist
     try:
+        # check if branches exist
         if not git.branch_exists(repo=args.repo, branch=args.head):
             error(
                 f"Head branch {args.head} is not existing "
@@ -57,3 +57,36 @@ def pull_request(args: Namespace):
         sys.exit(1)
 
     ok("Pull Request created.")
+
+
+def file_status(args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if PR is existing
+        if not git.pull_request_exists(
+            repo=args.repo, pull_request=args.pull_request
+        ):
+            error(
+                f"PR {args.pull_request} is not existing "
+                "or authorisation failed."
+            )
+            sys.exit(1)
+        ok(f"PR {args.pull_request} is existing.")
+
+        file_dict = git.pull_request_files(
+            repo=args.repo,
+            pull_request=args.pull_request,
+            status_list=args.status,
+        )
+        for status in args.status:
+            info(f'{status.value}:')
+            files = [str(f.resolve()) for f in file_dict[status]]
+            for file_string in files:
+                out(file_string)
+            if args.output:
+                args.output.write("\n".join(files) + "\n")
+
+    except requests.exceptions.RequestException as e:
+        error(str(e))
+        sys.exit(1)

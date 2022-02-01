@@ -17,12 +17,13 @@
 
 """ Argument parser for pontos-github """
 
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, FileType, Namespace
 import os
 from pathlib import Path
 from typing import List
 
-from pontos.github.cmds import pull_request
+from pontos.github.cmds import file_status, pull_request
+from pontos.github.api import FileStatus
 
 body_template = Path(__file__).parent / "pr_template.md"
 
@@ -89,6 +90,53 @@ def parse_args(
     )
 
     pr_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    # get files
+    file_status_parser = subparsers.add_parser(
+        'file-status', aliases=['status', 'FS']
+    )
+
+    file_status_parser.set_defaults(func=file_status)
+
+    file_status_parser.add_argument(
+        "repo", help=("GitHub repository (owner/name) to use")
+    )
+
+    file_status_parser.add_argument(
+        "pull_request", help="Specify the Pull Request number", type=int
+    )
+
+    file_status_parser.add_argument(
+        "-s",
+        "--status",
+        choices=FileStatus,
+        default=[FileStatus.ADDED, FileStatus.MODIFIED],
+        nargs='+',
+        help=("What file status should be returned" "Default: %(default)s"),
+    )
+
+    file_status_parser.add_argument(
+        "-o",
+        "--output",
+        type=FileType('w', encoding="utf-8"),
+        help=(
+            "Specify an output file. "
+            "If none is given, output will be prompted"
+            "The file will contain all files, with status "
+            "changes, as given, separated by a newline"
+        ),
+    )
+
+    file_status_parser.add_argument(
         "-t",
         "--token",
         default="GITHUB_TOKEN",

@@ -21,7 +21,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from pontos.github.api import GitHubRESTApi, DEFAULT_TIMEOUT, download
+from pontos.github.api import (
+    FileStatus,
+    GitHubRESTApi,
+    DEFAULT_TIMEOUT,
+    download,
+)
 
 here = Path(__file__).parent
 
@@ -73,7 +78,7 @@ class GitHubApiTestCase(unittest.TestCase):
         response.json.return_value = [{"sha": "1"}]
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        commits = api.pull_request_commits("foo/bar", "1")
+        commits = api.pull_request_commits("foo/bar", pull_request=1)
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/pulls/1/commits',
@@ -117,7 +122,9 @@ class GitHubApiTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
-        api.add_pull_request_comment("foo/bar", "123", "This is a comment")
+        api.add_pull_request_comment(
+            "foo/bar", pull_request=123, comment="This is a comment"
+        )
 
         requests_mock.assert_called_once_with(
             'https://api.github.com/repos/foo/bar/issues/123/comments',
@@ -328,6 +335,78 @@ class GitHubApiTestCase(unittest.TestCase):
 
         with self.assertRaises(StopIteration):
             next(it)
+
+    @patch("pontos.github.api.requests.get")
+    def test_modified_files_in_pr(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = json.loads(
+            (here / "pr-files.json").read_text(encoding="utf-8")
+        )
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        files = api.pull_request_files(
+            "foo/bar", pull_request=1, status_list=[FileStatus.MODIFIED]
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params={'per_page': '100'},
+            json=None,
+        )
+
+        self.assertEqual(
+            files,
+            {
+                FileStatus.MODIFIED: [
+                    Path("gvm/protocols/gmpv2110/__init__.py"),
+                    Path("tests/protocols/gmpv2110/entities/test_users.py"),
+                    Path("tests/protocols/gmpv2110/entities/users/__init__.py"),
+                    Path(
+                        "tests/protocols/gmpv2110/"
+                        "entities/users/test_modify_user.py"
+                    ),
+                ]
+            },
+        )
+
+    @patch("pontos.github.api.requests.get")
+    def test_added_files_in_pr(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.json.return_value = json.loads(
+            (here / "pr-files.json").read_text(encoding="utf-8")
+        )
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        files = api.pull_request_files(
+            "foo/bar", pull_request=1, status_list=[FileStatus.ADDED]
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params={'per_page': '100'},
+            json=None,
+        )
+
+        self.assertEqual(
+            files,
+            {
+                FileStatus.ADDED: [
+                    Path("gvm/protocols/gmpv2110/entities/users.py"),
+                    Path(
+                        "tests/protocols/gmpv2110/entities/"
+                        "users/test_create_user.py"
+                    ),
+                ]
+            },
+        )
 
 
 class DownloadTestCase(unittest.TestCase):

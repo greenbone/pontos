@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Iterator, Optional
+from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 import requests
 
@@ -24,6 +25,13 @@ DEFAULT_GITHUB_API_URL = "https://api.github.com"
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
+
+
+class FileStatus(Enum):
+    ADDED = "added"
+    DELETED = "deleted"
+    MODIFIED = "modified"
+    RENAMED = "renamed"
 
 
 class DownloadProgressIterable:
@@ -146,8 +154,20 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.ok
 
+    def pull_request_exists(self, repo: str, pull_request: int) -> bool:
+        """
+        Check if a single branch in a repository exists
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number to check
+        """
+        api = f"/repos/{repo}/pulls/{pull_request}"
+        response = self._request(api)
+        return response.ok
+
     def pull_request_commits(
-        self, repo: str, pull_request: str
+        self, repo: str, pull_request: int
     ) -> Dict[str, str]:
         """
         Get all commit information of a pull request
@@ -202,7 +222,7 @@ class GitHubRESTApi:
         response.raise_for_status()
 
     def add_pull_request_comment(
-        self, repo: str, pull_request: str, comment: str
+        self, repo: str, pull_request: int, comment: str
     ):
         """
         Add a comment to a pull request on GitHub
@@ -332,3 +352,36 @@ class GitHubRESTApi:
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download(api, destination)
+
+    def pull_request_files(
+        self, repo: str, pull_request: int, status_list: List[FileStatus]
+    ) -> Dict[FileStatus, Iterable[Path]]:
+        """
+        Get all modified files of a pull request
+
+        Hint: At maximum GitHub allows to receive 100 commits. If a pull request
+        contains more then 100 commits only the first 100 are returned.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number
+            status_list: List of status change types that should be included
+
+        Returns:
+            Information about the commits in the pull request as a dict
+        """
+        # per default github only shows 35 commits and at max it is only
+        # possible to receive 100
+        # might add the page parameter, to get the files 101-202 and so on
+        params = {"per_page": "100"}
+        api = f"/repos/{repo}/pulls/{pull_request}/files"
+        response = self._request(api, params=params)
+        file_dict = {}
+        for status in status_list:
+            file_dict[status] = [
+                Path(f['filename'])
+                for f in response.json()
+                if f['status'] == status.value
+            ]
+
+        return file_dict

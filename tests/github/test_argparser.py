@@ -15,20 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=no-member
+
 from argparse import Namespace
+import io
 from pathlib import Path
 import unittest
 from unittest.mock import Mock
+from pontos.github.api import FileStatus
 
 from pontos.github.argparser import parse_args
-from pontos.github.cmds import pull_request
+from pontos.github.cmds import file_status, pull_request
 
 
 class TestArgparsing(unittest.TestCase):
     def setUp(self):
         self.term = Mock()
 
-    def test_parse_args(self):
+    def test_pr_parse_args(self):
         argv = [
             "pr",
             "foo/bar",
@@ -54,8 +58,41 @@ class TestArgparsing(unittest.TestCase):
 
         self.assertEqual(parsed_args, expected_args)
 
-    def test_parse_args_fail(self):
+    def test_pr_parse_args_fail(self):
         argv = ["pr", "foo/bar"]
 
         with self.assertRaises(SystemExit):
             parse_args(argv)
+
+    def test_fs_parse_args(self):
+        argv = [
+            "FS",
+            "foo/bar",
+            "8",
+            "-o",
+            "some.file",
+        ]
+
+        parsed_args = parse_args(argv)
+        output = io.open(Path("some.file"), mode='w', encoding='utf-8')
+
+        expected_args = Namespace(
+            command='FS',
+            func=file_status,
+            repo='foo/bar',
+            pull_request=8,
+            output=output,
+            status=[FileStatus.ADDED, FileStatus.MODIFIED],
+            token='GITHUB_TOKEN',
+        )
+
+        self.assertEqual(type(parsed_args.output), type(expected_args.output))
+        self.assertEqual(parsed_args.command, expected_args.command)
+        self.assertEqual(parsed_args.func, expected_args.func)
+        self.assertEqual(parsed_args.repo, expected_args.repo)
+        self.assertEqual(parsed_args.pull_request, expected_args.pull_request)
+        self.assertEqual(parsed_args.status, expected_args.status)
+        self.assertEqual(parsed_args.token, expected_args.token)
+
+        output.close()
+        parsed_args.output.close()
