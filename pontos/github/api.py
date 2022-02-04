@@ -216,7 +216,7 @@ class GitHubRESTApi:
             "head": head_branch,
             "base": base_branch,
             "title": title,
-            "body": body,
+            "body": body.replace('\\n', '\n'),
         }
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
