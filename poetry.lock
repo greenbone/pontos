@@ -360,7 +360,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "28db5f06fec2c36278821b97cfd02ce6568f9c018fdfd761abde3a58af2bc4a6"
+content-hash = "b643057655e187fe1f6d3b1f773744a4dfc8acafa23eddf83be7528caf0fc8c0"
 
 [metadata.files]
 astroid = [
