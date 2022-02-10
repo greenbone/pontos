@@ -45,6 +45,7 @@ class ConventionalCommitsTestCase(unittest.TestCase):
         config_toml = own_path / 'changelog.toml'
         release_version = '0.0.2'
         output = f'v{release_version}.md'
+        git_tag = "v0.0.1"
         git_log = (
             '1234567 Add: foo bar\n'
             '8abcdef Add: bar baz\n'
@@ -61,6 +62,8 @@ class ConventionalCommitsTestCase(unittest.TestCase):
 
         def runner(cmd):
             called.append(cmd)
+            if cmd == "git describe --tags --abbrev=0":
+                return StdOutput(git_tag)
             return StdOutput(git_log)
 
         cargs = Namespace(
@@ -111,7 +114,12 @@ All notable changes to this project will be documented in this file.
         )
 
         self.assertIn(
-            'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline',
+            'git describe --tags --abbrev=0',
+            called,
+        )
+
+        self.assertIn(
+            'git log "v0.0.1..HEAD" --oneline',
             called,
         )
 

@@ -69,9 +69,14 @@ class ChangelogBuilder:
     def get_git_log(self) -> Union[List[str], None]:
         # https://stackoverflow.com/a/12083016/6725620
         # uses only latest tag for this branch
-        proc = self.shell_cmd_runner(
-            'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline'
+        proc: subprocess.CompletedProcess = self.shell_cmd_runner(
+            "git describe --tags --abbrev=0"
         )
+        if proc.stdout and proc.stdout != '':
+            cmd: str = f'git log "{proc.stdout.strip()}..HEAD" --oneline'
+        else:
+            cmd: str = 'git log HEAD --oneline'
+        proc = self.shell_cmd_runner(cmd)
         if proc.stdout and proc.stdout != '':
             return proc.stdout.strip().split('\n')
         return None
