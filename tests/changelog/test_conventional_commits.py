@@ -62,7 +62,7 @@ class ConventionalCommitsTestCase(unittest.TestCase):
 
         def runner(cmd):
             called.append(cmd)
-            if cmd == "git describe --tags --abbrev=0":
+            if cmd == "git tag | sort -V | tail -1":
                 return StdOutput(git_tag)
             return StdOutput(git_log)
 
@@ -114,7 +114,7 @@ All notable changes to this project will be documented in this file.
         )
 
         self.assertIn(
-            'git describe --tags --abbrev=0',
+            'git tag | sort -V | tail -1',
             called,
         )
 
