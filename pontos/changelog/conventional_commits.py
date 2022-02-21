@@ -33,6 +33,8 @@ from pontos.release.helper import (
     get_project_name,
 )
 
+ADDRESS = "https://github.com/"
+
 
 class ChangelogBuilder:
     """Creates Changelog files from conventional commits
@@ -60,13 +62,21 @@ class ChangelogBuilder:
         self.next_version: str = args.next_version
 
     def create_changelog_file(self) -> Union[Path, None]:
-        commit_list = self.get_git_log()
-        commit_dict = self.sort_commits(commit_list)
-        self.build_changelog_file(commit_dict=commit_dict)
+        commit_list = self._get_git_log()
+        commit_dict = self._sort_commits(commit_list)
+        return self._build_changelog_file(commit_dict=commit_dict)
 
-        return self.output_file if self.output_file else None
+    def _get_git_log(self) -> Union[List[str], None]:
+        """Getting the git log for the current branch.
 
-    def get_git_log(self) -> Union[List[str], None]:
+        If a last tag is found, the `git log` is searched up to the
+          last tag, found by `git tag | sort -V | tail -1`.
+        Else if no tag is found, the `git log` is searched full, asuming
+          this is a initial release.
+
+        Returns:
+            A list of `git log` entries or None
+        """
         # https://stackoverflow.com/a/12083016/6725620
         # uses only latest tag for this branch
         # catch this CalledProcessError on
@@ -87,9 +97,28 @@ class ChangelogBuilder:
             return proc.stdout.strip().split('\n')
         return None
 
-    def sort_commits(self, commits: List[str]):
+    def _sort_commits(self, commits: List[str]):
+        """Sort the commits by commit type and group them
+        in a dict
+        ```
+        {
+            'Added:': [
+                'commit 1 [1234567](..)',
+                'commit 2 [1234568](..)',
+                '...',
+            ],
+            'Fixed:': [
+                ...
+            ],
+        }
+        ```
+
+        Returns
+            The dict containing the commit messages"""
         # get the commit types from the toml
         commit_types = self.config.get('commit_types')
+
+        commit_link = f'{ADDRESS}{self.space}/{self.project}/commit/'
 
         commit_dict = {}
         if commits and len(commits) > 0:
@@ -101,28 +130,32 @@ class ChangelogBuilder:
                     )
                     match = reg.match(commit[1])
                     if match:
+                        if commit_type['group'] not in commit_dict:
+                            commit_dict[commit_type['group']] = []
+
+                        # remove the commit tag from commit message
                         cleaned_msg = (
                             commit[1].replace(match.group(0), '').strip()
                         )
-                        info(
-                            f'{cleaned_msg} [{commit[0]}](https://github.com/'
-                            f'{self.space}/{self.project}/commit/{commit[0]})'
-                        )
-                        if commit_type['group'] not in commit_dict:
-                            commit_dict[commit_type['group']] = []
                         commit_dict[commit_type['group']].append(
-                            f'{cleaned_msg} [{commit[0]}](https://github.com/'
-                            f'{self.space}/{self.project}/commit/{commit[0]})'
+                            f'{cleaned_msg} [{commit[0]}]'
+                            f'({commit_link}{commit[0]})'
                         )
-        else:
-            warning("No conventional commits found.")
-            sys.exit(1)
+                        info(f'{commit[0]}: {cleaned_msg}')
         if not commit_dict:
             warning("No conventional commits found.")
             sys.exit(1)
         return commit_dict
 
-    def build_changelog_file(self, commit_dict: Dict):
+    def _build_changelog_file(self, commit_dict: Dict) -> Union[str, None]:
+        """Building the changellog file with the passed dict.
+
+        Arguments:
+            commit_dict     dict containing sorted commits
+
+        Returns:
+            The path to the changelog file or None"""
+
         # changelog header
         changelog = (
             "# Changelog\n\n"
@@ -135,34 +168,32 @@ class ChangelogBuilder:
             )
         else:
             changelog += '## [Unreleased]\n\n'
-        commit_types = self.config.get('commit_types')
 
         # changelog entries
+        commit_types = self.config.get('commit_types')
         for commit_type in commit_types:
             if commit_type['group'] in commit_dict.keys():
                 changelog += f"\n## {commit_type['group']}\n"
                 for msg in commit_dict[commit_type['group']]:
                     changelog += f"* {msg}\n"
 
-        # comparison line
+        # comparison line (footer)
+        pre = '\n[Unreleased]: '
+        compare_link = f'{ADDRESS}{self.space}/{self.project}/compare/'
         if self.next_version and self.current_version:
-            changelog += (
-                f'\n[{self.next_version}]: https://github.com/{self.space}/'
-                f'{self.project}/compare/{self.current_version}...'
-                f'{self.next_version}'
-            )
+            pre = f'\n[{self.next_version}]: '
+            diff = f'{self.current_version}...{self.next_version}'
         elif self.current_version:
-            changelog += (
-                f'\n[Unreleased]: https://github.com/{self.space}/'
-                f'{self.project}/compare/{self.current_version}...HEAD'
-            )
+            diff = f'\n{self.current_version}...HEAD'
         else:
-            changelog += (
-                f'\n[Unreleased]: https://github.com/{self.space}/'
-                f'{self.project}/compare/<?>...HEAD'
-            )
+            diff = '???...HEAD'
 
-        self.output_file.write_text(changelog, encoding='utf-8')
+        changelog += f'{pre}{compare_link}{diff}'
+
+        if changelog:
+            self.output_file.write_text(changelog, encoding='utf-8')
+            return self.output_file
+        return None
 
 
 def initialize_default_parser() -> ArgumentParser:
