@@ -148,7 +148,7 @@ class ChangelogBuilder:
         return commit_dict
 
     def _build_changelog_file(self, commit_dict: Dict) -> Union[str, None]:
-        """Building the changellog file with the passed dict.
+        """Building the changelog file with the passed dict.
 
         Arguments:
             commit_dict     dict containing sorted commits
