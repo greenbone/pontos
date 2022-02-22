@@ -115,7 +115,7 @@ def release(
     )
 
     # set to new version add skeleton
-    changelog_bool = True
+    changelog_bool = False
     if not args.conventional_commits:
         change_log_path = path.cwd() / 'CHANGELOG.md'
         if args.changelog:
@@ -133,7 +133,7 @@ def release(
             git_space=space,
         )
         change_log_path.write_text(updated, encoding='utf-8')
-        changelog_bool = False
+        changelog_bool = True
 
         commit_msg += f'* Add empty changelog after {release_version}'
 
