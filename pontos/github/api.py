@@ -385,3 +385,37 @@ class GitHubRESTApi:
             ]
 
         return file_dict
+
+    def get_labels(
+        self,
+        repo: str,
+        issue: int,
+    ) -> List[str]:
+        """
+        Get all labels that are set in the issue/pr
+
+        Args:
+            repo:   GitHub repository (owner/name) to use
+            issue:  Issue/Pull request number
+
+        Returns:
+            List of existing labels
+        """
+        api = f"/repos/{repo}/issues/{issue}/labels"
+        response = self._request(api, request=requests.get)
+        return [f["name"] for f in response.json()]
+
+    def set_labels(self, repo: str, issue: int, labels: List[str]):
+        """
+        Set labels in the issue/pr. Existing labels will be overwritten
+
+        Args:
+            repo:   GitHub repository (owner/name) to use
+            issue:  Issue/Pull request number
+            labels: List of labels, that should be set.
+                    Existing labels will be overwritten
+        """
+        api = f"/repos/{repo}/issues/{issue}/labels"
+        data = {"labels": labels}
+        response = self._request(api, data=data, request=requests.post)
+        response.raise_for_status()

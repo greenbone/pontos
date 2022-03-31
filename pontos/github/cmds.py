@@ -43,7 +43,7 @@ def pull_request(args: Namespace):
                 "authorisation failed."
             )
             sys.exit(1)
-        ok(f"Target branch {args.target} is existing.")
+        ok(f"Target branch {args.target} exists.")
 
         git.create_pull_request(
             repo=args.repo,
@@ -72,7 +72,7 @@ def file_status(args: Namespace):
                 "or authorisation failed."
             )
             sys.exit(1)
-        ok(f"PR {args.pull_request} is existing.")
+        ok(f"PR {args.pull_request} exists.")
 
         file_dict = git.pull_request_files(
             repo=args.repo,
@@ -86,6 +86,30 @@ def file_status(args: Namespace):
                 out(file_string)
             if args.output:
                 args.output.write("\n".join(files) + "\n")
+
+    except requests.exceptions.RequestException as e:
+        error(str(e))
+        sys.exit(1)
+
+
+def labels(args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if PR is existing
+        if not git.pull_request_exists(repo=args.repo, pull_request=args.issue):
+            error(f"PR {args.issue} is not existing or authorisation failed.")
+            sys.exit(1)
+        ok(f"PR {args.issue} exists.")
+
+        issue_labels = git.get_labels(
+            repo=args.repo,
+            issue=args.issue,
+        )
+
+        issue_labels.extend(args.labels)
+
+        git.set_labels(repo=args.repo, issue=args.issue, labels=issue_labels)
 
     except requests.exceptions.RequestException as e:
         error(str(e))
