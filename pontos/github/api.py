@@ -403,11 +403,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         response = self._request(api, request=requests.get)
-        labels = []
-
-        for f in response.json():
-            labels.append(f["name"])
-        return labels
+        return [f["name"] for f in response.json()]
 
     def set_labels(self, repo: str, issue: int, labels: List[str]):
         """

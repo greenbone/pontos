@@ -43,7 +43,7 @@ def pull_request(args: Namespace):
                 "authorisation failed."
             )
             sys.exit(1)
-        ok(f"Target branch {args.target} is existing.")
+        ok(f"Target branch {args.target} exists.")
 
         git.create_pull_request(
             repo=args.repo,
@@ -72,7 +72,7 @@ def file_status(args: Namespace):
                 "or authorisation failed."
             )
             sys.exit(1)
-        ok(f"PR {args.pull_request} is existing.")
+        ok(f"PR {args.pull_request} exists.")
 
         file_dict = git.pull_request_files(
             repo=args.repo,
@@ -98,11 +98,9 @@ def labels(args: Namespace):
     try:
         # check if PR is existing
         if not git.pull_request_exists(repo=args.repo, pull_request=args.issue):
-            error(
-                f"PR {args.issue} is not existing " "or authorisation failed."
-            )
+            error(f"PR {args.issue} is not existing or authorisation failed.")
             sys.exit(1)
-        ok(f"PR {args.issue} is existing.")
+        ok(f"PR {args.issue} exists.")
 
         issue_labels = git.get_labels(
             repo=args.repo,
