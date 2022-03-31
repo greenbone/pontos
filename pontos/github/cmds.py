@@ -90,3 +90,29 @@ def file_status(args: Namespace):
     except requests.exceptions.RequestException as e:
         error(str(e))
         sys.exit(1)
+
+
+def labels(args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if PR is existing
+        if not git.pull_request_exists(repo=args.repo, pull_request=args.issue):
+            error(
+                f"PR {args.issue} is not existing " "or authorisation failed."
+            )
+            sys.exit(1)
+        ok(f"PR {args.issue} is existing.")
+
+        issue_labels = git.get_labels(
+            repo=args.repo,
+            issue=args.issue,
+        )
+
+        issue_labels.extend(args.labels)
+
+        git.set_labels(repo=args.repo, issue=args.issue, labels=issue_labels)
+
+    except requests.exceptions.RequestException as e:
+        error(str(e))
+        sys.exit(1)

@@ -22,7 +22,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from pontos.github.cmds import file_status, pull_request
+from pontos.github.cmds import file_status, pull_request, labels
 from pontos.github.api import FileStatus
 
 body_template = Path(__file__).parent / "pr_template.md"
@@ -137,6 +137,37 @@ def parse_args(
     )
 
     file_status_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    # labels
+    label_parser = subparsers.add_parser('labels', aliases=['L'])
+
+    label_parser.set_defaults(func=labels)
+
+    label_parser.add_argument(
+        "repo", help=("GitHub repository (owner/name) to use")
+    )
+
+    label_parser.add_argument(
+        "issue", help="Specify the Issue/Pull Request number", type=int
+    )
+
+    label_parser.add_argument(
+        "--labels",
+        "-L",
+        nargs="+",
+        help="Specify the labels, that should be set",
+    )
+
+    label_parser.add_argument(
         "-t",
         "--token",
         default="GITHUB_TOKEN",
