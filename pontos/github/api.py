@@ -204,7 +204,7 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
             head_branch: Branch to create a pull request from
-            base_branch: Branch as target for the pull
+            base_branch: Branch as target for the pull request
             title: Title for the pull request
             body: Description for the pull request. Can be formatted in Markdown
 
@@ -218,6 +218,41 @@ class GitHubRESTApi:
             "title": title,
             "body": body.replace('\\n', '\n'),
         }
+        response = self._request(api, data=data, request=requests.post)
+        response.raise_for_status()
+
+    def update_pull_request(
+        self,
+        repo: str,
+        pull_request: int,
+        *,
+        base_branch: Optional[str] = None,
+        title: Optional[str] = None,
+        body: Optional[str] = None,
+    ):
+        """
+        Update a Pull Request on GitHub
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number
+            base_branch: Branch as target for the pull request. Leave empty for
+                keeping the current one.
+            title: Title for the pull request. Leave empty for keeping the
+                current one.
+            body: Description for the pull request. Can be formatted in
+                Markdown. Leave empty for keeping the current one.
+        """
+        api = f"/repos/{repo}/pulls/{pull_request}"
+
+        data = {}
+        if base_branch:
+            data["base"] = base_branch
+        if title:
+            data["title"] = title
+        if body:
+            data["body"] = body.replace('\\n', '\n')
+
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
 

@@ -120,6 +120,31 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
     @patch("pontos.github.api.requests.post")
+    def test_update_pull_request(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.update_pull_request(
+            "foo/bar",
+            123,
+            base_branch="main",
+            title="Foo",
+            body="This is bar",
+        )
+
+        requests_mock.assert_called_once_with(
+            'https://api.github.com/repos/foo/bar/pulls/123',
+            headers={
+                'Authorization': 'token 12345',
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            params=None,
+            json={
+                'base': 'main',
+                'title': 'Foo',
+                'body': 'This is bar',
+            },
+        )
+
+    @patch("pontos.github.api.requests.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.add_pull_request_comment(

@@ -15,7 +15,7 @@ the titan of the sea.
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Tools](#tools-and-utilities)
+- [Tools and Utilities](#tools-and-utilities)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Install using pip](#install-using-pip)
@@ -61,7 +61,9 @@ pontos-changelog -o <changelog-file>
 * pontos-github` - Handling GitHub operations, like Pull Requests (beta)
 ```bash
 # create a PR on GitHub
-pontos-github pr <orga/repo> <head> <target> <pr_title> [--body <pr_body>]
+pontos-github pr create <orga/repo> <head> <target> <pr_title> [--body <pr_body>]
+# update a PR on GitHub
+pontos-github pr update <orga/repo> <pr> [--target <target_branch>] [--title <pr_title>] [--body <pr_body>]
 # get modified and deleted files in a PR, store in file test.txt
 pontos-github FS <orga/repo> <pull_request> -s modified deleted -o test.txt
 # add labels to an Issue/PR

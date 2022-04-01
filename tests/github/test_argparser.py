@@ -25,16 +25,21 @@ from unittest.mock import Mock
 from pontos.github.api import FileStatus
 
 from pontos.github.argparser import parse_args
-from pontos.github.cmds import file_status, pull_request
+from pontos.github.cmds import (
+    file_status,
+    create_pull_request,
+    update_pull_request,
+)
 
 
 class TestArgparsing(unittest.TestCase):
     def setUp(self):
         self.term = Mock()
 
-    def test_pr_parse_args(self):
+    def test_create_pr_parse_args(self):
         argv = [
             "pr",
+            "create",
             "foo/bar",
             "baz",
             "main",
@@ -45,21 +50,47 @@ class TestArgparsing(unittest.TestCase):
 
         template = Path().cwd() / 'pontos/github/pr_template.md'
 
-        expected_args = Namespace(
-            body=template.read_text(encoding='utf-8'),
-            command='pr',
-            func=pull_request,
-            head='baz',
-            repo='foo/bar',
-            target='main',
-            title='baz in main',
-            token='GITHUB_TOKEN',
-        )
+        self.assertEqual(parsed_args.command, "pr")
+        self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
+        self.assertEqual(parsed_args.body, template.read_text(encoding='utf-8'))
+        self.assertEqual(parsed_args.pr_func, create_pull_request)
+        self.assertEqual(parsed_args.repo, "foo/bar")
+        self.assertEqual(parsed_args.target, "main")
+        self.assertEqual(parsed_args.title, "baz in main")
 
-        self.assertEqual(parsed_args, expected_args)
+    def test_create_pr_parse_args_fail(self):
+        argv = ["pr", "create", "foo/bar"]
 
-    def test_pr_parse_args_fail(self):
-        argv = ["pr", "foo/bar"]
+        with self.assertRaises(SystemExit):
+            parse_args(argv)
+
+    def test_update_pr_parse_args(self):
+        argv = [
+            "pr",
+            "update",
+            "foo/bar",
+            "123",
+            "--body",
+            "foo",
+            "--target",
+            "main",
+            "--title",
+            "baz in main",
+        ]
+
+        parsed_args = parse_args(argv)
+
+        self.assertEqual(parsed_args.command, "pr")
+        self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
+        self.assertEqual(parsed_args.body, "foo")
+        self.assertEqual(parsed_args.pr_func, update_pull_request)
+        self.assertEqual(parsed_args.repo, "foo/bar")
+        self.assertEqual(parsed_args.pull_request, 123)
+        self.assertEqual(parsed_args.target, "main")
+        self.assertEqual(parsed_args.title, "baz in main")
+
+    def test_update_pr_parse_args_fail(self):
+        argv = ["pr", "update", "foo/bar"]
 
         with self.assertRaises(SystemExit):
             parse_args(argv)

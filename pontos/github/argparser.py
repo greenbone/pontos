@@ -17,12 +17,19 @@
 
 """ Argument parser for pontos-github """
 
-from argparse import ArgumentParser, FileType, Namespace
 import os
+
+from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List
 
-from pontos.github.cmds import file_status, pull_request, labels
+from pontos.github.cmds import (
+    create_pull_request,
+    file_status,
+    labels,
+    pull_request,
+    update_pull_request,
+)
 from pontos.github.api import FileStatus
 
 body_template = Path(__file__).parent / "pr_template.md"
@@ -35,11 +42,13 @@ def from_env(name: str) -> str:
 def parse_args(
     args: List[str] = None,
 ) -> Namespace:
-    """Parsing args for nasl-lint
+    """
+    Parsing args for Pontos GitHub
 
     Arguments:
-    args        The programm arguments passed by exec
-    term        The terminal to print"""
+    args        The program arguments passed by exec
+    term        The terminal to print
+    """
 
     parser = ArgumentParser(
         description="Greenbone GitHub API.",
@@ -61,26 +70,52 @@ def parse_args(
     pr_parser.set_defaults(func=pull_request)
 
     pr_parser.add_argument(
-        "repo", help=("GitHub repository (owner/name) to use")
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
     )
 
-    pr_parser.add_argument(
+    pr_subparsers = pr_parser.add_subparsers(
+        title="method",
+        dest="pr_method",
+        metavar="name",
+        description="valid pull request method",
+        help="pull request method",
+        required=True,
+    )
+
+    create_pr_parser = pr_subparsers.add_parser(
+        "create", help="Create Pull Request"
+    )
+
+    create_pr_parser.set_defaults(pr_func=create_pull_request)
+
+    create_pr_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+
+    create_pr_parser.add_argument(
         "head",
         help=("Branch to create a pull request from"),
     )
 
-    pr_parser.add_argument(
+    create_pr_parser.add_argument(
         "target",
         default="main",
         help="Branch as as target for the pull. Default: %(default)s",
     )
 
-    pr_parser.add_argument(
+    create_pr_parser.add_argument(
         "title",
-        help=("Title for the pull request"),
+        help="Title for the pull request",
     )
 
-    pr_parser.add_argument(
+    create_pr_parser.add_argument(
         "-b",
         "--body",
         default=body_template.read_text(encoding="utf-8"),
@@ -89,14 +124,32 @@ def parse_args(
         ),
     )
 
-    pr_parser.add_argument(
-        "-t",
-        "--token",
-        default="GITHUB_TOKEN",
-        type=from_env,
+    update_pr_parser = pr_subparsers.add_parser(
+        "update", help="update Pull Request"
+    )
+
+    update_pr_parser.set_defaults(pr_func=update_pull_request)
+
+    update_pr_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+    update_pr_parser.add_argument(
+        "pull_request", type=int, help="Pull Request to update"
+    )
+    update_pr_parser.add_argument(
+        "--target",
+        help="Branch as as target for the pull.",
+    )
+    update_pr_parser.add_argument(
+        "--title",
+        help="Title for the pull request",
+    )
+
+    update_pr_parser.add_argument(
+        "-b",
+        "--body",
         help=(
-            "GitHub Token to access the repository. "
-            "Default looks for environment variable 'GITHUB_TOKEN'"
+            "Description for the pull request. Can be formatted in Markdown."
         ),
     )
 
