@@ -68,7 +68,7 @@ pontos-github FS <orga/repo> <pull_request> -s modified deleted -o test.txt
 pontos-github L <orga/repo> <issue/PR> label1 label2
 ```
 
-* pontos` also comes with a Terminal interface printing prettier outputs
+* `pontos` also comes with a Terminal interface printing prettier outputs
 ```python
 import pontos.terminal.terminal
 
