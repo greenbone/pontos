@@ -25,6 +25,10 @@ from pontos.terminal import error, info, ok, out
 
 
 def pull_request(args: Namespace):
+    args.pr_func(args)
+
+
+def create_pull_request(args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
     try:
@@ -57,6 +61,34 @@ def pull_request(args: Namespace):
         sys.exit(1)
 
     ok("Pull Request created.")
+
+
+def update_pull_request(args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        if args.target:
+            # check if branches exist
+            if not git.branch_exists(repo=args.repo, branch=args.target):
+                error(
+                    f"Target branch {args.target} is not existing or "
+                    "authorisation failed."
+                )
+                sys.exit(1)
+
+            ok(f"Target branch {args.target} exists.")
+        git.update_pull_request(
+            repo=args.repo,
+            pull_request=args.pull_request,
+            base_branch=args.target,
+            title=args.title,
+            body=args.body,
+        )
+    except requests.exceptions.RequestException as e:
+        error(str(e))
+        sys.exit(1)
+
+    ok("Pull Request updated.")
 
 
 def file_status(args: Namespace):
