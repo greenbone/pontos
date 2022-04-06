@@ -389,7 +389,11 @@ class GitHubRESTApi:
         return download(api, destination)
 
     def pull_request_files(
-        self, repo: str, pull_request: int, status_list: List[FileStatus]
+        self,
+        repo: str,
+        pull_request: int,
+        status_list: List[FileStatus],
+        pages: int = 30,
     ) -> Dict[FileStatus, Iterable[Path]]:
         """
         Get all modified files of a pull request
@@ -405,17 +409,17 @@ class GitHubRESTApi:
         Returns:
             Information about the commits in the pull request as a dict
         """
-        # per default github only shows 35 commits and at max it is only
-        # possible to receive 100
-        # might add the page parameter, to get the files 101-202 and so on
-        params = {"per_page": "100"}
-        api = f"/repos/{repo}/pulls/{pull_request}/files"
-        response = self._request(api, params=params)
+        # page param starts with 1
+        response = []
+        for page_num in range(1, pages + 1):
+            params = {"per_page": "100", "page": str(page_num)}
+            api = f"/repos/{repo}/pulls/{pull_request}/files"
+            response += self._request(api, params=params).json()
         file_dict = {}
         for status in status_list:
             file_dict[status] = [
                 Path(f['filename'])
-                for f in response.json()
+                for f in response
                 if f['status'] == status.value
             ]
 

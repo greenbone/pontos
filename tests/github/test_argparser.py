@@ -115,6 +115,7 @@ class TestArgparsing(unittest.TestCase):
             output=output,
             status=[FileStatus.ADDED, FileStatus.MODIFIED],
             token='GITHUB_TOKEN',
+            pages=30,
         )
 
         self.assertEqual(type(parsed_args.output), type(expected_args.output))
@@ -124,6 +125,7 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args.pull_request, expected_args.pull_request)
         self.assertEqual(parsed_args.status, expected_args.status)
         self.assertEqual(parsed_args.token, expected_args.token)
+        self.assertEqual(parsed_args.pages, expected_args.pages)
 
         output.close()
         parsed_args.output.close()

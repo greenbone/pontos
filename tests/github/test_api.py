@@ -370,7 +370,10 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
         files = api.pull_request_files(
-            "foo/bar", pull_request=1, status_list=[FileStatus.MODIFIED]
+            "foo/bar",
+            pull_request=1,
+            status_list=[FileStatus.MODIFIED],
+            pages=1,
         )
 
         requests_mock.assert_called_once_with(
@@ -379,7 +382,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 'Authorization': 'token 12345',
                 'Accept': 'application/vnd.github.v3+json',
             },
-            params={'per_page': '100'},
+            params={'per_page': '100', 'page': '1'},
             json=None,
         )
 
@@ -407,7 +410,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
         files = api.pull_request_files(
-            "foo/bar", pull_request=1, status_list=[FileStatus.ADDED]
+            "foo/bar", pull_request=1, status_list=[FileStatus.ADDED], pages=1
         )
 
         requests_mock.assert_called_once_with(
@@ -416,7 +419,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 'Authorization': 'token 12345',
                 'Accept': 'application/vnd.github.v3+json',
             },
-            params={'per_page': '100'},
+            params={'per_page': '100', 'page': '1'},
             json=None,
         )
 

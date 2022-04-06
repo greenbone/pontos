@@ -169,6 +169,19 @@ def parse_args(
     )
 
     file_status_parser.add_argument(
+        "-p",
+        "--pages",
+        type=int,
+        choices=range(1, 31),
+        metavar="[1-30]",
+        default=30,
+        help=(
+            "Set the maximum pages to request from a PR."
+            "One page are 100 files."
+        ),
+    )
+
+    file_status_parser.add_argument(
         "-s",
         "--status",
         choices=FileStatus,
