@@ -58,7 +58,7 @@ pontos-update-header -d <dir1> <dir2>
 # Parse conventional commits and create <changelog_file>
 pontos-changelog -o <changelog-file>
 ```
-* pontos-github` - Handling GitHub operations, like Pull Requests (beta)
+* `pontos-github` - Handling GitHub operations, like Pull Requests (beta)
 ```bash
 # create a PR on GitHub
 pontos-github pr create <orga/repo> <head> <target> <pr_title> [--body <pr_body>]
