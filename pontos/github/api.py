@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 from typing import Callable, Dict, Iterable, Iterator, List, Optional
@@ -118,6 +119,16 @@ def download(
     )
 
 
+def _get_next_url(response) -> Optional[str]:
+    if response and response.links:
+        try:
+            return response.links['next']['url']
+        except KeyError:
+            pass
+
+    return None
+
+
 class GitHubRESTApi:
     def __init__(
         self, token: str, url: Optional[str] = DEFAULT_GITHUB_API_URL
@@ -125,9 +136,9 @@ class GitHubRESTApi:
         self.token = token
         self.url = url
 
-    def _request(
+    def _request_internal(
         self,
-        api: str,
+        url: str,
         *,
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
@@ -138,9 +149,44 @@ class GitHubRESTApi:
             "Accept": "application/vnd.github.v3+json",
         }
         request = request or requests.get
-        return request(
-            f"{self.url}{api}", headers=headers, params=params, json=data
+        return request(f"{url}", headers=headers, params=params, json=data)
+
+    def _request(
+        self,
+        api: str,
+        *,
+        params: Optional[Dict[str, str]] = None,
+        data: Optional[Dict[str, str]] = None,
+        request: Optional[Callable] = None,
+    ) -> requests.Response:
+        return self._request_internal(
+            f"{self.url}{api}", params=params, data=data, request=request
         )
+
+    def _request_all(
+        self,
+        api: str,
+        *,
+        params: Optional[Dict[str, str]] = None,
+        data: Optional[Dict[str, str]] = None,
+        request: Optional[Callable] = None,
+    ) -> Iterator[Dict[str, str]]:
+        response = self._request(api, params=params, data=data, request=request)
+
+        yield from response.json()
+
+        next_url = _get_next_url(response)
+
+        while next_url:
+            response = self._request_internal(
+                next_url, params=params, data=data, request=request
+            )
+
+            yield from response.json()
+
+            next_url = _get_next_url(response)
+
+        return data
 
     def branch_exists(self, repo: str, branch: str) -> bool:
         """
@@ -168,12 +214,11 @@ class GitHubRESTApi:
 
     def pull_request_commits(
         self, repo: str, pull_request: int
-    ) -> Dict[str, str]:
+    ) -> Iterable[Dict[str, str]]:
         """
         Get all commit information of a pull request
 
-        Hint: At maximum GitHub allows to receive 100 commits. If a pull request
-        contains more then 100 commits only the first 100 are returned.
+        Hint: At maximum GitHub allows to receive 250 commits of a pull request.
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -186,8 +231,7 @@ class GitHubRESTApi:
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/commits"
-        response = self._request(api, params=params)
-        return response.json()
+        return list(self._request_all(api, params=params))
 
     def create_pull_request(
         self,
@@ -389,35 +433,36 @@ class GitHubRESTApi:
         return download(api, destination)
 
     def pull_request_files(
-        self, repo: str, pull_request: int, status_list: List[FileStatus]
+        self, repo: str, pull_request: int, status_list: Iterable[FileStatus]
     ) -> Dict[FileStatus, Iterable[Path]]:
         """
         Get all modified files of a pull request
 
-        Hint: At maximum GitHub allows to receive 100 commits. If a pull request
-        contains more then 100 commits only the first 100 are returned.
+        Hint: At maximum GitHub allows to receive 3000 files of a commit.
 
         Args:
             repo: GitHub repository (owner/name) to use
             pull_request: Pull request number
-            status_list: List of status change types that should be included
+            status_list: Iterable of status change types that should be included
 
         Returns:
             Information about the commits in the pull request as a dict
         """
-        # per default github only shows 35 commits and at max it is only
+        # per default github only shows 35 files per page and at max it is only
         # possible to receive 100
-        # might add the page parameter, to get the files 101-202 and so on
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/files"
-        response = self._request(api, params=params)
-        file_dict = {}
-        for status in status_list:
-            file_dict[status] = [
-                Path(f['filename'])
-                for f in response.json()
-                if f['status'] == status.value
-            ]
+        data = self._request_all(api, params=params)
+        file_dict = defaultdict(list)
+        for f in data:
+            try:
+                status = FileStatus(f['status'])
+            except ValueError:
+                # unknown status
+                continue
+
+            if status in status_list:
+                file_dict[status].append(Path(f['filename']))
 
         return file_dict
 
