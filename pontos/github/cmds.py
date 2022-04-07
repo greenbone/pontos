@@ -110,6 +110,7 @@ def file_status(args: Namespace):
             repo=args.repo,
             pull_request=args.pull_request,
             status_list=args.status,
+            pages=args.pages,
         )
         for status in args.status:
             info(f'{status.value}:')

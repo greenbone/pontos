@@ -56,6 +56,7 @@ class TestArgparsing(unittest.TestCase):
             output=output,
             status=[FileStatus.ADDED, FileStatus.MODIFIED],
             token='GITHUB_TOKEN',
+            pages=30,
         )
 
         file_status(args)
