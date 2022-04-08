@@ -75,6 +75,7 @@ class GitHubApiTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.get")
     def test_pull_request_commits(self, requests_mock: MagicMock):
         response = MagicMock()
+        response.links = None
         response.json.return_value = [{"sha": "1"}]
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
@@ -364,6 +365,7 @@ class GitHubApiTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.get")
     def test_modified_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
+        response.links = None
         response.json.return_value = json.loads(
             (here / "pr-files.json").read_text(encoding="utf-8")
         )
@@ -401,6 +403,7 @@ class GitHubApiTestCase(unittest.TestCase):
     @patch("pontos.github.api.requests.get")
     def test_added_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
+        response.links = None
         response.json.return_value = json.loads(
             (here / "pr-files.json").read_text(encoding="utf-8")
         )
