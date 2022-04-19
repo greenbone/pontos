@@ -1,6 +1,2 @@
 # default reviewers
-*                 @greenbone/pontos-maintainers
-
-# dev ops
-.github/          @greenbone/devops @greenbone/pontos-maintainers
-.docker/          @greenbone/devops @greenbone/pontos-maintainers
+*                 @greenbone/devops
