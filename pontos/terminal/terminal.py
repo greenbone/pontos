@@ -63,6 +63,9 @@ class Terminal:
         new_line: bool = True,
         overwrite: bool = False,
     ) -> None:
+        # remove existing newlines, to avoid breaking the formatting
+        # done by the terminal
+        message = message.replace("\n", " ")
         first_line = ''
         if overwrite:
             first_line = '\r'
