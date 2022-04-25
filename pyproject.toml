@@ -38,7 +38,7 @@ packaging = "^20.3"
 requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
-pylint = "^2.13.5"
+pylint = "^2.13.7"
 autohooks = "^21.7.0"
 autohooks-plugin-pylint = "^21.6.0"
 autohooks-plugin-black = "^21.12.0"
