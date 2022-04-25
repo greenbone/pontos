@@ -36,6 +36,7 @@ class TerminalTestCase(unittest.TestCase):
         self.green = cf.green
         self.yellow = cf.yellow
         self.cyan = cf.cyan
+        self.white = cf.white
         self.reset = cf.reset
         self.bold = cf.bold
         # every colors second value is the reset value ...
@@ -91,7 +92,7 @@ class TerminalTestCase(unittest.TestCase):
     def test_info_with_newline(self, mock_stdout):
         status = f'{self.cyan(Signs.INFO)} '
         msg = 'foo bar\nbaz'
-        repl_msg = msg.replace("\n", " ")
+        repl_msg = msg.replace("\n", "\n  ")
 
         expected_msg = self.reset(f'{status}{repl_msg}').styled_string + '\n'
         expected_len = len(expected_msg)
@@ -151,7 +152,9 @@ class TerminalTestCase(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_print(self, mock_stdout):
-        expected_msg = self.reset('  foo bar').styled_string + '\n'
+        expected_msg = (
+            self.reset(f'{self.white(" ")} foo bar').styled_string + '\n'
+        )
 
         self.term.print('foo bar')
 
@@ -162,23 +165,28 @@ class TerminalTestCase(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_add_indent(self, mock_stdout):
-        i = 6
-        expected_msg = self.reset(' ' * i + 'foo').styled_string + '\n'
+        i = 5
+        expected_msg = (
+            self.reset(f'{self.white(" ")}{" " * i}foo').styled_string + '\n'
+        )
 
-        self.term.add_indent(i - 2)
+        self.term.add_indent(i - 1)
         self.term.print('foo')
 
         ret = mock_stdout.getvalue()
 
-        self.assertEqual(len(ret), len(expected_msg))
         self.assertEqual(ret, expected_msg)
+        self.assertEqual(len(ret), len(expected_msg))
 
         # clear the buffer
         mock_stdout.truncate(0)
         mock_stdout.seek(0)
 
         j = 4
-        expected_msg = self.reset(' ' * (i + j) + 'bar').styled_string + '\n'
+        expected_msg = (
+            self.reset(f'{self.white(" ")}{" " * (i + j)}bar').styled_string
+            + '\n'
+        )
 
         self.term.add_indent(j)
         self.term.print('bar')
@@ -194,10 +202,12 @@ class TerminalTestCase(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_reset_indent(self, mock_stdout):
-        i = 6
-        expected_msg = self.reset(' ' * i + 'foo').styled_string + '\n'
+        i = 5
+        expected_msg = (
+            self.reset(f'{self.white(" ")}{" " * i }foo').styled_string + '\n'
+        )
 
-        self.term.add_indent(i - 2)
+        self.term.add_indent(i - 1)
         self.term.print('foo')
 
         ret = mock_stdout.getvalue()
@@ -209,7 +219,7 @@ class TerminalTestCase(unittest.TestCase):
         mock_stdout.truncate(0)
         mock_stdout.seek(0)
 
-        expected_msg = self.reset('  bar').styled_string + '\n'
+        expected_msg = self.reset(f'{self.white(" ")} bar').styled_string + '\n'
 
         self.term.reset_indent()
         self.term.print('bar')
@@ -221,7 +231,9 @@ class TerminalTestCase(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_with_indent(self, mock_stdout):
-        expected_msg = self.reset('    foo').styled_string + '\n'
+        expected_msg = (
+            self.reset(f'{self.white(" ")}   foo').styled_string + '\n'
+        )
 
         with self.term.indent(2):
             self.term.print('foo')
@@ -235,7 +247,7 @@ class TerminalTestCase(unittest.TestCase):
         mock_stdout.truncate(0)
         mock_stdout.seek(0)
 
-        expected_msg = self.reset('  bar').styled_string + '\n'
+        expected_msg = self.reset(f'{self.white(" ")} bar').styled_string + '\n'
         self.term.print('bar')
 
         ret = mock_stdout.getvalue()
@@ -252,9 +264,9 @@ class TerminalTestCase(unittest.TestCase):
         )
         expected_msg = (
             self.reset(
-                '  Lorem ipsum dolor sit amet, consetetur sadipscing elitr, '
-                'sed diam nonumy eirmo\n  d tempor invidunt ut labore et'
-                ' dolore magna aliquyam erat, sed diam voluptua.'
+                f'{self.white(" ")} Lorem ipsum dolor sit amet, consetetur '
+                'sadipscing elitr, sed diam nonumy eirmo\n  d tempor invidunt '
+                'ut labore et dolore magna aliquyam erat, sed diam voluptua.'
             ).styled_string
             + '\n'
         )

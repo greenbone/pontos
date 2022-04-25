@@ -63,31 +63,54 @@ class Terminal:
         new_line: bool = True,
         overwrite: bool = False,
     ) -> None:
-        # remove existing newlines, to avoid breaking the formatting
-        # done by the terminal
-        message = message.replace("\n", " ")
+        width = self.get_width()
+        offset = self._indent + STATUS_LEN
+        usable_width = width - offset
+
         first_line = ''
         if overwrite:
             first_line = '\r'
-        output = ''
-        width = self.get_width()
-        if status == Signs.NONE:
-            first_line += '  '
-        else:
-            first_line += f'{color(status)} '
-        if self._indent > 0:
-            first_line += ' ' * self._indent
-        usable_width = width - STATUS_LEN - self._indent
-        while usable_width < len(message):
-            part_line = ' ' * (self._indent + STATUS_LEN)
-            part = message[:usable_width]
-            message = message[usable_width:]
-            output += f'{part_line}{part}\n'
-        output += f'{first_line}{message}'
+        first_line += f'{color(status)} '
+        first_line += ' ' * self._indent
+
+        # remove existing newlines, to avoid breaking the formatting
+        # done by the terminal
+        messages = message.split("\n")
+        output = self._format_message(
+            message=messages[0],
+            usable_width=usable_width,
+            offset=offset,
+            first=first_line,
+        )
+        if len(messages) > 0:
+            for msg in messages[1:]:
+                output += "\n"
+                output += self._format_message(
+                    message=msg,
+                    usable_width=usable_width,
+                    offset=offset,
+                )
+
         if new_line:
             print(style(output))
         else:
             print(style(output), end='', flush=True)
+
+    def _format_message(
+        self, message: str, usable_width: int, offset: int, *, first: str = ""
+    ) -> str:
+        if first:
+            formatted_message = f"{first}"
+        else:
+            formatted_message = " " * offset
+        while usable_width < len(message):
+            part = message[:usable_width]
+            message = message[usable_width:]
+            formatted_message += f'{part}'
+            if len(message) > 0:
+                formatted_message += f'\n{" " * offset}'
+        formatted_message += f"{message}"
+        return formatted_message
 
     @contextmanager
     def indent(self, indentation: int = 4) -> Generator:
