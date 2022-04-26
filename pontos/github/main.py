@@ -23,7 +23,9 @@ from pontos.terminal import Terminal, _set_terminal
 def main(args=None):
     parsed_args = parse_args(args)
 
-    term = Terminal()
+    term = Terminal(
+        log2term=parsed_args.log2term, log2file=parsed_args.log2file
+    )
     _set_terminal(term)
 
     term.bold_info(f'pontos-github => {parsed_args.func.__name__}')
