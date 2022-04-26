@@ -240,6 +240,28 @@ def initialize_default_parser() -> ArgumentParser:
         help='The path to the output file (.md)',
     )
 
+    feature_parser_log2term = parser.add_mutually_exclusive_group(
+        required=False
+    )
+    feature_parser_log2term.add_argument(
+        '--log2term', dest='log2term', action='store_true'
+    )
+    feature_parser_log2term.add_argument(
+        '--no-log2term', dest='log2term', action='store_false'
+    )
+    parser.set_defaults(log2term=True)
+
+    feature_parser_log2file = parser.add_mutually_exclusive_group(
+        required=False
+    )
+    feature_parser_log2file.add_argument(
+        '--log2file', dest='log2file', action='store_true'
+    )
+    feature_parser_log2file.add_argument(
+        '--no-log2file', dest='log2file', action='store_false'
+    )
+    parser.set_defaults(log2file=False)
+
     return parser
 
 
@@ -254,13 +276,16 @@ def main(
     ),
     args=None,
 ):
-    term = Terminal()
-    _set_terminal(term)
-
-    term.bold_info('pontos-changelog')
 
     parser = initialize_default_parser()
     parsed_args = parser.parse_args(args)
+
+    term = Terminal(
+        log2term=parsed_args.log2term, log2file=parsed_args.log2file
+    )
+    _set_terminal(term)
+
+    term.bold_info('pontos-changelog')
 
     with term.indent():
         try:

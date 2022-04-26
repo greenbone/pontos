@@ -36,7 +36,8 @@ class StdOutput:
 class ConventionalCommitsTestCase(unittest.TestCase):
     def test_changelog_builder(self):
 
-        _set_terminal(Terminal())
+        # log2file=True will create `process.log`
+        _set_terminal(Terminal(log2file=True))
 
         today = datetime.today().strftime('%Y-%m-%d')
 

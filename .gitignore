@@ -107,3 +107,5 @@ venv.bak/
 .vscode
 # vim settings in virtualenv
 .vim
+
+process.log

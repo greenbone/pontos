@@ -251,6 +251,28 @@ def _parse_args(args=None):
         prog="pontos-update-header",
     )
 
+    feature_parser_log2term = parser.add_mutually_exclusive_group(
+        required=False
+    )
+    feature_parser_log2term.add_argument(
+        '--log2term', dest='log2term', action='store_true'
+    )
+    feature_parser_log2term.add_argument(
+        '--no-log2term', dest='log2term', action='store_false'
+    )
+    parser.set_defaults(log2term=True)
+
+    feature_parser_log2file = parser.add_mutually_exclusive_group(
+        required=False
+    )
+    feature_parser_log2file.add_argument(
+        '--log2file', dest='log2file', action='store_true'
+    )
+    feature_parser_log2file.add_argument(
+        '--no-log2file', dest='log2file', action='store_false'
+    )
+    parser.set_defaults(log2file=False)
+
     date_group = parser.add_mutually_exclusive_group()
     date_group.add_argument(
         "-c",
