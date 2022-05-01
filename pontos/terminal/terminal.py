@@ -14,7 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import re
+
+from pathlib import Path
 from contextlib import contextmanager
 from enum import Enum
 from shutil import get_terminal_size
@@ -22,7 +23,8 @@ from typing import Callable, Generator
 
 import colorful as cf
 
-from .logfile import process_logger
+# from pontos.terminal.log_config import process_logger
+from pontos.terminal.logger import TerminalLogger
 
 TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
@@ -43,11 +45,11 @@ STATUS_LEN = 2
 
 
 class Terminal:
-    def __init__(self, **kwargs):
-        print(kwargs)
+    def __init__(self, *, verbose: int = 1, log_file: Path = None):
         self._indent = 0
-        self._log2file: bool = kwargs.get('log2file', False)
-        self._log2term: bool = kwargs.get('log2term', True)
+        if log_file:
+            self._logger = TerminalLogger(log_file=log_file)
+        self._verbose = verbose
 
     @staticmethod
     def get_width() -> int:
@@ -74,7 +76,7 @@ class Terminal:
         first_line = ''
         if overwrite:
             first_line = '\r'
-        first_line += f'{color(status)} '
+        # first_line += f'{color(status)} '
         first_line += ' ' * self._indent
 
         # remove existing newlines, to avoid breaking the formatting
@@ -94,22 +96,13 @@ class Terminal:
                     usable_width=usable_width,
                     offset=offset,
                 )
-
-        self.print_logfile_message(output)
-        self.print_message(output, style, new_line)
-
-    def print_logfile_message(self, message: str) -> None:
-        if self._log2file:
-            process_logger.info(re.sub(r'\x1b\[[\d;]*[mGKHF]', '', message))
-
-    def print_message(
-        self, message: str, style: Callable, new_line: bool = True
-    ) -> None:
-        if self._log2term:
+        if self._verbose > 0:
             if new_line:
-                print(style(message))
+                print(style(f'{color(status)} {output}'))
             else:
-                print(style(message), end='', flush=True)
+                print(style(f'{color(status)} {output}'), end='', flush=True)
+        if self._logger:
+            self._logger.log(message=f'{status} {output}')
 
     def _format_message(
         self, message: str, usable_width: int, offset: int, *, first: str = ""
