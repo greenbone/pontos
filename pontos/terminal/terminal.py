@@ -49,6 +49,8 @@ class Terminal:
         self._indent = 0
         if log_file:
             self._logger = TerminalLogger(log_file=log_file)
+        else:
+            self._logger = None
         self._verbose = verbose
 
     @staticmethod

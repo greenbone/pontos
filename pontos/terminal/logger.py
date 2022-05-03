@@ -15,12 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from pathlib import Path
 
 
 class TerminalLogger:
-    def __init__(self, log_file: Path) -> None:
-        pass
+    def __init__(self, log_file: Path, *, level: int = logging.INFO) -> None:
+        if log_file:
+            logging.basicConfig(
+                filename=log_file,
+                filemode='a',
+                format='%(message)s',
+                level=level,
+            )
+            self._logger = logging.getLogger("TerminalLogger")
 
-    def log(self, message):
-        pass
+    def log(self, message: str):
+        self._logger.info(msg=message)
+
+    def debug(self, message: str):
+        self._logger.debug(msg=message)
