@@ -196,7 +196,7 @@ class ChangelogBuilder:
         return None
 
 
-def initialize_default_parser() -> ArgumentParser:
+def parse_args(args) -> ArgumentParser:
     parser = ArgumentParser(
         description='Conventional commits utility.',
         prog='pontos-changelog',
@@ -240,29 +240,21 @@ def initialize_default_parser() -> ArgumentParser:
         help='The path to the output file (.md)',
     )
 
-    feature_parser_log2term = parser.add_mutually_exclusive_group(
-        required=False
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
     )
-    feature_parser_log2term.add_argument(
-        '--log2term', dest='log2term', action='store_true'
-    )
-    feature_parser_log2term.add_argument(
-        '--no-log2term', dest='log2term', action='store_false'
-    )
-    parser.set_defaults(log2term=True)
 
-    feature_parser_log2file = parser.add_mutually_exclusive_group(
-        required=False
+    parser.add_argument(
+        "--log-file",
+        dest="log_file",
+        type=str,
+        help="Acivate logging using the given file path",
     )
-    feature_parser_log2file.add_argument(
-        '--log2file', dest='log2file', action='store_true'
-    )
-    feature_parser_log2file.add_argument(
-        '--no-log2file', dest='log2file', action='store_false'
-    )
-    parser.set_defaults(log2file=False)
 
-    return parser
+    return parser.parse_args(args)
 
 
 def main(
@@ -277,13 +269,14 @@ def main(
     args=None,
 ):
 
-    parser = initialize_default_parser()
-    parsed_args = parser.parse_args(args)
+    parsed_args = parse_args(args)
 
-    term = Terminal(
-        log2term=parsed_args.log2term, log2file=parsed_args.log2file
+    term = _set_terminal(
+        Terminal(
+            verbose=1 if not parsed_args.quiet else 0,
+            log_file=parsed_args.log_file,
+        )
     )
-    _set_terminal(term)
 
     term.bold_info('pontos-changelog')
 
