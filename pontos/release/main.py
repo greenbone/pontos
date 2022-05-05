@@ -29,7 +29,7 @@ from typing import Tuple
 import requests
 
 from pontos import changelog
-from pontos.terminal import _set_terminal, error, out
+from pontos.terminal import terminal, error, out
 from pontos.terminal.terminal import Terminal
 from pontos import version
 
@@ -38,33 +38,25 @@ from .sign import sign
 from .release import release
 
 
-def initialize_default_parser() -> ArgumentParser:
+def parse_args(args) -> Tuple[str, str, Namespace]:
     parser = ArgumentParser(
         description='Release handling utility.',
         prog='pontos-release',
     )
 
-    feature_parser_log2term = parser.add_mutually_exclusive_group(
-        required=False
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
     )
-    feature_parser_log2term.add_argument(
-        '--log2term', dest='log2term', action='store_true'
-    )
-    feature_parser_log2term.add_argument(
-        '--no-log2term', dest='log2term', action='store_false'
-    )
-    parser.set_defaults(log2term=True)
 
-    feature_parser_log2file = parser.add_mutually_exclusive_group(
-        required=False
+    parser.add_argument(
+        "--log-file",
+        dest="log_file",
+        type=str,
+        help="Acivate logging using the given file path",
     )
-    feature_parser_log2file.add_argument(
-        '--log2file', dest='log2file', action='store_true'
-    )
-    feature_parser_log2file.add_argument(
-        '--no-log2file', dest='log2file', action='store_false'
-    )
-    parser.set_defaults(log2file=False)
 
     subparsers = parser.add_subparsers(
         title='subcommands',
@@ -226,15 +218,10 @@ def initialize_default_parser() -> ArgumentParser:
             'the CI and use this passphrase for signing.'
         ),
     )
-    return parser
-
-
-def parse(args=None) -> Tuple[str, str, Namespace]:
-    parser = initialize_default_parser()
-    commandline_arguments = parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
     token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
     user = os.environ['GITHUB_USER'] if not args else 'USER'
-    return (user, token, commandline_arguments)
+    return user, token, parsed_args
 
 
 def main(
@@ -253,11 +240,13 @@ def main(
     leave: bool = True,
     args=None,
 ):
-    username, token, parsed_args = parse(args)
-    term = Terminal(
-        log2term=parsed_args.log2term, log2file=parsed_args.log2file
+    username, token, parsed_args = parse_args(args)
+    term = terminal(
+        Terminal(
+            verbose=1 if not parsed_args.quiet else 0,
+            log_file=parsed_args.log_file,
+        )
     )
-    _set_terminal(term)
 
     term.bold_info(f'pontos-release => {parsed_args.func.__name__}')
 

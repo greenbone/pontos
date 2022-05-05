@@ -27,7 +27,7 @@ from typing import Callable, Dict, List, Union
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from pontos.terminal import _set_terminal, error, info, out, warning
+from pontos.terminal import terminal, error, info, out, warning
 from pontos.terminal.terminal import Terminal
 from pontos.release.helper import (
     get_project_name,
@@ -271,7 +271,7 @@ def main(
 
     parsed_args = parse_args(args)
 
-    term = _set_terminal(
+    term = terminal(
         Terminal(
             verbose=1 if not parsed_args.quiet else 0,
             log_file=parsed_args.log_file,

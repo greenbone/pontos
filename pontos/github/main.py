@@ -17,16 +17,18 @@
 
 import sys
 from pontos.github.argparser import parse_args
-from pontos.terminal import Terminal, _set_terminal
+from pontos.terminal import Terminal, terminal
 
 
 def main(args=None):
     parsed_args = parse_args(args)
 
-    term = Terminal(
-        log2term=parsed_args.log2term, log2file=parsed_args.log2file
+    term = terminal(
+        Terminal(
+            verbose=1 if not parsed_args.quiet else 0,
+            log_file=parsed_args.log_file,
+        )
     )
-    _set_terminal(term)
 
     term.bold_info(f'pontos-github => {parsed_args.func.__name__}')
 
