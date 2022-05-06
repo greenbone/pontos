@@ -75,20 +75,21 @@ class Terminal:
         offset = self._indent + STATUS_LEN
         usable_width = width - offset
 
-        first_line = ''
-        if overwrite:
-            first_line = '\r'
+        # first_line = ''
+        # if overwrite:
+        #    first_line = '\r'
         # first_line += f'{color(status)} '
-        first_line += ' ' * self._indent
+        # first_line += ' ' * self._indent
 
-        # remove existing newlines, to avoid breaking the formatting
+        # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
         messages = message.split("\n")
         output = self._format_message(
             message=messages[0],
             usable_width=usable_width,
             offset=offset,
-            first=first_line,
+            first=True,
+            overwrite=overwrite,
         )
         if len(messages) > 0:
             for msg in messages[1:]:
@@ -107,12 +108,21 @@ class Terminal:
             self._logger.log(message=f'{status} {output}')
 
     def _format_message(
-        self, message: str, usable_width: int, offset: int, *, first: str = ""
+        self,
+        message: str,
+        usable_width: int,
+        offset: int,
+        *,
+        first: bool = False,
+        overwrite: bool = False,
     ) -> str:
+        formatted_message = ""
         if first:
-            formatted_message = f"{first}"
+            if overwrite:
+                formatted_message = "\r"
+            formatted_message += " " * self._indent
         else:
-            formatted_message = " " * offset
+            formatted_message += " " * offset
         while usable_width < len(message):
             part = message[:usable_width]
             message = message[usable_width:]
