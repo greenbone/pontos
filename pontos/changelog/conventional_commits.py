@@ -26,6 +26,7 @@ from typing import Callable, Dict, Iterable, List, Union
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
+from pontos.helper import shell_cmd_runner
 
 from pontos.terminal import terminal, error, info, out, warning
 from pontos.terminal.terminal import Terminal
@@ -258,14 +259,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
 
 
 def main(
-    shell_cmd_runner=lambda x: subprocess.run(
-        x,
-        shell=True,
-        check=True,
-        errors="utf-8",  # use utf-8 encoding for error output
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ),
+    shell_cmd_runner=shell_cmd_runner,
     args=None,
 ):
 
