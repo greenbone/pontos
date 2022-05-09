@@ -75,12 +75,6 @@ class Terminal:
         offset = self._indent + STATUS_LEN
         usable_width = width - offset
 
-        # first_line = ''
-        # if overwrite:
-        #    first_line = '\r'
-        # first_line += f'{color(status)} '
-        # first_line += ' ' * self._indent
-
         # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
         messages = message.split("\n")
