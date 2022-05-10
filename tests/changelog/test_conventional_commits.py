@@ -26,6 +26,7 @@ from pontos.terminal import _set_terminal
 from pontos.terminal.terminal import Terminal
 
 from pontos import changelog
+from pontos.changelog.conventional_commits import parse_args
 
 
 @dataclass
@@ -285,3 +286,12 @@ All notable changes to this project will be documented in this file.
                 'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline',
                 called,
             )
+
+    def test_parse_args(self):
+        parsed_args = parse_args(
+            ["-q", "--log-file", "blah", "--project", "urghs"]
+        )
+
+        self.assertTrue(parsed_args.quiet)
+        self.assertEqual(parsed_args.log_file, "blah")
+        self.assertEqual(parsed_args.project, "urghs")

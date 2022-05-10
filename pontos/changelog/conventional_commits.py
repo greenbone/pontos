@@ -22,7 +22,7 @@ from pathlib import Path
 import re
 import sys
 import subprocess
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, Iterable, List, Union
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
@@ -196,7 +196,7 @@ class ChangelogBuilder:
         return None
 
 
-def parse_args(args) -> ArgumentParser:
+def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     parser = ArgumentParser(
         description='Conventional commits utility.',
         prog='pontos-changelog',
@@ -254,7 +254,7 @@ def parse_args(args) -> ArgumentParser:
         help="Acivate logging using the given file path",
     )
 
-    return parser.parse_args(args)
+    return parser.parse_args(args=args)
 
 
 def main(

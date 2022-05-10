@@ -66,6 +66,9 @@ class TestArgparsing(unittest.TestCase):
 
     def test_update_pr_parse_args(self):
         argv = [
+            "-q",
+            "--log-file",
+            "foo",
             "pr",
             "update",
             "foo/bar",
@@ -88,6 +91,8 @@ class TestArgparsing(unittest.TestCase):
         self.assertEqual(parsed_args.pull_request, 123)
         self.assertEqual(parsed_args.target, "main")
         self.assertEqual(parsed_args.title, "baz in main")
+        self.assertTrue(parsed_args.quiet)
+        self.assertEqual(parsed_args.log_file, "foo")
 
     def test_update_pr_parse_args_fail(self):
         argv = ["pr", "update", "foo/bar"]
