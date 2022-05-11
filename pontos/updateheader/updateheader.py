@@ -30,6 +30,9 @@ from subprocess import CalledProcessError, run
 from typing import Dict, List, Tuple, Union
 from pathlib import Path
 
+from pontos.terminal import terminal
+from pontos.terminal.terminal import Terminal
+
 SUPPORTED_FILE_TYPES = [
     ".bash",
     ".c",
@@ -113,7 +116,8 @@ def _add_header(
 def _update_file(
     file: Path,
     regex: re.Pattern,
-    args: Namespace,
+    parsed_args: Namespace,
+    term: Terminal,
 ) -> None:
     """Function to update the given file.
     Checks if header exists. If not it adds an
@@ -121,13 +125,13 @@ def _update_file(
     is up to date
     """
 
-    if args.changed:
+    if parsed_args.changed:
         try:
-            args.year = _get_modified_year(file)
+            parsed_args.year = _get_modified_year(file)
         except CalledProcessError:
-            print(
+            term.warning(
                 f"{file}: Could not get date of last modification"
-                f" using git, using {str(args.year)} instead."
+                f" using git, using {str(parsed_args.year)} instead."
             )
 
     try:
@@ -145,7 +149,10 @@ def _update_file(
             if i == 0 and not found:
                 try:
                     header = _add_header(
-                        file.suffix, args.licence, args.company, args.year
+                        file.suffix,
+                        parsed_args.licence,
+                        parsed_args.company,
+                        parsed_args.year,
                     )
                     if header:
                         fp.seek(0)  # back to beginning of file
@@ -163,20 +170,20 @@ def _update_file(
                     )
                 except FileNotFoundError:
                     print(
-                        f"{file}: Licence file for {args.licence} "
+                        f"{file}: Licence file for {parsed_args.licence} "
                         "is not existing."
                     )
                 return 1
             # replace found header and write it to file
             if (
                 not copyright_match["modification_year"]
-                and copyright_match["creation_year"] < args.year
+                and copyright_match["creation_year"] < parsed_args.year
                 or copyright_match["modification_year"]
-                and copyright_match["modification_year"] < args.year
+                and copyright_match["modification_year"] < parsed_args.year
             ):
                 copyright_term = (
                     f'Copyright (C) {copyright_match["creation_year"]}'
-                    f'-{args.year} {copyright_match["company"]}'
+                    f'-{parsed_args.year} {copyright_match["company"]}'
                 )
                 new_line = re.sub(regex, copyright_term, line)
                 fp_write = fp.tell() - len(line)  # save position to insert
@@ -191,7 +198,7 @@ def _update_file(
                 print(
                     f"{file}: Changed Licence Header Copyright Year "
                     f'{copyright_match["modification_year"]} -> '
-                    f"{args.year}"
+                    f"{parsed_args.year}"
                 )
 
                 return 0
@@ -249,6 +256,20 @@ def _parse_args(args=None):
     parser = ArgumentParser(
         description="Update copyright in source file headers.",
         prog="pontos-update-header",
+    )
+
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
+    )
+
+    parser.add_argument(
+        "--log-file",
+        dest="log_file",
+        type=str,
+        help="Acivate logging using the given file path",
     )
 
     date_group = parser.add_mutually_exclusive_group()
@@ -316,17 +337,28 @@ def _parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main(args=None) -> None:
-    args = _parse_args()
+def main() -> None:
+    parsed_args = _parse_args()
     exclude_list = []
 
-    if args.directories:
-        if isinstance(args.directories, list):
-            directories = [Path(directory) for directory in args.directories]
+    term = terminal(
+        Terminal(
+            verbose=1 if not parsed_args.quiet else 0,
+            log_file=parsed_args.log_file,
+        )
+    )
+
+    term.bold_info('pontos-update-header')
+
+    if parsed_args.directories:
+        if isinstance(parsed_args.directories, list):
+            directories = [
+                Path(directory) for directory in parsed_args.directories
+            ]
         else:
-            directories = [Path(args.directories)]
+            directories = [Path(parsed_args.directories)]
         # get file paths to exclude
-        exclude_list = _get_exclude_list(args.exclude_file, directories)
+        exclude_list = _get_exclude_list(parsed_args.exclude_file, directories)
         # get files to update
         files = [
             Path(file)
@@ -334,28 +366,30 @@ def main(args=None) -> None:
             for file in directory.rglob("*")
             if file.is_file()
         ]
-    elif args.files:
-        if isinstance(args.files, list):
-            files = [Path(name) for name in args.files]
+    elif parsed_args.files:
+        if isinstance(parsed_args.files, list):
+            files = [Path(name) for name in parsed_args.files]
         else:
-            files = [Path(args.files)]
+            files = [Path(parsed_args.files)]
 
     else:
         # should never happen
-        print("Specify files to update!")
+        term.error("Specify files to update!")
         sys.exit(1)
 
     regex = re.compile(
         "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
-        f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({args.company})"
+        f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({parsed_args.company})"
     )
 
     for file in files:
         try:
             if file.absolute() in exclude_list:
-                print(f"{file}: Ignoring file from exclusion list.")
+                term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
-                _update_file(file=file, regex=regex, args=args)
+                _update_file(
+                    file=file, regex=regex, parsed_args=parsed_args, term=term
+                )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
 

@@ -22,12 +22,12 @@ from pathlib import Path
 import re
 import sys
 import subprocess
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, Iterable, List, Union
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from pontos.terminal import _set_terminal, error, info, out, warning
+from pontos.terminal import terminal, error, info, out, warning
 from pontos.terminal.terminal import Terminal
 from pontos.release.helper import (
     get_project_name,
@@ -196,7 +196,7 @@ class ChangelogBuilder:
         return None
 
 
-def initialize_default_parser() -> ArgumentParser:
+def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     parser = ArgumentParser(
         description='Conventional commits utility.',
         prog='pontos-changelog',
@@ -240,7 +240,21 @@ def initialize_default_parser() -> ArgumentParser:
         help='The path to the output file (.md)',
     )
 
-    return parser
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
+    )
+
+    parser.add_argument(
+        "--log-file",
+        dest="log_file",
+        type=str,
+        help="Acivate logging using the given file path",
+    )
+
+    return parser.parse_args(args=args)
 
 
 def main(
@@ -254,13 +268,17 @@ def main(
     ),
     args=None,
 ):
-    term = Terminal()
-    _set_terminal(term)
+
+    parsed_args = parse_args(args)
+
+    term = terminal(
+        Terminal(
+            verbose=1 if not parsed_args.quiet else 0,
+            log_file=parsed_args.log_file,
+        )
+    )
 
     term.bold_info('pontos-changelog')
-
-    parser = initialize_default_parser()
-    parsed_args = parser.parse_args(args)
 
     with term.indent():
         try:

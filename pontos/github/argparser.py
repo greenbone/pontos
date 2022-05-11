@@ -54,6 +54,20 @@ def parse_args(
         description="Greenbone GitHub API.",
     )
 
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
+    )
+
+    parser.add_argument(
+        "--log-file",
+        dest="log_file",
+        type=str,
+        help="Acivate logging using the given file path",
+    )
+
     subparsers = parser.add_subparsers(
         title='subcommands',
         description='valid subcommands',

@@ -26,6 +26,7 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 from argparse import Namespace
+from pontos.terminal.terminal import Terminal
 
 from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
@@ -36,6 +37,24 @@ from pontos.updateheader.updateheader import (
     _parse_args as parse_args,
     main,
 )
+
+HEADER = """# -*- coding: utf-8 -*-
+# Copyright (C) {date} Greenbone Networks GmbH
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
 class UpdateHeaderTestCase(TestCase):
@@ -112,24 +131,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNone(match)
 
     def test_add_header(self):
-        expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2021 Greenbone Networks GmbH
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
+        expected_header = HEADER.format(date='2021') + '\n'
 
         header = add_header(
             suffix=".py",
@@ -166,12 +168,19 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
+        term = Terminal()
+
         test_file = self.path / "test.py"
         if test_file.exists():
             test_file.unlink()
 
         with self.assertRaises(FileNotFoundError):
-            update_file(file=test_file, regex=self.regex, args=self.args)
+            update_file(
+                file=test_file,
+                regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
 
         ret = mock_stdout.getvalue()
         self.assertEqual(
@@ -185,10 +194,14 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AAAGPL-3.0-or-later'
 
+        term = Terminal()
+
         test_file = self.path / "test.py"
         test_file.touch()
 
-        code = update_file(file=test_file, regex=self.regex, args=self.args)
+        code = update_file(
+            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+        )
         self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
@@ -206,10 +219,14 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
+        term = Terminal()
+
         test_file = self.path / "test.pppy"
         test_file.touch()
 
-        code = update_file(file=test_file, regex=self.regex, args=self.args)
+        code = update_file(
+            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+        )
         self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
@@ -226,6 +243,8 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
+        term = Terminal()
+
         test_file = self.path / "test.py"
         if test_file.exists():
             test_file.unlink()
@@ -236,7 +255,12 @@ class UpdateHeaderTestCase(TestCase):
             f.write(struct.pack('>if', 42, 2.71828182846))
 
         with self.assertRaises(UnicodeDecodeError):
-            code = update_file(file=test_file, regex=self.regex, args=self.args)
+            code = update_file(
+                file=test_file,
+                regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
             self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
@@ -253,22 +277,28 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = True
         self.args.licence = 'AGPL-3.0-or-later'
 
+        term = Terminal()
+
         test_file = self.path / "test.py"
         if test_file.exists():
             test_file.unlink()
 
         with self.assertRaises(FileNotFoundError):
-            code = update_file(file=test_file, regex=self.regex, args=self.args)
+            code = update_file(
+                file=test_file,
+                regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
             self.assertEqual(code, 1)
 
         ret = mock_stdout.getvalue()
 
-        self.assertEqual(
-            ret,
-            f"{test_file}: Could not get date of last "
-            f"modification using git, using {self.args.year} instead.\n"
-            f"{test_file}: File is not existing.\n",
-        )
+        self.assertIn(f"{test_file}", ret)
+        self.assertIn("Could not get date", ret)
+        self.assertIn("of last modification using git,", ret)
+        self.assertIn(f"using {self.args.year} instead.", ret)
+        self.assertIn("File is not existing.", ret)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_update_create_header(self, mock_stdout):
@@ -276,35 +306,21 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
-        expected_header = """# -*- coding: utf-8 -*-
-# Copyright (C) 1995 Greenbone Networks GmbH
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+        term = Terminal()
 
-"""
+        expected_header = HEADER.format(date='1995') + '\n\n'
 
         test_file = self.path / "test.py"
         test_file.touch()
 
-        code = update_file(file=test_file, regex=self.regex, args=self.args)
+        code = update_file(
+            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+        )
 
         ret = mock_stdout.getvalue()
         self.assertEqual(
-            ret,
             f"{test_file}: Added licence header.\n",
+            ret,
         )
         self.assertEqual(code, 0)
         self.assertEqual(expected_header, test_file.read_text(encoding='utf-8'))
@@ -316,24 +332,9 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
-        header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2020 Greenbone Networks GmbH
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
+        term = Terminal()
+
+        header = HEADER.format(date='2020')
 
         test_file = self.path / "test.py"
         if test_file.exists():
@@ -341,7 +342,9 @@ class UpdateHeaderTestCase(TestCase):
 
         test_file.write_text(header, encoding='utf-8')
 
-        code = update_file(file=test_file, regex=self.regex, args=self.args)
+        code = update_file(
+            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+        )
 
         self.assertEqual(code, 0)
         ret = mock_stdout.getvalue()
@@ -363,24 +366,9 @@ class UpdateHeaderTestCase(TestCase):
         self.args.changed = False
         self.args.licence = 'AGPL-3.0-or-later'
 
-        header = """# -*- coding: utf-8 -*-
-# Copyright (C) 2021 Greenbone Networks GmbH
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
+        term = Terminal()
+
+        header = HEADER.format(date='2021')
 
         test_file = self.path / "test.py"
         if test_file.exists():
@@ -388,7 +376,9 @@ class UpdateHeaderTestCase(TestCase):
 
         test_file.write_text(header, encoding='utf-8')
 
-        code = update_file(file=test_file, regex=self.regex, args=self.args)
+        code = update_file(
+            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+        )
 
         self.assertEqual(code, 0)
         ret = mock_stdout.getvalue()
@@ -454,6 +444,9 @@ class UpdateHeaderTestCase(TestCase):
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = ['test.py']
         self.args.directories = None
+        self.args.verbose = 0
+        self.args.log_file = None
+        self.args.quiet = False
 
         argparser_mock.return_value = self.args
 
@@ -470,6 +463,9 @@ class UpdateHeaderTestCase(TestCase):
         self.args.licence = 'AGPL-3.0-or-later'
         self.args.files = None
         self.args.directories = None
+        self.args.verbose = 0
+        self.args.log_file = None
+        self.args.quiet = False
 
         argparser_mock.return_value = self.args
 
@@ -478,7 +474,7 @@ class UpdateHeaderTestCase(TestCase):
             main()
 
         ret = mock_stdout.getvalue()
-        self.assertEqual(
+        self.assertIn(
+            "Specify files to update!",
             ret,
-            "Specify files to update!\n",
         )

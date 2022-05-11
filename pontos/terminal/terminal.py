@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+from pathlib import Path
 from contextlib import contextmanager
 from enum import Enum
 from shutil import get_terminal_size
 from typing import Callable, Generator
 
 import colorful as cf
+
+# from pontos.terminal.log_config import process_logger
+from pontos.terminal.logger import TerminalLogger
 
 TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
@@ -42,8 +45,13 @@ STATUS_LEN = 2
 
 
 class Terminal:
-    def __init__(self):
+    def __init__(self, *, verbose: int = 1, log_file: Path = None):
         self._indent = 0
+        if log_file:
+            self._logger = TerminalLogger(log_file=log_file)
+        else:
+            self._logger = None
+        self._verbose = verbose
 
     @staticmethod
     def get_width() -> int:
@@ -67,20 +75,15 @@ class Terminal:
         offset = self._indent + STATUS_LEN
         usable_width = width - offset
 
-        first_line = ''
-        if overwrite:
-            first_line = '\r'
-        first_line += f'{color(status)} '
-        first_line += ' ' * self._indent
-
-        # remove existing newlines, to avoid breaking the formatting
+        # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
         messages = message.split("\n")
         output = self._format_message(
             message=messages[0],
             usable_width=usable_width,
             offset=offset,
-            first=first_line,
+            first=True,
+            overwrite=overwrite,
         )
         if len(messages) > 0:
             for msg in messages[1:]:
@@ -90,19 +93,30 @@ class Terminal:
                     usable_width=usable_width,
                     offset=offset,
                 )
-
-        if new_line:
-            print(style(output))
-        else:
-            print(style(output), end='', flush=True)
+        if self._verbose > 0:
+            if new_line:
+                print(style(f'{color(status)} {output}'))
+            else:
+                print(style(f'{color(status)} {output}'), end='', flush=True)
+        if self._logger:
+            self._logger.log(message=f'{status} {output}')
 
     def _format_message(
-        self, message: str, usable_width: int, offset: int, *, first: str = ""
+        self,
+        message: str,
+        usable_width: int,
+        offset: int,
+        *,
+        first: bool = False,
+        overwrite: bool = False,
     ) -> str:
+        formatted_message = ""
         if first:
-            formatted_message = f"{first}"
+            if overwrite:
+                formatted_message = "\r"
+            formatted_message += " " * self._indent
         else:
-            formatted_message = " " * offset
+            formatted_message += " " * offset
         while usable_width < len(message):
             part = message[:usable_width]
             message = message[usable_width:]
