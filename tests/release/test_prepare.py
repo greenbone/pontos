@@ -18,11 +18,11 @@
 # pylint: disable=C0413,W0108
 
 import os
+from subprocess import CompletedProcess
 import unittest
 
-from dataclasses import dataclass
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 import requests
 
@@ -30,17 +30,13 @@ from pontos.release.helper import version
 from pontos import release, changelog
 
 
-@dataclass
-class StdOutput:
-    stdout: bytes
-
-
 class PrepareTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['GITHUB_TOKEN'] = 'foo'
         os.environ['GITHUB_USER'] = 'bar'
 
-    def test_prepare_successfully(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_prepare_successfully(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
@@ -51,9 +47,7 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        runner = lambda x: StdOutput('')
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _version=fake_version,
             _changelog=fake_changelog,
@@ -62,7 +56,8 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-    def test_prepare_calendar_successfully(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_prepare_calendar_successfully(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
@@ -73,9 +68,7 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--calendar',
         ]
-        runner = lambda x: StdOutput('')
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _version=fake_version,
             _changelog=fake_changelog,
@@ -84,7 +77,8 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-    def test_use_git_signing_key_on_prepare(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_use_git_signing_key_on_prepare(self, shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
@@ -98,33 +92,35 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        called = []
-
-        def runner(cmd):
-            called.append(cmd)
-            return StdOutput('')
 
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _version=fake_version,
             _changelog=fake_changelog,
             leave=False,
             args=args,
         )
+
         self.assertTrue(released)
-        self.assertIn(
-            "git commit -S0815 --no-verify -m 'Automatic release to 0.0.1'",
-            called,
-        )
-        self.assertIn(
-            "git tag -u 0815 v0.0.1 -m 'Automatic release to 0.0.1'", called
+        shell_mock.assert_has_calls(
+            [
+                call(
+                    "git commit -S0815 --no-verify -m "
+                    "'Automatic release to 0.0.1'"
+                ),
+                call("git tag -u 0815 v0.0.1 -m 'Automatic release to 0.0.1'"),
+            ]
         )
 
-    def test_fail_if_tag_is_already_taken(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_fail_if_tag_is_already_taken(self, shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_changelog = MagicMock(spec=changelog)
+
+        shell_mock.return_value = CompletedProcess(
+            args="foo", returncode=1, stdout=b'v0.0.1'
+        )
 
         args = [
             'prepare',
@@ -132,17 +128,12 @@ class PrepareTestCase(unittest.TestCase):
             '0.0.1',
             '--project',
             'bla',
+            '--git-signing-key',
+            '1337',
         ]
-
-        called = []
-
-        def runner(cmd):
-            called.append(cmd)
-            return StdOutput('v0.0.1'.encode())
 
         with self.assertRaises(SystemExit):
             release.main(
-                shell_cmd_runner=runner,
                 _path=fake_path_class,
                 _version=fake_version,
                 _changelog=fake_changelog,
@@ -150,9 +141,11 @@ class PrepareTestCase(unittest.TestCase):
                 args=args,
             )
 
-            self.assertIn('git tag v0.0.1 is already taken', called)
+            shell_mock.assert_called_with('git tag -l')
+            shell_mock.assert_called_with('git tag v0.0.1 is already taken')
 
-    def test_not_release_when_no_project_found(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_not_release_when_no_project_found(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (False, '')
@@ -164,9 +157,7 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        runner = lambda x: StdOutput('')
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _version=fake_version,
             _changelog=fake_changelog,
@@ -175,7 +166,8 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertFalse(released)
 
-    def test_not_release_when_updating_version_fails(self):
+    @patch("pontos.release.prepare.shell_cmd_runner")
+    def test_not_release_when_updating_version_fails(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
         fake_version = MagicMock(spec=version)
@@ -188,9 +180,7 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        runner = lambda x: StdOutput('')
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _requests=fake_requests,
             _version=fake_version,
@@ -200,9 +190,9 @@ class PrepareTestCase(unittest.TestCase):
         )
         self.assertFalse(released)
 
+    @patch("pontos.release.prepare.shell_cmd_runner")
     @patch('pontos.changelog.changelog')
-    def test_prepare_coventional_commits(self, changelog_mock):
-        # fake_path_class = MagicMock(spec=Path)
+    def test_prepare_coventional_commits(self, changelog_mock, _shell_mock):
         fake_requests = MagicMock(spec=requests)
         fake_version = MagicMock(spec=version)
         fake_version.main.return_value = (True, 'MyProject.conf')
@@ -219,9 +209,7 @@ class PrepareTestCase(unittest.TestCase):
             '1.2.3',
             '-CC',
         ]
-        runner = lambda x: StdOutput('')
         released = release.main(
-            shell_cmd_runner=runner,
             _path=Path,
             _requests=fake_requests,
             _version=fake_version,
