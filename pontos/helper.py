@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
 import subprocess
 
 shell_cmd_runner: subprocess.CompletedProcess = lambda x: subprocess.run(
