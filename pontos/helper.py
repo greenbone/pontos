@@ -17,12 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from typing import Iterable
 
-shell_cmd_runner: subprocess.CompletedProcess = lambda x: subprocess.run(
-    x,
-    shell=True,
-    check=True,
-    errors="utf-8",
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-)
+
+def shell_cmd_runner(args: Iterable[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        args,
+        shell=True,
+        check=True,
+        errors="utf-8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
