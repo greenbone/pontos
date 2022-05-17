@@ -22,13 +22,13 @@ from argparse import Namespace
 import json
 
 from pathlib import Path
-from typing import Callable
 
 import requests
 
 from pontos import changelog
 from pontos.terminal import error, warning, info
 from pontos import version
+from pontos.helper import shell_cmd_runner
 
 from .helper import (
     build_release_dict,
@@ -44,7 +44,6 @@ RELEASE_TEXT_FILE = ".release.md"
 
 
 def release(
-    shell_cmd_runner: Callable,
     args: Namespace,
     *,
     path: Path,
@@ -144,9 +143,9 @@ def release(
         return False
 
     commit_files(
-        filename,
-        commit_msg,
-        shell_cmd_runner,
+        filename=filename,
+        commit_msg=commit_msg,
+        shell_cmd_runner=shell_cmd_runner,
         git_signing_key=git_signing_key,
         changelog=changelog_bool,
     )

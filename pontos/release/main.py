@@ -225,14 +225,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
 
 
 def main(
-    shell_cmd_runner=lambda x: subprocess.run(
-        x,
-        shell=True,
-        check=True,
-        errors="utf-8",  # use utf-8 encoding for error output
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ),
     _path: Path = Path,
     _requests: requests = requests,
     _version: version = version,
@@ -253,7 +245,6 @@ def main(
     with term.indent():
         try:
             if not parsed_args.func(
-                shell_cmd_runner,
                 parsed_args,
                 path=_path,
                 username=username,

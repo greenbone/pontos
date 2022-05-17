@@ -22,11 +22,11 @@ from argparse import Namespace
 import json
 
 from pathlib import Path
-from typing import Callable
 
 import requests
 
 from pontos.terminal import error, info, out
+from pontos.helper import shell_cmd_runner
 
 from .helper import (
     download,
@@ -38,7 +38,6 @@ from .helper import (
 
 
 def sign(
-    shell_cmd_runner: Callable,
     args: Namespace,
     *,
     path: Path,

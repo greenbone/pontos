@@ -22,10 +22,11 @@ from pathlib import Path
 import re
 import sys
 import subprocess
-from typing import Callable, Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Union
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
+from pontos.helper import shell_cmd_runner
 
 from pontos.terminal import terminal, error, info, out, warning
 from pontos.terminal.terminal import Terminal
@@ -42,17 +43,15 @@ class ChangelogBuilder:
 
     def __init__(
         self,
-        shell_cmd_runner: Callable,
         args: Namespace,
     ):
-        self.shell_cmd_runner: Callable = shell_cmd_runner
         self.config: TOMLDocument = tomlkit.parse(
             args.config.read_text(encoding='utf-8')
         )
         self.project: str = (
             args.project
             if args.project is not None
-            else get_project_name(self.shell_cmd_runner)
+            else get_project_name(shell_cmd_runner)
         )
         self.space: str = args.space
         changelog_dir: Path = Path.cwd() / self.config.get('changelog_dir')
@@ -84,7 +83,7 @@ class ChangelogBuilder:
         cmd: str = 'git log HEAD --oneline'
         try:
             # https://gist.github.com/rponte/fdc0724dd984088606b0
-            proc: subprocess.CompletedProcess = self.shell_cmd_runner(
+            proc: subprocess.CompletedProcess = shell_cmd_runner(
                 "git tag | sort -V | tail -1"
             )
         except subprocess.CalledProcessError:
@@ -92,7 +91,7 @@ class ChangelogBuilder:
         if proc.stdout and proc.stdout != '':
             cmd: str = f'git log "{proc.stdout.strip()}..HEAD" --oneline'
 
-        proc = self.shell_cmd_runner(cmd)
+        proc = shell_cmd_runner(cmd)
         if proc.stdout and proc.stdout != '':
             return proc.stdout.strip().split('\n')
         return None
@@ -258,14 +257,6 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
 
 
 def main(
-    shell_cmd_runner=lambda x: subprocess.run(
-        x,
-        shell=True,
-        check=True,
-        errors="utf-8",  # use utf-8 encoding for error output
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ),
     args=None,
 ):
 
@@ -283,7 +274,6 @@ def main(
     with term.indent():
         try:
             changelog_builder = ChangelogBuilder(
-                shell_cmd_runner=shell_cmd_runner,
                 args=parsed_args,
             )
             changelog_builder.create_changelog_file()

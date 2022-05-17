@@ -20,19 +20,13 @@
 import os
 import unittest
 
-from dataclasses import dataclass
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch, call
 
 import requests
 
 from pontos.release.helper import version
 from pontos import release, changelog
-
-
-@dataclass
-class StdOutput:
-    stdout: bytes
 
 
 class ReleaseTestCase(unittest.TestCase):
@@ -44,7 +38,8 @@ class ReleaseTestCase(unittest.TestCase):
             ' "tar", "upload_url":"upload"}'
         )
 
-    def test_release_successfully(self):
+    @patch("pontos.release.release.shell_cmd_runner")
+    def test_release_successfully(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -62,9 +57,8 @@ class ReleaseTestCase(unittest.TestCase):
             '--next-version',
             '0.0.2dev',
         ]
-        runner = lambda x: StdOutput('')
+
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _requests=fake_requests,
             _version=fake_version,
@@ -74,7 +68,8 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-    def test_release_conventional_commits_successfully(self):
+    @patch("pontos.release.release.shell_cmd_runner")
+    def test_release_conventional_commits_successfully(self, _shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -89,9 +84,8 @@ class ReleaseTestCase(unittest.TestCase):
             'release',
             '-CC',
         ]
-        runner = lambda x: StdOutput('')
+
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _requests=fake_requests,
             _version=fake_version,
@@ -101,7 +95,10 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-    def test_not_release_successfully_when_github_create_release_fails(self):
+    @patch("pontos.release.release.shell_cmd_runner")
+    def test_not_release_successfully_when_github_create_release_fails(
+        self, _shell_mock
+    ):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -117,9 +114,8 @@ class ReleaseTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        runner = lambda x: StdOutput('')
+
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _requests=fake_requests,
             _version=fake_version,
@@ -129,7 +125,8 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertFalse(released)
 
-    def test_release_to_specific_git_remote(self):
+    @patch("pontos.release.release.shell_cmd_runner")
+    def test_release_to_specific_git_remote(self, shell_mock):
         fake_path_class = MagicMock(spec=Path)
         fake_requests = MagicMock(spec=requests)
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -150,16 +147,11 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.2.dev1',
             '--git-remote-name',
             'upstream',
+            '--git-signing-key',
+            '1234',
         ]
 
-        called = []
-
-        def runner(cmd: str):
-            called.append(cmd)
-            return StdOutput('')
-
         released = release.main(
-            shell_cmd_runner=runner,
             _path=fake_path_class,
             _requests=fake_requests,
             _version=fake_version,
@@ -169,11 +161,17 @@ class ReleaseTestCase(unittest.TestCase):
         )
         self.assertTrue(released)
 
-        self.assertIn('git push --follow-tags upstream', called)
-        self.assertIn('git add MyProject.conf', called)
-        self.assertIn(
-            "git commit --no-verify -m 'Automatic adjustments after release\n\n"
-            "* Update to version 0.0.2.dev1\n"
-            "* Add empty changelog after 0.0.1'",
-            called,
+        shell_mock.assert_has_calls(
+            [
+                call('git push --follow-tags upstream'),
+                call('git add MyProject.conf'),
+                call("git add *__version__.py || echo 'ignoring __version__'"),
+                call('git add CHANGELOG.md'),
+                call(
+                    "git commit -S1234 --no-verify -m 'Automatic adjustments "
+                    "after release\n\n"
+                    "* Update to version 0.0.2.dev1\n"
+                    "* Add empty changelog after 0.0.1'"
+                ),
+            ]
         )

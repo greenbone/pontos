@@ -21,11 +21,11 @@ from argparse import Namespace
 import sys
 
 from pathlib import Path
-from typing import Callable
 
 from pontos import changelog
 from pontos.terminal import error, warning, info, ok, out
 from pontos import version
+from pontos.helper import shell_cmd_runner
 
 from .helper import (
     calculate_calendar_version,
@@ -41,7 +41,6 @@ RELEASE_TEXT_FILE = ".release.md"
 
 
 def prepare(
-    shell_cmd_runner: Callable,
     args: Namespace,
     *,
     path: Path,
