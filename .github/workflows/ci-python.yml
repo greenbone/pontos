@@ -17,7 +17,7 @@ jobs:
             - 3.8
             - 3.9
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3.0.2
       - name: Install and check with black, pylint and pontos.version
         uses: greenbone/actions/lint-python@v1
         with:
@@ -34,7 +34,7 @@ jobs:
             - 3.8
             - 3.9
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.0.2
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v1
         with:
@@ -47,7 +47,7 @@ jobs:
     needs: test
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.0.2
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v1
         with:
