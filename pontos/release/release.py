@@ -46,11 +46,8 @@ RELEASE_TEXT_FILE = ".release.md"
 def release(
     args: Namespace,
     *,
-    version_module: version,
     username: str,
     token: str,
-    requests_module: requests,
-    changelog_module: changelog,
     **_kwargs,
 ) -> bool:
     project: str = (
@@ -90,7 +87,7 @@ def release(
 
     base_url = f"https://api.github.com/repos/{space}/{project}/releases"
     git_version = f'{git_tag_prefix}{release_version}'
-    response = requests_module.post(
+    response = requests.post(
         base_url,
         headers=headers,
         auth=(username, token),
@@ -123,7 +120,7 @@ def release(
             else:
                 warning(f"{tmp_path} is not a file.")
 
-        updated = changelog_module.add_skeleton(
+        updated = changelog.add_skeleton(
             markdown=change_log_path.read_text(encoding='utf-8'),
             new_version=release_version,
             project_name=project,
@@ -136,7 +133,7 @@ def release(
         commit_msg += f'* Add empty changelog after {release_version}'
 
     executed, filename = update_version(
-        next_version, version_module, develop=True
+        next_version, version, develop=True
     )
     if not executed:
         return False

@@ -161,7 +161,6 @@ def calculate_calendar_version() -> str:
 def download(
     url: str,
     filename: str,
-    requests_module: requests,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -171,14 +170,13 @@ def download(
     Arguments:
         url: The url of the file we want to download
         filename: The name of the file to store the download in
-        requests_module: the python request module
 
     Returns:
        Path to the downloaded file
     """
 
     file_path: Path = Path(tempfile.gettempdir()) / filename
-    response = requests_module.get(url, stream=True, timeout=timeout)
+    response = requests.get(url, stream=True, timeout=timeout)
     total_length = response.headers.get('content-length')
 
     info(f'Downloading {url}')
@@ -209,8 +207,6 @@ def download(
 
 def download_assets(
     assets_url: str,
-    path: Path,
-    requests_module: requests,
 ) -> List[str]:
     """Download all .tar.gz and zip assets of a github release"""
 
@@ -219,7 +215,7 @@ def download_assets(
         return file_paths
 
     if assets_url:
-        assets_response = requests_module.get(assets_url)
+        assets_response = requests.get(assets_url)
         if assets_response.status_code != 200:
             error(
                 f"Wrong response status code {assets_response.status_code} for "
@@ -235,7 +231,6 @@ def download_assets(
                     asset_path = download(
                         asset_url,
                         name,
-                        requests_module=requests_module,
                     )
                     file_paths.append(asset_path)
 
@@ -342,13 +337,12 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
 
 
 def update_version(
-    to: str, _version: version, *, develop: bool = False
+    to: str, *, develop: bool = False
 ) -> Tuple[bool, str]:
     """Use pontos-version to update the version.
 
     Arguments:
         to: The version (str) that will be set
-        _version: Version module
         develop: Wether to set version to develop or not (bool)
 
     Returns:
@@ -360,7 +354,7 @@ def update_version(
     args.append(to)
     if develop:
         args.append('--develop')
-    executed, filename = _version.main(leave=False, args=args)
+    executed, filename = version.main(leave=False, args=args)
 
     if not executed:
         if filename == "":
@@ -376,7 +370,6 @@ def upload_assets(
     token: str,
     file_paths: List[Path],
     github_json: Dict,
-    requests_module: requests,
 ) -> bool:
     """Function to upload assets
 
@@ -386,8 +379,6 @@ def upload_assets(
         file_paths: List of paths to asset files
         github_json: The github dictionary, containing relevant information
             for the upload
-        requests_module: the python request module
-
     Returns:
         True on success, false else
     """
@@ -404,7 +395,7 @@ def upload_assets(
 
     for file_path in paths:
         to_upload = file_path.read_bytes()
-        resp = requests_module.post(
+        resp = requests.post(
             f"{asset_url}?name={file_path.name}",
             headers=headers,
             auth=auth,

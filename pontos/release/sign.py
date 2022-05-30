@@ -40,7 +40,6 @@ def sign(
     *,
     username: str,
     token: str,
-    requests_module: requests,
     **_kwargs,
 ) -> bool:
 
@@ -67,7 +66,7 @@ def sign(
         f"/releases/tags/{git_version}"
     )
 
-    response = requests_module.get(
+    response = requests.get(
         base_url,
         headers=headers,
     )
@@ -87,7 +86,6 @@ def sign(
     zip_path = download(
         zipball_url,
         f"{project}-{release_version}.zip",
-        requests_module=requests_module,
     )
     tarball_url = (
         f"https://github.com/{space}/{project}/archive/refs/"
@@ -96,14 +94,12 @@ def sign(
     tar_path = download(
         tarball_url,
         f"{project}-{release_version}.tar.gz",
-        requests_module=requests_module,
     )
 
     file_paths = [zip_path, tar_path]
 
     asset_paths = download_assets(
         github_json.get('assets_url'),
-        requests_module=requests_module,
     )
 
     file_paths.extend(asset_paths)
@@ -128,5 +124,4 @@ def sign(
         token,
         file_paths,
         github_json,
-        requests_module=requests_module,
     )

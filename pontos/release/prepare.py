@@ -43,8 +43,6 @@ RELEASE_TEXT_FILE = ".release.md"
 def prepare(
     args: Namespace,
     *,
-    version_module: version,
-    changelog_module: changelog,
     **_kwargs,
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
@@ -78,7 +76,7 @@ def prepare(
         error(f'git tag {git_version} is already taken.')
         sys.exit(1)
 
-    executed, filename = update_version(release_version, version_module)
+    executed, filename = update_version(release_version, version)
     if not executed:
         return False
 
@@ -96,7 +94,7 @@ def prepare(
             project=project,
             config=args.cc_config,
         )
-        changelog_builder = changelog_module.ChangelogBuilder(
+        changelog_builder = changelog.ChangelogBuilder(
             shell_cmd_runner=shell_cmd_runner,
             args=cargs,
         )
@@ -128,7 +126,7 @@ def prepare(
                 warning(f"{tmp_path} is not a file.")
 
         # Try to get the unreleased section of the specific version
-        updated, changelog_text = changelog_module.update(
+        updated, changelog_text = changelog.update(
             change_log_path.read_text(encoding='utf-8'),
             release_version,
             git_tag_prefix=git_tag_prefix,
@@ -137,7 +135,7 @@ def prepare(
 
         if not updated:
             # Try to get unversioned unrelease section
-            updated, changelog_text = changelog_module.update(
+            updated, changelog_text = changelog.update(
                 change_log_path.read_text(encoding='utf-8'),
                 release_version,
                 git_tag_prefix=git_tag_prefix,

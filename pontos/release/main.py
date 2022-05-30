@@ -248,9 +248,6 @@ def main(
                 parsed_args,
                 username=username,
                 token=token,
-                changelog_module=_changelog,
-                requests_module=_requests,
-                version_module=_version,
             ):
                 return sys.exit(1) if leave else False
         except subprocess.CalledProcessError as e:
