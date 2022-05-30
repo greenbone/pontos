@@ -84,7 +84,7 @@ def prepare(
 
     ok(f"updated version  in {filename} to {release_version}")
 
-    changelog_bool = fTrue
+    changelog_bool = True
     if args.conventional_commits:
         current_version = get_current_version()
         output = f'v{release_version}.md'

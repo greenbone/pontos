@@ -162,7 +162,6 @@ def download(
     url: str,
     filename: str,
     requests_module: requests,
-    path: Path,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -173,13 +172,12 @@ def download(
         url: The url of the file we want to download
         filename: The name of the file to store the download in
         requests_module: the python request module
-        path: the python pathlib.Path module
 
     Returns:
        Path to the downloaded file
     """
 
-    file_path: Path = path(tempfile.gettempdir()) / filename
+    file_path: Path = Path(tempfile.gettempdir()) / filename
     response = requests_module.get(url, stream=True, timeout=timeout)
     total_length = response.headers.get('content-length')
 
@@ -237,7 +235,6 @@ def download_assets(
                     asset_path = download(
                         asset_url,
                         name,
-                        path=path,
                         requests_module=requests_module,
                     )
                     file_paths.append(asset_path)
@@ -379,7 +376,6 @@ def upload_assets(
     token: str,
     file_paths: List[Path],
     github_json: Dict,
-    path: Path,
     requests_module: requests,
 ) -> bool:
     """Function to upload assets
@@ -390,7 +386,6 @@ def upload_assets(
         file_paths: List of paths to asset files
         github_json: The github dictionary, containing relevant information
             for the upload
-        path: the python pathlib.Path module
         requests_module: the python request module
 
     Returns:
@@ -399,7 +394,7 @@ def upload_assets(
     info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
     asset_url = github_json['upload_url'].replace('{?name,label}', '')
-    paths = [path(f'{str(p)}.asc') for p in file_paths]
+    paths = [Path(f'{str(p)}.asc') for p in file_paths]
 
     headers = {
         'Accept': 'application/vnd.github.v3+json',

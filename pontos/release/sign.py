@@ -21,8 +21,6 @@
 from argparse import Namespace
 import json
 
-from pathlib import Path
-
 import requests
 
 from pontos.terminal import error, info, out
@@ -89,7 +87,6 @@ def sign(
     zip_path = download(
         zipball_url,
         f"{project}-{release_version}.zip",
-        path=Path,
         requests_module=requests_module,
     )
     tarball_url = (
@@ -99,7 +96,6 @@ def sign(
     tar_path = download(
         tarball_url,
         f"{project}-{release_version}.tar.gz",
-        path=Path,
         requests_module=requests_module,
     )
 
@@ -107,7 +103,6 @@ def sign(
 
     asset_paths = download_assets(
         github_json.get('assets_url'),
-        path=Path,
         requests_module=requests_module,
     )
 
@@ -133,6 +128,5 @@ def sign(
         token,
         file_paths,
         github_json,
-        path=Path,
         requests_module=requests_module,
     )
