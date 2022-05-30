@@ -246,7 +246,6 @@ def main(
         try:
             if not parsed_args.func(
                 parsed_args,
-                path=_path,
                 username=username,
                 token=token,
                 changelog_module=_changelog,

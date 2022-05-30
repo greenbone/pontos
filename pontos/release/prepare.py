@@ -43,7 +43,6 @@ RELEASE_TEXT_FILE = ".release.md"
 def prepare(
     args: Namespace,
     *,
-    path: Path,
     version_module: version,
     changelog_module: changelog,
     **_kwargs,
@@ -85,7 +84,7 @@ def prepare(
 
     ok(f"updated version  in {filename} to {release_version}")
 
-    changelog_bool = True
+    changelog_bool = fTrue
     if args.conventional_commits:
         current_version = get_current_version()
         output = f'v{release_version}.md'
@@ -120,9 +119,9 @@ def prepare(
             '',
         )
     else:
-        change_log_path = path.cwd() / 'CHANGELOG.md'
+        change_log_path = Path.cwd() / 'CHANGELOG.md'
         if args.changelog:
-            tmp_path = path.cwd() / Path(args.changelog)
+            tmp_path = Path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:
@@ -170,7 +169,7 @@ def prepare(
     else:
         shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
 
-    release_text = path(RELEASE_TEXT_FILE)
+    release_text = Path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text, encoding='utf-8')
 
     warning(

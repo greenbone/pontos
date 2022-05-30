@@ -46,7 +46,6 @@ RELEASE_TEXT_FILE = ".release.md"
 def release(
     args: Namespace,
     *,
-    path: Path,
     version_module: version,
     username: str,
     token: str,
@@ -85,7 +84,7 @@ def release(
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
     info(f"Creating release for v{release_version}")
-    changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
+    changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
 
@@ -106,7 +105,7 @@ def release(
         error(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
-    path(RELEASE_TEXT_FILE).unlink()
+    Path(RELEASE_TEXT_FILE).unlink()
 
     commit_msg = (
         f'Automatic adjustments after release\n\n'
@@ -116,9 +115,9 @@ def release(
     # set to new version add skeleton
     changelog_bool = False
     if not args.conventional_commits:
-        change_log_path = path.cwd() / 'CHANGELOG.md'
+        change_log_path = Path.cwd() / 'CHANGELOG.md'
         if args.changelog:
-            tmp_path = path.cwd() / Path(args.changelog)
+            tmp_path = Path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:

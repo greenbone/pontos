@@ -40,7 +40,6 @@ from .helper import (
 def sign(
     args: Namespace,
     *,
-    path: Path,
     username: str,
     token: str,
     requests_module: requests,
@@ -90,7 +89,7 @@ def sign(
     zip_path = download(
         zipball_url,
         f"{project}-{release_version}.zip",
-        path=path,
+        path=Path,
         requests_module=requests_module,
     )
     tarball_url = (
@@ -100,7 +99,7 @@ def sign(
     tar_path = download(
         tarball_url,
         f"{project}-{release_version}.tar.gz",
-        path=path,
+        path=Path,
         requests_module=requests_module,
     )
 
@@ -108,7 +107,7 @@ def sign(
 
     asset_paths = download_assets(
         github_json.get('assets_url'),
-        path=path,
+        path=Path,
         requests_module=requests_module,
     )
 
@@ -134,6 +133,6 @@ def sign(
         token,
         file_paths,
         github_json,
-        path=path,
+        path=Path,
         requests_module=requests_module,
     )
