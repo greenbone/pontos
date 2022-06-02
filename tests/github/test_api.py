@@ -31,7 +31,7 @@ here = Path(__file__).parent
 
 
 class GitHubApiTestCase(unittest.TestCase):
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_branch_exists(self, requests_mock: MagicMock):
         response = MagicMock()
         response.ok = True
@@ -42,6 +42,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/branches/main",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -51,10 +52,10 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         self.assertTrue(exists)
 
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_branch_not_exists(self, requests_mock: MagicMock):
         response = MagicMock()
-        response.ok = False
+        response.is_success = False
         requests_mock.return_value = response
 
         api = GitHubRESTApi("12345")
@@ -62,6 +63,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/branches/main",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -71,7 +73,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         self.assertFalse(exists)
 
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_pull_request_commits(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -88,12 +90,13 @@ class GitHubApiTestCase(unittest.TestCase):
             },
             params={"per_page": "100"},
             json=None,
+            follow_redirects=True,
         )
 
         self.assertEqual(len(commits), 1)
         self.assertEqual(commits[0]["sha"], "1")
 
-    @patch("pontos.github.api.requests.post")
+    @patch("pontos.github.api.httpx.post")
     def test_create_pull_request(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_pull_request(
@@ -106,6 +109,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/pulls",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -119,7 +123,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.requests.post")
+    @patch("pontos.github.api.httpx.post")
     def test_update_pull_request(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.update_pull_request(
@@ -132,6 +136,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/pulls/123",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -144,7 +149,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.requests.post")
+    @patch("pontos.github.api.httpx.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.add_pull_request_comment(
@@ -153,6 +158,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/issues/123/comments",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -161,13 +167,14 @@ class GitHubApiTestCase(unittest.TestCase):
             json={"body": "This is a comment"},
         )
 
-    @patch("pontos.github.api.requests.delete")
+    @patch("pontos.github.api.httpx.delete")
     def test_delete_branch(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.delete_branch("foo/bar", "foo")
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/git/refs/foo",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -176,7 +183,7 @@ class GitHubApiTestCase(unittest.TestCase):
             json=None,
         )
 
-    @patch("pontos.github.api.requests.post")
+    @patch("pontos.github.api.httpx.post")
     def test_create_release(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_release(
@@ -188,6 +195,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/releases",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -203,7 +211,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_release_exists(self, requests_mock: MagicMock):
         response = MagicMock()
         response.ok = True
@@ -214,6 +222,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/releases/tags/v1.2.3",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -223,7 +232,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         self.assertTrue(exists)
 
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_release(self, requests_mock: MagicMock):
         response = MagicMock()
         response.json.return_value = json.loads(
@@ -237,6 +246,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -248,120 +258,126 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(data["id"], 52499047)
 
     @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
         response = MagicMock()
-        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
         response_headers = MagicMock()
         response.headers = response_headers
         response_headers.get.return_value = None
-        requests_mock.return_value = response
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
 
         api = GitHubRESTApi("12345")
         download_file = path_mock()
-        download_progress = api.download_release_tarball(
+        with api.download_release_tarball(
             "greenbone/pontos", "v21.11.0", download_file
-        )
+        ) as download_progress:
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                follow_redirects=True,
+                timeout=DEFAULT_TIMEOUT,
+            )
+            response_headers.get.assert_called_once_with("content-length")
 
-        requests_mock.assert_called_once_with(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-            stream=True,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response_headers.get.assert_called_once_with("content-length")
+            self.assertIsNone(download_progress.length)
 
-        self.assertIsNone(download_progress.length)
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
 
-        it = iter(download_progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-
-        with self.assertRaises(StopIteration):
-            next(it)
+            with self.assertRaises(StopIteration):
+                next(it)
 
     @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
         response = MagicMock()
-        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
         response_headers = MagicMock()
         response.headers = response_headers
         response_headers.get.return_value = "9"
-        requests_mock.return_value = response
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
 
         api = GitHubRESTApi("12345")
         download_file = path_mock()
-        download_progress = api.download_release_tarball(
+        with api.download_release_tarball(
             "greenbone/pontos", "v21.11.0", download_file
-        )
+        ) as download_progress:
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                follow_redirects=True,
+                timeout=DEFAULT_TIMEOUT,
+            )
+            response_headers.get.assert_called_once_with("content-length")
 
-        requests_mock.assert_called_once_with(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-            stream=True,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response_headers.get.assert_called_once_with("content-length")
+            self.assertEqual(download_progress.length, 9)
 
-        self.assertEqual(download_progress.length, 9)
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertEqual(progress, 1 / 3)
+            progress = next(it)
+            self.assertEqual(progress, 2 / 3)
+            progress = next(it)
+            self.assertEqual(progress, 1)
 
-        it = iter(download_progress)
-        progress = next(it)
-        self.assertEqual(progress, 1 / 3)
-        progress = next(it)
-        self.assertEqual(progress, 2 / 3)
-        progress = next(it)
-        self.assertEqual(progress, 1)
-
-        with self.assertRaises(StopIteration):
-            next(it)
+            with self.assertRaises(StopIteration):
+                next(it)
 
     @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.stream")
     def test_download_release_zip(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
         response = MagicMock()
-        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
         response_headers = MagicMock()
         response.headers = response_headers
         response_headers.get.return_value = None
-        requests_mock.return_value = response
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
 
         api = GitHubRESTApi("12345")
         download_file = path_mock()
-        download_progress = api.download_release_zip(
+        with api.download_release_zip(
             "greenbone/pontos", "v21.11.0", download_file
-        )
+        ) as download_progress:
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
+                follow_redirects=True,
+                timeout=DEFAULT_TIMEOUT,
+            )
+            response_headers.get.assert_called_once_with("content-length")
 
-        requests_mock.assert_called_once_with(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
-            stream=True,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response_headers.get.assert_called_once_with("content-length")
+            self.assertIsNone(download_progress.length)
 
-        self.assertIsNone(download_progress.length)
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
 
-        it = iter(download_progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
+            with self.assertRaises(StopIteration):
+                next(it)
 
-        with self.assertRaises(StopIteration):
-            next(it)
-
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_modified_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -376,6 +392,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/pulls/1/files",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -399,7 +416,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.get")
     def test_added_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -414,6 +431,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         requests_mock.assert_called_once_with(
             "https://api.github.com/repos/foo/bar/pulls/1/files",
+            follow_redirects=True,
             headers={
                 "Authorization": "token 12345",
                 "Accept": "application/vnd.github.v3+json",
@@ -437,89 +455,97 @@ class GitHubApiTestCase(unittest.TestCase):
 
 
 class DownloadTestCase(unittest.TestCase):
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.stream")
     def test_download_without_destination(
         self,
         requests_mock: MagicMock,
     ):
         response = MagicMock()
-        response.iter_content.return_value = [b"foo", b"bar", b"baz"]
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
         response_headers = MagicMock()
         response.headers = response_headers
         response_headers.get.return_value = None
-        requests_mock.return_value = response
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
 
-        download_progress = download(
+        with download(
             "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz"  # pylint: disable=line-too-long
-        )
+        ) as download_progress:
 
-        requests_mock.assert_called_once_with(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-            stream=True,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response_headers.get.assert_called_once_with("content-length")
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                follow_redirects=True,
+                timeout=DEFAULT_TIMEOUT,
+            )
+            response_headers.get.assert_called_once_with("content-length")
 
-        self.assertIsNone(download_progress.length)
-        self.assertEqual(download_progress.destination, Path("v21.11.0.tar.gz"))
+            self.assertIsNone(download_progress.length)
+            self.assertEqual(
+                download_progress.destination, Path("v21.11.0.tar.gz")
+            )
 
-        it = iter(download_progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
-        progress = next(it)
-        self.assertIsNone(progress)
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
 
-        with self.assertRaises(StopIteration):
-            next(it)
+            with self.assertRaises(StopIteration):
+                next(it)
 
-        download_progress.destination.unlink()
+            download_progress.destination.unlink()
 
     @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.requests.get")
+    @patch("pontos.github.api.httpx.stream")
     def test_download_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
         response = MagicMock()
-        response.iter_content.return_value = ["foo", "bar", "baz"]
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
         response_headers = MagicMock()
         response.headers = response_headers
         response_headers.get.return_value = "9"
-        requests_mock.return_value = response
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
 
         download_file = path_mock()
         file_mock = MagicMock()
         file_mock.__enter__.return_value = file_mock
         download_file.open.return_value = file_mock
 
-        download_progress = download(
+        with download(
             "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
             download_file,
-        )
+        ) as download_progress:
 
-        requests_mock.assert_called_once_with(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-            stream=True,
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response_headers.get.assert_called_once_with("content-length")
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                timeout=DEFAULT_TIMEOUT,
+                follow_redirects=True,
+            )
+            response_headers.get.assert_called_once_with("content-length")
 
-        self.assertEqual(download_progress.length, 9)
+            self.assertEqual(download_progress.length, 9)
 
-        it = iter(download_progress)
+            it = iter(download_progress)
 
-        progress = next(it)
-        self.assertEqual(progress, 1 / 3)
-        file_mock.write.assert_called_with("foo")
+            progress = next(it)
+            self.assertEqual(progress, 1 / 3)
+            file_mock.write.assert_called_with(b"foo")
 
-        progress = next(it)
-        self.assertEqual(progress, 2 / 3)
-        file_mock.write.assert_called_with("bar")
+            progress = next(it)
+            self.assertEqual(progress, 2 / 3)
+            file_mock.write.assert_called_with(b"bar")
 
-        progress = next(it)
-        self.assertEqual(progress, 1)
-        file_mock.write.assert_called_with("baz")
+            progress = next(it)
+            self.assertEqual(progress, 1)
+            file_mock.write.assert_called_with(b"baz")
 
-        with self.assertRaises(StopIteration):
-            next(it)
+            with self.assertRaises(StopIteration):
+                next(it)
