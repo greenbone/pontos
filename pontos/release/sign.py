@@ -144,6 +144,9 @@ def sign(
                 f"{file_path}"
             )
 
+    if args.dry_run:
+        return True
+
     return upload_assets(
         username,
         token,

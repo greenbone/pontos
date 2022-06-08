@@ -18,24 +18,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import FileType, Namespace, ArgumentParser
-import sys
-import subprocess
 import os
-
+import subprocess
+import sys
+from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import Tuple
 
 import requests
 
-from pontos import changelog
-from pontos.terminal import terminal, error, out
+from pontos import changelog, version
+from pontos.terminal import error, out, terminal
 from pontos.terminal.terminal import Terminal
-from pontos import version
 
 from .prepare import prepare
-from .sign import sign
 from .release import release
+from .sign import sign
 
 
 def parse_args(args) -> Tuple[str, str, Namespace]:
@@ -217,6 +215,9 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
             'Use gpg in a headless mode e.g. for '
             'the CI and use this passphrase for signing.'
         ),
+    )
+    sign_parser.add_argument(
+        '--dry-run', action='store_true', help="Do not upload signed files."
     )
     parsed_args = parser.parse_args(args)
     token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
