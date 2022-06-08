@@ -22,21 +22,17 @@ import json
 import subprocess
 import sys
 import tempfile
-
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple, Union
-from packaging.version import InvalidVersion, Version
+from typing import Callable, Dict, Iterator, List, Tuple, Union
 
 import requests
+from packaging.version import InvalidVersion, Version
 
 from pontos import version
-from pontos.terminal import error, warning, info, ok, out, overwrite
-from pontos.terminal.terminal import Signs
+from pontos.helper import DownloadProgressIterable
+from pontos.terminal import error, info, ok, out, warning
+from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
-from pontos.version import (
-    PythonVersionCommand,
-    CMakeVersionCommand,
-)
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -161,12 +157,12 @@ def calculate_calendar_version() -> str:
 def download(
     url: str,
     filename: str,
-    requests_module: requests,
-    path: Path,
+    requests_module: requests = requests,
+    path: Path = Path,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
-) -> Path:
+) -> DownloadProgressIterable:
     """Download file in url to filename
 
     Arguments:
@@ -176,73 +172,51 @@ def download(
         path: the python pathlib.Path module
 
     Returns:
-       Path to the downloaded file
+       A DownloadProgressIterable for iterating over the download progress
     """
 
-    file_path: Path = path(tempfile.gettempdir()) / filename
+    destination: Path = path(tempfile.gettempdir()) / filename
     response = requests_module.get(url, stream=True, timeout=timeout)
     total_length = response.headers.get('content-length')
 
     info(f'Downloading {url}')
 
-    if total_length is not None:  # no content length header
-        with file_path.open(mode='wb') as download_file:
-            dl = 0
-            total_length = int(total_length)
-            for content in response.iter_content(chunk_size=chunk_size):
-                dl += len(content)
-                download_file.write(content)
-                done = int(50 * dl / total_length)
-                overwrite(f"[{'=' * done}{' ' * (50-done)}]")
-    else:
-        with file_path.open(mode='wb') as download_file:
-            spinner = ['-', '\\', '|', '/']
-            i = 0
-            for content in response.iter_content(chunk_size=chunk_size):
-                i = i + 1
-                if i == 4:
-                    i = 0
-                download_file.write(content)
-                overwrite(f"[{spinner[i]}]")
-    overwrite(f"[{Signs.OK}]{' ' * 50}", new_line=True)
-
-    return file_path
+    return DownloadProgressIterable(
+        response.iter_content(chunk_size=chunk_size),
+        destination,
+        total_length,
+    )
 
 
 def download_assets(
     assets_url: str,
-    path: Path,
-    requests_module: requests,
-) -> List[str]:
+    path: Path = Path,
+    requests_module: requests = requests,
+) -> Iterator[DownloadProgressIterable]:
     """Download all .tar.gz and zip assets of a github release"""
 
-    file_paths = []
     if not assets_url:
-        return file_paths
+        return
 
-    if assets_url:
-        assets_response = requests_module.get(assets_url)
-        if assets_response.status_code != 200:
-            error(
-                f"Wrong response status code {assets_response.status_code} for "
-                f" request {assets_url}"
-            )
-            out(json.dumps(assets_response.text, indent=4, sort_keys=True))
-        else:
-            assets_json = assets_response.json()
-            for asset_json in assets_json:
-                asset_url: str = asset_json.get('browser_download_url', '')
-                name: str = asset_json.get('name', '')
-                if name.endswith('.zip') or name.endswith('.tar.gz'):
-                    asset_path = download(
-                        asset_url,
-                        name,
-                        path=path,
-                        requests_module=requests_module,
-                    )
-                    file_paths.append(asset_path)
-
-    return file_paths
+    assets_response = requests_module.get(assets_url)
+    if assets_response.status_code != 200:
+        error(
+            f"Wrong response status code {assets_response.status_code} for "
+            f" request {assets_url}"
+        )
+        out(json.dumps(assets_response.text, indent=4, sort_keys=True))
+    else:
+        assets_json = assets_response.json()
+        for asset_json in assets_json:
+            asset_url: str = asset_json.get('browser_download_url', '')
+            name: str = asset_json.get('name', '')
+            if name.endswith('.zip') or name.endswith('.tar.gz'):
+                yield download(
+                    asset_url,
+                    name,
+                    path=path,
+                    requests_module=requests_module,
+                )
 
 
 def get_current_version() -> str:
