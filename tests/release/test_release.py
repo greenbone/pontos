@@ -58,11 +58,11 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.2dev',
         ]
 
-        @patch("requests.post", return_value = fake_post)
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with patch("requests.post", return_value = fake_post):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
@@ -82,11 +82,11 @@ class ReleaseTestCase(unittest.TestCase):
             '-CC',
         ]
 
-        @patch("requests.post", return_value = fake_post)
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with patch("requests.post", return_value = fake_post):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
@@ -109,11 +109,11 @@ class ReleaseTestCase(unittest.TestCase):
             '0.0.1',
         ]
 
-        @patch("requests.post", return_value = fake_post)
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with patch("requests.post", return_value = fake_post):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertFalse(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
@@ -142,11 +142,11 @@ class ReleaseTestCase(unittest.TestCase):
             '1234',
         ]
 
-        @patch("requests.post", return_value = fake_post)
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with patch("requests.post", return_value = fake_post):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
         shell_mock.assert_has_calls(
