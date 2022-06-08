@@ -22,6 +22,8 @@ from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 import requests
 
+from pontos.helper import DownloadProgressIterable
+
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
 
 DEFAULT_TIMEOUT = 1000
@@ -33,52 +35,6 @@ class FileStatus(Enum):
     DELETED = "deleted"
     MODIFIED = "modified"
     RENAMED = "renamed"
-
-
-class DownloadProgressIterable:
-    def __init__(
-        self, content_iterator: Iterator, destination: Path, length: int
-    ):
-        self._length = None if length is None else int(length)
-        self._content_iterator = content_iterator
-        self._destination = destination
-
-    @property
-    def length(self) -> Optional[int]:
-        """
-        Size in bytes of the to be downloaded file or None if the size is not
-        available
-        """
-        return self._length
-
-    @property
-    def destination(self) -> Path:
-        """
-        Destination path of the to be downloaded file
-        """
-        return self._destination
-
-    def _download(self) -> Iterator[Optional[float]]:
-        dl = 0
-        with self._destination.open("wb") as f:
-            for content in self._content_iterator:
-                dl += len(content)
-                f.write(content)
-                yield dl / self._length if self._length else None
-
-    def __iter__(self) -> Iterator[Optional[float]]:
-        return self._download()
-
-    def run(self):
-        """
-        Just run the download without caring about the progress
-        """
-        try:
-            it = iter(self)
-            while True:
-                next(it)
-        except StopIteration:
-            pass
 
 
 def download(
