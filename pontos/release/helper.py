@@ -30,7 +30,7 @@ from packaging.version import InvalidVersion, Version
 
 from pontos import version
 from pontos.helper import DownloadProgressIterable
-from pontos.terminal import error, info, ok, out, warning
+from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
 
@@ -114,11 +114,11 @@ def commit_files(
         shell_cmd_runner(f"git commit --no-verify -m '{commit_msg}'")
 
 
-def calculate_calendar_version() -> str:
+def calculate_calendar_version(terminal: Terminal) -> str:
     """find the correct next calendar version by checking latest version and
     the today's date"""
 
-    current_version_str: str = get_current_version()
+    current_version_str: str = get_current_version(terminal)
     current_version = Version(current_version_str)
 
     today = datetime.date.today()
@@ -147,7 +147,7 @@ def calculate_calendar_version() -> str:
             )
         return str(release_version)
     else:
-        error(
+        terminal.error(
             f"'{str(current_version)}' is higher than "
             f"'{str(today.year  % 100)}.{str(today.month)}'."
         )
@@ -155,6 +155,7 @@ def calculate_calendar_version() -> str:
 
 
 def download(
+    terminal: Terminal,
     url: str,
     filename: str,
     requests_module: requests = requests,
@@ -166,6 +167,7 @@ def download(
     """Download file in url to filename
 
     Arguments:
+        terminal: Terminal to print download info to
         url: The url of the file we want to download
         filename: The name of the file to store the download in
         requests_module: the python request module
@@ -179,7 +181,7 @@ def download(
     response = requests_module.get(url, stream=True, timeout=timeout)
     total_length = response.headers.get('content-length')
 
-    info(f'Downloading {url}')
+    terminal.info(f'Downloading {url}')
 
     return DownloadProgressIterable(
         response.iter_content(chunk_size=chunk_size),
@@ -189,6 +191,7 @@ def download(
 
 
 def download_assets(
+    terminal: Terminal,
     assets_url: str,
     path: Path = Path,
     requests_module: requests = requests,
@@ -200,11 +203,11 @@ def download_assets(
 
     assets_response = requests_module.get(assets_url)
     if assets_response.status_code != 200:
-        error(
+        terminal.error(
             f"Wrong response status code {assets_response.status_code} for "
             f" request {assets_url}"
         )
-        out(json.dumps(assets_response.text, indent=4, sort_keys=True))
+        terminal.out(json.dumps(assets_response.text, indent=4, sort_keys=True))
     else:
         assets_json = assets_response.json()
         for asset_json in assets_json:
@@ -212,6 +215,7 @@ def download_assets(
             name: str = asset_json.get('name', '')
             if name.endswith('.zip') or name.endswith('.tar.gz'):
                 yield download(
+                    terminal,
                     asset_url,
                     name,
                     path=path,
@@ -219,7 +223,7 @@ def download_assets(
                 )
 
 
-def get_current_version() -> str:
+def get_current_version(terminal: Terminal) -> str:
     """Get the current Version from a pyproject.toml or
     a CMakeLists.txt file"""
 
@@ -230,18 +234,18 @@ def get_current_version() -> str:
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
         if project_definition_path.exists():
-            ok(f"Found {file_name} project definition file.")
+            terminal.ok(f"Found {file_name} project definition file.")
             current_version: str = cmd().get_current_version()
             return current_version
 
-    error("No project settings file found")
+    terminal.error("No project settings file found")
     sys.exit(1)
 
 
-def get_next_patch_version() -> str:
+def get_next_patch_version(terminal: Terminal) -> str:
     """find the correct next patch version by checking latest version"""
 
-    current_version_str: str = get_current_version()
+    current_version_str: str = get_current_version(terminal)
     current_version = Version(current_version_str)
 
     if current_version.dev is not None:
@@ -293,7 +297,7 @@ def get_project_name(
     return ret.stdout.split('/')[-1].replace('.git', '').strip()
 
 
-def find_signing_key(shell_cmd_runner: Callable) -> str:
+def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
     """Find the signing key in the config
 
     Arguments:
@@ -310,7 +314,7 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
         # return code 1 if no key is set.
         # So we will return empty string ...
         if e.returncode == 1:
-            warning("No signing key found.")
+            terminal.warning("No signing key found.")
         return ''
     # stdout should return "\n" if no key is available
     # and so git_signing_key should
@@ -319,7 +323,7 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
 
 
 def update_version(
-    to: str, _version: version, *, develop: bool = False
+    terminal: Terminal, to: str, _version: version, *, develop: bool = False
 ) -> Tuple[bool, str]:
     """Use pontos-version to update the version.
 
@@ -341,14 +345,15 @@ def update_version(
 
     if not executed:
         if filename == "":
-            error("No project definition found.")
+            terminal.error("No project definition found.")
         else:
-            error(f"Unable to update version {to} in {filename}")
+            terminal.error(f"Unable to update version {to} in {filename}")
 
     return executed, filename
 
 
 def upload_assets(
+    terminal: Terminal,
     username: str,
     token: str,
     file_paths: List[Path],
@@ -370,7 +375,7 @@ def upload_assets(
     Returns:
         True on success, false else
     """
-    info(f"Uploading assets: {[str(p) for p in file_paths]}")
+    terminal.info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
     asset_url = github_json['upload_url'].replace('{?name,label}', '')
     paths = [path(f'{str(p)}.asc') for p in file_paths]
@@ -391,13 +396,13 @@ def upload_assets(
         )
 
         if resp.status_code != 201:
-            error(
+            terminal.error(
                 f"Wrong response status {resp.status_code}"
                 f" while uploading {file_path.name}"
             )
-            out(json.dumps(resp.text, indent=4, sort_keys=True))
+            terminal.out(json.dumps(resp.text, indent=4, sort_keys=True))
             return False
         else:
-            ok(f"Uploaded: {file_path.name}")
+            terminal.ok(f"Uploaded: {file_path.name}")
 
     return True

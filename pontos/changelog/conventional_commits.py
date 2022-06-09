@@ -16,23 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from argparse import Namespace, ArgumentParser, FileType
+import re
+import subprocess
+import sys
+from argparse import ArgumentParser, FileType, Namespace
 from datetime import date
 from pathlib import Path
-import re
-import sys
-import subprocess
 from typing import Dict, Iterable, List, Union
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
-from pontos.helper import shell_cmd_runner
 
-from pontos.terminal import terminal, error, info, out, warning
-from pontos.terminal.terminal import Terminal
-from pontos.release.helper import (
-    get_project_name,
-)
+from pontos.helper import shell_cmd_runner
+from pontos.release.helper import get_project_name
+from pontos.terminal import Terminal
+from pontos.terminal.terminal import ConsoleTerminal
 
 ADDRESS = "https://github.com/"
 
@@ -43,8 +41,10 @@ class ChangelogBuilder:
 
     def __init__(
         self,
+        terminal: Terminal,
         args: Namespace,
     ):
+        self._terminal = terminal
         self.config: TOMLDocument = tomlkit.parse(
             args.config.read_text(encoding='utf-8')
         )
@@ -87,7 +87,8 @@ class ChangelogBuilder:
                 "git tag | sort -V | tail -1"
             )
         except subprocess.CalledProcessError:
-            warning("No tag found.")
+            self._terminal.warning("No tag found.")
+
         if proc.stdout and proc.stdout != '':
             cmd: str = f'git log "{proc.stdout.strip()}..HEAD" --oneline'
 
@@ -140,9 +141,9 @@ class ChangelogBuilder:
                             f'{cleaned_msg} [{commit[0]}]'
                             f'({commit_link}{commit[0]})'
                         )
-                        info(f'{commit[0]}: {cleaned_msg}')
+                        self._terminal.info(f'{commit[0]}: {cleaned_msg}')
         if not commit_dict:
-            warning("No conventional commits found.")
+            self._terminal.warning("No conventional commits found.")
             sys.exit(1)
         return commit_dict
 
@@ -262,11 +263,9 @@ def main(
 
     parsed_args = parse_args(args)
 
-    term = terminal(
-        Terminal(
-            verbose=1 if not parsed_args.quiet else 0,
-            log_file=parsed_args.log_file,
-        )
+    term = ConsoleTerminal(
+        verbose=1 if not parsed_args.quiet else 0,
+        log_file=parsed_args.log_file,
     )
 
     term.bold_info('pontos-changelog')
@@ -274,12 +273,13 @@ def main(
     with term.indent():
         try:
             changelog_builder = ChangelogBuilder(
+                terminal=term,
                 args=parsed_args,
             )
             changelog_builder.create_changelog_file()
         except subprocess.CalledProcessError as e:
-            error(f'Could not run command "{e.cmd}".')
-            out(f'Error was: {e.stderr}')
+            term.error(f'Could not run command "{e.cmd}".')
+            term.out(f'Error was: {e.stderr}')
             sys.exit(1)
 
     return sys.exit(0)
