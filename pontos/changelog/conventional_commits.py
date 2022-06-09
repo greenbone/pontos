@@ -70,7 +70,7 @@ class ChangelogBuilder:
 
         If a last tag is found, the `git log` is searched up to the
           last tag, found by `git tag | sort -V | tail -1`.
-        Else if no tag is found, the `git log` is searched full, asuming
+        Else if no tag is found, the `git log` is searched full, assuming
           this is a initial release.
 
         Returns:
@@ -251,7 +251,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
         "--log-file",
         dest="log_file",
         type=str,
-        help="Acivate logging using the given file path",
+        help="Activate logging using the given file path",
     )
 
     return parser.parse_args(args=args)
