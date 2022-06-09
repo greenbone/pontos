@@ -18,23 +18,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import Namespace
 import json
-
+from argparse import Namespace
 from pathlib import Path
 
 import requests
 
-from pontos.terminal import error, info, out
+from pontos.github.api import DownloadProgressIterable
 from pontos.helper import shell_cmd_runner
+from pontos.terminal import error, info, out
+from pontos.terminal.terminal import Signs
 
 from .helper import (
     download,
+    download_assets,
     get_current_version,
     get_project_name,
     upload_assets,
-    download_assets,
 )
+
+
+def display_download_progress(progress: DownloadProgressIterable) -> None:
+    spinner = ['-', '\\', '|', '/']
+    if progress.length:
+        for percent in progress:
+            done = int(50 * percent)
+            print(f"\r[{'=' * done}{' ' * (50-done)}]", end='', flush=True)
+    else:
+        i = 0
+        for _ in progress:
+            i = i + 1
+            if i == 4:
+                i = 0
+            print(f"\r[{spinner[i]}]", end='', flush=True)
+    print(f"\r[{Signs.OK}]{' ' * 50}", end='', flush=True)
 
 
 def sign(
@@ -87,32 +104,30 @@ def sign(
         f"tags/{git_version}.zip"
     )
     github_json = json.loads(response.text)
-    zip_path = download(
+    zip_progress = download(
         zipball_url,
         f"{project}-{release_version}.zip",
-        path=path,
-        requests_module=requests_module,
     )
+    display_download_progress(zip_progress)
+
     tarball_url = (
         f"https://github.com/{space}/{project}/archive/refs/"
         f"tags/{git_version}.tar.gz"
     )
-    tar_path = download(
+    tar_progress = download(
         tarball_url,
         f"{project}-{release_version}.tar.gz",
-        path=path,
-        requests_module=requests_module,
     )
+    display_download_progress(tar_progress)
 
-    file_paths = [zip_path, tar_path]
+    file_paths = [zip_progress.destination, tar_progress.destination]
 
-    asset_paths = download_assets(
+    assets_progress = download_assets(
         github_json.get('assets_url'),
-        path=path,
-        requests_module=requests_module,
     )
-
-    file_paths.extend(asset_paths)
+    for progress in assets_progress:
+        file_paths.append(progress.destination)
+        display_download_progress(progress)
 
     for file_path in file_paths:
         info(f"Signing {file_path}")
@@ -128,6 +143,9 @@ def sign(
                 f"gpg --default-key {signing_key} --yes --detach-sign --armor "
                 f"{file_path}"
             )
+
+    if args.dry_run:
+        return True
 
     return upload_assets(
         username,
