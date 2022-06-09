@@ -18,16 +18,17 @@
 # pylint: disable=C0413,W0108
 
 import os
-from subprocess import CompletedProcess
 import unittest
-
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from subprocess import CompletedProcess
+from unittest.mock import MagicMock, call, patch
 
 import requests
 
+from pontos import changelog, release
 from pontos.release.helper import version
-from pontos import release, changelog
 
 
 class PrepareTestCase(unittest.TestCase):
@@ -47,13 +48,14 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        released = release.main(
-            _path=fake_path_class,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=fake_path_class,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -68,13 +70,14 @@ class PrepareTestCase(unittest.TestCase):
             'prepare',
             '--calendar',
         ]
-        released = release.main(
-            _path=fake_path_class,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=fake_path_class,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -93,13 +96,14 @@ class PrepareTestCase(unittest.TestCase):
             '0.0.1',
         ]
 
-        released = release.main(
-            _path=fake_path_class,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=fake_path_class,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
 
         self.assertTrue(released)
         shell_mock.assert_has_calls(
@@ -132,7 +136,7 @@ class PrepareTestCase(unittest.TestCase):
             '1337',
         ]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stdout(StringIO()):
             release.main(
                 _path=fake_path_class,
                 _version=fake_version,
@@ -157,13 +161,14 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        released = release.main(
-            _path=fake_path_class,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=fake_path_class,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -180,14 +185,15 @@ class PrepareTestCase(unittest.TestCase):
             '--release-version',
             '0.0.1',
         ]
-        released = release.main(
-            _path=fake_path_class,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=fake_changelog,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=fake_path_class,
+                _requests=fake_requests,
+                _version=fake_version,
+                _changelog=fake_changelog,
+                leave=False,
+                args=args,
+            )
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -209,14 +215,15 @@ class PrepareTestCase(unittest.TestCase):
             '1.2.3',
             '-CC',
         ]
-        released = release.main(
-            _path=Path,
-            _requests=fake_requests,
-            _version=fake_version,
-            _changelog=changelog_mock,
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                _path=Path,
+                _requests=fake_requests,
+                _version=fake_version,
+                _changelog=changelog_mock,
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
         expected_release_content = """## [21.8.1] - 2021-08-23

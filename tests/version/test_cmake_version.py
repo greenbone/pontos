@@ -19,13 +19,13 @@
 # pylint: disable=protected-access
 
 
-import unittest
 import contextlib
 import io
-
+import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from pontos.version.cmake import CMakeVersionParser, CMakeVersionCommand
+
+from pontos.version.cmake import CMakeVersionCommand, CMakeVersionParser
 from pontos.version.helper import VersionError
 
 
@@ -110,9 +110,10 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.read_text.return_value = (
             "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)"
         )
-        CMakeVersionCommand(project_file_path=fake_path).run(
-            args=['update', '22', '--develop']
-        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            CMakeVersionCommand(project_file_path=fake_path).run(
+                args=['update', '22', '--develop']
+            )
         fake_path.read_text.assert_called_with(encoding='utf-8')
         fake_path.write_text.assert_called_with(
             'project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)', encoding='utf-8'
@@ -126,7 +127,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         fake_path.read_text.return_value = (
             "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)"
         )
-        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
             CMakeVersionCommand(project_file_path=fake_path).run(
                 args=['update', '22', '--develop']
             )

@@ -17,17 +17,18 @@
 
 # pylint: disable=no-member
 
-from argparse import Namespace
 import io
-from pathlib import Path
 import unittest
+from argparse import Namespace
+from contextlib import redirect_stderr
+from pathlib import Path
 from unittest.mock import Mock
-from pontos.github.api import FileStatus
 
+from pontos.github.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
-    file_status,
     create_pull_request,
+    file_status,
     update_pull_request,
 )
 
@@ -61,7 +62,7 @@ class TestArgparsing(unittest.TestCase):
     def test_create_pr_parse_args_fail(self):
         argv = ["pr", "create", "foo/bar"]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
             parse_args(argv)
 
     def test_update_pr_parse_args(self):
@@ -97,7 +98,7 @@ class TestArgparsing(unittest.TestCase):
     def test_update_pr_parse_args_fail(self):
         argv = ["pr", "update", "foo/bar"]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
             parse_args(argv)
 
     def test_fs_parse_args(self):
