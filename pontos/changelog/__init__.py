@@ -20,9 +20,9 @@ from .changelog import add_skeleton, update, ChangelogError
 from .conventional_commits import main, ChangelogBuilder
 
 __all__ = [
-    'add_skeleton',
-    'update',
-    'ChangelogBuilder',
-    'ChangelogError',
-    'main',
+    "add_skeleton",
+    "update",
+    "ChangelogBuilder",
+    "ChangelogError",
+    "main",
 ]

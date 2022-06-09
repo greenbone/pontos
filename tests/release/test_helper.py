@@ -47,15 +47,15 @@ class TestHelperFunctions(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        self.tmpdir = Path(tempfile.gettempdir()) / 'testrepo'
+        self.tmpdir = Path(tempfile.gettempdir()) / "testrepo"
         self.tmpdir.mkdir(parents=True, exist_ok=True)
-        self.shell_cmd_runner(f'git -C {self.tmpdir} init')
+        self.shell_cmd_runner(f"git -C {self.tmpdir} init")
         self.shell_cmd_runner(
-            f'git -C {self.tmpdir} remote add foo https://foo.bar/bla.git'
+            f"git -C {self.tmpdir} remote add foo https://foo.bar/bla.git"
         )
         self.shell_cmd_runner(
-            f'git -C {self.tmpdir} remote add '
-            'origin https://foo.bar/testrepo.git'
+            f"git -C {self.tmpdir} remote add "
+            "origin https://foo.bar/testrepo.git"
         )
 
     def tearDown(self) -> None:
@@ -65,12 +65,12 @@ class TestHelperFunctions(unittest.TestCase):
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
         project = get_project_name(
-            shell_cmd_runner=self.shell_cmd_runner, remote='foo'
+            shell_cmd_runner=self.shell_cmd_runner, remote="foo"
         )
-        self.assertEqual(project, 'bla')
+        self.assertEqual(project, "bla")
 
         project = get_project_name(shell_cmd_runner=self.shell_cmd_runner)
-        self.assertEqual(project, 'testrepo')
+        self.assertEqual(project, "testrepo")
         os.chdir(proj_path)
 
     def test_find_signing_key(self):
@@ -78,60 +78,60 @@ class TestHelperFunctions(unittest.TestCase):
         # save possibly set git signing key from user temporarily
         try:
             saved_key = self.shell_cmd_runner(
-                'git config user.signingkey'
+                "git config user.signingkey"
             ).stdout.strip()
         except subprocess.CalledProcessError:
             saved_key = None
 
         self.shell_cmd_runner(
-            'git config user.signingkey '
-            '1234567890ABCEDEF1234567890ABCEDEF123456'
+            "git config user.signingkey "
+            "1234567890ABCEDEF1234567890ABCEDEF123456"
         )
 
         signing_key = find_signing_key(
             terminal, shell_cmd_runner=self.shell_cmd_runner
         )
         self.assertEqual(
-            signing_key, '1234567890ABCEDEF1234567890ABCEDEF123456'
+            signing_key, "1234567890ABCEDEF1234567890ABCEDEF123456"
         )
 
         # reset the previously saved signing key ...
         if saved_key is not None:
-            self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
+            self.shell_cmd_runner(f"git config user.signingkey {saved_key}")
 
     def test_find_no_signing_key(self):
         terminal = MagicMock()
         # save possibly set git signing key from user temporarily
         try:
             saved_key = self.shell_cmd_runner(
-                'git config user.signingkey'
+                "git config user.signingkey"
             ).stdout.strip()
         except subprocess.CalledProcessError:
             saved_key = None
 
         try:
-            self.shell_cmd_runner('git config --unset user.signingkey')
+            self.shell_cmd_runner("git config --unset user.signingkey")
         except subprocess.CalledProcessError as e:
             self.assertEqual(e.returncode, 5)
 
         signing_key = find_signing_key(
             terminal, shell_cmd_runner=self.shell_cmd_runner
         )
-        self.assertEqual(signing_key, '')
+        self.assertEqual(signing_key, "")
 
         # reset the previously saved signing key ...
         if saved_key is not None:
-            self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
+            self.shell_cmd_runner(f"git config user.signingkey {saved_key}")
 
     def test_update_version_not_found(self):
         terminal = MagicMock()
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
         executed, filename = update_version(
-            terminal, to='21.4.4', _version=version, develop=True
+            terminal, to="21.4.4", _version=version, develop=True
         )
         self.assertFalse(executed)
-        self.assertEqual(filename, '')
+        self.assertEqual(filename, "")
 
         os.chdir(proj_path)
 
@@ -148,33 +148,33 @@ class TestHelperFunctions(unittest.TestCase):
         version_file = module_path / "__version__.py"
         toml = self.tmpdir / "pyproject.toml"
         toml.write_text(
-            '[tool.poetry]\n'
+            "[tool.poetry]\n"
             'name = "testrepo"\n'
             'version = "21.6.2.dev1"\n\n'
-            '[tool.pontos.version]\n'
+            "[tool.pontos.version]\n"
             'version-module-file = "testrepo/__version__.py"\n',
-            encoding='utf-8',
+            encoding="utf-8",
         )
         executed, filename = update_version(
-            terminal, to='21.4.4', _version=version, develop=False
+            terminal, to="21.4.4", _version=version, develop=False
         )
-        toml_text = toml.read_text(encoding='utf-8')
-        self.assertEqual(filename, 'pyproject.toml')
+        toml_text = toml.read_text(encoding="utf-8")
+        self.assertEqual(filename, "pyproject.toml")
         self.assertTrue(executed)
         self.assertEqual(
             toml_text,
-            '[tool.poetry]\n'
+            "[tool.poetry]\n"
             'name = "testrepo"\n'
             'version = "21.4.4"\n\n'
-            '[tool.pontos.version]\n'
+            "[tool.pontos.version]\n"
             'version-module-file = "testrepo/__version__.py"\n',
         )
         self.assertTrue(version_file.exists())
-        version_text = version_file.read_text(encoding='utf-8')
+        version_text = version_file.read_text(encoding="utf-8")
         self.assertEqual(
             version_text,
-            '# pylint: disable=invalid-name\n\n'
-            '# THIS IS AN AUTOGENERATED FILE. DO NOT TOUCH!\n\n'
+            "# pylint: disable=invalid-name\n\n"
+            "# THIS IS AN AUTOGENERATED FILE. DO NOT TOUCH!\n\n"
             '__version__ = "21.4.4"\n',
         )
 
@@ -189,25 +189,25 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
         terminal = MagicMock()
         today = datetime.datetime.today()
 
-        filenames = ['pyproject.toml', 'CMakeLists.txt']
+        filenames = ["pyproject.toml", "CMakeLists.txt"]
         mocks = [
-            'pontos.release.helper.PythonVersionCommand',
-            'pontos.release.helper.CMakeVersionCommand',
+            "pontos.release.helper.PythonVersionCommand",
+            "pontos.release.helper.CMakeVersionCommand",
         ]
         current_versions = [
-            '21.4.1.dev3',
-            f'19.{str(today.month)}.1.dev3',
-            f'{str(today.year % 100)}.{str(today.month)}.1.dev3',
-            f'{str(today.year % 100)}.{str(today.month)}.1',
+            "21.4.1.dev3",
+            f"19.{str(today.month)}.1.dev3",
+            f"{str(today.year % 100)}.{str(today.month)}.1.dev3",
+            f"{str(today.year % 100)}.{str(today.month)}.1",
         ]
         assert_versions = [
-            f'{str(today.year % 100)}.{str(today.month)}.0',
-            f'{str(today.year % 100)}.{str(today.month)}.0',
-            f'{str(today.year % 100)}.{str(today.month)}.1',
-            f'{str(today.year % 100)}.{str(today.month)}.2',
+            f"{str(today.year % 100)}.{str(today.month)}.0",
+            f"{str(today.year % 100)}.{str(today.month)}.0",
+            f"{str(today.year % 100)}.{str(today.month)}.1",
+            f"{str(today.year % 100)}.{str(today.month)}.2",
         ]
 
-        tmp_path = Path.cwd() / 'tmp'
+        tmp_path = Path.cwd() / "tmp"
 
         for filename, mock in zip(filenames, mocks):
             for current_version, assert_version in zip(
@@ -225,25 +225,25 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
                     release_version = calculate_calendar_version(terminal)
                     self.assertEqual(release_version, assert_version)
 
-                os.chdir('..')
+                os.chdir("..")
                 proj_file.unlink()
 
         tmp_path.rmdir()
 
     def test_get_next_dev_version(self):
         current_versions = [
-            '20.4.1',
-            '20.4.1',
-            '19.1.2',
-            '1.1.1',
-            '20.6.1',
+            "20.4.1",
+            "20.4.1",
+            "19.1.2",
+            "1.1.1",
+            "20.6.1",
         ]
         assert_versions = [
-            '20.4.2',
-            '20.4.2',
-            '19.1.3',
-            '1.1.2',
-            '20.6.2',
+            "20.4.2",
+            "20.4.2",
+            "19.1.3",
+            "1.1.2",
+            "20.6.2",
         ]
 
         for current_version, assert_version in zip(
@@ -257,27 +257,27 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
         terminal = MagicMock()
         today = datetime.datetime.today()
 
-        filenames = ['pyproject.toml', 'CMakeLists.txt']
+        filenames = ["pyproject.toml", "CMakeLists.txt"]
         mocks = [
-            'pontos.release.helper.PythonVersionCommand',
-            'pontos.release.helper.CMakeVersionCommand',
+            "pontos.release.helper.PythonVersionCommand",
+            "pontos.release.helper.CMakeVersionCommand",
         ]
         current_versions = [
-            '20.4.1.dev3',
-            f'{str(today.year % 100)}.4.1.dev3',
-            f'19.{str(today.month)}.1.dev3',
-            f'{str(today.year % 100)}.{str(today.month)}.1',
-            '20.6.1',
+            "20.4.1.dev3",
+            f"{str(today.year % 100)}.4.1.dev3",
+            f"19.{str(today.month)}.1.dev3",
+            f"{str(today.year % 100)}.{str(today.month)}.1",
+            "20.6.1",
         ]
         assert_versions = [
-            '20.4.1',
-            f'{str(today.year % 100)}.4.1',
-            f'19.{str(today.month)}.1',
-            f'{str(today.year % 100)}.{str(today.month)}.2',
-            '20.6.2',
+            "20.4.1",
+            f"{str(today.year % 100)}.4.1",
+            f"19.{str(today.month)}.1",
+            f"{str(today.year % 100)}.{str(today.month)}.2",
+            "20.6.2",
         ]
 
-        tmp_path = Path.cwd() / 'tmp'
+        tmp_path = Path.cwd() / "tmp"
 
         for filename, mock in zip(filenames, mocks):
             for current_version, assert_version in zip(
@@ -296,7 +296,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
 
                     self.assertEqual(release_version, assert_version)
 
-                os.chdir('..')
+                os.chdir("..")
                 proj_file.unlink()
 
         tmp_path.rmdir()

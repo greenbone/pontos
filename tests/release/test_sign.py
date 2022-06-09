@@ -32,8 +32,8 @@ from pontos.release.helper import version
 
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+        os.environ["GITHUB_TOKEN"] = "foo"
+        os.environ["GITHUB_USER"] = "bar"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'
@@ -48,15 +48,15 @@ class SignTestCase(unittest.TestCase):
         fake_get.text = self.valid_gh_release_response
         fake_requests.get.return_value = fake_get
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'sign',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
         ]
 
         with redirect_stdout(StringIO()):
@@ -83,15 +83,15 @@ class SignTestCase(unittest.TestCase):
         fake_requests.post.return_value = fake_post
         fake_requests.get.return_value = fake_get
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'sign',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
         ]
 
         with redirect_stdout(StringIO()):
@@ -118,15 +118,15 @@ class SignTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'sign',
-            '--project',
-            'bar',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "bar",
+            "--release-version",
+            "0.0.1",
         ]
 
         with redirect_stdout(StringIO()):

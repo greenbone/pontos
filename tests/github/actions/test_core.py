@@ -93,7 +93,7 @@ class ConsoleTestCase(unittest.TestCase):
 
 class ActionIOTestCase(unittest.TestCase):
     @patch.dict(
-        'os.environ', {"INPUT_FOO": "1234", "INPUT_FOO_BAR": "2345"}, clear=True
+        "os.environ", {"INPUT_FOO": "1234", "INPUT_FOO_BAR": "2345"}, clear=True
     )
     def test_input(self):
         self.assertEqual(ActionIO.input("foo"), "1234")

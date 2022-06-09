@@ -69,16 +69,16 @@ def parse_args(
     )
 
     subparsers = parser.add_subparsers(
-        title='subcommands',
-        description='valid subcommands',
+        title="subcommands",
+        description="valid subcommands",
         required=True,
-        help='additional help',
-        dest='command',
+        help="additional help",
+        dest="command",
     )
 
     # create a PR from command line
     pr_parser = subparsers.add_parser(
-        'pull-request', aliases=['pr', 'PR', 'pullrequest']
+        "pull-request", aliases=["pr", "PR", "pullrequest"]
     )
 
     pr_parser.set_defaults(func=pull_request)
@@ -169,7 +169,7 @@ def parse_args(
 
     # get files
     file_status_parser = subparsers.add_parser(
-        'file-status', aliases=['status', 'FS']
+        "file-status", aliases=["status", "FS"]
     )
 
     file_status_parser.set_defaults(func=file_status)
@@ -187,14 +187,14 @@ def parse_args(
         "--status",
         choices=FileStatus,
         default=[FileStatus.ADDED, FileStatus.MODIFIED],
-        nargs='+',
+        nargs="+",
         help=("What file status should be returned" "Default: %(default)s"),
     )
 
     file_status_parser.add_argument(
         "-o",
         "--output",
-        type=FileType('w', encoding="utf-8"),
+        type=FileType("w", encoding="utf-8"),
         help=(
             "Specify an output file. "
             "If none is given, output will be prompted"
@@ -215,7 +215,7 @@ def parse_args(
     )
 
     # labels
-    label_parser = subparsers.add_parser('labels', aliases=['L'])
+    label_parser = subparsers.add_parser("labels", aliases=["L"])
 
     label_parser.set_defaults(func=labels)
 

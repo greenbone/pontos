@@ -101,7 +101,7 @@ def _add_header(
         licence_file = root / "templates" / licence / f"template{suffix}"
         try:
             return (
-                licence_file.read_text(encoding='utf-8')
+                licence_file.read_text(encoding="utf-8")
                 .replace("<company>", company)
                 .replace("<year>", year)
             )
@@ -157,7 +157,7 @@ def _update_file(
                         rest_of_file = fp.read()
                         fp.seek(0)
                         fp.write(header)
-                        fp.write('\n')
+                        fp.write("\n")
                         fp.write(rest_of_file)
                         print(f"{file}: Added licence header.")
                         return 0
@@ -224,7 +224,7 @@ def _get_exclude_list(
     if exclude_file is None:
         exclude_file = Path(".pontos-header-ignore")
     try:
-        exclude_lines = exclude_file.read_text(encoding='utf-8').split('\n')
+        exclude_lines = exclude_file.read_text(encoding="utf-8").split("\n")
     except FileNotFoundError:
         print("No exclude list file found.")
         return []
@@ -240,7 +240,7 @@ def _get_exclude_list(
     for glob_paths in expanded_globs:
         for path in glob_paths:
             if path.is_dir():
-                for efile in path.rglob('*'):
+                for efile in path.rglob("*"):
                     exclude_list.append(efile.absolute())
             else:
                 exclude_list.append(path.absolute())
@@ -329,7 +329,7 @@ def _parse_args(args=None):
             "The ignore file should only contain relative paths like *.py,"
             "not absolute as **/*.py"
         ),
-        type=FileType('r'),
+        type=FileType("r"),
     )
 
     return parser.parse_args(args)
@@ -344,7 +344,7 @@ def main() -> None:
         log_file=parsed_args.log_file,
     )
 
-    term.bold_info('pontos-update-header')
+    term.bold_info("pontos-update-header")
 
     if parsed_args.directories:
         if isinstance(parsed_args.directories, list):

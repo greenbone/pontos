@@ -33,7 +33,7 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.__str__.return_value = "meh.toml"
-        fake_path.read_text.return_value = ''
+        fake_path.read_text.return_value = ""
 
         with self.assertRaises(
             VersionError, msg="Version information not found in meh.toml file."
@@ -60,13 +60,13 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         """
 
         cmd = PythonVersionCommand(project_file_path=fake_path)
-        cmd._update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version("20.04dev1")
 
         text = fake_path.write_text.call_args[0][0]
 
         toml = tomlkit.parse(text)
 
-        self.assertEqual(toml['tool']['poetry']['version'], '20.4.dev1')
+        self.assertEqual(toml["tool"]["poetry"]["version"], "20.4.dev1")
 
     def test_override_existing_version(self):
         fake_path_class = MagicMock(spec=Path)
@@ -77,10 +77,10 @@ class UpdatePyprojectVersionTestCase(unittest.TestCase):
         """
 
         cmd = PythonVersionCommand(project_file_path=fake_path)
-        cmd._update_pyproject_version('20.04dev1')
+        cmd._update_pyproject_version("20.04dev1")
 
         text = fake_path.write_text.call_args[0][0]
 
         toml = tomlkit.parse(text)
 
-        self.assertEqual(toml['tool']['poetry']['version'], '20.4.dev1')
+        self.assertEqual(toml["tool"]["poetry"]["version"], "20.4.dev1")

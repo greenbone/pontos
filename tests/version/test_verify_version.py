@@ -28,22 +28,22 @@ from pontos.version.helper import VersionError
 
 class VerifyVersionTestCase(unittest.TestCase):
     def test_current_version_not_pep440_compliant(self):
-        fake_version_py = Path('foo.py')
+        fake_version_py = Path("foo.py")
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='1.02.03'
+            return_value="1.02.03"
         )
-        fake_pyproject = Path(__file__).parent.parent / 'fake_pyproject.toml'
+        fake_pyproject = Path(__file__).parent.parent / "fake_pyproject.toml"
         cmd = PythonVersionCommand(project_file_path=fake_pyproject)
         cmd.version_file_path = fake_version_py
 
         with self.assertRaisesRegex(
             VersionError,
-            'The version .* in foo.py is not PEP 440 compliant.',
+            "The version .* in foo.py is not PEP 440 compliant.",
         ):
-            cmd.verify_version('1.2.3')
+            cmd.verify_version("1.2.3")
 
     def test_current_version_not_equal_pyproject_toml_version(self):
-        fake_version_py = Path('foo.py')
+        fake_version_py = Path("foo.py")
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = """
@@ -52,7 +52,7 @@ class VerifyVersionTestCase(unittest.TestCase):
         """
 
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='1.2.3'
+            return_value="1.2.3"
         )
         cmd = PythonVersionCommand(
             project_file_path=fake_path,
@@ -61,12 +61,12 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(
             VersionError,
-            'The version .* in .* doesn\'t match the current version .*.',
+            "The version .* in .* doesn't match the current version .*.",
         ):
-            cmd.verify_version('1.2.3')
+            cmd.verify_version("1.2.3")
 
     def test_current_version(self):
-        fake_version_py = Path('foo.py')
+        fake_version_py = Path("foo.py")
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = """
@@ -76,7 +76,7 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         print_mock = MagicMock()
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='1.2.3'
+            return_value="1.2.3"
         )
         PythonVersionCommand._print = print_mock
 
@@ -85,12 +85,12 @@ class VerifyVersionTestCase(unittest.TestCase):
         )
         cmd.version_file_path = fake_version_py
 
-        cmd.verify_version('current')
+        cmd.verify_version("current")
 
-        print_mock.assert_called_with('OK')
+        print_mock.assert_called_with("OK")
 
     def test_provided_version_missmatch(self):
-        fake_version_py = Path('foo.py')
+        fake_version_py = Path("foo.py")
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = """
@@ -99,7 +99,7 @@ class VerifyVersionTestCase(unittest.TestCase):
         """
 
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='1.2.3'
+            return_value="1.2.3"
         )
 
         cmd = PythonVersionCommand(
@@ -109,12 +109,12 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(
             VersionError,
-            'Provided version .* does not match the current version .*.',
+            "Provided version .* does not match the current version .*.",
         ):
-            cmd.verify_version('1.2.4')
+            cmd.verify_version("1.2.4")
 
     def test_verify_success(self):
-        fake_version_py = Path('foo.py')
+        fake_version_py = Path("foo.py")
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
         fake_path.read_text.return_value = """
@@ -124,7 +124,7 @@ class VerifyVersionTestCase(unittest.TestCase):
 
         print_mock = MagicMock()
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='1.2.3'
+            return_value="1.2.3"
         )
         PythonVersionCommand._print = print_mock
 
@@ -133,9 +133,9 @@ class VerifyVersionTestCase(unittest.TestCase):
         )
         cmd.version_file_path = fake_version_py
 
-        cmd.verify_version('1.2.3')
+        cmd.verify_version("1.2.3")
 
-        print_mock.assert_called_with('OK')
+        print_mock.assert_called_with("OK")
 
     def test_verify_branch(self):
         fake_path_class = MagicMock(spec=Path)
@@ -146,13 +146,13 @@ class VerifyVersionTestCase(unittest.TestCase):
         """
         fake_path.exists.return_value = True
         PythonVersionCommand.get_current_version = MagicMock(
-            return_value='21.0.1'
+            return_value="21.0.1"
         )
         print_mock = MagicMock()
         PythonVersionCommand._print = print_mock
 
         PythonVersionCommand(project_file_path=fake_path).run(
-            args=['verify', '21.0.1']
+            args=["verify", "21.0.1"]
         )
 
-        print_mock.assert_called_with('OK')
+        print_mock.assert_called_with("OK")

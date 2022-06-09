@@ -31,15 +31,15 @@ TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
 
 class Signs(Enum):
-    FAIL = '\N{HEAVY MULTIPLICATION X}'
-    ERROR = '\N{MULTIPLICATION SIGN}'
-    WARNING = '\N{WARNING SIGN}'
-    OK = '\N{CHECK MARK}'
-    INFO = '\N{INFORMATION SOURCE}'
-    NONE = ' '
+    FAIL = "\N{HEAVY MULTIPLICATION X}"
+    ERROR = "\N{MULTIPLICATION SIGN}"
+    WARNING = "\N{WARNING SIGN}"
+    OK = "\N{CHECK MARK}"
+    INFO = "\N{INFORMATION SOURCE}"
+    NONE = " "
 
     def __str__(self):
-        return f'{self.value}'
+        return f"{self.value}"
 
 
 STATUS_LEN = 2
@@ -194,7 +194,7 @@ class ConsoleTerminal(Terminal):
 
         # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
-        message = ''.join(messages)
+        message = "".join(messages)
         messages = message.split("\n")
         output = self._format_message(
             message=messages[0],
@@ -212,13 +212,13 @@ class ConsoleTerminal(Terminal):
                 )
         if self._verbose > 0:
             if new_line:
-                print(style(f'{color(status)} {output}'), **kwargs)
+                print(style(f"{color(status)} {output}"), **kwargs)
             else:
                 kwargs.update({"end": "", "flush": True})
-                print(style(f'{color(status)} {output}'), **kwargs)
+                print(style(f"{color(status)} {output}"), **kwargs)
 
         if self._logger:
-            self._logger.log(message=f'{status} {output}')
+            self._logger.log(message=f"{status} {output}")
 
     def _format_message(
         self,
@@ -237,7 +237,7 @@ class ConsoleTerminal(Terminal):
         while usable_width < len(message):
             part = message[:usable_width]
             message = message[usable_width:]
-            formatted_message += f'{part}'
+            formatted_message += f"{part}"
 
             if len(message) > 0:
                 formatted_message += f'\n{" " * offset}'

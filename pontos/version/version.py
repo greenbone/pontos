@@ -64,7 +64,7 @@ class VersionCommand:
     def run(self, args=None) -> Union[int, str]:
         args = self.parser.parse_args(args)
 
-        if not getattr(args, 'command', None):
+        if not getattr(args, "command", None):
             self.parser.print_usage()
             return 0
 
@@ -72,17 +72,17 @@ class VersionCommand:
 
         if not self.project_file_path.exists():
             raise VersionError(
-                f'Could not find {str(self.project_file_path)} file.'
+                f"Could not find {str(self.project_file_path)} file."
             )
 
         try:
-            if args.command == 'update':
+            if args.command == "update":
                 self.update_version(
                     args.version, force=args.force, develop=args.develop
                 )
-            elif args.command == 'show':
+            elif args.command == "show":
                 self.print_current_version()
-            elif args.command == 'verify':
+            elif args.command == "verify":
                 self.verify_version(args.version)
         except VersionError as e:
             return str(e)

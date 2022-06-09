@@ -40,7 +40,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
     def test_raise_exception_file_not_exists(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = 'go.mod'
+        fake_path.__str__.return_value = "go.mod"
         fake_path.exists.return_value = False
         with self.assertRaises(VersionError):
             GoVersionCommand(project_file_path=fake_path)
@@ -52,7 +52,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
     def test_should_call_print_current_version_without_raising_exception(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = 'go.mod'
+        fake_path.__str__.return_value = "go.mod"
         fake_path.exists.return_value = True
 
         called = []
@@ -60,25 +60,25 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         # fake runner
         def runner(cmd):
             called.append(cmd)
-            return StdOutput('21.22')
+            return StdOutput("21.22")
 
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             cmd = GoVersionCommand(project_file_path=fake_path)
             cmd.shell_cmd_runner = runner
 
-            cmd.run(args=['show'])
+            cmd.run(args=["show"])
 
             self.assertIn(
-                'git describe --tags `git rev-list --tags --max-count=1`',
+                "git describe --tags `git rev-list --tags --max-count=1`",
                 called,
             )
-            self.assertEqual(buf.getvalue(), '21.22\n')
+            self.assertEqual(buf.getvalue(), "21.22\n")
 
-    @patch('pontos.version.go.subprocess', autospec=True)
+    @patch("pontos.version.go.subprocess", autospec=True)
     def test_should_raising_exception(self, mock_subprocess):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = 'go.mod'
+        fake_path.__str__.return_value = "go.mod"
         fake_path.exists.return_value = True
 
         mock_subprocess.run.side_effect = subprocess.CalledProcessError(
@@ -89,42 +89,42 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
         with self.assertRaises(
             subprocess.CalledProcessError
         ), contextlib.redirect_stdout(io.StringIO()):
-            GoVersionCommand(project_file_path=fake_path).run(args=['show'])
+            GoVersionCommand(project_file_path=fake_path).run(args=["show"])
 
     def test_verify_branch(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = 'go.mod'
+        fake_path.__str__.return_value = "go.mod"
         fake_path.exists.return_value = True
 
-        GoVersionCommand.get_current_version = MagicMock(return_value='21.0.1')
+        GoVersionCommand.get_current_version = MagicMock(return_value="21.0.1")
         print_mock = MagicMock()
         GoVersionCommand._print = print_mock
 
         GoVersionCommand(project_file_path=fake_path).run(
-            args=['verify', '21.0.1']
+            args=["verify", "21.0.1"]
         )
 
-        print_mock.assert_called_with('OK')
+        print_mock.assert_called_with("OK")
 
     def test_verify_branch_not_pep(self):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = 'go.mod'
+        fake_path.__str__.return_value = "go.mod"
         fake_path.exists.return_value = True
 
-        GoVersionCommand.get_current_version = MagicMock(return_value='021.02a')
+        GoVersionCommand.get_current_version = MagicMock(return_value="021.02a")
 
         # with self.assertRaises(
         #     VersionError,
         # ):
         result = GoVersionCommand(project_file_path=fake_path).run(
-            args=['verify', '021.02a']
+            args=["verify", "021.02a"]
         )
 
         self.assertTrue(
             isinstance(result, str), "expected result to be an error string"
         )
         self.assertEqual(
-            result, 'The version 021.02a is not PEP 440 compliant.'
+            result, "The version 021.02a is not PEP 440 compliant."
         )

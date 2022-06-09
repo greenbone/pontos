@@ -30,13 +30,13 @@ class VersionCommandTestCase(unittest.TestCase):
             VersionCommand().run()
             self.assertEqual(
                 buf.getvalue(),
-                'usage: version [-h] [--quiet] {verify,show,update} ...\n',
+                "usage: version [-h] [--quiet] {verify,show,update} ...\n",
             )
 
     def test_missing_file(self):
         with self.assertRaises(
             VersionError, msg="Could not find whatever file."
         ):
-            VersionCommand(project_file_path=Path('whatever')).run(
-                args=['show']
+            VersionCommand(project_file_path=Path("whatever")).run(
+                args=["show"]
             )

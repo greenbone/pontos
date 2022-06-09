@@ -22,9 +22,9 @@ from pontos.version.helper import strip_version
 
 class StripVersionTestCase(unittest.TestCase):
     def test_version_string_without_v(self):
-        self.assertEqual(strip_version('1.2.3'), '1.2.3')
-        self.assertEqual(strip_version('1.2.3dev'), '1.2.3dev')
+        self.assertEqual(strip_version("1.2.3"), "1.2.3")
+        self.assertEqual(strip_version("1.2.3dev"), "1.2.3dev")
 
     def test_version_string_with_v(self):
-        self.assertEqual(strip_version('v1.2.3'), '1.2.3')
-        self.assertEqual(strip_version('v1.2.3dev'), '1.2.3dev')
+        self.assertEqual(strip_version("v1.2.3"), "1.2.3")
+        self.assertEqual(strip_version("v1.2.3dev"), "1.2.3dev")

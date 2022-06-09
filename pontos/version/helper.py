@@ -35,7 +35,7 @@ def strip_version(version: str) -> str:
 
     E.g. v1.2.3 will be converted to 1.2.3
     """
-    if version and version[0] == 'v':
+    if version and version[0] == "v":
         return version[1:]
 
     return version
@@ -65,33 +65,33 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     - update
     """
     parser = argparse.ArgumentParser(
-        description='Version handling utilities.',
-        prog='version',
+        description="Version handling utilities.",
+        prog="version",
     )
     parser.add_argument(
-        '--quiet', help='don\'t print messages', action="store_true"
+        "--quiet", help="don't print messages", action="store_true"
     )
 
     subparsers = parser.add_subparsers(
-        title='subcommands',
-        description='valid subcommands',
-        help='additional help',
-        dest='command',
+        title="subcommands",
+        description="valid subcommands",
+        help="additional help",
+        dest="command",
     )
 
-    verify_parser = subparsers.add_parser('verify')
-    verify_parser.add_argument('version', help='version string to compare')
-    subparsers.add_parser('show')
+    verify_parser = subparsers.add_parser("verify")
+    verify_parser.add_argument("version", help="version string to compare")
+    subparsers.add_parser("show")
 
-    update_parser = subparsers.add_parser('update')
-    update_parser.add_argument('version', help='version string to use')
+    update_parser = subparsers.add_parser("update")
+    update_parser.add_argument("version", help="version string to use")
     update_parser.add_argument(
-        '--force',
+        "--force",
         help="don't check if version is already set",
         action="store_true",
     )
     update_parser.add_argument(
-        '--develop',
+        "--develop",
         help="indicates if it is a develop version",
         action="store_true",
     )
@@ -109,8 +109,8 @@ def safe_version(version: str) -> str:
     try:
         return str(Version(version))
     except InvalidVersion:
-        version = version.replace(' ', '.')
-        return re.sub('[^A-Za-z0-9.]+', '-', version)
+        version = version.replace(" ", ".")
+        return re.sub("[^A-Za-z0-9.]+", "-", version)
 
 
 def versions_equal(new_version: str, old_version: str) -> bool:

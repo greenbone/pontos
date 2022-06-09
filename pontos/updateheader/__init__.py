@@ -17,4 +17,4 @@
 
 from .updateheader import main
 
-__all__ = ['main']
+__all__ = ["main"]

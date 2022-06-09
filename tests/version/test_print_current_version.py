@@ -25,10 +25,10 @@ from pontos.version.version import VersionCommand
 class PrintCurrentVersionTestCase(unittest.TestCase):
     def test_print_current_version(self):
         print_mock = MagicMock()
-        VersionCommand.get_current_version = MagicMock(return_value='1.2.3')
+        VersionCommand.get_current_version = MagicMock(return_value="1.2.3")
         VersionCommand._print = print_mock  # pylint: disable=protected-access
 
         cmd = VersionCommand()
         cmd.print_current_version()
 
-        print_mock.assert_called_with('1.2.3')
+        print_mock.assert_called_with("1.2.3")

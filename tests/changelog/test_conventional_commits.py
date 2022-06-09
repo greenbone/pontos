@@ -34,16 +34,16 @@ class StdOutput:
 
 
 class ConventionalCommitsTestCase(unittest.TestCase):
-    @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
+    @patch("pontos.changelog.conventional_commits.shell_cmd_runner")
     def test_changelog_builder(self, shell_mock):
         terminal = MagicMock()
 
-        today = datetime.today().strftime('%Y-%m-%d')
+        today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
-        config_toml = own_path / 'changelog.toml'
-        release_version = '0.0.2'
-        output = f'v{release_version}.md'
+        config_toml = own_path / "changelog.toml"
+        release_version = "0.0.2"
+        output = f"v{release_version}.md"
 
         shell_mock.side_effect = [
             CompletedProcess(args=None, returncode=1, stdout="v0.0.1"),
@@ -51,26 +51,26 @@ class ConventionalCommitsTestCase(unittest.TestCase):
                 args=None,
                 returncode=1,
                 stdout=(
-                    '1234567 Add: foo bar\n'
-                    '8abcdef Add: bar baz\n'
-                    '8abcd3f Add bar baz\n'
-                    '8abcd3d Adding bar baz\n'
-                    '1337abc Change: bar to baz\n'
-                    '42a42a4 Remove: foo bar again\n'
-                    'fedcba8 Test: bar baz testing\n'
-                    'dead901 Refactor: bar baz ref\n'
-                    'fedcba8 Fix: bar baz fixing\n'
-                    'd0c4d0c Doc: bar baz documenting\n'
+                    "1234567 Add: foo bar\n"
+                    "8abcdef Add: bar baz\n"
+                    "8abcd3f Add bar baz\n"
+                    "8abcd3d Adding bar baz\n"
+                    "1337abc Change: bar to baz\n"
+                    "42a42a4 Remove: foo bar again\n"
+                    "fedcba8 Test: bar baz testing\n"
+                    "dead901 Refactor: bar baz ref\n"
+                    "fedcba8 Fix: bar baz fixing\n"
+                    "d0c4d0c Doc: bar baz documenting\n"
                 ),
             ),
         ]
 
         cargs = Namespace(
-            current_version='0.0.1',
+            current_version="0.0.1",
             next_version=release_version,
             output=output,
-            space='foo',
-            project='bar',
+            space="foo",
+            project="bar",
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
@@ -108,37 +108,37 @@ All notable changes to this project will be documented in this file.
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
         output_file = changelog_builder.create_changelog_file()
         self.assertEqual(
-            output_file.read_text(encoding='utf-8'), expected_output
+            output_file.read_text(encoding="utf-8"), expected_output
         )
 
         shell_mock.assert_has_calls(
             [
-                call('git tag | sort -V | tail -1'),
+                call("git tag | sort -V | tail -1"),
                 call('git log "v0.0.1..HEAD" --oneline'),
             ]
         )
 
         output_file.unlink()
 
-    @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
+    @patch("pontos.changelog.conventional_commits.shell_cmd_runner")
     def test_changelog_builder_no_commits(self, shell_mock):
         terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
-        config_toml = own_path / 'changelog.toml'
-        release_version = '0.0.2'
-        output = f'v{release_version}.md'
+        config_toml = own_path / "changelog.toml"
+        release_version = "0.0.2"
+        output = f"v{release_version}.md"
 
         shell_mock.return_value = CompletedProcess(
             args=None, returncode=1, stdout="1234567 foo bar\n8abcdef bar baz\n"
         )
 
         cargs = Namespace(
-            current_version='0.0.1',
+            current_version="0.0.1",
             next_version=release_version,
             output=output,
-            space='foo',
-            project='bar',
+            space="foo",
+            project="bar",
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
@@ -154,42 +154,42 @@ All notable changes to this project will be documented in this file.
                 'git log "$(git describe --tags --abbrev=0)..HEAD" --oneline',
             )
 
-    @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
+    @patch("pontos.changelog.conventional_commits.shell_cmd_runner")
     def test_changelog_builder_no_tag(self, shell_mock):
         terminal = MagicMock()
 
-        today = datetime.today().strftime('%Y-%m-%d')
+        today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
-        config_toml = own_path / 'changelog.toml'
-        release_version = '0.0.2'
-        output = f'v{release_version}.md'
+        config_toml = own_path / "changelog.toml"
+        release_version = "0.0.2"
+        output = f"v{release_version}.md"
         shell_mock.side_effect = [
             CompletedProcess(args=None, returncode=1, stdout=""),
             CompletedProcess(
                 args=None,
                 returncode=1,
                 stdout=(
-                    '1234567 Add: foo bar\n'
-                    '8abcdef Add: bar baz\n'
-                    '8abcd3f Add bar baz\n'
-                    '8abcd3d Adding bar baz\n'
-                    '1337abc Change: bar to baz\n'
-                    '42a42a4 Remove: foo bar again\n'
-                    'fedcba8 Test: bar baz testing\n'
-                    'dead901 Refactor: bar baz ref\n'
-                    'fedcba8 Fix: bar baz fixing\n'
-                    'd0c4d0c Doc: bar baz documenting\n'
+                    "1234567 Add: foo bar\n"
+                    "8abcdef Add: bar baz\n"
+                    "8abcd3f Add bar baz\n"
+                    "8abcd3d Adding bar baz\n"
+                    "1337abc Change: bar to baz\n"
+                    "42a42a4 Remove: foo bar again\n"
+                    "fedcba8 Test: bar baz testing\n"
+                    "dead901 Refactor: bar baz ref\n"
+                    "fedcba8 Fix: bar baz fixing\n"
+                    "d0c4d0c Doc: bar baz documenting\n"
                 ),
             ),
         ]
 
         cargs = Namespace(
-            current_version='0.0.1',
+            current_version="0.0.1",
             next_version=release_version,
             output=output,
-            space='foo',
-            project='bar',
+            space="foo",
+            project="bar",
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
@@ -227,35 +227,35 @@ All notable changes to this project will be documented in this file.
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
         output_file = changelog_builder.create_changelog_file()
         self.assertEqual(
-            output_file.read_text(encoding='utf-8'), expected_output
+            output_file.read_text(encoding="utf-8"), expected_output
         )
 
         shell_mock.assert_has_calls(
             [
-                call('git tag | sort -V | tail -1'),
-                call('git log HEAD --oneline'),
+                call("git tag | sort -V | tail -1"),
+                call("git log HEAD --oneline"),
             ]
         )
 
         output_file.unlink()
 
-    @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
+    @patch("pontos.changelog.conventional_commits.shell_cmd_runner")
     def test_changelog_builder_no_conventional_commits(self, shell_mock):
         terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
-        config_toml = own_path / 'changelog.toml'
-        release_version = '0.0.2'
-        output = f'v{release_version}.md'
+        config_toml = own_path / "changelog.toml"
+        release_version = "0.0.2"
+        output = f"v{release_version}.md"
         shell_mock.return_value = CompletedProcess(
             args="foo", returncode=1, stdout=None
         )
         cargs = Namespace(
-            current_version='0.0.1',
+            current_version="0.0.1",
             next_version=release_version,
             output=output,
-            space='foo',
-            project='bar',
+            space="foo",
+            project="bar",
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(

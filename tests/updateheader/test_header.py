@@ -67,7 +67,7 @@ class Terminal(ConsoleTerminal):
 class UpdateHeaderTestCase(TestCase):
     def setUp(self):
         self.args = Namespace()
-        self.args.company = 'Greenbone Networks GmbH'
+        self.args.company = "Greenbone Networks GmbH"
 
         self.path = Path(__file__).parent
 
@@ -76,27 +76,27 @@ class UpdateHeaderTestCase(TestCase):
             f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.args.company})"
         )
 
-    @patch('pontos.updateheader.updateheader.run')
+    @patch("pontos.updateheader.updateheader.run")
     def test_get_modified_year(self, run_mock):
         test_file = self.path / "test.py"
         test_file.touch(exist_ok=True)
 
         run_mock.return_value = CompletedProcess(
             args=[
-                'git',
-                'log',
-                '-1',
-                '--format=%ad',
-                '--date=format:%Y',
-                f'{test_file}',
+                "git",
+                "log",
+                "-1",
+                "--format=%ad",
+                "--date=format:%Y",
+                f"{test_file}",
             ],
             returncode=0,
-            stdout='2020\n',
-            stderr='',
+            stdout="2020\n",
+            stderr="",
         )
 
         year = get_modified_year(f=test_file)
-        self.assertEqual(year, '2020')
+        self.assertEqual(year, "2020")
 
         test_file.unlink()
 
@@ -120,17 +120,17 @@ class UpdateHeaderTestCase(TestCase):
         found, match = find_copyright(regex=self.regex, line=test_line)
         self.assertTrue(found)
         self.assertIsNotNone(match)
-        self.assertEqual(match['creation_year'], "1995")
-        self.assertEqual(match['modification_year'], "2021")
-        self.assertEqual(match['company'], self.args.company)
+        self.assertEqual(match["creation_year"], "1995")
+        self.assertEqual(match["modification_year"], "2021")
+        self.assertEqual(match["company"], self.args.company)
 
         # No modification Date
         found, match = find_copyright(regex=self.regex, line=test2_line)
         self.assertTrue(found)
         self.assertIsNotNone(match)
-        self.assertEqual(match['creation_year'], "1995")
-        self.assertEqual(match['modification_year'], None)
-        self.assertEqual(match['company'], self.args.company)
+        self.assertEqual(match["creation_year"], "1995")
+        self.assertEqual(match["modification_year"], None)
+        self.assertEqual(match["company"], self.args.company)
 
         # No match
         found, match = find_copyright(regex=self.regex, line=invalid_line)
@@ -138,13 +138,13 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNone(match)
 
     def test_add_header(self):
-        expected_header = HEADER.format(date='2021') + '\n'
+        expected_header = HEADER.format(date="2021") + "\n"
 
         header = add_header(
             suffix=".py",
-            licence='AGPL-3.0-or-later',
+            licence="AGPL-3.0-or-later",
             company=self.args.company,
-            year='2021',
+            year="2021",
         )
 
         self.assertEqual(header, expected_header)
@@ -154,9 +154,9 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(ValueError):
             add_header(
                 suffix=".prr",
-                licence='AGPL-3.0-or-later',
+                licence="AGPL-3.0-or-later",
                 company=self.args.company,
-                year='2021',
+                year="2021",
             )
 
     def test_add_header_licence_not_found(self):
@@ -164,16 +164,16 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(FileNotFoundError):
             add_header(
                 suffix=".py",
-                licence='AAAGPL-3.0-or-later',
+                licence="AAAGPL-3.0-or-later",
                 company=self.args.company,
-                year='2021',
+                year="2021",
             )
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_not_existing(self, mock_stdout):
-        self.args.year = '2020'
+        self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -195,11 +195,11 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: File is not existing.\n",
         )
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_wrong_licence(self, mock_stdout):
-        self.args.year = '2020'
+        self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = 'AAAGPL-3.0-or-later'
+        self.args.licence = "AAAGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -220,11 +220,11 @@ class UpdateHeaderTestCase(TestCase):
 
         test_file.unlink()
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_suffix_invalid(self, mock_stdout):
-        self.args.year = '2020'
+        self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -244,11 +244,11 @@ class UpdateHeaderTestCase(TestCase):
 
         test_file.unlink()
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_binary_file(self, mock_stdout):
-        self.args.year = '2020'
+        self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -258,8 +258,8 @@ class UpdateHeaderTestCase(TestCase):
 
         # create a Binary file ...
         # https://stackoverflow.com/a/30148554
-        with open(test_file, 'wb') as f:
-            f.write(struct.pack('>if', 42, 2.71828182846))
+        with open(test_file, "wb") as f:
+            f.write(struct.pack(">if", 42, 2.71828182846))
 
         with self.assertRaises(UnicodeDecodeError):
             code = update_file(
@@ -278,11 +278,11 @@ class UpdateHeaderTestCase(TestCase):
 
         test_file.unlink()
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_changed(self, mock_stdout):
-        self.args.year = '1995'
+        self.args.year = "1995"
         self.args.changed = True
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -307,15 +307,15 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIn(f"using {self.args.year} instead.", ret)
         self.assertIn("File is not existing.", ret)
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_create_header(self, mock_stdout):
-        self.args.year = '1995'
+        self.args.year = "1995"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
-        expected_header = HEADER.format(date='1995') + '\n\n'
+        expected_header = HEADER.format(date="1995") + "\n\n"
 
         test_file = self.path / "test.py"
         test_file.touch()
@@ -330,24 +330,24 @@ class UpdateHeaderTestCase(TestCase):
             ret,
         )
         self.assertEqual(code, 0)
-        self.assertEqual(expected_header, test_file.read_text(encoding='utf-8'))
+        self.assertEqual(expected_header, test_file.read_text(encoding="utf-8"))
         test_file.unlink()
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_header_in_file(self, mock_stdout):
-        self.args.year = '2021'
+        self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
-        header = HEADER.format(date='2020')
+        header = HEADER.format(date="2020")
 
         test_file = self.path / "test.py"
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header, encoding='utf-8')
+        test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
             file=test_file, regex=self.regex, parsed_args=self.args, term=term
@@ -361,27 +361,27 @@ class UpdateHeaderTestCase(TestCase):
             "Copyright Year None -> 2021\n",
         )
         self.assertIn(
-            '# Copyright (C) 2020-2021 Greenbone Networks GmbH',
-            test_file.read_text(encoding='utf-8'),
+            "# Copyright (C) 2020-2021 Greenbone Networks GmbH",
+            test_file.read_text(encoding="utf-8"),
         )
 
         test_file.unlink()
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_header_ok_in_file(self, mock_stdout):
-        self.args.year = '2021'
+        self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
         term = Terminal()
 
-        header = HEADER.format(date='2021')
+        header = HEADER.format(date="2021")
 
         test_file = self.path / "test.py"
         if test_file.exists():
             test_file.unlink()
 
-        test_file.write_text(header, encoding='utf-8')
+        test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
             file=test_file, regex=self.regex, parsed_args=self.args, term=term
@@ -394,37 +394,37 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Licence Header is ok.\n",
         )
         self.assertIn(
-            '# Copyright (C) 2021 Greenbone Networks GmbH',
-            test_file.read_text(encoding='utf-8'),
+            "# Copyright (C) 2021 Greenbone Networks GmbH",
+            test_file.read_text(encoding="utf-8"),
         )
 
         test_file.unlink()
 
     def test_argparser_files(self):
-        self.args.year = '2021'
+        self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
-        args = ['-f', 'test.py', '-y', '2021', '-l', 'AGPL-3.0-or-later']
+        args = ["-f", "test.py", "-y", "2021", "-l", "AGPL-3.0-or-later"]
 
         args = parse_args(args)
         self.assertIsNotNone(args)
         self.assertEqual(args.company, self.args.company)
-        self.assertEqual(args.files, ['test.py'])
+        self.assertEqual(args.files, ["test.py"])
         self.assertEqual(args.year, self.args.year)
         self.assertEqual(args.licence, self.args.licence)
 
     def test_argparser_dir(self):
-        self.args.year = '2020'
+        self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
 
-        args = ['-d', '.', '-c', '-l', 'AGPL-3.0-or-later']
+        args = ["-d", ".", "-c", "-l", "AGPL-3.0-or-later"]
 
         args = parse_args(args)
         self.assertIsNotNone(args)
         self.assertEqual(args.company, self.args.company)
-        self.assertEqual(args.directories, ['.'])
+        self.assertEqual(args.directories, ["."])
         self.assertTrue(args.changed)
         self.assertEqual(args.year, str(datetime.datetime.now().year))
         self.assertEqual(args.licence, self.args.licence)
@@ -433,8 +433,8 @@ class UpdateHeaderTestCase(TestCase):
         # Try to find the current file from two directories up...
         test_dirname = Path(__file__) / "../.."
         # with a relative glob
-        test_ignore_file = Path('ignore.file')
-        test_ignore_file.write_text("*.py\n", encoding='utf-8')
+        test_ignore_file = Path("ignore.file")
+        test_ignore_file.write_text("*.py\n", encoding="utf-8")
 
         exclude_list = get_exclude_list(
             test_ignore_file, [test_dirname.resolve()]
@@ -444,12 +444,12 @@ class UpdateHeaderTestCase(TestCase):
 
         test_ignore_file.unlink()
 
-    @patch('pontos.updateheader.updateheader._parse_args')
+    @patch("pontos.updateheader.updateheader._parse_args")
     def test_main(self, argparser_mock):
-        self.args.year = '2021'
+        self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
-        self.args.files = ['test.py']
+        self.args.licence = "AGPL-3.0-or-later"
+        self.args.files = ["test.py"]
         self.args.directories = None
         self.args.verbose = 0
         self.args.log_file = None
@@ -463,12 +463,12 @@ class UpdateHeaderTestCase(TestCase):
         # I have no idea how or why test main ...
         self.assertEqual(code, 0)
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('pontos.updateheader.updateheader._parse_args')
+    @patch("sys.stdout", new_callable=StringIO)
+    @patch("pontos.updateheader.updateheader._parse_args")
     def test_main_never_happen(self, argparser_mock, mock_stdout):
-        self.args.year = '2021'
+        self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = 'AGPL-3.0-or-later'
+        self.args.licence = "AGPL-3.0-or-later"
         self.args.files = None
         self.args.directories = None
         self.args.verbose = 0

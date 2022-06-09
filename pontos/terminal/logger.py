@@ -24,8 +24,8 @@ class TerminalLogger:
         if log_file:
             logging.basicConfig(
                 filename=log_file,
-                filemode='a',
-                format='%(message)s',
+                filemode="a",
+                format="%(message)s",
                 level=level,
             )
             self._logger = logging.getLogger("TerminalLogger")
