@@ -18,14 +18,13 @@
 # pylint: disable=invalid-name, protected-access
 
 import unittest
-
 from io import StringIO
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, patch
 
 import colorful as cf
 
-from pontos.terminal.terminal import Terminal, Signs
-from pontos.terminal import _set_terminal, error, fail, info, ok, out, warning
+from pontos.terminal.terminal import ConsoleTerminal as Terminal
+from pontos.terminal.terminal import Signs
 
 
 class TerminalTestCase(unittest.TestCase):

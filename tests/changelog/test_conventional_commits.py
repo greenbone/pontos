@@ -16,16 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import Namespace
-from pathlib import Path
-from subprocess import CompletedProcess
 import unittest
+from argparse import Namespace
 from dataclasses import dataclass
 from datetime import datetime
-from unittest.mock import patch, call
-
-from pontos.terminal import _set_terminal
-from pontos.terminal.terminal import Terminal
+from pathlib import Path
+from subprocess import CompletedProcess
+from unittest.mock import MagicMock, call, patch
 
 from pontos import changelog
 from pontos.changelog.conventional_commits import parse_args
@@ -39,8 +36,7 @@ class StdOutput:
 class ConventionalCommitsTestCase(unittest.TestCase):
     @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
     def test_changelog_builder(self, shell_mock):
-
-        _set_terminal(Terminal(log_file='process.log'))
+        terminal = MagicMock()
 
         today = datetime.today().strftime('%Y-%m-%d')
 
@@ -79,6 +75,7 @@ class ConventionalCommitsTestCase(unittest.TestCase):
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
+            terminal=terminal,
             args=cargs,
         )
         expected_output = f"""# Changelog
@@ -127,8 +124,7 @@ All notable changes to this project will be documented in this file.
 
     @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
     def test_changelog_builder_no_commits(self, shell_mock):
-
-        _set_terminal(Terminal())
+        terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
         print(own_path)
@@ -149,6 +145,7 @@ All notable changes to this project will be documented in this file.
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
+            terminal=terminal,
             args=cargs,
         )
 
@@ -162,8 +159,7 @@ All notable changes to this project will be documented in this file.
 
     @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
     def test_changelog_builder_no_tag(self, shell_mock):
-
-        _set_terminal(Terminal())
+        terminal = MagicMock()
 
         today = datetime.today().strftime('%Y-%m-%d')
 
@@ -201,6 +197,7 @@ All notable changes to this project will be documented in this file.
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
+            terminal=terminal,
             args=cargs,
         )
         expected_output = f"""# Changelog
@@ -249,8 +246,7 @@ All notable changes to this project will be documented in this file.
 
     @patch('pontos.changelog.conventional_commits.shell_cmd_runner')
     def test_changelog_builder_no_conventional_commits(self, shell_mock):
-
-        _set_terminal(Terminal())
+        terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / 'changelog.toml'
@@ -268,6 +264,7 @@ All notable changes to this project will be documented in this file.
             config=config_toml,
         )
         changelog_builder = changelog.ChangelogBuilder(
+            terminal=terminal,
             args=cargs,
         )
 

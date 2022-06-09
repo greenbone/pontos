@@ -23,7 +23,7 @@ from pontos import main
 
 
 class TestPontos(unittest.TestCase):
-    @patch("pontos.pontos.Terminal")
+    @patch("pontos.pontos.ConsoleTerminal")
     def test_pontos(self, terminal_mock):
         main()
 

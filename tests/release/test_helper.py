@@ -17,28 +17,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import subprocess
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
-
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from pontos.terminal import _set_terminal
-from pontos.terminal.terminal import Terminal
-
+from pontos import version
 from pontos.release.helper import (
     calculate_calendar_version,
-    get_next_patch_version,
-    get_next_dev_version,
-    get_project_name,
     find_signing_key,
+    get_next_dev_version,
+    get_next_patch_version,
+    get_project_name,
     update_version,
 )
-from pontos import version
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -51,8 +47,6 @@ class TestHelperFunctions(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        _set_terminal(Terminal())
-
         self.tmpdir = Path(tempfile.gettempdir()) / 'testrepo'
         self.tmpdir.mkdir(parents=True, exist_ok=True)
         self.shell_cmd_runner(f'git -C {self.tmpdir} init')
@@ -80,7 +74,8 @@ class TestHelperFunctions(unittest.TestCase):
         os.chdir(proj_path)
 
     def test_find_signing_key(self):
-        # save possibly set git signing key from user temporarly
+        terminal = MagicMock()
+        # save possibly set git signing key from user temporarily
         try:
             saved_key = self.shell_cmd_runner(
                 'git config user.signingkey'
@@ -93,7 +88,9 @@ class TestHelperFunctions(unittest.TestCase):
             '1234567890ABCEDEF1234567890ABCEDEF123456'
         )
 
-        signing_key = find_signing_key(shell_cmd_runner=self.shell_cmd_runner)
+        signing_key = find_signing_key(
+            terminal, shell_cmd_runner=self.shell_cmd_runner
+        )
         self.assertEqual(
             signing_key, '1234567890ABCEDEF1234567890ABCEDEF123456'
         )
@@ -103,7 +100,8 @@ class TestHelperFunctions(unittest.TestCase):
             self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
 
     def test_find_no_signing_key(self):
-        # save possibly set git signing key from user temporarly
+        terminal = MagicMock()
+        # save possibly set git signing key from user temporarily
         try:
             saved_key = self.shell_cmd_runner(
                 'git config user.signingkey'
@@ -116,7 +114,9 @@ class TestHelperFunctions(unittest.TestCase):
         except subprocess.CalledProcessError as e:
             self.assertEqual(e.returncode, 5)
 
-        signing_key = find_signing_key(shell_cmd_runner=self.shell_cmd_runner)
+        signing_key = find_signing_key(
+            terminal, shell_cmd_runner=self.shell_cmd_runner
+        )
         self.assertEqual(signing_key, '')
 
         # reset the previously saved signing key ...
@@ -124,10 +124,11 @@ class TestHelperFunctions(unittest.TestCase):
             self.shell_cmd_runner(f'git config user.signingkey {saved_key}')
 
     def test_update_version_not_found(self):
+        terminal = MagicMock()
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
         executed, filename = update_version(
-            to='21.4.4', _version=version, develop=True
+            terminal, to='21.4.4', _version=version, develop=True
         )
         self.assertFalse(executed)
         self.assertEqual(filename, '')
@@ -135,6 +136,7 @@ class TestHelperFunctions(unittest.TestCase):
         os.chdir(proj_path)
 
     def test_update_version_no_version_file(self):
+        terminal = MagicMock()
         proj_path = Path.cwd()
         sys.path.append(self.tmpdir)
         os.chdir(self.tmpdir)
@@ -154,7 +156,7 @@ class TestHelperFunctions(unittest.TestCase):
             encoding='utf-8',
         )
         executed, filename = update_version(
-            to='21.4.4', _version=version, develop=False
+            terminal, to='21.4.4', _version=version, develop=False
         )
         toml_text = toml.read_text(encoding='utf-8')
         self.assertEqual(filename, 'pyproject.toml')
@@ -183,10 +185,8 @@ class TestHelperFunctions(unittest.TestCase):
 
 
 class CalculateHelperVersionTestCase(unittest.TestCase):
-    def setUp(self):
-        _set_terminal(Terminal())
-
     def test_calculate_calendar_versions(self):
+        terminal = MagicMock()
         today = datetime.datetime.today()
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
@@ -222,7 +222,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
                         current_version
                     )
 
-                    release_version = calculate_calendar_version()
+                    release_version = calculate_calendar_version(terminal)
                     self.assertEqual(release_version, assert_version)
 
                 os.chdir('..')
@@ -254,6 +254,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             self.assertEqual(assert_version, next_version)
 
     def test_get_next_patch_version(self):
+        terminal = MagicMock()
         today = datetime.datetime.today()
 
         filenames = ['pyproject.toml', 'CMakeLists.txt']
@@ -291,7 +292,7 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
                         current_version
                     )
 
-                    release_version = get_next_patch_version()
+                    release_version = get_next_patch_version(terminal)
 
                     self.assertEqual(release_version, assert_version)
 

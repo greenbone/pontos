@@ -16,27 +16,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import struct
 import re
-
+import struct
+from argparse import Namespace
 from io import StringIO
-from subprocess import CompletedProcess, CalledProcessError
-
 from pathlib import Path
+from subprocess import CalledProcessError, CompletedProcess
 from unittest import TestCase
 from unittest.mock import patch
-from argparse import Namespace
-from pontos.terminal.terminal import Terminal
 
+from pontos.terminal.terminal import ConsoleTerminal
+from pontos.updateheader.updateheader import _add_header as add_header
+from pontos.updateheader.updateheader import _find_copyright as find_copyright
+from pontos.updateheader.updateheader import (
+    _get_exclude_list as get_exclude_list,
+)
 from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
-    _find_copyright as find_copyright,
-    _add_header as add_header,
-    _update_file as update_file,
-    _get_exclude_list as get_exclude_list,
-    _parse_args as parse_args,
-    main,
 )
+from pontos.updateheader.updateheader import _parse_args as parse_args
+from pontos.updateheader.updateheader import _update_file as update_file
+from pontos.updateheader.updateheader import main
 
 HEADER = """# -*- coding: utf-8 -*-
 # Copyright (C) {date} Greenbone Networks GmbH
@@ -55,6 +55,12 @@ HEADER = """# -*- coding: utf-8 -*-
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>."""
+
+
+class Terminal(ConsoleTerminal):
+    @staticmethod
+    def get_width() -> int:
+        return 999
 
 
 class UpdateHeaderTestCase(TestCase):
