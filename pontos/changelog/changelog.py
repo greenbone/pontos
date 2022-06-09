@@ -17,8 +17,8 @@
 
 
 import re
-from typing import Tuple, List
 from datetime import date
+from typing import List, Tuple
 
 
 class ChangelogError(Exception):

@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path

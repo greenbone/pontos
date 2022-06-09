@@ -17,17 +17,16 @@
 
 
 import re
-
-from typing import Tuple, Generator
 from pathlib import Path
+from typing import Generator, Tuple
 
 from packaging.version import Version
 
 from .helper import (
-    check_develop,
-    safe_version,
-    is_version_pep440_compliant,
     VersionError,
+    check_develop,
+    is_version_pep440_compliant,
+    safe_version,
     versions_equal,
 )
 from .version import VersionCommand

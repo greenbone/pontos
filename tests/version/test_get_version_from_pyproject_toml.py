@@ -17,12 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version.python import PythonVersionCommand
 from pontos.version.helper import VersionError
+from pontos.version.python import PythonVersionCommand
 
 
 class GetVersionFromPyprojectTomlTestCase(unittest.TestCase):

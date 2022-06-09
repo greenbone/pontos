@@ -17,14 +17,13 @@
 
 import json
 import unittest
-
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from pontos.github.api import (
+    DEFAULT_TIMEOUT,
     FileStatus,
     GitHubRESTApi,
-    DEFAULT_TIMEOUT,
     download,
 )
 

@@ -18,12 +18,11 @@
 # pylint: disable=protected-access
 
 import unittest
-
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from pontos.version.python import PythonVersionCommand
 from pontos.version.helper import VersionError
+from pontos.version.python import PythonVersionCommand
 
 
 class VerifyVersionTestCase(unittest.TestCase):

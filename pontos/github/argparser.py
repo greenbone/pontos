@@ -18,11 +18,11 @@
 """ Argument parser for pontos-github """
 
 import os
-
 from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List
 
+from pontos.github.api import FileStatus
 from pontos.github.cmds import (
     create_pull_request,
     file_status,
@@ -30,7 +30,6 @@ from pontos.github.cmds import (
     pull_request,
     update_pull_request,
 )
-from pontos.github.api import FileStatus
 
 body_template = Path(__file__).parent / "pr_template.md"
 

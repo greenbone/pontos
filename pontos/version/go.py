@@ -15,17 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from subprocess import CalledProcessError
 
 from .helper import (
     VersionError,
-    strip_version,
     is_version_pep440_compliant,
+    strip_version,
     versions_equal,
 )
 from .version import VersionCommand
+
 
 # This class is used for Python Version command(s)
 class GoVersionCommand(VersionCommand):

@@ -16,21 +16,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib
-
 from pathlib import Path
 
 import tomlkit
 
 from .helper import (
-    safe_version,
-    strip_version,
+    VersionError,
     check_develop,
     is_version_pep440_compliant,
-    VersionError,
+    safe_version,
+    strip_version,
     versions_equal,
 )
 from .version import VersionCommand
-
 
 TEMPLATE = """# pylint: disable=invalid-name
 

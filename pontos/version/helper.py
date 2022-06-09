@@ -17,10 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re
 import argparse
+import re
 
-from packaging.version import Version, InvalidVersion
+from packaging.version import InvalidVersion, Version
 
 
 class VersionError(Exception):

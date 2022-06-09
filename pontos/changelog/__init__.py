@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .changelog import add_skeleton, update, ChangelogError
-from .conventional_commits import main, ChangelogBuilder
+from .changelog import ChangelogError, add_skeleton, update
+from .conventional_commits import ChangelogBuilder, main
 
 __all__ = [
     "add_skeleton",
