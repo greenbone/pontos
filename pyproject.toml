@@ -15,6 +15,7 @@ classifiers=[
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -42,14 +43,14 @@ pylint = "^2.13.9"
 autohooks = "^21.7.0"
 autohooks-plugin-pylint = "^21.6.0"
 autohooks-plugin-black = "^21.12.0"
+autohooks-plugin-isort = "^22.3.0"
 black = "22.3.0"
 rope = "^1.1.1"
 coverage = "^6.4"
 
 [tool.black]
 line-length = 80
-target-version = ['py37', 'py38', 'py39']
-skip-string-normalization = true
+target-version = ['py37', 'py38', 'py39', 'py310']
 exclude = '''
 /(
     \.git
@@ -66,8 +67,12 @@ exclude = '''
 '''
 
 [tool.autohooks]
-pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.pylint']
+pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.isort', 'autohooks.plugins.pylint']
 mode = "poetry"
+
+[tool.isort]
+profile = "black"
+line_length = 80
 
 [tool.pontos.version]
 version-module-file = "pontos/version/__version__.py"

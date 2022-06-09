@@ -114,7 +114,7 @@ def file_status(terminal: Terminal, args: Namespace):
             status_list=args.status,
         )
         for status in args.status:
-            terminal.info(f'{status.value}:')
+            terminal.info(f"{status.value}:")
             files = [str(f.resolve()) for f in file_dict[status]]
 
             for file_string in files:

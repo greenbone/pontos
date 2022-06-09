@@ -61,12 +61,12 @@ def download(
         percent for each downloaded chunk or None for each chunk if the progress
         is unknown.
     """
-    destination = Path(url.split('/')[-1]) if not destination else destination
+    destination = Path(url.split("/")[-1]) if not destination else destination
 
     response = requests.get(url, stream=True, timeout=timeout)
     response.raise_for_status()
 
-    total_length = response.headers.get('content-length')
+    total_length = response.headers.get("content-length")
 
     return DownloadProgressIterable(
         response.iter_content(chunk_size=chunk_size),
@@ -78,7 +78,7 @@ def download(
 def _get_next_url(response) -> Optional[str]:
     if response and response.links:
         try:
-            return response.links['next']['url']
+            return response.links["next"]["url"]
         except KeyError:
             pass
 
@@ -216,7 +216,7 @@ class GitHubRESTApi:
             "head": head_branch,
             "base": base_branch,
             "title": title,
-            "body": body.replace('\\n', '\n'),
+            "body": body.replace("\\n", "\n"),
         }
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
@@ -251,7 +251,7 @@ class GitHubRESTApi:
         if title:
             data["title"] = title
         if body:
-            data["body"] = body.replace('\\n', '\n')
+            data["body"] = body.replace("\\n", "\n")
 
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
@@ -312,12 +312,12 @@ class GitHubRESTApi:
             prerelease: If the release is a pre release. False by default.
         """
         data = {
-            'tag_name': tag,
-            'target_commitish': target_commitish,
-            'name': name,
-            'body': body,
-            'draft': draft,
-            'prerelease': prerelease,
+            "tag_name": tag,
+            "target_commitish": target_commitish,
+            "name": name,
+            "body": body,
+            "draft": draft,
+            "prerelease": prerelease,
         }
         api = f"/repos/{repo}/releases"
         response = self._request(api, data=data, request=requests.post)
@@ -412,13 +412,13 @@ class GitHubRESTApi:
         file_dict = defaultdict(list)
         for f in data:
             try:
-                status = FileStatus(f['status'])
+                status = FileStatus(f["status"])
             except ValueError:
                 # unknown status
                 continue
 
             if status in status_list:
-                file_dict[status].append(Path(f['filename']))
+                file_dict[status].append(Path(f["filename"]))
 
         return file_dict
 

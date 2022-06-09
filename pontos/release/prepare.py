@@ -72,10 +72,10 @@ def prepare(
     terminal.info(f"Preparing the release {release_version}")
 
     # guardian
-    git_tags = shell_cmd_runner('git tag -l')
+    git_tags = shell_cmd_runner("git tag -l")
     git_version = f"{git_tag_prefix}{release_version}"
     if git_version.encode() in git_tags.stdout.splitlines():
-        terminal.error(f'git tag {git_version} is already taken.')
+        terminal.error(f"git tag {git_version} is already taken.")
         sys.exit(1)
 
     executed, filename = update_version(
@@ -89,7 +89,7 @@ def prepare(
     changelog_bool = True
     if args.conventional_commits:
         current_version = get_current_version(terminal)
-        output = f'v{release_version}.md'
+        output = f"v{release_version}.md"
         cargs = Namespace(
             current_version=current_version,
             next_version=release_version,
@@ -105,7 +105,7 @@ def prepare(
 
         output_file = changelog_builder.create_changelog_file()
         terminal.ok(f"Created changelog {output}")
-        commit_msg = f'Changelog created for release to {release_version}'
+        commit_msg = f"Changelog created for release to {release_version}"
         commit_files(
             output_file,
             commit_msg,
@@ -114,14 +114,14 @@ def prepare(
         )
         changelog_bool = False
         # Remove the header for the release text
-        changelog_text = output_file.read_text(encoding='utf-8').replace(
+        changelog_text = output_file.read_text(encoding="utf-8").replace(
             "# Changelog\n\n"
             "All notable changes to this project "
             "will be documented in this file.\n\n",
-            '',
+            "",
         )
     else:
-        change_log_path = path.cwd() / 'CHANGELOG.md'
+        change_log_path = path.cwd() / "CHANGELOG.md"
         if args.changelog:
             tmp_path = path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
@@ -131,7 +131,7 @@ def prepare(
 
         # Try to get the unreleased section of the specific version
         updated, changelog_text = changelog_module.update(
-            change_log_path.read_text(encoding='utf-8'),
+            change_log_path.read_text(encoding="utf-8"),
             release_version,
             git_tag_prefix=git_tag_prefix,
             containing_version=release_version,
@@ -140,7 +140,7 @@ def prepare(
         if not updated:
             # Try to get unversioned unrelease section
             updated, changelog_text = changelog_module.update(
-                change_log_path.read_text(encoding='utf-8'),
+                change_log_path.read_text(encoding="utf-8"),
                 release_version,
                 git_tag_prefix=git_tag_prefix,
             )
@@ -149,13 +149,13 @@ def prepare(
             terminal.error("No unreleased text found in CHANGELOG.md")
             sys.exit(1)
 
-        change_log_path.write_text(updated, encoding='utf-8')
+        change_log_path.write_text(updated, encoding="utf-8")
 
         terminal.ok("Updated CHANGELOG.md")
 
     terminal.info("Committing changes")
 
-    commit_msg = f'Automatic release to {release_version}'
+    commit_msg = f"Automatic release to {release_version}"
     commit_files(
         filename,
         commit_msg,
@@ -172,7 +172,7 @@ def prepare(
         shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
 
     release_text = path(RELEASE_TEXT_FILE)
-    release_text.write_text(changelog_text, encoding='utf-8')
+    release_text.write_text(changelog_text, encoding="utf-8")
 
     terminal.warning(
         f"Please verify git tag {git_version}, "

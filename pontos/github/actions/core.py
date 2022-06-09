@@ -17,7 +17,6 @@
 
 import contextlib
 import os
-
 from typing import Optional
 
 

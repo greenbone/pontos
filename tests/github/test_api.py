@@ -17,14 +17,13 @@
 
 import json
 import unittest
-
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from pontos.github.api import (
+    DEFAULT_TIMEOUT,
     FileStatus,
     GitHubRESTApi,
-    DEFAULT_TIMEOUT,
     download,
 )
 
@@ -42,10 +41,10 @@ class GitHubApiTestCase(unittest.TestCase):
         exists = api.branch_exists("foo/bar", "main")
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/branches/main',
+            "https://api.github.com/repos/foo/bar/branches/main",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json=None,
@@ -62,10 +61,10 @@ class GitHubApiTestCase(unittest.TestCase):
         exists = api.branch_exists("foo/bar", "main")
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/branches/main',
+            "https://api.github.com/repos/foo/bar/branches/main",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json=None,
@@ -82,12 +81,12 @@ class GitHubApiTestCase(unittest.TestCase):
         commits = api.pull_request_commits("foo/bar", pull_request=1)
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/pulls/1/commits',
+            "https://api.github.com/repos/foo/bar/pulls/1/commits",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
-            params={'per_page': '100'},
+            params={"per_page": "100"},
             json=None,
         )
 
@@ -106,17 +105,17 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/pulls',
+            "https://api.github.com/repos/foo/bar/pulls",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json={
-                'head': 'foo',
-                'base': 'main',
-                'title': 'Foo',
-                'body': 'This is bar',
+                "head": "foo",
+                "base": "main",
+                "title": "Foo",
+                "body": "This is bar",
             },
         )
 
@@ -132,16 +131,16 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/pulls/123',
+            "https://api.github.com/repos/foo/bar/pulls/123",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json={
-                'base': 'main',
-                'title': 'Foo',
-                'body': 'This is bar',
+                "base": "main",
+                "title": "Foo",
+                "body": "This is bar",
             },
         )
 
@@ -153,13 +152,13 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/issues/123/comments',
+            "https://api.github.com/repos/foo/bar/issues/123/comments",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json={'body': 'This is a comment'},
+            json={"body": "This is a comment"},
         )
 
     @patch("pontos.github.api.requests.delete")
@@ -168,10 +167,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api.delete_branch("foo/bar", "foo")
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/git/refs/foo',
+            "https://api.github.com/repos/foo/bar/git/refs/foo",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json=None,
@@ -188,19 +187,19 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/releases',
+            "https://api.github.com/repos/foo/bar/releases",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json={
-                'tag_name': 'v1.2.3',
-                'target_commitish': None,
-                'name': 'Foo v1.2.3',
-                'body': 'This is a release',
-                'draft': False,
-                'prerelease': False,
+                "tag_name": "v1.2.3",
+                "target_commitish": None,
+                "name": "Foo v1.2.3",
+                "body": "This is a release",
+                "draft": False,
+                "prerelease": False,
             },
         )
 
@@ -214,10 +213,10 @@ class GitHubApiTestCase(unittest.TestCase):
         exists = api.release_exists("foo/bar", "v1.2.3")
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/releases/tags/v1.2.3',
+            "https://api.github.com/repos/foo/bar/releases/tags/v1.2.3",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json=None,
@@ -237,10 +236,10 @@ class GitHubApiTestCase(unittest.TestCase):
         data = api.release("greenbone/pontos", "v21.11.0")
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0',  # pylint: disable=line-too-long
+            "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
             params=None,
             json=None,
@@ -267,11 +266,11 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
             stream=True,
             timeout=DEFAULT_TIMEOUT,
         )
-        response_headers.get.assert_called_once_with('content-length')
+        response_headers.get.assert_called_once_with("content-length")
 
         self.assertIsNone(download_progress.length)
 
@@ -305,11 +304,11 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
             stream=True,
             timeout=DEFAULT_TIMEOUT,
         )
-        response_headers.get.assert_called_once_with('content-length')
+        response_headers.get.assert_called_once_with("content-length")
 
         self.assertEqual(download_progress.length, 9)
 
@@ -343,11 +342,11 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip',  # pylint: disable=line-too-long
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
             stream=True,
             timeout=DEFAULT_TIMEOUT,
         )
-        response_headers.get.assert_called_once_with('content-length')
+        response_headers.get.assert_called_once_with("content-length")
 
         self.assertIsNone(download_progress.length)
 
@@ -376,12 +375,12 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            "https://api.github.com/repos/foo/bar/pulls/1/files",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
-            params={'per_page': '100'},
+            params={"per_page": "100"},
             json=None,
         )
 
@@ -414,12 +413,12 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://api.github.com/repos/foo/bar/pulls/1/files',
+            "https://api.github.com/repos/foo/bar/pulls/1/files",
             headers={
-                'Authorization': 'token 12345',
-                'Accept': 'application/vnd.github.v3+json',
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
             },
-            params={'per_page': '100'},
+            params={"per_page": "100"},
             json=None,
         )
 
@@ -455,11 +454,11 @@ class DownloadTestCase(unittest.TestCase):
         )
 
         requests_mock.assert_called_once_with(
-            'https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz',  # pylint: disable=line-too-long
+            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
             stream=True,
             timeout=DEFAULT_TIMEOUT,
         )
-        response_headers.get.assert_called_once_with('content-length')
+        response_headers.get.assert_called_once_with("content-length")
 
         self.assertIsNone(download_progress.length)
         self.assertEqual(download_progress.destination, Path("v21.11.0.tar.gz"))
@@ -504,7 +503,7 @@ class DownloadTestCase(unittest.TestCase):
             stream=True,
             timeout=DEFAULT_TIMEOUT,
         )
-        response_headers.get.assert_called_once_with('content-length')
+        response_headers.get.assert_called_once_with("content-length")
 
         self.assertEqual(download_progress.length, 9)
 

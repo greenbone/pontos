@@ -18,7 +18,6 @@
 # pylint: disable = protected-access
 
 import unittest
-
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -30,13 +29,13 @@ class UpdateVersionFileTestCase(unittest.TestCase):
         fake_path_class = MagicMock(spec=Path)
         fake_path = fake_path_class.return_value
 
-        fake_pyproject = Path(__file__).parent.parent / 'fake_pyproject.toml'
+        fake_pyproject = Path(__file__).parent.parent / "fake_pyproject.toml"
         cmd = PythonVersionCommand(project_file_path=fake_pyproject)
         cmd.version_file_path = fake_path
-        cmd._update_version_file('22.04dev1')
+        cmd._update_version_file("22.04dev1")
 
         text = fake_path.write_text.call_args[0][0]
 
-        *_, version_line, _last_line = text.split('\n')
+        *_, version_line, _last_line = text.split("\n")
 
         self.assertEqual(version_line, '__version__ = "22.4.dev1"')

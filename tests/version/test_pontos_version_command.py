@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -29,17 +28,17 @@ from . import use_cwd
 class PythonVersionCommandTestCase(unittest.TestCase):
     def test_missing_pyproject_toml_file(self):
         with use_cwd(Path(__file__).parent), self.assertRaisesRegex(
-            VersionError, r'^.* not found\.$'
+            VersionError, r"^.* not found\.$"
         ):
             PythonVersionCommand()
 
     def test_missing_tool_pontos_version_section(self):
         project_file_path = MagicMock(spec=Path).return_value
         project_file_path.exists.return_value = True
-        project_file_path.read_text.return_value = '[tool.pontos]'
+        project_file_path.read_text.return_value = "[tool.pontos]"
 
         with self.assertRaisesRegex(
-            VersionError, r'^\[tool\.pontos\.version\] section missing in .*\.$'
+            VersionError, r"^\[tool\.pontos\.version\] section missing in .*\.$"
         ):
             PythonVersionCommand(project_file_path=project_file_path)
 
@@ -52,8 +51,8 @@ class PythonVersionCommandTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(
             VersionError,
-            r'^version-module-file key not set in \[tool\.pontos\.version\] '
-            r'section .*\.$',
+            r"^version-module-file key not set in \[tool\.pontos\.version\] "
+            r"section .*\.$",
         ):
             PythonVersionCommand(project_file_path=project_file_path)
 
@@ -66,4 +65,4 @@ class PythonVersionCommandTestCase(unittest.TestCase):
 
         cmd = PythonVersionCommand(project_file_path=project_file_path)
 
-        self.assertEqual(cmd.version_file_path, Path('foo') / '__version__.py')
+        self.assertEqual(cmd.version_file_path, Path("foo") / "__version__.py")

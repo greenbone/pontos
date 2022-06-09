@@ -65,7 +65,7 @@ def release(
         else find_signing_key(terminal, shell_cmd_runner)
     )
     git_remote_name: str = (
-        args.git_remote_name if args.git_remote_name is not None else ''
+        args.git_remote_name if args.git_remote_name is not None else ""
     )
     git_tag_prefix: str = args.git_tag_prefix
     release_version: str = (
@@ -84,12 +84,12 @@ def release(
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
     terminal.info(f"Creating release for v{release_version}")
-    changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
+    changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
 
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {"Accept": "application/vnd.github.v3+json"}
 
     base_url = f"https://api.github.com/repos/{space}/{project}/releases"
-    git_version = f'{git_tag_prefix}{release_version}'
+    git_version = f"{git_tag_prefix}{release_version}"
     response = requests_module.post(
         base_url,
         headers=headers,
@@ -108,14 +108,14 @@ def release(
     path(RELEASE_TEXT_FILE).unlink()
 
     commit_msg = (
-        f'Automatic adjustments after release\n\n'
-        f'* Update to version {next_version}\n'
+        f"Automatic adjustments after release\n\n"
+        f"* Update to version {next_version}\n"
     )
 
     # set to new version add skeleton
     changelog_bool = False
     if not args.conventional_commits:
-        change_log_path = path.cwd() / 'CHANGELOG.md'
+        change_log_path = path.cwd() / "CHANGELOG.md"
         if args.changelog:
             tmp_path = path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
@@ -124,16 +124,16 @@ def release(
                 terminal.warning(f"{tmp_path} is not a file.")
 
         updated = changelog_module.add_skeleton(
-            markdown=change_log_path.read_text(encoding='utf-8'),
+            markdown=change_log_path.read_text(encoding="utf-8"),
             new_version=release_version,
             project_name=project,
             git_tag_prefix=git_tag_prefix,
             git_space=space,
         )
-        change_log_path.write_text(updated, encoding='utf-8')
+        change_log_path.write_text(updated, encoding="utf-8")
         changelog_bool = True
 
-        commit_msg += f'* Add empty changelog after {release_version}'
+        commit_msg += f"* Add empty changelog after {release_version}"
 
     executed, filename = update_version(
         terminal, next_version, version_module, develop=True

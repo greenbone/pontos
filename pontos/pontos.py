@@ -23,53 +23,53 @@ def main() -> None:
     term = ConsoleTerminal()
 
     term.print()
-    term.bold_info('pontos - Greenbone Python Utilities and Tools')
+    term.bold_info("pontos - Greenbone Python Utilities and Tools")
     term.print()
-    term.print('The following commands are currently available:')
+    term.print("The following commands are currently available:")
     with term.indent():
         term.bold_info(
-            'pontos-release - Release handling '
-            'utility for C and Python Projects'
+            "pontos-release - Release handling "
+            "utility for C and Python Projects"
         )
-        term.print('usage:')
+        term.print("usage:")
         with term.indent():
-            term.print('pontos-release {prepare,release,sign} -h')
+            term.print("pontos-release {prepare,release,sign} -h")
         term.bold_info(
-            'pontos-version - Version handling utility '
-            'for C, Go and Python Projects'
+            "pontos-version - Version handling utility "
+            "for C, Go and Python Projects"
         )
-        term.print('usage:')
+        term.print("usage:")
         with term.indent():
-            term.print('pontos-version {verify,show,update} -h')
+            term.print("pontos-version {verify,show,update} -h")
         term.bold_info(
-            'pontos-update-header - Handling Copyright header '
-            'for various file types and licenses'
+            "pontos-update-header - Handling Copyright header "
+            "for various file types and licenses"
         )
-        term.print('usage:')
+        term.print("usage:")
         with term.indent():
-            term.print('pontos-update-header -h')
+            term.print("pontos-update-header -h")
         term.bold_info(
-            'pontos-changelog - Parse conventional commits in the '
-            'current branch, creating CHANGELOG.md file'
+            "pontos-changelog - Parse conventional commits in the "
+            "current branch, creating CHANGELOG.md file"
         )
-        term.print('usage:')
+        term.print("usage:")
         with term.indent():
-            term.print('pontos-changelog -h')
+            term.print("pontos-changelog -h")
         term.bold_info(
-            'pontos-github - Handling GitHub operations, like '
-            'Pull Requests (beta)'
+            "pontos-github - Handling GitHub operations, like "
+            "Pull Requests (beta)"
         )
-        term.print('usage:')
+        term.print("usage:")
         with term.indent():
-            term.print('pontos-github {pr} -h')
+            term.print("pontos-github {pr} -h")
         term.print()
         term.info(
-            'pontos also comes with a Terminal interface '
-            'printing prettier outputs'
+            "pontos also comes with a Terminal interface "
+            "printing prettier outputs"
         )
         with term.indent():
             term.print('Accessible with import "pontos.terminal"')
-        term.info('pontos also comes with git and GitHub APIs')
+        term.info("pontos also comes with git and GitHub APIs")
         with term.indent():
             term.print(
                 'Accessible with "import pontos.git" '
@@ -79,7 +79,7 @@ def main() -> None:
     term.print()
     term.warning(
         'Use the listed commands "help" for more information '
-        'and arguments description.'
+        "and arguments description."
     )
 
 

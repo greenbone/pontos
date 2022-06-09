@@ -42,8 +42,8 @@ def build_release_dict(
     release_version: str,
     release_changelog: str,
     *,
-    name: str = '',
-    target_commitish: str = '',
+    name: str = "",
+    target_commitish: str = "",
     draft: bool = False,
     prerelease: bool = False,
 ) -> Dict[str, Union[str, bool]]:
@@ -65,16 +65,16 @@ def build_release_dict(
     """
     tag_name = (
         release_version
-        if release_version.startswith('v')
+        if release_version.startswith("v")
         else "v" + release_version
     )
     return {
-        'tag_name': tag_name,
-        'target_commitish': target_commitish,
-        'name': name,
-        'body': release_changelog,
-        'draft': draft,
-        'prerelease': prerelease,
+        "tag_name": tag_name,
+        "target_commitish": target_commitish,
+        "name": name,
+        "body": release_changelog,
+        "draft": draft,
+        "prerelease": prerelease,
     }
 
 
@@ -83,7 +83,7 @@ def commit_files(
     commit_msg: str,
     shell_cmd_runner: Callable,
     *,
-    git_signing_key: str = '',
+    git_signing_key: str = "",
     changelog: bool = False,
 ):
     """Add files to staged and commit staged files.
@@ -128,7 +128,7 @@ def calculate_calendar_version(terminal: Terminal) -> str:
         or current_version.minor < today.month
     ):
         release_version = Version(
-            f'{str(today.year  % 100)}.{str(today.month)}.0'
+            f"{str(today.year  % 100)}.{str(today.month)}.0"
         )
         return str(release_version)
     elif (
@@ -137,13 +137,13 @@ def calculate_calendar_version(terminal: Terminal) -> str:
     ):
         if current_version.dev is None:
             release_version = Version(
-                f'{str(today.year  % 100)}.{str(today.month)}.'
-                f'{str(current_version.micro + 1)}'
+                f"{str(today.year  % 100)}.{str(today.month)}."
+                f"{str(current_version.micro + 1)}"
             )
         else:
             release_version = Version(
-                f'{str(today.year  % 100)}.{str(today.month)}.'
-                f'{str(current_version.micro)}'
+                f"{str(today.year  % 100)}.{str(today.month)}."
+                f"{str(current_version.micro)}"
             )
         return str(release_version)
     else:
@@ -179,9 +179,9 @@ def download(
 
     destination: Path = path(tempfile.gettempdir()) / filename
     response = requests_module.get(url, stream=True, timeout=timeout)
-    total_length = response.headers.get('content-length')
+    total_length = response.headers.get("content-length")
 
-    terminal.info(f'Downloading {url}')
+    terminal.info(f"Downloading {url}")
 
     return DownloadProgressIterable(
         response.iter_content(chunk_size=chunk_size),
@@ -211,9 +211,9 @@ def download_assets(
     else:
         assets_json = assets_response.json()
         for asset_json in assets_json:
-            asset_url: str = asset_json.get('browser_download_url', '')
-            name: str = asset_json.get('name', '')
-            if name.endswith('.zip') or name.endswith('.tar.gz'):
+            asset_url: str = asset_json.get("browser_download_url", "")
+            name: str = asset_json.get("name", "")
+            if name.endswith(".zip") or name.endswith(".tar.gz"):
                 yield download(
                     terminal,
                     asset_url,
@@ -228,8 +228,8 @@ def get_current_version(terminal: Terminal) -> str:
     a CMakeLists.txt file"""
 
     available_cmds = [
-        ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PythonVersionCommand),
+        ("CMakeLists.txt", CMakeVersionCommand),
+        ("pyproject.toml", PythonVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
@@ -250,15 +250,15 @@ def get_next_patch_version(terminal: Terminal) -> str:
 
     if current_version.dev is not None:
         release_version = Version(
-            f'{str(current_version.major)}.'
-            f'{str(current_version.minor)}.'
-            f'{str(current_version.micro)}'
+            f"{str(current_version.major)}."
+            f"{str(current_version.minor)}."
+            f"{str(current_version.micro)}"
         )
     else:
         release_version = Version(
-            f'{str(current_version.major)}.'
-            f'{str(current_version.minor)}.'
-            f'{str(current_version.micro + 1)}'
+            f"{str(current_version.major)}."
+            f"{str(current_version.minor)}."
+            f"{str(current_version.micro + 1)}"
         )
 
     return str(release_version)
@@ -270,9 +270,9 @@ def get_next_dev_version(release_version: str) -> str:
     try:
         release_version_obj = Version(release_version)
         next_version_obj = Version(
-            f'{str(release_version_obj.major)}.'
-            f'{str(release_version_obj.minor)}.'
-            f'{str(release_version_obj.micro + 1)}'
+            f"{str(release_version_obj.major)}."
+            f"{str(release_version_obj.minor)}."
+            f"{str(release_version_obj.micro + 1)}"
         )
         return str(next_version_obj)
     except InvalidVersion as e:
@@ -282,7 +282,7 @@ def get_next_dev_version(release_version: str) -> str:
 def get_project_name(
     shell_cmd_runner: Callable,
     *,
-    remote: str = 'origin',
+    remote: str = "origin",
 ) -> str:
     """Get the git repository name
 
@@ -293,8 +293,8 @@ def get_project_name(
     Returns:
         project name
     """
-    ret = shell_cmd_runner(f'git remote get-url {remote}')
-    return ret.stdout.split('/')[-1].replace('.git', '').strip()
+    ret = shell_cmd_runner(f"git remote get-url {remote}")
+    return ret.stdout.split("/")[-1].replace(".git", "").strip()
 
 
 def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
@@ -308,14 +308,14 @@ def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
     """
 
     try:
-        proc = shell_cmd_runner('git config user.signingkey')
+        proc = shell_cmd_runner("git config user.signingkey")
     except subprocess.CalledProcessError as e:
         # The command `git config user.signingkey` returns
         # return code 1 if no key is set.
         # So we will return empty string ...
         if e.returncode == 1:
             terminal.warning("No signing key found.")
-        return ''
+        return ""
     # stdout should return "\n" if no key is available
     # and so git_signing_key should
     # return '' if no key is available ...
@@ -336,11 +336,11 @@ def update_version(
        executed: True if successfully executed, False else
        filename: The filename of the project definition
     """
-    args = ['--quiet']
-    args.append('update')
+    args = ["--quiet"]
+    args.append("update")
     args.append(to)
     if develop:
-        args.append('--develop')
+        args.append("--develop")
     executed, filename = _version.main(leave=False, args=args)
 
     if not executed:
@@ -377,12 +377,12 @@ def upload_assets(
     """
     terminal.info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
-    asset_url = github_json['upload_url'].replace('{?name,label}', '')
-    paths = [path(f'{str(p)}.asc') for p in file_paths]
+    asset_url = github_json["upload_url"].replace("{?name,label}", "")
+    paths = [path(f"{str(p)}.asc") for p in file_paths]
 
     headers = {
-        'Accept': 'application/vnd.github.v3+json',
-        'content-type': 'application/octet-stream',
+        "Accept": "application/vnd.github.v3+json",
+        "content-type": "application/octet-stream",
     }
     auth = (username, token)
 

@@ -32,8 +32,8 @@ from pontos.release.helper import version
 
 class ReleaseTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+        os.environ["GITHUB_TOKEN"] = "foo"
+        os.environ["GITHUB_USER"] = "bar"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'
@@ -48,15 +48,15 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'release',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2dev',
+            "release",
+            "--release-version",
+            "0.0.1",
+            "--next-version",
+            "0.0.2dev",
         ]
 
         with redirect_stdout(StringIO()):
@@ -79,12 +79,12 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'release',
-            '-CC',
+            "release",
+            "-CC",
         ]
 
         with redirect_stdout(StringIO()):
@@ -109,13 +109,13 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'release',
-            '--release-version',
-            '0.0.1',
+            "release",
+            "--release-version",
+            "0.0.1",
         ]
 
         with redirect_stdout(StringIO()):
@@ -138,21 +138,21 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         fake_requests.post.return_value = fake_post
         fake_version = MagicMock(spec=version)
-        fake_version.main.return_value = (True, 'MyProject.conf')
+        fake_version.main.return_value = (True, "MyProject.conf")
         fake_changelog = MagicMock(spec=changelog)
-        fake_changelog.update.return_value = ('updated', 'changelog')
+        fake_changelog.update.return_value = ("updated", "changelog")
         args = [
-            'release',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2.dev1',
-            '--git-remote-name',
-            'upstream',
-            '--git-signing-key',
-            '1234',
+            "release",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
+            "--next-version",
+            "0.0.2.dev1",
+            "--git-remote-name",
+            "upstream",
+            "--git-signing-key",
+            "1234",
         ]
 
         with redirect_stdout(StringIO()):
@@ -168,10 +168,10 @@ class ReleaseTestCase(unittest.TestCase):
 
         shell_mock.assert_has_calls(
             [
-                call('git push --follow-tags upstream'),
-                call('git add MyProject.conf'),
+                call("git push --follow-tags upstream"),
+                call("git add MyProject.conf"),
                 call("git add *__version__.py || echo 'ignoring __version__'"),
-                call('git add CHANGELOG.md'),
+                call("git add CHANGELOG.md"),
                 call(
                     "git commit -S1234 --no-verify -m 'Automatic adjustments "
                     "after release\n\n"

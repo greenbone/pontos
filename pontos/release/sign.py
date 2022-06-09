@@ -40,12 +40,12 @@ from .helper import (
 def display_download_progress(
     terminal: Terminal, progress: DownloadProgressIterable
 ) -> None:
-    spinner = ['-', '\\', '|', '/']
+    spinner = ["-", "\\", "|", "/"]
     if progress.length:
         for percent in progress:
             done = int(50 * percent)
             terminal.out(
-                f"\r[{'=' * done}{' ' * (50-done)}]", end='', flush=True
+                f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
             )
     else:
         i = 0
@@ -53,8 +53,8 @@ def display_download_progress(
             i = i + 1
             if i == 4:
                 i = 0
-            terminal.out(f"\r[{spinner[i]}]", end='', flush=True)
-    terminal.out(f"\r[{Signs.OK}]{' ' * 50}", end='', flush=True)
+            terminal.out(f"\r[{spinner[i]}]", end="", flush=True)
+    terminal.out(f"\r[{Signs.OK}]{' ' * 50}", end="", flush=True)
 
 
 def sign(
@@ -81,9 +81,9 @@ def sign(
     )
     signing_key: str = args.signing_key
 
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {"Accept": "application/vnd.github.v3+json"}
 
-    git_version: str = f'{git_tag_prefix}{release_version}'
+    git_version: str = f"{git_tag_prefix}{release_version}"
 
     base_url = (
         f"https://api.github.com/repos/{space}/{project}"
@@ -129,7 +129,7 @@ def sign(
 
     assets_progress = download_assets(
         terminal,
-        github_json.get('assets_url'),
+        github_json.get("assets_url"),
     )
     for progress in assets_progress:
         file_paths.append(progress.destination)

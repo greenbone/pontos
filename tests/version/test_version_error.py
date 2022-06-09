@@ -22,9 +22,9 @@ from pontos.version.helper import VersionError
 
 class VersionErrorTestCase(unittest.TestCase):
     def test_should_print_message(self):
-        err = VersionError('foo bar')
-        self.assertEqual(str(err), 'foo bar')
+        err = VersionError("foo bar")
+        self.assertEqual(str(err), "foo bar")
 
     def test_should_raise(self):
-        with self.assertRaisesRegex(VersionError, '^foo bar$'):
-            raise VersionError('foo bar')
+        with self.assertRaisesRegex(VersionError, "^foo bar$"):
+            raise VersionError("foo bar")

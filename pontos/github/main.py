@@ -29,7 +29,7 @@ def main(args=None):
         log_file=parsed_args.log_file,
     )
 
-    term.bold_info(f'pontos-github => {parsed_args.func.__name__}')
+    term.bold_info(f"pontos-github => {parsed_args.func.__name__}")
 
     with term.indent():
         if not parsed_args.token:

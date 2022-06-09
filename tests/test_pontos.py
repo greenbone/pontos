@@ -33,5 +33,5 @@ class TestPontos(unittest.TestCase):
         terminal_mock.return_value.info.assert_called()
         terminal_mock.return_value.warning.assert_called_once_with(
             'Use the listed commands "help" for more information '
-            'and arguments description.'
+            "and arguments description."
         )

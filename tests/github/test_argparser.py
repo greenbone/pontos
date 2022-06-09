@@ -49,11 +49,11 @@ class TestArgparsing(unittest.TestCase):
 
         parsed_args = parse_args(argv)
 
-        template = Path().cwd() / 'pontos/github/pr_template.md'
+        template = Path().cwd() / "pontos/github/pr_template.md"
 
         self.assertEqual(parsed_args.command, "pr")
         self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
-        self.assertEqual(parsed_args.body, template.read_text(encoding='utf-8'))
+        self.assertEqual(parsed_args.body, template.read_text(encoding="utf-8"))
         self.assertEqual(parsed_args.pr_func, create_pull_request)
         self.assertEqual(parsed_args.repo, "foo/bar")
         self.assertEqual(parsed_args.target, "main")
@@ -111,16 +111,16 @@ class TestArgparsing(unittest.TestCase):
         ]
 
         parsed_args = parse_args(argv)
-        output = io.open(Path("some.file"), mode='w', encoding='utf-8')
+        output = io.open(Path("some.file"), mode="w", encoding="utf-8")
 
         expected_args = Namespace(
-            command='FS',
+            command="FS",
             func=file_status,
-            repo='foo/bar',
+            repo="foo/bar",
             pull_request=8,
             output=output,
             status=[FileStatus.ADDED, FileStatus.MODIFIED],
-            token='GITHUB_TOKEN',
+            token="GITHUB_TOKEN",
         )
 
         self.assertEqual(type(parsed_args.output), type(expected_args.output))
