@@ -43,7 +43,7 @@ def main() -> None:
             term.print('pontos-version {verify,show,update} -h')
         term.bold_info(
             'pontos-update-header - Handling Copyright header '
-            'for various file types and licences'
+            'for various file types and licenses'
         )
         term.print('usage:')
         with term.indent():
@@ -68,11 +68,11 @@ def main() -> None:
             'printing prettier outputs'
         )
         with term.indent():
-            term.print('Accessable with import "pontos.terminal"')
+            term.print('Accessible with import "pontos.terminal"')
         term.info('pontos also comes with git and GitHub APIs')
         with term.indent():
             term.print(
-                'Accessable with "import pontos.git" '
+                'Accessible with "import pontos.git" '
                 'and "import pontos.github"'
             )
 
