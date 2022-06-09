@@ -51,5 +51,5 @@ jobs:
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v1
         with:
-          version: 3.8
+          version: 3.9
 
