@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import unittest
 from datetime import date
 from pathlib import Path
-import unittest
 
 from pontos import changelog
 
@@ -146,8 +146,6 @@ I don't recognize it anymore
         updated, release_notes = changelog.update(
             test_md, '1.2.3', containing_version='1.2.3'
         )
-        print(updated)
-        print(release_notes)
         self.assertEqual(released_md.strip(), updated.strip())
         self.assertEqual(released.strip(), release_notes.strip())
 
