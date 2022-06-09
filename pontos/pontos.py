@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pontos.terminal.terminal import Terminal
+from pontos.terminal.terminal import ConsoleTerminal
 
 
 def main() -> None:
-    term = Terminal()
+    term = ConsoleTerminal()
 
     term.print()
     term.bold_info('pontos - Greenbone Python Utilities and Tools')

@@ -18,17 +18,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import Namespace
 import json
-
+from argparse import Namespace
 from pathlib import Path
 
 import requests
 
-from pontos import changelog
-from pontos.terminal import error, warning, info
-from pontos import version
+from pontos import changelog, version
 from pontos.helper import shell_cmd_runner
+from pontos.terminal import Terminal
 
 from .helper import (
     build_release_dict,
@@ -44,6 +42,7 @@ RELEASE_TEXT_FILE = ".release.md"
 
 
 def release(
+    terminal: Terminal,
     args: Namespace,
     *,
     path: Path,
@@ -63,7 +62,7 @@ def release(
     git_signing_key: str = (
         args.git_signing_key
         if args.git_signing_key is not None
-        else find_signing_key(shell_cmd_runner)
+        else find_signing_key(terminal, shell_cmd_runner)
     )
     git_remote_name: str = (
         args.git_remote_name if args.git_remote_name is not None else ''
@@ -72,7 +71,7 @@ def release(
     release_version: str = (
         args.release_version
         if args.release_version is not None
-        else get_current_version()
+        else get_current_version(terminal)
     )
     next_version: str = (
         args.next_version
@@ -80,11 +79,11 @@ def release(
         else get_next_dev_version(release_version)
     )
 
-    info("Pushing changes")
+    terminal.info("Pushing changes")
 
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
-    info(f"Creating release for v{release_version}")
+    terminal.info(f"Creating release for v{release_version}")
     changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
 
     headers = {'Accept': 'application/vnd.github.v3+json'}
@@ -102,8 +101,8 @@ def release(
         ),
     )
     if response.status_code != 201:
-        error(f"Wrong response status code: {response.status_code}")
-        error(json.dumps(response.text, indent=4, sort_keys=True))
+        terminal.error(f"Wrong response status code: {response.status_code}")
+        terminal.error(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     path(RELEASE_TEXT_FILE).unlink()
@@ -122,7 +121,7 @@ def release(
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:
-                warning(f"{tmp_path} is not a file.")
+                terminal.warning(f"{tmp_path} is not a file.")
 
         updated = changelog_module.add_skeleton(
             markdown=change_log_path.read_text(encoding='utf-8'),
@@ -137,7 +136,7 @@ def release(
         commit_msg += f'* Add empty changelog after {release_version}'
 
     executed, filename = update_version(
-        next_version, version_module, develop=True
+        terminal, next_version, version_module, develop=True
     )
     if not executed:
         return False

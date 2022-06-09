@@ -17,26 +17,22 @@
 
 # pylint: disable=no-member
 
-from argparse import Namespace
 import io
-from pathlib import Path
 import unittest
-from unittest.mock import Mock, patch
-from pontos.github.api import FileStatus
+from argparse import Namespace
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
+from pontos.github.api import FileStatus
 from pontos.github.cmds import file_status
-from pontos.terminal import _set_terminal
 
 here = Path(__file__).parent
 
 
 class TestArgparsing(unittest.TestCase):
-    def setUp(self):
-        self.term = Mock()
-        _set_terminal(self.term)
-
     @patch("pontos.github.cmds.GitHubRESTApi")
     def test_file_status(self, api_mock):
+        terminal = MagicMock()
         api_mock.return_value.pull_request_exists.return_value = True
         api_mock.return_value.pull_request_files.return_value = {
             FileStatus.ADDED: [Path('tests/github/foo/bar')],
@@ -58,7 +54,7 @@ class TestArgparsing(unittest.TestCase):
             token='GITHUB_TOKEN',
         )
 
-        file_status(args)
+        file_status(terminal, args)
 
         output.close()
 

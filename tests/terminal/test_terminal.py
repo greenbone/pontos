@@ -18,14 +18,13 @@
 # pylint: disable=invalid-name, protected-access
 
 import unittest
-
 from io import StringIO
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, patch
 
 import colorful as cf
 
-from pontos.terminal.terminal import Terminal, Signs
-from pontos.terminal import _set_terminal, error, fail, info, ok, out, warning
+from pontos.terminal.terminal import ConsoleTerminal as Terminal
+from pontos.terminal.terminal import Signs
 
 
 class TerminalTestCase(unittest.TestCase):
@@ -164,72 +163,6 @@ class TerminalTestCase(unittest.TestCase):
         self.assertEqual(ret, expected_msg)
 
     @patch('sys.stdout', new_callable=StringIO)
-    def test_add_indent(self, mock_stdout):
-        i = 5
-        expected_msg = (
-            self.reset(f'{self.white(" ")}{" " * i}foo').styled_string + '\n'
-        )
-
-        self.term.add_indent(i - 1)
-        self.term.print('foo')
-
-        ret = mock_stdout.getvalue()
-
-        self.assertEqual(ret, expected_msg)
-        self.assertEqual(len(ret), len(expected_msg))
-
-        # clear the buffer
-        mock_stdout.truncate(0)
-        mock_stdout.seek(0)
-
-        j = 4
-        expected_msg = (
-            self.reset(f'{self.white(" ")}{" " * (i + j)}bar').styled_string
-            + '\n'
-        )
-
-        self.term.add_indent(j)
-        self.term.print('bar')
-
-        ret = mock_stdout.getvalue()
-
-        self.assertEqual(len(ret), len(expected_msg))
-        self.assertEqual(ret, expected_msg)
-
-        # clear the buffer
-        mock_stdout.truncate(0)
-        mock_stdout.seek(0)
-
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_reset_indent(self, mock_stdout):
-        i = 5
-        expected_msg = (
-            self.reset(f'{self.white(" ")}{" " * i }foo').styled_string + '\n'
-        )
-
-        self.term.add_indent(i - 1)
-        self.term.print('foo')
-
-        ret = mock_stdout.getvalue()
-
-        self.assertEqual(len(ret), len(expected_msg))
-        self.assertEqual(ret, expected_msg)
-
-        # clear the buffer
-        mock_stdout.truncate(0)
-        mock_stdout.seek(0)
-
-        expected_msg = self.reset(f'{self.white(" ")} bar').styled_string + '\n'
-
-        self.term.reset_indent()
-        self.term.print('bar')
-
-        ret = mock_stdout.getvalue()
-
-        self.assertEqual(len(ret), len(expected_msg))
-        self.assertEqual(ret, expected_msg)
-
-    @patch('sys.stdout', new_callable=StringIO)
     def test_with_indent(self, mock_stdout):
         expected_msg = (
             self.reset(f'{self.white(" ")}   foo').styled_string + '\n'
@@ -278,36 +211,6 @@ class TerminalTestCase(unittest.TestCase):
 
         self.assertEqual(ret, expected_msg)
         self.assertEqual(len(ret), expected_len)
-
-
-class TerminalOutputApiTestCase(unittest.TestCase):
-    def setUp(self):
-        self.term = Mock(spec=Terminal)
-        _set_terminal(self.term)
-
-    def test_error(self):
-        error('foo bar')
-        self.term.error.assert_called_with('foo bar')
-
-    def test_fail(self):
-        fail('foo bar')
-        self.term.fail.assert_called_with('foo bar')
-
-    def test_info(self):
-        info('foo bar')
-        self.term.info.assert_called_with('foo bar')
-
-    def test_ok(self):
-        ok('foo bar')
-        self.term.ok.assert_called_with('foo bar')
-
-    def test_out(self):
-        out('foo bar')
-        self.term.print.assert_called_with('foo bar')
-
-    def test_warning(self):
-        warning('foo bar')
-        self.term.warning.assert_called_with('foo bar')
 
 
 if __name__ == '__main__':

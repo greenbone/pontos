@@ -15,39 +15,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import Namespace
 import sys
+from argparse import Namespace
 
 import requests
 
 from pontos.github.api import GitHubRESTApi
-from pontos.terminal import error, info, ok, out
+from pontos.terminal import Terminal
 
 
-def pull_request(args: Namespace):
+def pull_request(_terminal: Terminal, args: Namespace):
     args.pr_func(args)
 
 
-def create_pull_request(args: Namespace):
+def create_pull_request(terminal: Terminal, args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
     try:
         # check if branches exist
         if not git.branch_exists(repo=args.repo, branch=args.head):
-            error(
+            terminal.error(
                 f"Head branch {args.head} is not existing "
                 "or authorisation failed."
             )
             sys.exit(1)
-        ok(f"Head branch {args.head} is existing.")
+
+        terminal.ok(f"Head branch {args.head} is existing.")
 
         if not git.branch_exists(repo=args.repo, branch=args.target):
-            error(
+            terminal.error(
                 f"Target branch {args.target} is not existing or "
                 "authorisation failed."
             )
             sys.exit(1)
-        ok(f"Target branch {args.target} exists.")
+
+        terminal.ok(f"Target branch {args.target} exists.")
 
         git.create_pull_request(
             repo=args.repo,
@@ -57,26 +59,26 @@ def create_pull_request(args: Namespace):
             body=args.body,
         )
     except requests.exceptions.RequestException as e:
-        error(str(e))
+        terminal.error(str(e))
         sys.exit(1)
 
-    ok("Pull Request created.")
+    terminal.ok("Pull Request created.")
 
 
-def update_pull_request(args: Namespace):
+def update_pull_request(terminal: Terminal, args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
     try:
         if args.target:
             # check if branches exist
             if not git.branch_exists(repo=args.repo, branch=args.target):
-                error(
+                terminal.error(
                     f"Target branch {args.target} is not existing or "
                     "authorisation failed."
                 )
                 sys.exit(1)
 
-            ok(f"Target branch {args.target} exists.")
+            terminal.ok(f"Target branch {args.target} exists.")
         git.update_pull_request(
             repo=args.repo,
             pull_request=args.pull_request,
@@ -85,13 +87,13 @@ def update_pull_request(args: Namespace):
             body=args.body,
         )
     except requests.exceptions.RequestException as e:
-        error(str(e))
+        terminal.error(str(e))
         sys.exit(1)
 
-    ok("Pull Request updated.")
+    terminal.ok("Pull Request updated.")
 
 
-def file_status(args: Namespace):
+def file_status(terminal: Terminal, args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
     try:
@@ -99,12 +101,12 @@ def file_status(args: Namespace):
         if not git.pull_request_exists(
             repo=args.repo, pull_request=args.pull_request
         ):
-            error(
+            terminal.error(
                 f"PR {args.pull_request} is not existing "
                 "or authorisation failed."
             )
             sys.exit(1)
-        ok(f"PR {args.pull_request} exists.")
+        terminal.ok(f"PR {args.pull_request} exists.")
 
         file_dict = git.pull_request_files(
             repo=args.repo,
@@ -112,27 +114,32 @@ def file_status(args: Namespace):
             status_list=args.status,
         )
         for status in args.status:
-            info(f'{status.value}:')
+            terminal.info(f'{status.value}:')
             files = [str(f.resolve()) for f in file_dict[status]]
+
             for file_string in files:
-                out(file_string)
+                terminal.print(file_string)
+
             if args.output:
                 args.output.write("\n".join(files) + "\n")
 
     except requests.exceptions.RequestException as e:
-        error(str(e))
+        terminal.error(str(e))
         sys.exit(1)
 
 
-def labels(args: Namespace):
+def labels(terminal: Terminal, args: Namespace):
     git = GitHubRESTApi(token=args.token)
 
     try:
         # check if PR is existing
         if not git.pull_request_exists(repo=args.repo, pull_request=args.issue):
-            error(f"PR {args.issue} is not existing or authorisation failed.")
+            terminal.error(
+                f"PR {args.issue} is not existing or authorisation failed."
+            )
             sys.exit(1)
-        ok(f"PR {args.issue} exists.")
+
+        terminal.ok(f"PR {args.issue} exists.")
 
         issue_labels = git.get_labels(
             repo=args.repo,
@@ -144,5 +151,5 @@ def labels(args: Namespace):
         git.set_labels(repo=args.repo, issue=args.issue, labels=issue_labels)
 
     except requests.exceptions.RequestException as e:
-        error(str(e))
+        terminal.error(str(e))
         sys.exit(1)

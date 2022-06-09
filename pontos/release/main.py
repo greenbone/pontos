@@ -28,8 +28,7 @@ from typing import Tuple
 import requests
 
 from pontos import changelog, version
-from pontos.terminal import error, out, terminal
-from pontos.terminal.terminal import Terminal
+from pontos.terminal.terminal import ConsoleTerminal
 
 from .prepare import prepare
 from .release import release
@@ -53,7 +52,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         "--log-file",
         dest="log_file",
         type=str,
-        help="Acivate logging using the given file path",
+        help="Activate logging using the given file path",
     )
 
     subparsers = parser.add_subparsers(
@@ -234,11 +233,9 @@ def main(
     args=None,
 ):
     username, token, parsed_args = parse_args(args)
-    term = terminal(
-        Terminal(
-            verbose=1 if not parsed_args.quiet else 0,
-            log_file=parsed_args.log_file,
-        )
+    term = ConsoleTerminal(
+        verbose=1 if not parsed_args.quiet else 0,
+        log_file=parsed_args.log_file,
     )
 
     term.bold_info(f'pontos-release => {parsed_args.func.__name__}')
@@ -246,6 +243,7 @@ def main(
     with term.indent():
         try:
             if not parsed_args.func(
+                term,
                 parsed_args,
                 path=_path,
                 username=username,
@@ -257,10 +255,11 @@ def main(
                 return sys.exit(1) if leave else False
         except subprocess.CalledProcessError as e:
             if not '--passphrase' in e.cmd:
-                error(f'Could not run command "{e.cmd}".')
+                term.error(f'Could not run command "{e.cmd}".')
             else:
-                error('Headless signing failed.')
-            out(f'Error was: {e.stderr}')
+                term.error('Headless signing failed.')
+
+            term.print(f'Error was: {e.stderr}')
             sys.exit(1)
 
     return sys.exit(0) if leave else True

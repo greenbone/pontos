@@ -18,10 +18,7 @@
 from pathlib import Path
 from typing import Union
 
-from .helper import (
-    VersionError,
-    initialize_default_parser,
-)
+from .helper import VersionError, initialize_default_parser
 
 
 class VersionCommand:

@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from enum import Enum
+from pathlib import Path
 from shutil import get_terminal_size
-from typing import Callable, Generator
+from typing import Any, Callable, Generator
 
 import colorful as cf
 
@@ -44,9 +45,126 @@ class Signs(Enum):
 STATUS_LEN = 2
 
 
-class Terminal:
-    def __init__(self, *, verbose: int = 1, log_file: Path = None):
+class Terminal(ABC):
+    def __init__(self) -> None:
+        super().__init__()
         self._indent = 0
+
+    @contextmanager
+    def indent(self, indentation: int = 4) -> Generator[None, None, None]:
+        """
+        A context manager for indenting output using spaces
+
+        Example:
+            with terminal.indent():
+                terminal.print("...")
+
+        Args:
+            indentation: Number of spaces to be used for indentation.
+                         By default 4.
+        """
+        current_indent = self._indent
+        self._add_indent(indentation)
+
+        yield
+
+        self._indent = current_indent
+
+    def _add_indent(self, indentation: int = 4) -> None:
+        self._indent += indentation
+
+    @abstractmethod
+    def out(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print messages without formatting.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def print(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print messages. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def ok(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print a success message. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def fail(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print a failure message. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def error(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print an error message. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def warning(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print a warning message. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def info(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print an info message. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+    @abstractmethod
+    def bold_info(self, *messages: Any, **kwargs: Any) -> None:
+        """
+        Print an info message with bold text. Possibly formatting is applied.
+
+        Args:
+            *messages: Arguments to print.
+            **kwargs: Keyword arguments forwarded to the underlying
+                     implementation.
+        """
+
+
+class ConsoleTerminal(Terminal):
+    def __init__(self, *, verbose: int = 1, log_file: Path = None):
+        super().__init__()
         if log_file:
             self._logger = TerminalLogger(log_file=log_file)
         else:
@@ -63,13 +181,12 @@ class Terminal:
 
     def _print_status(
         self,
-        message: str,
+        *messages: Any,
         status: Signs,
         color: Callable,
-        style: Callable,
-        *,
+        style: Callable = cf.reset,
         new_line: bool = True,
-        overwrite: bool = False,
+        **kwargs: Any,
     ) -> None:
         width = self.get_width()
         offset = self._indent + STATUS_LEN
@@ -77,13 +194,13 @@ class Terminal:
 
         # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
+        message = ''.join(messages)
         messages = message.split("\n")
         output = self._format_message(
             message=messages[0],
             usable_width=usable_width,
             offset=offset,
             first=True,
-            overwrite=overwrite,
         )
         if len(messages) > 0:
             for msg in messages[1:]:
@@ -95,9 +212,11 @@ class Terminal:
                 )
         if self._verbose > 0:
             if new_line:
-                print(style(f'{color(status)} {output}'))
+                print(style(f'{color(status)} {output}'), **kwargs)
             else:
-                print(style(f'{color(status)} {output}'), end='', flush=True)
+                kwargs.update({"end": "", "flush": True})
+                print(style(f'{color(status)} {output}'), **kwargs)
+
         if self._logger:
             self._logger.log(message=f'{status} {output}')
 
@@ -108,70 +227,54 @@ class Terminal:
         offset: int,
         *,
         first: bool = False,
-        overwrite: bool = False,
     ) -> str:
         formatted_message = ""
         if first:
-            if overwrite:
-                formatted_message = "\r"
             formatted_message += " " * self._indent
         else:
             formatted_message += " " * offset
+
         while usable_width < len(message):
             part = message[:usable_width]
             message = message[usable_width:]
             formatted_message += f'{part}'
+
             if len(message) > 0:
                 formatted_message += f'\n{" " * offset}'
+
         formatted_message += f"{message}"
+
         return formatted_message
 
-    @contextmanager
-    def indent(self, indentation: int = 4) -> Generator:
-        current_indent = self._indent
-        self.add_indent(indentation)
+    def out(self, *messages: Any, **kwargs: Any) -> None:
+        self.print(*messages, **kwargs)
 
-        yield self
+    def print(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.NONE, "color": cf.white})
+        self._print_status(*messages, **kwargs)
 
-        self._indent = current_indent
+    def ok(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.OK, "color": cf.green})
+        self._print_status(*messages, **kwargs)
 
-    def add_indent(self, indentation: int = 4) -> None:
-        self._indent += indentation
+    def fail(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.FAIL, "color": cf.red})
+        self._print_status(*messages, **kwargs)
 
-    def reset_indent(self) -> None:
-        self._indent = 0
+    def error(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.ERROR, "color": cf.red})
+        self._print_status(*messages, **kwargs)
 
-    def print(self, *messages: str, style: Callable = cf.reset) -> None:
-        message = ''.join(messages)
-        self._print_status(message, Signs.NONE, cf.white, style)
+    def warning(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.WARNING, "color": cf.yellow})
+        self._print_status(*messages, **kwargs)
 
-    def print_overwrite(
-        self, *messages: str, style: Callable = cf.reset, new_line: bool = False
-    ) -> None:
-        message = ''.join(messages)
-        self._print_status(
-            message,
-            Signs.NONE,
-            cf.white,
-            style,
-            new_line=new_line,
-            overwrite=True,
+    def info(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.INFO, "color": cf.cyan})
+        self._print_status(*messages, **kwargs)
+
+    def bold_info(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update(
+            {"status": Signs.INFO, "color": cf.cyan, "style": cf.bold}
         )
-
-    def ok(self, message: str, style: Callable = cf.reset) -> None:
-        self._print_status(message, Signs.OK, cf.green, style)
-
-    def fail(self, message: str, style: Callable = cf.reset) -> None:
-        self._print_status(message, Signs.FAIL, cf.red, style)
-
-    def error(self, message: str, style: Callable = cf.reset) -> None:
-        self._print_status(message, Signs.ERROR, cf.red, style)
-
-    def warning(self, message: str, style: Callable = cf.reset) -> None:
-        self._print_status(message, Signs.WARNING, cf.yellow, style)
-
-    def info(self, message: str, style: Callable = cf.reset) -> None:
-        self._print_status(message, Signs.INFO, cf.cyan, style)
-
-    def bold_info(self, message: str, style: Callable = cf.bold) -> None:
-        self._print_status(message, Signs.INFO, cf.cyan, style)
+        self._print_status(*messages, **kwargs)

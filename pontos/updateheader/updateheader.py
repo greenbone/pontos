@@ -20,18 +20,16 @@ in the license header of source code files.\n
 Also it appends a header if it is missing in the file.
 """
 
-import sys
 import re
-
-from argparse import ArgumentParser, Namespace, FileType
+import sys
+from argparse import ArgumentParser, FileType, Namespace
 from datetime import datetime
-
+from pathlib import Path
 from subprocess import CalledProcessError, run
 from typing import Dict, List, Tuple, Union
-from pathlib import Path
 
-from pontos.terminal import terminal
-from pontos.terminal.terminal import Terminal
+from pontos.terminal import Terminal
+from pontos.terminal.terminal import ConsoleTerminal
 
 SUPPORTED_FILE_TYPES = [
     ".bash",
@@ -341,11 +339,9 @@ def main() -> None:
     parsed_args = _parse_args()
     exclude_list = []
 
-    term = terminal(
-        Terminal(
-            verbose=1 if not parsed_args.quiet else 0,
-            log_file=parsed_args.log_file,
-        )
+    term = ConsoleTerminal(
+        verbose=1 if not parsed_args.quiet else 0,
+        log_file=parsed_args.log_file,
     )
 
     term.bold_info('pontos-update-header')
