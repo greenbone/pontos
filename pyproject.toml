@@ -43,6 +43,7 @@ pylint = "^2.13.9"
 autohooks = "^21.7.0"
 autohooks-plugin-pylint = "^21.6.0"
 autohooks-plugin-black = "^21.12.0"
+autohooks-plugin-isort = "^22.3.0"
 black = "22.3.0"
 rope = "^1.1.1"
 coverage = "^6.4"
@@ -66,7 +67,7 @@ exclude = '''
 '''
 
 [tool.autohooks]
-pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.pylint']
+pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.isort', 'autohooks.plugins.pylint']
 mode = "poetry"
 
 [tool.pontos.version]
