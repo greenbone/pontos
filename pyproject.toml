@@ -70,6 +70,10 @@ exclude = '''
 pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.isort', 'autohooks.plugins.pylint']
 mode = "poetry"
 
+[tool.isort]
+profile = "black"
+line_length = 80
+
 [tool.pontos.version]
 version-module-file = "pontos/version/__version__.py"
 
