@@ -41,7 +41,6 @@ class ConventionalCommitsTestCase(unittest.TestCase):
         today = datetime.today().strftime('%Y-%m-%d')
 
         own_path = Path(__file__).absolute().parent
-        print(own_path)
         config_toml = own_path / 'changelog.toml'
         release_version = '0.0.2'
         output = f'v{release_version}.md'
@@ -108,7 +107,6 @@ All notable changes to this project will be documented in this file.
 
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
         output_file = changelog_builder.create_changelog_file()
-        print(output_file.read_text(encoding='utf-8'))
         self.assertEqual(
             output_file.read_text(encoding='utf-8'), expected_output
         )
@@ -127,7 +125,6 @@ All notable changes to this project will be documented in this file.
         terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
-        print(own_path)
         config_toml = own_path / 'changelog.toml'
         release_version = '0.0.2'
         output = f'v{release_version}.md'
@@ -164,7 +161,6 @@ All notable changes to this project will be documented in this file.
         today = datetime.today().strftime('%Y-%m-%d')
 
         own_path = Path(__file__).absolute().parent
-        print(own_path)
         config_toml = own_path / 'changelog.toml'
         release_version = '0.0.2'
         output = f'v{release_version}.md'
@@ -230,7 +226,6 @@ All notable changes to this project will be documented in this file.
 
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
         output_file = changelog_builder.create_changelog_file()
-        print(output_file.read_text(encoding='utf-8'))
         self.assertEqual(
             output_file.read_text(encoding='utf-8'), expected_output
         )

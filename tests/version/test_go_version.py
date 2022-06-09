@@ -19,15 +19,14 @@
 # pylint: disable=W0212
 
 
-import unittest
 import contextlib
 import io
 import subprocess
-
+import unittest
 from dataclasses import dataclass
-
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
 from pontos.version.go import GoVersionCommand
 from pontos.version.helper import VersionError
 
@@ -63,7 +62,7 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             called.append(cmd)
             return StdOutput('21.22')
 
-        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
             cmd = GoVersionCommand(project_file_path=fake_path)
             cmd.shell_cmd_runner = runner
 
@@ -87,11 +86,10 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             cmd=["'git describe --tags `git rev-list --tags --max-count=1`'"],
         )
 
-        with self.assertRaises(subprocess.CalledProcessError):
-            result = GoVersionCommand(project_file_path=fake_path).run(
-                args=['show']
-            )
-            print(result)
+        with self.assertRaises(
+            subprocess.CalledProcessError
+        ), contextlib.redirect_stdout(io.StringIO()):
+            GoVersionCommand(project_file_path=fake_path).run(args=['show'])
 
     def test_verify_branch(self):
         fake_path_class = MagicMock(spec=Path)

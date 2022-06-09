@@ -19,6 +19,7 @@ import datetime
 import re
 import struct
 from argparse import Namespace
+from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 from subprocess import CalledProcessError, CompletedProcess
@@ -456,7 +457,8 @@ class UpdateHeaderTestCase(TestCase):
 
         argparser_mock.return_value = self.args
 
-        code = main()
+        with redirect_stdout(StringIO()):
+            code = main()
 
         # I have no idea how or why test main ...
         self.assertEqual(code, 0)
