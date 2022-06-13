@@ -23,6 +23,7 @@ from shutil import get_terminal_size
 from typing import Any, Callable, Generator
 
 import colorful as cf
+from rich.console import Console
 
 # from pontos.terminal.log_config import process_logger
 from pontos.terminal.logger import TerminalLogger
@@ -277,4 +278,75 @@ class ConsoleTerminal(Terminal):
         kwargs.update(
             {"status": Signs.INFO, "color": cf.cyan, "style": cf.bold}
         )
+        self._print_status(*messages, **kwargs)
+
+
+def red(text: str) -> str:
+    return f"[red]{text}[/red]"
+
+
+def yellow(text: str) -> str:
+    return f"[yellow]{text}[/yellow]"
+
+
+def cyan(text: str) -> str:
+    return f"[cyan]{text}[/cyan]"
+
+
+def green(text: str) -> str:
+    return f"[green]{text}[/green]"
+
+
+def white(text: str) -> str:
+    return f"[white]{text}[/white]"
+
+
+class RichTerminal(Terminal):
+    def __init__(self) -> None:
+        super().__init__()
+        self._console = Console()
+
+    def _indent_message(self):
+        return " " * self._indent
+
+    def _print_status(
+        self,
+        *messages: Any,
+        status: Signs,
+        color: Callable,
+        **kwargs: Any,
+    ):
+        self._console.print(
+            self._indent_message(), color(status), *messages, **kwargs
+        )
+
+    def out(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs["highlight"] = False
+        self._console.out(self._indent_message(), *messages, **kwargs)
+
+    def print(self, *messages: Any, **kwargs: Any) -> None:
+        self._console.print(self._indent_message(), *messages, **kwargs)
+
+    def ok(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.OK, "color": green})
+        self._print_status(*messages, **kwargs)
+
+    def fail(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.FAIL, "color": red})
+        self._print_status(*messages, **kwargs)
+
+    def error(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.ERROR, "color": red})
+        self._print_status(*messages, **kwargs)
+
+    def warning(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.WARNING, "color": yellow})
+        self._print_status(*messages, **kwargs)
+
+    def info(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.INFO, "color": cyan})
+        self._print_status(*messages, **kwargs)
+
+    def bold_info(self, *messages: Any, **kwargs: Any) -> None:
+        kwargs.update({"status": Signs.INFO, "color": cyan, "style": "bold"})
         self._print_status(*messages, **kwargs)
