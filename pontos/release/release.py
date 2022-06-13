@@ -132,9 +132,7 @@ def release(
 
         commit_msg += f'* Add empty changelog after {release_version}'
 
-    executed, filename = update_version(
-        next_version, version, develop=True
-    )
+    executed, filename = update_version(next_version, version, develop=True)
     if not executed:
         return False
 

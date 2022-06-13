@@ -37,12 +37,23 @@ class PrepareTestCase(unittest.TestCase):
         os.environ['GITHUB_USER'] = 'bar'
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_prepare_successfully(self, _shell_mock, _path_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
+    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_prepare_successfully(
+        self,
+        _shell_mock,
+        _path_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
         args = [
             'prepare',
             '--release-version',
@@ -55,13 +66,24 @@ class PrepareTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_prepare_calendar_successfully(self, _shell_mock, _path_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
-     
+    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_prepare_calendar_successfully(
+        self,
+        _shell_mock,
+        _path_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
+
         args = [
             'prepare',
             '--calendar',
@@ -73,13 +95,24 @@ class PrepareTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_use_git_signing_key_on_prepare(self, shell_mock, _path_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
-        
+    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_use_git_signing_key_on_prepare(
+        self,
+        shell_mock,
+        _path_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
+
         args = [
             'prepare',
             '--git-signing-key',
@@ -105,11 +138,17 @@ class PrepareTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.changelog",spec=changelog)
-    def test_fail_if_tag_is_already_taken(self, shell_mock, _path_mock, _version_mock, _changelog_mock):
-    
+    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch("pontos.changelog", spec=changelog)
+    def test_fail_if_tag_is_already_taken(
+        self,
+        shell_mock,
+        _path_mock,
+        _version_mock,
+        _changelog_mock,
+    ):
+
         shell_mock.return_value = CompletedProcess(
             args="foo", returncode=1, stdout=b'v0.0.1'
         )
@@ -134,13 +173,21 @@ class PrepareTestCase(unittest.TestCase):
             shell_mock.assert_called_with('git tag v0.0.1 is already taken')
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value = (False, ''))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_not_release_when_no_project_found(self, _shell_mock, _path_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
-        
+    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch("pontos.release.helper.version.main", return_value=(False, ''))
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_not_release_when_no_project_found(
+        self,
+        _shell_mock,
+        _path_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
+
         args = [
             'prepare',
             '--release-version',
@@ -153,14 +200,26 @@ class PrepareTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("requests",spec=requests)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value = (False, 'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_not_release_when_updating_version_fails(self, _shell_mock, _path_mock, _requests_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
-        
+    @patch("pathlib.Path", spec=Path)
+    @patch("requests", spec=requests)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(False, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_not_release_when_updating_version_fails(
+        self,
+        _shell_mock,
+        _path_mock,
+        _requests_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
+
         args = [
             'prepare',
             '--release-version',
@@ -174,11 +233,22 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch('pontos.changelog.changelog')
-    @patch("requests",spec=requests)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value= (True, 'MyProject.conf'))
-    def test_prepare_coventional_commits(self, changelog_mock, _shell_mock, _changelog_mock, _requests_mock, _version_mock, _version_main_mock):
-        
+    @patch("requests", spec=requests)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    def test_prepare_coventional_commits(
+        self,
+        changelog_mock,
+        _shell_mock,
+        _changelog_mock,
+        _requests_mock,
+        _version_mock,
+        _version_main_mock,
+    ):
+
         own_path = Path(__file__).absolute().parent
         release_file = own_path.parent.parent / '.release.md'
 

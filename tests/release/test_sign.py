@@ -39,17 +39,29 @@ class SignTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("requests",spec=requests)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_fail_sign_on_invalid_get_response(self, _shell_mock, _path_mock, _requests_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
+    @patch("pathlib.Path", spec=Path)
+    @patch("requests", spec=requests)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_fail_sign_on_invalid_get_response(
+        self,
+        _shell_mock,
+        _path_mock,
+        _requests_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 404
         fake_get.text = self.valid_gh_release_response
-        
+
         args = [
             'sign',
             '--project',
@@ -58,7 +70,10 @@ class SignTestCase(unittest.TestCase):
             '0.0.1',
         ]
 
-        with patch("requests.get", return_value = fake_get):
+        with patch(
+            "requests.get",
+            return_value=fake_get,
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -66,20 +81,32 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("requests",spec=requests)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_fail_sign_on_upload_fail(self, _shell_mock, _path_mock, _requests_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
+    @patch("pathlib.Path", spec=Path)
+    @patch("requests", spec=requests)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_fail_sign_on_upload_fail(
+        self,
+        _shell_mock,
+        _path_mock,
+        _requests_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 500
         fake_post.text = self.valid_gh_release_response
-        
+
         args = [
             'sign',
             '--project',
@@ -88,7 +115,9 @@ class SignTestCase(unittest.TestCase):
             '0.0.1',
         ]
 
-        with patch("requests.get", return_value = fake_get), patch("requests.post", return_value = fake_post):
+        with patch("requests.get", return_value=fake_get), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -96,13 +125,25 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path",spec=Path)
-    @patch("requests",spec=requests)
-    @patch("pontos.release.helper.version",spec=version)
-    @patch("pontos.release.helper.version.main",return_value=(True,'MyProject.conf'))
-    @patch("pontos.changelog",spec=changelog)
-    @patch("pontos.changelog.update",return_value = ('updated','changelog'))
-    def test_successfully_sign(self, _shell_mock, _path_mock, _requests_mock, _version_mock, _version_main_mock, _changelog_mock, _changelog_update_mock):
+    @patch("pathlib.Path", spec=Path)
+    @patch("requests", spec=requests)
+    @patch("pontos.release.helper.version", spec=version)
+    @patch(
+        "pontos.release.helper.version.main",
+        return_value=(True, 'MyProject.conf'),
+    )
+    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    def test_successfully_sign(
+        self,
+        _shell_mock,
+        _path_mock,
+        _requests_mock,
+        _version_mock,
+        _version_main_mock,
+        _changelog_mock,
+        _changelog_update_mock,
+    ):
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
@@ -118,7 +159,9 @@ class SignTestCase(unittest.TestCase):
             '0.0.1',
         ]
 
-        with patch("requests.get", return_value = fake_get), patch("requests.post", return_value = fake_post):
+        with patch("requests.get", return_value=fake_get), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,
