@@ -29,11 +29,17 @@ DEFAULT_CHUNK_SIZE = 4096
 
 class DownloadProgressIterable:
     def __init__(
-        self, content_iterator: Iterator, destination: Path, length: int
+        self,
+        *,
+        content_iterator: Iterator,
+        url: str,
+        destination: Path,
+        length: int,
     ):
-        self._length = None if length is None else int(length)
         self._content_iterator = content_iterator
+        self._url = url
         self._destination = destination
+        self._length = None if length is None else int(length)
 
     @property
     def length(self) -> Optional[int]:
@@ -49,6 +55,10 @@ class DownloadProgressIterable:
         Destination path of the to be downloaded file
         """
         return self._destination
+
+    @property
+    def url(self) -> str:
+        return self._url
 
     def _download(self) -> Iterator[Optional[float]]:
         dl = 0
@@ -113,9 +123,10 @@ def download(
         total_length = response.headers.get("content-length")
 
         yield DownloadProgressIterable(
-            response.iter_bytes(chunk_size=chunk_size),
-            destination,
-            total_length,
+            url=url,
+            content_iterator=response.iter_bytes(chunk_size=chunk_size),
+            destination=destination,
+            length=total_length,
         )
 
 
