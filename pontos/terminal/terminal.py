@@ -23,7 +23,17 @@ from shutil import get_terminal_size
 from typing import Any, Callable, Generator
 
 import colorful as cf
-from rich.console import Console
+from rich.console import Console, RenderableType
+from rich.padding import Padding
+from rich.progress import (
+    BarColumn,
+    Progress,
+    ProgressColumn,
+    SpinnerColumn,
+    Task,
+    TaskProgressColumn,
+    TextColumn,
+)
 
 # from pontos.terminal.log_config import process_logger
 from pontos.terminal.logger import TerminalLogger
@@ -301,6 +311,15 @@ def white(text: str) -> str:
     return f"[white]{text}[/white]"
 
 
+class PaddingColumn(ProgressColumn):
+    def __init__(self, indent: int, table_column=None):
+        self._padding = Padding.indent("", indent)
+        super().__init__(table_column=table_column)
+
+    def render(self, task: Task) -> RenderableType:
+        return self._padding
+
+
 class RichTerminal(Terminal):
     def __init__(self) -> None:
         super().__init__()
@@ -318,6 +337,22 @@ class RichTerminal(Terminal):
     ):
         self._console.print(
             self._indent_message(), color(status), *messages, **kwargs
+        )
+
+    def get_progress_default_columns(self):
+        return (
+            PaddingColumn(self._indent),
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+        )
+
+    def progress(self, **kwargs) -> Progress:
+        kwargs["console"] = self._console
+        return Progress(
+            *self.get_progress_default_columns(),
+            **kwargs,
         )
 
     def out(self, *messages: Any, **kwargs: Any) -> None:
