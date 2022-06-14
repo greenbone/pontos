@@ -22,8 +22,7 @@ from subprocess import CompletedProcess
 import unittest
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
-from defer import return_value
+from unittest.mock import patch, call
 
 import requests
 
@@ -241,7 +240,6 @@ class PrepareTestCase(unittest.TestCase):
     )
     def test_prepare_coventional_commits(
         self,
-        changelog_mock,
         _shell_mock,
         _changelog_mock,
         _requests_mock,

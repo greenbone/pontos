@@ -24,7 +24,6 @@ from pathlib import Path
 
 from pontos import changelog
 from pontos.terminal import error, warning, info, ok, out
-from pontos import version
 from pontos.helper import shell_cmd_runner
 
 from .helper import (
@@ -42,8 +41,6 @@ RELEASE_TEXT_FILE = ".release.md"
 
 def prepare(
     args: Namespace,
-    *,
-    **_kwargs,
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = (
@@ -76,7 +73,7 @@ def prepare(
         error(f'git tag {git_version} is already taken.')
         sys.exit(1)
 
-    executed, filename = update_version(release_version, version)
+    executed, filename = update_version(release_version)
     if not executed:
         return False
 
@@ -95,7 +92,7 @@ def prepare(
             config=args.cc_config,
         )
         changelog_builder = changelog.ChangelogBuilder(
-            shell_cmd_runner=shell_cmd_runner,
+            shell_cmd_runner=shell_cmd_runner, 
             args=cargs,
         )
 

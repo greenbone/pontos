@@ -27,7 +27,6 @@ import requests
 
 from pontos import changelog
 from pontos.terminal import error, warning, info
-from pontos import version
 from pontos.helper import shell_cmd_runner
 
 from .helper import (
@@ -132,7 +131,7 @@ def release(
 
         commit_msg += f'* Add empty changelog after {release_version}'
 
-    executed, filename = update_version(next_version, version, develop=True)
+    executed, filename = update_version(next_version, develop=True)
     if not executed:
         return False
 

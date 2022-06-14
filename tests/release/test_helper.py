@@ -38,8 +38,6 @@ from pontos.release.helper import (
     find_signing_key,
     update_version,
 )
-from pontos import version
-
 
 class TestHelperFunctions(unittest.TestCase):
     def setUp(self):
@@ -127,7 +125,7 @@ class TestHelperFunctions(unittest.TestCase):
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
         executed, filename = update_version(
-            to='21.4.4', _version=version, develop=True
+            to='21.4.4', develop=True
         )
         self.assertFalse(executed)
         self.assertEqual(filename, '')
@@ -154,7 +152,7 @@ class TestHelperFunctions(unittest.TestCase):
             encoding='utf-8',
         )
         executed, filename = update_version(
-            to='21.4.4', _version=version, develop=False
+            to='21.4.4', develop=False
         )
         toml_text = toml.read_text(encoding='utf-8')
         self.assertEqual(filename, 'pyproject.toml')

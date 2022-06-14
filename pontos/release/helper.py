@@ -336,9 +336,7 @@ def find_signing_key(shell_cmd_runner: Callable) -> str:
     return proc.stdout.strip()
 
 
-def update_version(
-    to: str, *, develop: bool = False
-) -> Tuple[bool, str]:
+def update_version(to: str, *, develop: bool = False) -> Tuple[bool, str]:
     """Use pontos-version to update the version.
 
     Arguments:
