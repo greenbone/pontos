@@ -15,30 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
 import contextlib
 import io
-
+import unittest
 from pathlib import Path
-from pontos.version.version import VersionCommand
-from pontos.version.helper import VersionError
 
-# pylint: disable=W0212
+from pontos.version.helper import VersionError
+from pontos.version.version import VersionCommand
 
 
 class VersionCommandTestCase(unittest.TestCase):
     def test_missing_cmd(self):
-        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
             VersionCommand().run()
             self.assertEqual(
                 buf.getvalue(),
-                'usage: version [-h] [--quiet] {verify,show,update} ...\n',
+                "usage: version [-h] [--quiet] {verify,show,update} ...\n",
             )
 
     def test_missing_file(self):
         with self.assertRaises(
             VersionError, msg="Could not find whatever file."
         ):
-            VersionCommand(project_file_path=Path('whatever')).run(
-                args=['show']
+            VersionCommand(project_file_path=Path("whatever")).run(
+                args=["show"]
             )

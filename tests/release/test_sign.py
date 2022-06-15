@@ -19,20 +19,21 @@
 
 import os
 import unittest
-
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import requests
 
+from pontos import changelog, release
 from pontos.release.helper import version
-from pontos import release, changelog
 
 
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+        os.environ["GITHUB_TOKEN"] = "foo"
+        os.environ["GITHUB_USER"] = "bar"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'
@@ -63,14 +64,14 @@ class SignTestCase(unittest.TestCase):
         fake_get.text = self.valid_gh_release_response
 
         args = [
-            'sign',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
         ]
 
-        with patch(
+        with redirect_stdout(StringIO()), patch(
             "requests.get",
             return_value=fake_get,
         ):
@@ -108,16 +109,15 @@ class SignTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
 
         args = [
-            'sign',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
         ]
-
-        with patch("requests.get", return_value=fake_get), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()),
+              patch("requests.get", return_value=fake_get), 
+              patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,
@@ -152,16 +152,15 @@ class SignTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
 
         args = [
-            'sign',
-            '--project',
-            'bar',
-            '--release-version',
-            '0.0.1',
+            "sign",
+            "--project",
+            "bar",
+            "--release-version",
+            "0.0.1",
         ]
-
-        with patch("requests.get", return_value=fake_get), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()),
+              patch("requests.get", return_value=fake_get),
+              patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,

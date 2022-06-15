@@ -18,31 +18,51 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import Namespace
 import json
 
 import requests
 
-from pontos.terminal import error, info, out
-from pontos.helper import shell_cmd_runner
+from pontos.helper import DownloadProgressIterable, shell_cmd_runner
+from pontos.terminal import Terminal
+from pontos.terminal.terminal import Signs
 
 from .helper import (
     download,
+    download_assets,
     get_current_version,
     get_project_name,
     upload_assets,
-    download_assets,
 )
 
 
+def display_download_progress(
+    terminal: Terminal, progress: DownloadProgressIterable
+) -> None:
+    spinner = ["-", "\\", "|", "/"]
+    if progress.length:
+        for percent in progress:
+            done = int(50 * percent)
+            terminal.out(
+                f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
+            )
+    else:
+        i = 0
+        for _ in progress:
+            i = i + 1
+            if i == 4:
+                i = 0
+            terminal.out(f"\r[{spinner[i]}]", end="", flush=True)
+    terminal.out(f"\r[{Signs.OK}]{' ' * 50}", end="", flush=True)
+
+
 def sign(
+    terminal: Terminal,
     args: Namespace,
     *,
     username: str,
     token: str,
     **_kwargs,
 ) -> bool:
-
     project: str = (
         args.project
         if args.project is not None
@@ -53,13 +73,13 @@ def sign(
     release_version: str = (
         args.release_version
         if args.release_version is not None
-        else get_current_version()
+        else get_current_version(terminal)
     )
     signing_key: str = args.signing_key
 
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {"Accept": "application/vnd.github.v3+json"}
 
-    git_version: str = f'{git_tag_prefix}{release_version}'
+    git_version: str = f"{git_tag_prefix}{release_version}"
 
     base_url = (
         f"https://api.github.com/repos/{space}/{project}"
@@ -71,11 +91,11 @@ def sign(
         headers=headers,
     )
     if response.status_code != 200:
-        error(
+        terminal.error(
             f"Wrong response status code {response.status_code} for request "
             f"{base_url}"
         )
-        out(json.dumps(response.text, indent=4, sort_keys=True))
+        terminal.print(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     zipball_url = (
@@ -83,29 +103,36 @@ def sign(
         f"tags/{git_version}.zip"
     )
     github_json = json.loads(response.text)
-    zip_path = download(
+    zip_progress = download(
+        terminal,
         zipball_url,
         f"{project}-{release_version}.zip",
     )
+    display_download_progress(terminal, zip_progress)
+
     tarball_url = (
         f"https://github.com/{space}/{project}/archive/refs/"
         f"tags/{git_version}.tar.gz"
     )
-    tar_path = download(
+    tar_progress = download(
+        terminal,
         tarball_url,
         f"{project}-{release_version}.tar.gz",
     )
+    display_download_progress(terminal, tar_progress)
 
-    file_paths = [zip_path, tar_path]
+    file_paths = [zip_progress.destination, tar_progress.destination]
 
-    asset_paths = download_assets(
-        github_json.get('assets_url'),
+    assets_progress = download_assets(
+        terminal,
+        github_json.get("assets_url"),
     )
-
-    file_paths.extend(asset_paths)
+    for progress in assets_progress:
+        file_paths.append(progress.destination)
+        display_download_progress(terminal, progress)
 
     for file_path in file_paths:
-        info(f"Signing {file_path}")
+        terminal.info(f"Signing {file_path}")
 
         if args.passphrase:
             shell_cmd_runner(
@@ -119,7 +146,11 @@ def sign(
                 f"{file_path}"
             )
 
+    if args.dry_run:
+        return True
+
     return upload_assets(
+        terminal,
         username,
         token,
         file_paths,

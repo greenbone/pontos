@@ -18,30 +18,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import FileType, Namespace, ArgumentParser
-import sys
-import subprocess
 import os
-
+import subprocess
+import sys
+from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import Tuple
 
 import requests
 
-from pontos import changelog
-from pontos.terminal import terminal, error, out
-from pontos.terminal.terminal import Terminal
-from pontos import version
+from pontos import changelog, version
+from pontos.terminal.terminal import ConsoleTerminal
 
 from .prepare import prepare
-from .sign import sign
 from .release import release
+from .sign import sign
 
 
 def parse_args(args) -> Tuple[str, str, Namespace]:
     parser = ArgumentParser(
-        description='Release handling utility.',
-        prog='pontos-release',
+        description="Release handling utility.",
+        prog="pontos-release",
     )
 
     parser.add_argument(
@@ -55,172 +52,175 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         "--log-file",
         dest="log_file",
         type=str,
-        help="Acivate logging using the given file path",
+        help="Activate logging using the given file path",
     )
 
     subparsers = parser.add_subparsers(
-        title='subcommands',
-        description='valid subcommands',
-        help='additional help',
-        dest='command',
+        title="subcommands",
+        description="valid subcommands",
+        help="additional help",
+        dest="command",
     )
 
-    prepare_parser = subparsers.add_parser('prepare')
+    prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.set_defaults(func=prepare)
     version_group = prepare_parser.add_mutually_exclusive_group(required=True)
     version_group.add_argument(
-        '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant',
+        "--release-version",
+        help="Will release changelog as version. Must be PEP 440 compliant",
     )
     version_group.add_argument(
-        '--calendar',
+        "--calendar",
         help=(
-            'Automatically calculate calendar release version, from current'
-            ' version and date.'
+            "Automatically calculate calendar release version, from current"
+            " version and date."
         ),
-        action='store_true',
+        action="store_true",
     )
     version_group.add_argument(
-        '--patch',
-        help=('Release next patch version: ' 'e.g. x.x.3 -> x.x.4'),
-        action='store_true',
+        "--patch",
+        help=("Release next patch version: " "e.g. x.x.3 -> x.x.4"),
+        action="store_true",
     )
 
     prepare_parser.add_argument(
-        '--git-signing-key',
-        help='The key to sign the commits and tag for a release',
+        "--git-signing-key",
+        help="The key to sign the commits and tag for a release",
     )
     prepare_parser.add_argument(
-        '--git-tag-prefix',
-        default='v',
-        help='Prefix for git tag versions. Default: %(default)s',
+        "--git-tag-prefix",
+        default="v",
+        help="Prefix for git tag versions. Default: %(default)s",
     )
     prepare_parser.add_argument(
-        '--changelog',
+        "--changelog",
         help=(
-            'The CHANGELOG file path, defaults '
-            'to CHANGELOG.md in the repository root directory'
+            "The CHANGELOG file path, defaults "
+            "to CHANGELOG.md in the repository root directory"
         ),
     )
     prepare_parser.add_argument(
-        '--space',
-        default='greenbone',
-        help='User/Team name in github',
+        "--space",
+        default="greenbone",
+        help="User/Team name in github",
     )
     prepare_parser.add_argument(
-        '--project',
-        help='The github project',
+        "--project",
+        help="The github project",
     )
     prepare_parser.add_argument(
-        '--conventional-commits',
-        '-CC',
+        "--conventional-commits",
+        "-CC",
         help=(
-            'Wether to use conventional commits and create '
-            'the changelog directly from the git log'
+            "Wether to use conventional commits and create "
+            "the changelog directly from the git log"
         ),
-        action='store_true',
+        action="store_true",
     )
     prepare_parser.add_argument(
-        '--conventional-commits-config',
-        dest='cc_config',
-        default=Path('changelog.toml'),
-        type=FileType('r'),
+        "--conventional-commits-config",
+        dest="cc_config",
+        default=Path("changelog.toml"),
+        type=FileType("r"),
         help="Conventional commits config file (toml), including conventions.",
     )
 
-    release_parser = subparsers.add_parser('release')
+    release_parser = subparsers.add_parser("release")
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
-        '--release-version',
+        "--release-version",
         help=(
-            'Will release changelog as version. Must be PEP 440 compliant. '
-            'default: lookup version in project definition.'
+            "Will release changelog as version. Must be PEP 440 compliant. "
+            "default: lookup version in project definition."
         ),
     )
 
     release_parser.add_argument(
-        '--next-version',
+        "--next-version",
         help=(
-            'Sets the next PEP 440 compliant version in project definition '
-            'after the release. default: set to next dev version'
+            "Sets the next PEP 440 compliant version in project definition "
+            "after the release. default: set to next dev version"
         ),
     )
 
     release_parser.add_argument(
-        '--git-remote-name',
-        help='The git remote name to push the commits and tag to',
+        "--git-remote-name",
+        help="The git remote name to push the commits and tag to",
     )
     release_parser.add_argument(
-        '--git-tag-prefix',
-        default='v',
-        help='Prefix for git tag versions. Default: %(default)s',
+        "--git-tag-prefix",
+        default="v",
+        help="Prefix for git tag versions. Default: %(default)s",
     )
     release_parser.add_argument(
-        '--git-signing-key',
-        help='The key to sign the commits and tag for a release',
+        "--git-signing-key",
+        help="The key to sign the commits and tag for a release",
     )
     release_parser.add_argument(
-        '--project',
-        help='The github project',
+        "--project",
+        help="The github project",
     )
     release_parser.add_argument(
-        '--space',
-        default='greenbone',
-        help='User/Team name in github',
+        "--space",
+        default="greenbone",
+        help="User/Team name in github",
     )
     release_parser.add_argument(
-        '--changelog',
+        "--changelog",
         help=(
-            'The CHANGELOG file path, defaults '
-            'to CHANGELOG.md in the repository root directory'
+            "The CHANGELOG file path, defaults "
+            "to CHANGELOG.md in the repository root directory"
         ),
     )
     release_parser.add_argument(
-        '--conventional-commits',
-        '-CC',
+        "--conventional-commits",
+        "-CC",
         help=(
-            'Wether to use conventional commits and create '
-            'the changelog directly from the git log'
+            "Wether to use conventional commits and create "
+            "the changelog directly from the git log"
         ),
-        action='store_true',
+        action="store_true",
     )
 
-    sign_parser = subparsers.add_parser('sign')
+    sign_parser = subparsers.add_parser("sign")
     sign_parser.set_defaults(func=sign)
     sign_parser.add_argument(
-        '--signing-key',
-        default='0ED1E580',
-        help='The key to sign zip, tarballs of a release. Default %(default)s.',
+        "--signing-key",
+        default="0ED1E580",
+        help="The key to sign zip, tarballs of a release. Default %(default)s.",
     )
     sign_parser.add_argument(
-        '--release-version',
-        help='Will release changelog as version. Must be PEP 440 compliant.',
+        "--release-version",
+        help="Will release changelog as version. Must be PEP 440 compliant.",
     )
     sign_parser.add_argument(
-        '--git-tag-prefix',
-        default='v',
-        help='Prefix for git tag versions. Default: %(default)s',
+        "--git-tag-prefix",
+        default="v",
+        help="Prefix for git tag versions. Default: %(default)s",
     )
     sign_parser.add_argument(
-        '--project',
-        help='The github project',
+        "--project",
+        help="The github project",
     )
     sign_parser.add_argument(
-        '--space',
-        default='greenbone',
-        help='user/team name in github',
+        "--space",
+        default="greenbone",
+        help="user/team name in github",
     )
 
     sign_parser.add_argument(
-        '--passphrase',
+        "--passphrase",
         help=(
-            'Use gpg in a headless mode e.g. for '
-            'the CI and use this passphrase for signing.'
+            "Use gpg in a headless mode e.g. for "
+            "the CI and use this passphrase for signing."
         ),
     )
+    sign_parser.add_argument(
+        "--dry-run", action="store_true", help="Do not upload signed files."
+    )
     parsed_args = parser.parse_args(args)
-    token = os.environ['GITHUB_TOKEN'] if not args else 'TOKEN'
-    user = os.environ['GITHUB_USER'] if not args else 'USER'
+    token = os.environ["GITHUB_TOKEN"] if not args else "TOKEN"
+    user = os.environ["GITHUB_USER"] if not args else "USER"
     return user, token, parsed_args
 
 
@@ -233,33 +233,33 @@ def main(
     args=None,
 ):
     username, token, parsed_args = parse_args(args)
-    term = terminal(
-        Terminal(
-            verbose=1 if not parsed_args.quiet else 0,
-            log_file=parsed_args.log_file,
-        )
+    term = ConsoleTerminal(
+        verbose=1 if not parsed_args.quiet else 0,
+        log_file=parsed_args.log_file,
     )
 
-    term.bold_info(f'pontos-release => {parsed_args.func.__name__}')
+    term.bold_info(f"pontos-release => {parsed_args.func.__name__}")
 
     with term.indent():
         try:
             if not parsed_args.func(
+                term,
                 parsed_args,
                 username=username,
                 token=token,
             ):
                 return sys.exit(1) if leave else False
         except subprocess.CalledProcessError as e:
-            if not '--passphrase' in e.cmd:
-                error(f'Could not run command "{e.cmd}".')
+            if not "--passphrase" in e.cmd:
+                term.error(f'Could not run command "{e.cmd}".')
             else:
-                error('Headless signing failed.')
-            out(f'Error was: {e.stderr}')
+                term.error("Headless signing failed.")
+
+            term.print(f"Error was: {e.stderr}")
             sys.exit(1)
 
     return sys.exit(0) if leave else True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -17,17 +17,18 @@
 
 # pylint: disable=no-member
 
-from argparse import Namespace
 import io
-from pathlib import Path
 import unittest
+from argparse import Namespace
+from contextlib import redirect_stderr
+from pathlib import Path
 from unittest.mock import Mock
-from pontos.github.api import FileStatus
 
+from pontos.github.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
-    file_status,
     create_pull_request,
+    file_status,
     update_pull_request,
 )
 
@@ -48,11 +49,11 @@ class TestArgparsing(unittest.TestCase):
 
         parsed_args = parse_args(argv)
 
-        template = Path().cwd() / 'pontos/github/pr_template.md'
+        template = Path().cwd() / "pontos/github/pr_template.md"
 
         self.assertEqual(parsed_args.command, "pr")
         self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
-        self.assertEqual(parsed_args.body, template.read_text(encoding='utf-8'))
+        self.assertEqual(parsed_args.body, template.read_text(encoding="utf-8"))
         self.assertEqual(parsed_args.pr_func, create_pull_request)
         self.assertEqual(parsed_args.repo, "foo/bar")
         self.assertEqual(parsed_args.target, "main")
@@ -61,7 +62,7 @@ class TestArgparsing(unittest.TestCase):
     def test_create_pr_parse_args_fail(self):
         argv = ["pr", "create", "foo/bar"]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
             parse_args(argv)
 
     def test_update_pr_parse_args(self):
@@ -97,7 +98,7 @@ class TestArgparsing(unittest.TestCase):
     def test_update_pr_parse_args_fail(self):
         argv = ["pr", "update", "foo/bar"]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
             parse_args(argv)
 
     def test_fs_parse_args(self):
@@ -110,16 +111,16 @@ class TestArgparsing(unittest.TestCase):
         ]
 
         parsed_args = parse_args(argv)
-        output = io.open(Path("some.file"), mode='w', encoding='utf-8')
+        output = io.open(Path("some.file"), mode="w", encoding="utf-8")
 
         expected_args = Namespace(
-            command='FS',
+            command="FS",
             func=file_status,
-            repo='foo/bar',
+            repo="foo/bar",
             pull_request=8,
             output=output,
             status=[FileStatus.ADDED, FileStatus.MODIFIED],
-            token='GITHUB_TOKEN',
+            token="GITHUB_TOKEN",
         )
 
         self.assertEqual(type(parsed_args.output), type(expected_args.output))

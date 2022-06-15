@@ -19,20 +19,21 @@
 
 import os
 import unittest
-
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
 
 import requests
 
+from pontos import changelog, release
 from pontos.release.helper import version
-from pontos import release, changelog
 
 
 class ReleaseTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+        os.environ["GITHUB_TOKEN"] = "foo"
+        os.environ["GITHUB_USER"] = "bar"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'
@@ -63,14 +64,14 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
 
         args = [
-            'release',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2dev',
+            "release",
+            "--release-version",
+            "0.0.1",
+            "--next-version",
+            "0.0.2dev",
         ]
 
-        with patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,
@@ -100,13 +101,12 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
-
         args = [
-            'release',
-            '-CC',
+            "release",
+            "-CC",
         ]
 
-        with patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,
@@ -136,14 +136,13 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 401
         fake_post.text = self.valid_gh_release_response
-
         args = [
-            'release',
-            '--release-version',
-            '0.0.1',
+            "release",
+            "--release-version",
+            "0.0.1",
         ]
 
-        with patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,
@@ -175,20 +174,20 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
 
         args = [
-            'release',
-            '--project',
-            'foo',
-            '--release-version',
-            '0.0.1',
-            '--next-version',
-            '0.0.2.dev1',
-            '--git-remote-name',
-            'upstream',
-            '--git-signing-key',
-            '1234',
+            "release",
+            "--project",
+            "foo",
+            "--release-version",
+            "0.0.1",
+            "--next-version",
+            "0.0.2.dev1",
+            "--git-remote-name",
+            "upstream",
+            "--git-signing-key",
+            "1234",
         ]
 
-        with patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
             released = release.main(
                 leave=False,
                 args=args,
@@ -197,10 +196,10 @@ class ReleaseTestCase(unittest.TestCase):
 
         shell_mock.assert_has_calls(
             [
-                call('git push --follow-tags upstream'),
-                call('git add MyProject.conf'),
+                call("git push --follow-tags upstream"),
+                call("git add MyProject.conf"),
                 call("git add *__version__.py || echo 'ignoring __version__'"),
-                call('git add CHANGELOG.md'),
+                call("git add CHANGELOG.md"),
                 call(
                     "git commit -S1234 --no-verify -m 'Automatic adjustments "
                     "after release\n\n"

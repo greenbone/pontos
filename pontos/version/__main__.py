@@ -19,5 +19,5 @@
 
 from pontos import version
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     version.main()

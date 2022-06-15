@@ -19,5 +19,5 @@
 
 from pontos import updateheader
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     updateheader.main()

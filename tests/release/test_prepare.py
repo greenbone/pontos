@@ -18,32 +18,33 @@
 # pylint: disable=C0413,W0108
 
 import os
-from subprocess import CompletedProcess
 import unittest
-
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
-from unittest.mock import patch, call
+from subprocess import CompletedProcess
+from unittest.mock import call, patch
 
 import requests
 
+from pontos import changelog, release
 from pontos.release.helper import version
-from pontos import release, changelog
 
 
 class PrepareTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['GITHUB_TOKEN'] = 'foo'
-        os.environ['GITHUB_USER'] = 'bar'
+        os.environ["GITHUB_TOKEN"] = "foo"
+        os.environ["GITHUB_USER"] = "bar"
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch(
         "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
+        return_value=(True, "MyProject.conf"),
     )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    @patch("pontos.changelog.update", return_value=("updated", "changelog"))
     def test_prepare_successfully(
         self,
         _shell_mock,
@@ -54,14 +55,15 @@ class PrepareTestCase(unittest.TestCase):
         _changelog_update_mock,
     ):
         args = [
-            'prepare',
-            '--release-version',
-            '0.0.1',
+            "prepare",
+            "--release-version",
+            "0.0.1",
         ]
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -69,10 +71,10 @@ class PrepareTestCase(unittest.TestCase):
     @patch("pontos.release.helper.version", spec=version)
     @patch(
         "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
+        return_value=(True, "MyProject.conf"),
     )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    @patch("pontos.changelog.update", return_value=("updated", "changelog"))
     def test_prepare_calendar_successfully(
         self,
         _shell_mock,
@@ -84,13 +86,14 @@ class PrepareTestCase(unittest.TestCase):
     ):
 
         args = [
-            'prepare',
-            '--calendar',
+            "prepare",
+            "--calendar",
         ]
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -98,10 +101,10 @@ class PrepareTestCase(unittest.TestCase):
     @patch("pontos.release.helper.version", spec=version)
     @patch(
         "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
+        return_value=(True, "MyProject.conf"),
     )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    @patch("pontos.changelog.update", return_value=("updated", "changelog"))
     def test_use_git_signing_key_on_prepare(
         self,
         shell_mock,
@@ -113,17 +116,17 @@ class PrepareTestCase(unittest.TestCase):
     ):
 
         args = [
-            'prepare',
-            '--git-signing-key',
-            '0815',
-            '--release-version',
-            '0.0.1',
+            "prepare",
+            "--git-signing-key",
+            "0815",
+            "--release-version",
+            "0.0.1",
         ]
-
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
 
         self.assertTrue(released)
         shell_mock.assert_has_calls(
@@ -149,34 +152,34 @@ class PrepareTestCase(unittest.TestCase):
     ):
 
         shell_mock.return_value = CompletedProcess(
-            args="foo", returncode=1, stdout=b'v0.0.1'
+            args="foo", returncode=1, stdout=b"v0.0.1"
         )
 
         args = [
-            'prepare',
-            '--release-version',
-            '0.0.1',
-            '--project',
-            'bla',
-            '--git-signing-key',
-            '1337',
+            "prepare",
+            "--release-version",
+            "0.0.1",
+            "--project",
+            "bla",
+            "--git-signing-key",
+            "1337",
         ]
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), redirect_stdout(StringIO()):
             release.main(
                 leave=False,
                 args=args,
             )
 
-            shell_mock.assert_called_with('git tag -l')
-            shell_mock.assert_called_with('git tag v0.0.1 is already taken')
+            shell_mock.assert_called_with("git tag -l")
+            shell_mock.assert_called_with("git tag v0.0.1 is already taken")
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.helper.version.main", return_value=(False, ''))
+    @patch("pontos.release.helper.version.main", return_value=(False, ""))
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    @patch("pontos.changelog.update", return_value=("updated", "changelog"))
     def test_not_release_when_no_project_found(
         self,
         _shell_mock,
@@ -186,16 +189,16 @@ class PrepareTestCase(unittest.TestCase):
         _changelog_mock,
         _changelog_update_mock,
     ):
-
         args = [
-            'prepare',
-            '--release-version',
-            '0.0.1',
+            "prepare",
+            "--release-version",
+            "0.0.1",
         ]
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
@@ -204,10 +207,10 @@ class PrepareTestCase(unittest.TestCase):
     @patch("pontos.release.helper.version", spec=version)
     @patch(
         "pontos.release.helper.version.main",
-        return_value=(False, 'MyProject.conf'),
+        return_value=(False, "MyProject.conf"),
     )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
+    @patch("pontos.changelog.update", return_value=("updated", "changelog"))
     def test_not_release_when_updating_version_fails(
         self,
         _shell_mock,
@@ -218,25 +221,25 @@ class PrepareTestCase(unittest.TestCase):
         _changelog_mock,
         _changelog_update_mock,
     ):
-
         args = [
-            'prepare',
-            '--release-version',
-            '0.0.1',
+            "prepare",
+            "--release-version",
+            "0.0.1",
         ]
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            ))
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch('pontos.changelog.changelog')
+    @patch("pontos.changelog.changelog")
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch(
         "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
+        return_value=(True, "MyProject.conf"),
     )
     def test_prepare_coventional_commits(
         self,
@@ -246,20 +249,20 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _version_main_mock,
     ):
-
         own_path = Path(__file__).absolute().parent
-        release_file = own_path.parent.parent / '.release.md'
+        release_file = own_path.parent.parent / ".release.md"
 
         args = [
-            'prepare',
-            '--release-version',
-            '1.2.3',
-            '-CC',
+            "prepare",
+            "--release-version",
+            "1.2.3",
+            "-CC",
         ]
-        released = release.main(
-            leave=False,
-            args=args,
-        )
+        with redirect_stdout(StringIO()):
+            released = release.main(
+                leave=False,
+                args=args,
+            )
         self.assertTrue(released)
 
         expected_release_content = """## [21.8.1] - 2021-08-23
@@ -275,7 +278,7 @@ class PrepareTestCase(unittest.TestCase):
 [21.8.1]: https://github.com/y0urself/test_workflows/compare/21.8.0...21.8.1"""
 
         self.assertEqual(
-            release_file.read_text(encoding='utf-8'), expected_release_content
+            release_file.read_text(encoding="utf-8"), expected_release_content
         )
 
         release_file.unlink()

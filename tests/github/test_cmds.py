@@ -17,52 +17,48 @@
 
 # pylint: disable=no-member
 
-from argparse import Namespace
 import io
-from pathlib import Path
 import unittest
-from unittest.mock import Mock, patch
-from pontos.github.api import FileStatus
+from argparse import Namespace
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
+from pontos.github.api import FileStatus
 from pontos.github.cmds import file_status
-from pontos.terminal import _set_terminal
 
 here = Path(__file__).parent
 
 
 class TestArgparsing(unittest.TestCase):
-    def setUp(self):
-        self.term = Mock()
-        _set_terminal(self.term)
-
     @patch("pontos.github.cmds.GitHubRESTApi")
     def test_file_status(self, api_mock):
+        terminal = MagicMock()
         api_mock.return_value.pull_request_exists.return_value = True
         api_mock.return_value.pull_request_files.return_value = {
-            FileStatus.ADDED: [Path('tests/github/foo/bar')],
+            FileStatus.ADDED: [Path("tests/github/foo/bar")],
             FileStatus.MODIFIED: [
                 Path("tests/github/bar/baz"),
                 Path("tests/github/baz/boo"),
             ],
         }
         test_file = Path("some.file")
-        output = io.open(test_file, mode='w', encoding='utf-8')
+        output = io.open(test_file, mode="w", encoding="utf-8")
 
         args = Namespace(
-            command='FS',
+            command="FS",
             func=file_status,
-            repo='foo/bar',
+            repo="foo/bar",
             pull_request=8,
             output=output,
             status=[FileStatus.ADDED, FileStatus.MODIFIED],
-            token='GITHUB_TOKEN',
+            token="GITHUB_TOKEN",
         )
 
-        file_status(args)
+        file_status(terminal, args)
 
         output.close()
 
-        content = test_file.read_text(encoding='utf-8')
+        content = test_file.read_text(encoding="utf-8")
         self.assertEqual(
             content, f"{here}/foo/bar\n{here}/bar/baz\n{here}/baz/boo\n"
         )

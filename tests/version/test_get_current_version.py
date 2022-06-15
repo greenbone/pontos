@@ -21,7 +21,7 @@ from pontos.version.version import VersionCommand
 
 
 class FooVersionCommand(VersionCommand):
-    name = 'foo'
+    name = "foo"
 
     def get_current_version(self) -> str:
         return "2.3.4"
@@ -30,4 +30,4 @@ class FooVersionCommand(VersionCommand):
 class GetCurrentVersionTestCase(unittest.TestCase):
     def test_get_current_version(self):
         cmd = FooVersionCommand()
-        self.assertEqual(cmd.get_current_version(), '2.3.4')
+        self.assertEqual(cmd.get_current_version(), "2.3.4")

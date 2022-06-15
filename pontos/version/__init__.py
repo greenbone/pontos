@@ -17,18 +17,18 @@
 
 import sys
 from pathlib import Path
-from .__version__ import __version__
 
-from .python import PythonVersionCommand
+from .__version__ import __version__
 from .cmake import CMakeVersionCommand
 from .go import GoVersionCommand
+from .python import PythonVersionCommand
 
 
 def main(leave=True, args=None):
     available_cmds = [
-        ('CMakeLists.txt', CMakeVersionCommand),
-        ('pyproject.toml', PythonVersionCommand),
-        ('go.mod', GoVersionCommand),
+        ("CMakeLists.txt", CMakeVersionCommand),
+        ("pyproject.toml", PythonVersionCommand),
+        ("go.mod", GoVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name

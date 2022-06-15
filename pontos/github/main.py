@@ -16,28 +16,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+
 from pontos.github.argparser import parse_args
-from pontos.terminal import Terminal, terminal
+from pontos.terminal.terminal import ConsoleTerminal
 
 
 def main(args=None):
     parsed_args = parse_args(args)
 
-    term = terminal(
-        Terminal(
-            verbose=1 if not parsed_args.quiet else 0,
-            log_file=parsed_args.log_file,
-        )
+    term = ConsoleTerminal(
+        verbose=1 if not parsed_args.quiet else 0,
+        log_file=parsed_args.log_file,
     )
 
-    term.bold_info(f'pontos-github => {parsed_args.func.__name__}')
+    term.bold_info(f"pontos-github => {parsed_args.func.__name__}")
 
     with term.indent():
         if not parsed_args.token:
             term.error("A Github User Token is required.")
             sys.exit(1)
 
-        parsed_args.func(args=parsed_args)
+        parsed_args.func(terminal=term, args=parsed_args)
 
 
 if __name__ == "__main__":

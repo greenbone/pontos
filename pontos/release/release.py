@@ -18,16 +18,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from argparse import Namespace
 import json
-
+from argparse import Namespace
 from pathlib import Path
 
 import requests
 
 from pontos import changelog
-from pontos.terminal import error, warning, info
 from pontos.helper import shell_cmd_runner
+from pontos.terminal import Terminal
 
 from .helper import (
     build_release_dict,
@@ -43,6 +42,7 @@ RELEASE_TEXT_FILE = ".release.md"
 
 
 def release(
+    terminal: Terminal,
     args: Namespace,
     *,
     username: str,
@@ -58,16 +58,16 @@ def release(
     git_signing_key: str = (
         args.git_signing_key
         if args.git_signing_key is not None
-        else find_signing_key(shell_cmd_runner)
+        else find_signing_key(terminal, shell_cmd_runner)
     )
     git_remote_name: str = (
-        args.git_remote_name if args.git_remote_name is not None else ''
+        args.git_remote_name if args.git_remote_name is not None else ""
     )
     git_tag_prefix: str = args.git_tag_prefix
     release_version: str = (
         args.release_version
         if args.release_version is not None
-        else get_current_version()
+        else get_current_version(terminal)
     )
     next_version: str = (
         args.next_version
@@ -75,17 +75,18 @@ def release(
         else get_next_dev_version(release_version)
     )
 
-    info("Pushing changes")
+    terminal.info("Pushing changes")
 
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
-    info(f"Creating release for v{release_version}")
-    changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding='utf-8')
+    terminal.info(f"Creating release for v{release_version}")
+    changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
 
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {"Accept": "application/vnd.github.v3+json"}
 
     base_url = f"https://api.github.com/repos/{space}/{project}/releases"
-    git_version = f'{git_tag_prefix}{release_version}'
+
+    git_version = f"{git_tag_prefix}{release_version}"
     response = requests.post(
         base_url,
         headers=headers,
@@ -97,41 +98,44 @@ def release(
         ),
     )
     if response.status_code != 201:
-        error(f"Wrong response status code: {response.status_code}")
-        error(json.dumps(response.text, indent=4, sort_keys=True))
+        terminal.error(f"Wrong response status code: {response.status_code}")
+        terminal.error(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
     Path(RELEASE_TEXT_FILE).unlink()
 
     commit_msg = (
-        f'Automatic adjustments after release\n\n'
-        f'* Update to version {next_version}\n'
+        f"Automatic adjustments after release\n\n"
+        f"* Update to version {next_version}\n"
     )
 
     # set to new version add skeleton
     changelog_bool = False
     if not args.conventional_commits:
-        change_log_path = Path.cwd() / 'CHANGELOG.md'
+        change_log_path = Path.cwd() / "CHANGELOG.md"
         if args.changelog:
             tmp_path = Path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:
-                warning(f"{tmp_path} is not a file.")
+                terminal.warning(f"{tmp_path} is not a file.")
 
         updated = changelog.add_skeleton(
-            markdown=change_log_path.read_text(encoding='utf-8'),
+            markdown=change_log_path.read_text(encoding="utf-8"),
+
             new_version=release_version,
             project_name=project,
             git_tag_prefix=git_tag_prefix,
             git_space=space,
         )
-        change_log_path.write_text(updated, encoding='utf-8')
+        change_log_path.write_text(updated, encoding="utf-8")
         changelog_bool = True
 
-        commit_msg += f'* Add empty changelog after {release_version}'
+        commit_msg += f"* Add empty changelog after {release_version}"
 
-    executed, filename = update_version(next_version, develop=True)
+    executed, filename = update_version(
+        terminal, next_version, develop=True
+    )
     if not executed:
         return False
 

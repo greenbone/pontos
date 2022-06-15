@@ -22,6 +22,8 @@ from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 import requests
 
+from pontos.helper import DownloadProgressIterable
+
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
 
 DEFAULT_TIMEOUT = 1000
@@ -33,52 +35,6 @@ class FileStatus(Enum):
     DELETED = "deleted"
     MODIFIED = "modified"
     RENAMED = "renamed"
-
-
-class DownloadProgressIterable:
-    def __init__(
-        self, content_iterator: Iterator, destination: Path, length: int
-    ):
-        self._length = None if length is None else int(length)
-        self._content_iterator = content_iterator
-        self._destination = destination
-
-    @property
-    def length(self) -> Optional[int]:
-        """
-        Size in bytes of the to be downloaded file or None if the size is not
-        available
-        """
-        return self._length
-
-    @property
-    def destination(self) -> Path:
-        """
-        Destination path of the to be downloaded file
-        """
-        return self._destination
-
-    def _download(self) -> Iterator[Optional[float]]:
-        dl = 0
-        with self._destination.open("wb") as f:
-            for content in self._content_iterator:
-                dl += len(content)
-                f.write(content)
-                yield dl / self._length if self._length else None
-
-    def __iter__(self) -> Iterator[Optional[float]]:
-        return self._download()
-
-    def run(self):
-        """
-        Just run the download without caring about the progress
-        """
-        try:
-            it = iter(self)
-            while True:
-                next(it)
-        except StopIteration:
-            pass
 
 
 def download(
@@ -105,12 +61,12 @@ def download(
         percent for each downloaded chunk or None for each chunk if the progress
         is unknown.
     """
-    destination = Path(url.split('/')[-1]) if not destination else destination
+    destination = Path(url.split("/")[-1]) if not destination else destination
 
     response = requests.get(url, stream=True, timeout=timeout)
     response.raise_for_status()
 
-    total_length = response.headers.get('content-length')
+    total_length = response.headers.get("content-length")
 
     return DownloadProgressIterable(
         response.iter_content(chunk_size=chunk_size),
@@ -122,7 +78,7 @@ def download(
 def _get_next_url(response) -> Optional[str]:
     if response and response.links:
         try:
-            return response.links['next']['url']
+            return response.links["next"]["url"]
         except KeyError:
             pass
 
@@ -260,7 +216,7 @@ class GitHubRESTApi:
             "head": head_branch,
             "base": base_branch,
             "title": title,
-            "body": body.replace('\\n', '\n'),
+            "body": body.replace("\\n", "\n"),
         }
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
@@ -295,7 +251,7 @@ class GitHubRESTApi:
         if title:
             data["title"] = title
         if body:
-            data["body"] = body.replace('\\n', '\n')
+            data["body"] = body.replace("\\n", "\n")
 
         response = self._request(api, data=data, request=requests.post)
         response.raise_for_status()
@@ -356,12 +312,12 @@ class GitHubRESTApi:
             prerelease: If the release is a pre release. False by default.
         """
         data = {
-            'tag_name': tag,
-            'target_commitish': target_commitish,
-            'name': name,
-            'body': body,
-            'draft': draft,
-            'prerelease': prerelease,
+            "tag_name": tag,
+            "target_commitish": target_commitish,
+            "name": name,
+            "body": body,
+            "draft": draft,
+            "prerelease": prerelease,
         }
         api = f"/repos/{repo}/releases"
         response = self._request(api, data=data, request=requests.post)
@@ -456,13 +412,13 @@ class GitHubRESTApi:
         file_dict = defaultdict(list)
         for f in data:
             try:
-                status = FileStatus(f['status'])
+                status = FileStatus(f["status"])
             except ValueError:
                 # unknown status
                 continue
 
             if status in status_list:
-                file_dict[status].append(Path(f['filename']))
+                file_dict[status].append(Path(f["filename"]))
 
         return file_dict
 
