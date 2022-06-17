@@ -21,6 +21,7 @@ import sys
 from argparse import Namespace
 from pathlib import Path
 
+from pontos import changelog
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
@@ -72,10 +73,7 @@ def prepare(
         terminal.error(f"git tag {git_version} is already taken.")
         sys.exit(1)
 
-    executed, filename = update_version(
-        terminal, release_version
-    )
-    
+    executed, filename = update_version(terminal, release_version)
     if not executed:
         return False
 
@@ -94,7 +92,7 @@ def prepare(
             config=args.cc_config,
         )
         changelog_builder = changelog.ChangelogBuilder(
-            shell_cmd_runner=shell_cmd_runner, 
+            terminal=shell_cmd_runner,
             args=cargs,
         )
 

@@ -19,6 +19,7 @@
 #
 
 import json
+from argparse import Namespace
 
 import requests
 

@@ -190,7 +190,6 @@ def download_assets(
     terminal: Terminal,
     assets_url: str,
 ) -> Iterator[DownloadProgressIterable]:
-
     """Download all .tar.gz and zip assets of a github release"""
 
     if not assets_url:
@@ -314,6 +313,7 @@ def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
     # return '' if no key is available ...
     return proc.stdout.strip()
 
+
 def update_version(
     terminal: Terminal, to: str, *, develop: bool = False
 ) -> Tuple[bool, str]:
@@ -333,7 +333,6 @@ def update_version(
     if develop:
         args.append("--develop")
     executed, filename = version.main(leave=False, args=args)
-
 
     if not executed:
         if filename == "":
@@ -359,6 +358,7 @@ def upload_assets(
         file_paths: List of paths to asset files
         github_json: The github dictionary, containing relevant information
             for the upload
+
     Returns:
         True on success, false else
     """
@@ -366,8 +366,6 @@ def upload_assets(
 
     asset_url = github_json["upload_url"].replace("{?name,label}", "")
     paths = [Path(f"{str(p)}.asc") for p in file_paths]
-
-
 
     headers = {
         "Accept": "application/vnd.github.v3+json",

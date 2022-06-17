@@ -75,7 +75,6 @@ class PrepareTestCase(unittest.TestCase):
     ):
         _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
-
         args = [
             "prepare",
             "--calendar",

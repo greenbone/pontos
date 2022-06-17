@@ -26,7 +26,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos import version
 from pontos.release.helper import (
     calculate_calendar_version,
     find_signing_key,
@@ -35,6 +34,7 @@ from pontos.release.helper import (
     get_project_name,
     update_version,
 )
+
 
 class TestHelperFunctions(unittest.TestCase):
     def setUp(self):
@@ -126,9 +126,7 @@ class TestHelperFunctions(unittest.TestCase):
         terminal = MagicMock()
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
-        executed, filename = update_version(
-            terminal, to="21.4.4", develop=True
-        )
+        executed, filename = update_version(terminal, to="21.4.4", develop=True)
         self.assertFalse(executed)
         self.assertEqual(filename, "")
 

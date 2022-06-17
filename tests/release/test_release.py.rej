@@ -1,0 +1,27 @@
+diff a/tests/release/test_release.py b/tests/release/test_release.py	(rejected hunks)
+@@ -70 +70,3 @@ class ReleaseTestCase(unittest.TestCase):
+-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
++        with redirect_stdout(StringIO()), patch(
++            "requests.post", return_value=fake_post
++        ):
+@@ -101 +103,3 @@ class ReleaseTestCase(unittest.TestCase):
+-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
++        with redirect_stdout(StringIO()), patch(
++            "requests.post", return_value=fake_post
++        ):
+@@ -121 +125 @@ class ReleaseTestCase(unittest.TestCase):
+-        
++
+@@ -124 +128 @@ class ReleaseTestCase(unittest.TestCase):
+-        
++
+@@ -134 +138,3 @@ class ReleaseTestCase(unittest.TestCase):
+-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
++        with redirect_stdout(StringIO()), patch(
++            "requests.post", return_value=fake_post
++        ):
+@@ -175 +181,3 @@ class ReleaseTestCase(unittest.TestCase):
+-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
++        with redirect_stdout(StringIO()), patch(
++            "requests.post", return_value=fake_post
++        ):

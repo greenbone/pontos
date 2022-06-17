@@ -85,7 +85,6 @@ def release(
     headers = {"Accept": "application/vnd.github.v3+json"}
 
     base_url = f"https://api.github.com/repos/{space}/{project}/releases"
-
     git_version = f"{git_tag_prefix}{release_version}"
     response = requests.post(
         base_url,
