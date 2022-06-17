@@ -122,7 +122,6 @@ def release(
 
         updated = changelog.add_skeleton(
             markdown=change_log_path.read_text(encoding="utf-8"),
-
             new_version=release_version,
             project_name=project,
             git_tag_prefix=git_tag_prefix,
@@ -133,9 +132,7 @@ def release(
 
         commit_msg += f"* Add empty changelog after {release_version}"
 
-    executed, filename = update_version(
-        terminal, next_version, develop=True
-    )
+    executed, filename = update_version(terminal, next_version, develop=True)
     if not executed:
         return False
 

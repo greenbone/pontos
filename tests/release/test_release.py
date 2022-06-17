@@ -43,22 +43,18 @@ class ReleaseTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_release_successfully(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
@@ -71,7 +67,9 @@ class ReleaseTestCase(unittest.TestCase):
             "0.0.2dev",
         ]
 
-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -82,22 +80,18 @@ class ReleaseTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_release_conventional_commits_successfully(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
@@ -106,7 +100,9 @@ class ReleaseTestCase(unittest.TestCase):
             "-CC",
         ]
 
-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -117,22 +113,19 @@ class ReleaseTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_not_release_successfully_when_github_create_release_fails(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 401
         fake_post.text = self.valid_gh_release_response
@@ -142,7 +135,9 @@ class ReleaseTestCase(unittest.TestCase):
             "0.0.1",
         ]
 
-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -153,22 +148,18 @@ class ReleaseTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_release_to_specific_git_remote(
         self,
         shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
@@ -187,7 +178,9 @@ class ReleaseTestCase(unittest.TestCase):
             "1234",
         ]
 
-        with redirect_stdout(StringIO()), patch("requests.post", return_value=fake_post):
+        with redirect_stdout(StringIO()), patch(
+            "requests.post", return_value=fake_post
+        ):
             released = release.main(
                 leave=False,
                 args=args,

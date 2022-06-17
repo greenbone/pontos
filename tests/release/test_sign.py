@@ -43,22 +43,18 @@ class SignTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_fail_sign_on_invalid_get_response(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 404
         fake_get.text = self.valid_gh_release_response
@@ -85,22 +81,18 @@ class SignTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_fail_sign_on_upload_fail(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
@@ -115,9 +107,11 @@ class SignTestCase(unittest.TestCase):
             "--release-version",
             "0.0.1",
         ]
-        with redirect_stdout(StringIO()),
-              patch("requests.get", return_value=fake_get), 
-              patch("requests.post", return_value=fake_post):
+        with (
+            redirect_stdout(StringIO()),
+            patch("requests.get", return_value=fake_get),
+            patch("requests.post", return_value=fake_post),
+        ):
             released = release.main(
                 leave=False,
                 args=args,
@@ -128,22 +122,18 @@ class SignTestCase(unittest.TestCase):
     @patch("pathlib.Path", spec=Path)
     @patch("requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch(
-        "pontos.release.helper.version.main",
-        return_value=(True, 'MyProject.conf'),
-    )
     @patch("pontos.changelog", spec=changelog)
-    @patch("pontos.changelog.update", return_value=('updated', 'changelog'))
     def test_successfully_sign(
         self,
         _shell_mock,
         _path_mock,
         _requests_mock,
         _version_mock,
-        _version_main_mock,
         _changelog_mock,
-        _changelog_update_mock,
     ):
+        _version_mock.main.return_value = (True, "MyProject.conf")
+        _changelog_mock.update.return_value = ("updated", "changelog")
+
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
@@ -158,9 +148,11 @@ class SignTestCase(unittest.TestCase):
             "--release-version",
             "0.0.1",
         ]
-        with redirect_stdout(StringIO()),
-              patch("requests.get", return_value=fake_get),
-              patch("requests.post", return_value=fake_post):
+        with (
+            redirect_stdout(StringIO()),
+            patch("requests.get", return_value=fake_get),
+            patch("requests.post", return_value=fake_post),
+        ):
             released = release.main(
                 leave=False,
                 args=args,
