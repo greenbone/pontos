@@ -58,6 +58,7 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.post.return_value = fake_post
 
         args = [
             "release",
@@ -67,9 +68,7 @@ class ReleaseTestCase(unittest.TestCase):
             "0.0.2dev",
         ]
 
-        with redirect_stdout(StringIO()), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
@@ -95,14 +94,14 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.post.return_value = fake_post
+
         args = [
             "release",
             "-CC",
         ]
 
-        with redirect_stdout(StringIO()), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
@@ -129,15 +128,15 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 401
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.post.return_value = fake_post
+
         args = [
             "release",
             "--release-version",
             "0.0.1",
         ]
 
-        with redirect_stdout(StringIO()), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
@@ -163,6 +162,7 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.post.return_value = fake_post
 
         args = [
             "release",
@@ -178,9 +178,7 @@ class ReleaseTestCase(unittest.TestCase):
             "1234",
         ]
 
-        with redirect_stdout(StringIO()), patch(
-            "requests.post", return_value=fake_post
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,

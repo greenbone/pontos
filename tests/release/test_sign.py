@@ -58,6 +58,7 @@ class SignTestCase(unittest.TestCase):
         fake_get = MagicMock(spec=requests.Response).return_value
         fake_get.status_code = 404
         fake_get.text = self.valid_gh_release_response
+        _requests_mock.get.return_value = fake_get
 
         args = [
             "sign",
@@ -67,10 +68,7 @@ class SignTestCase(unittest.TestCase):
             "0.0.1",
         ]
 
-        with redirect_stdout(StringIO()), patch(
-            "requests.get",
-            return_value=fake_get,
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
@@ -99,6 +97,8 @@ class SignTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 500
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.get.return_value = fake_get
+        _requests_mock.post.return_value = fake_post
 
         args = [
             "sign",
@@ -107,11 +107,7 @@ class SignTestCase(unittest.TestCase):
             "--release-version",
             "0.0.1",
         ]
-        with (
-            redirect_stdout(StringIO()),
-            patch("requests.get", return_value=fake_get),
-            patch("requests.post", return_value=fake_post),
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
@@ -140,6 +136,8 @@ class SignTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
+        _requests_mock.get.return_value = fake_get
+        _requests_mock.post.return_value = fake_post
 
         args = [
             "sign",
@@ -148,11 +146,7 @@ class SignTestCase(unittest.TestCase):
             "--release-version",
             "0.0.1",
         ]
-        with (
-            redirect_stdout(StringIO()),
-            patch("requests.get", return_value=fake_get),
-            patch("requests.post", return_value=fake_post),
-        ):
+        with redirect_stdout(StringIO()):
             released = release.main(
                 leave=False,
                 args=args,
