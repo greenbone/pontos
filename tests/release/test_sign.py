@@ -40,8 +40,8 @@ class SignTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
-    @patch("requests.requests", spec=requests)
+    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.sign.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_invalid_get_response(
@@ -76,8 +76,8 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
-    @patch("requests.requests", spec=requests)
+    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.sign.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_upload_fail(
@@ -115,8 +115,8 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
-    @patch("requests.requests", spec=requests)
+    @patch("pontos.release.helper.path", spec=Path)
+    @patch("pontos.release.sign.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_successfully_sign(

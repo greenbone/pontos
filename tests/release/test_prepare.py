@@ -37,7 +37,7 @@ class PrepareTestCase(unittest.TestCase):
         os.environ["GITHUB_USER"] = "bar"
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_prepare_successfully(
@@ -63,7 +63,7 @@ class PrepareTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_prepare_calendar_successfully(
@@ -87,7 +87,7 @@ class PrepareTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_use_git_signing_key_on_prepare(
@@ -125,7 +125,7 @@ class PrepareTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_if_tag_is_already_taken(
@@ -160,7 +160,7 @@ class PrepareTestCase(unittest.TestCase):
             shell_mock.assert_called_with("git tag v0.0.1 is already taken")
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_when_no_project_found(
@@ -186,8 +186,8 @@ class PrepareTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pathlib.Path", spec=Path)
-    @patch("requests.requests", spec=requests)
+    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.prepare.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_when_updating_version_fails(
@@ -215,7 +215,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.changelog.changelog")
-    @patch("requests.requests", spec=requests)
+    @patch("pontos.release.prepare.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     def test_prepare_coventional_commits(
         self,
