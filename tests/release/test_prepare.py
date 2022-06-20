@@ -187,7 +187,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_when_updating_version_fails(
@@ -215,7 +215,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.changelog.changelog")
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     def test_prepare_coventional_commits(
         self,

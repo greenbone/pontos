@@ -41,7 +41,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_release_successfully(
@@ -77,7 +77,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_release_conventional_commits_successfully(
@@ -110,7 +110,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_successfully_when_github_create_release_fails(
@@ -145,7 +145,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pathlib.Path", spec=Path)
-    @patch("requests", spec=requests)
+    @patch("requests.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_release_to_specific_git_remote(
