@@ -1,6 +1,0 @@
-diff a/pontos/release/release.py b/pontos/release/release.py	(rejected hunks)
-@@ -135,3 +135 @@ def release(
--    executed, filename = update_version(
--        terminal, next_version, develop=True
--    )
-+    executed, filename = update_version(terminal, next_version, develop=True)
