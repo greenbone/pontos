@@ -41,6 +41,7 @@ RELEASE_TEXT_FILE = ".release.md"
 def prepare(
     terminal: Terminal,
     args: Namespace,
+    **_kwargs,
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = (
