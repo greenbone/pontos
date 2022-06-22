@@ -110,7 +110,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.requests", spec=requests)
+    @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_successfully_when_github_create_release_fails(
