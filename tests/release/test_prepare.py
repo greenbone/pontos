@@ -37,7 +37,7 @@ class PrepareTestCase(unittest.TestCase):
         os.environ["GITHUB_USER"] = "bar"
 
     @patch("pontos.release.prepare.shell_cmd_runner")
-    @patch("pontos.release.helper.path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_prepare_successfully(
@@ -187,7 +187,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.prepare.requests", spec=requests)
+    @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_not_release_when_updating_version_fails(
@@ -215,7 +215,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.changelog.changelog")
-    @patch("pontos.release.prepare.requests", spec=requests)
+    @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     def test_prepare_coventional_commits(
         self,
