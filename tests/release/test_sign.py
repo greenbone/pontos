@@ -115,7 +115,7 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.path", spec=Path)
+    @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.sign.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
