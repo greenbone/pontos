@@ -52,7 +52,9 @@ class SignTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
@@ -88,7 +90,9 @@ class SignTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
@@ -127,7 +131,9 @@ class SignTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value

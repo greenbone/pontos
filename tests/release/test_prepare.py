@@ -23,7 +23,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 from subprocess import CompletedProcess
-from unittest.mock import call, patch
+from unittest.mock import MagicMock, call, patch
 
 import requests
 
@@ -47,7 +47,9 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         args = [
@@ -73,7 +75,9 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
         args = [
             "prepare",
@@ -97,7 +101,9 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         args = [
@@ -126,13 +132,11 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_if_tag_is_already_taken(
         self,
         shell_mock,
         _path_mock,
-        _version_mock,
         _changelog_mock,
     ):
 
@@ -170,7 +174,9 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (False, "")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         args = [
@@ -198,7 +204,9 @@ class PrepareTestCase(unittest.TestCase):
         _version_mock,
         _changelog_mock,
     ):
-        _version_mock.main.return_value = (False, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         args = [
@@ -224,7 +232,9 @@ class PrepareTestCase(unittest.TestCase):
         _requests_mock,
         _version_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main = MagicMock(
+            spec=version.main, return_value=(True, "MyProject.conf")
+        )
 
         own_path = Path(__file__).absolute().parent
         release_file = own_path.parent.parent / ".release.md"
