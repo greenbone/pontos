@@ -36,7 +36,7 @@ def main(args=None):
             term.error("A Github User Token is required.")
             sys.exit(1)
 
-        parsed_args.func(terminal=term, args=parsed_args)
+        parsed_args.func(term, parsed_args)
 
 
 if __name__ == "__main__":
