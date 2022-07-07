@@ -24,8 +24,8 @@ from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
 
 
-def pull_request(_terminal: Terminal, args: Namespace):
-    args.pr_func(args)
+def pull_request(terminal: Terminal, args: Namespace):
+    args.pr_func(terminal, args)
 
 
 def create_pull_request(terminal: Terminal, args: Namespace):
