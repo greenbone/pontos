@@ -92,7 +92,7 @@ def prepare(
             project=project,
             config=args.cc_config,
         )
-        changelog_builder = changelog_module.ChangelogBuilder(
+        changelog_builder = changelog.ChangelogBuilder(
             terminal=terminal,
             args=cargs,
         )
