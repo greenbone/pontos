@@ -41,20 +41,18 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.sign.requests", spec=requests)
+    @patch("pontos.release.helper.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_invalid_get_response(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
@@ -79,20 +77,18 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.sign.requests", spec=requests)
+    @patch("pontos.release.helper.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_upload_fail(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
@@ -120,20 +116,20 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.helper.requests", spec=requests)
     @patch("pontos.release.sign.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_successfully_sign(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _sign_requests_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
@@ -142,6 +138,7 @@ class SignTestCase(unittest.TestCase):
         fake_post = MagicMock(spec=requests.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
+        _sign_requests_mock.get.return_value = fake_get
         _requests_mock.get.return_value = fake_get
         _requests_mock.post.return_value = fake_post
 

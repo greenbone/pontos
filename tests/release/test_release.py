@@ -40,21 +40,19 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.release.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.release.Path", spec=Path)
     @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_successfully(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -78,21 +76,19 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.release.Path", spec=Path)
     @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_conventional_commits_successfully(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -113,22 +109,20 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertTrue(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.release.Path", spec=Path)
     @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.release.changelog", spec=changelog)
     def test_not_release_successfully_when_github_create_release_fails(
         self,
-        _shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        _shell_mock,
     ):
 
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=requests.Response).return_value
@@ -150,21 +144,19 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.release.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.release.Path", spec=Path)
     @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_to_specific_git_remote(
         self,
-        shell_mock,
-        _path_mock,
-        _requests_mock,
-        _version_mock,
         _changelog_mock,
+        _version_mock,
+        _requests_mock,
+        _path_mock,
+        shell_mock,
     ):
-        _version_mock.main = MagicMock(
-            spec=version.main, return_value=(True, "MyProject.conf")
-        )
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=requests.Response).return_value
