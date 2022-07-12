@@ -118,18 +118,18 @@ class SignTestCase(unittest.TestCase):
     @patch("pontos.release.helper.Path", spec=Path)
     @patch("pontos.release.helper.requests", spec=requests)
     @patch("pontos.release.sign.requests", spec=requests)
-    #@patch("pontos.release.helper.version", spec=version)
+    @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_successfully_sign(
         self,
         _changelog_mock,
-     #   _version_mock,
+        _version_mock,
         _sign_requests_mock,
         _requests_mock,
         _path_mock,
         _shell_mock,
     ):
-      #  _version_mock.main.return_value = (True, "MyProject.conf")
+        _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_get = MagicMock(spec=requests.Response).return_value
