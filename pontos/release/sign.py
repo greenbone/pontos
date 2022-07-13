@@ -20,7 +20,6 @@
 
 import json
 from argparse import Namespace
-from pathlib import Path
 
 import requests
 
@@ -61,10 +60,8 @@ def sign(
     terminal: Terminal,
     args: Namespace,
     *,
-    path: Path,
     username: str,
     token: str,
-    requests_module: requests,
     **_kwargs,
 ) -> bool:
     project: str = (
@@ -90,7 +87,7 @@ def sign(
         f"/releases/tags/{git_version}"
     )
 
-    response = requests_module.get(
+    response = requests.get(
         base_url,
         headers=headers,
     )
@@ -159,6 +156,4 @@ def sign(
         token,
         file_paths,
         github_json,
-        path=path,
-        requests_module=requests_module,
     )

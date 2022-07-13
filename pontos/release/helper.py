@@ -158,8 +158,6 @@ def download(
     terminal: Terminal,
     url: str,
     filename: str,
-    requests_module: requests = requests,
-    path: Path = Path,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -170,15 +168,13 @@ def download(
         terminal: Terminal to print download info to
         url: The url of the file we want to download
         filename: The name of the file to store the download in
-        requests_module: the python request module
-        path: the python pathlib.Path module
 
     Returns:
        A DownloadProgressIterable for iterating over the download progress
     """
 
-    destination: Path = path(tempfile.gettempdir()) / filename
-    response = requests_module.get(url, stream=True, timeout=timeout)
+    destination: Path = Path(tempfile.gettempdir()) / filename
+    response = requests.get(url, stream=True, timeout=timeout)
     total_length = response.headers.get("content-length")
 
     terminal.info(f"Downloading {url}")
@@ -193,15 +189,13 @@ def download(
 def download_assets(
     terminal: Terminal,
     assets_url: str,
-    path: Path = Path,
-    requests_module: requests = requests,
 ) -> Iterator[DownloadProgressIterable]:
     """Download all .tar.gz and zip assets of a github release"""
 
     if not assets_url:
         return
 
-    assets_response = requests_module.get(assets_url)
+    assets_response = requests.get(assets_url)
     if assets_response.status_code != 200:
         terminal.error(
             f"Wrong response status code {assets_response.status_code} for "
@@ -218,8 +212,6 @@ def download_assets(
                     terminal,
                     asset_url,
                     name,
-                    path=path,
-                    requests_module=requests_module,
                 )
 
 
@@ -323,13 +315,12 @@ def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
 
 
 def update_version(
-    terminal: Terminal, to: str, _version: version, *, develop: bool = False
+    terminal: Terminal, to: str, *, develop: bool = False
 ) -> Tuple[bool, str]:
     """Use pontos-version to update the version.
 
     Arguments:
         to: The version (str) that will be set
-        _version: Version module
         develop: Wether to set version to develop or not (bool)
 
     Returns:
@@ -341,7 +332,7 @@ def update_version(
     args.append(to)
     if develop:
         args.append("--develop")
-    executed, filename = _version.main(leave=False, args=args)
+    executed, filename = version.main(leave=False, args=args)
 
     if not executed:
         if filename == "":
@@ -358,8 +349,6 @@ def upload_assets(
     token: str,
     file_paths: List[Path],
     github_json: Dict,
-    path: Path,
-    requests_module: requests,
 ) -> bool:
     """Function to upload assets
 
@@ -369,8 +358,6 @@ def upload_assets(
         file_paths: List of paths to asset files
         github_json: The github dictionary, containing relevant information
             for the upload
-        path: the python pathlib.Path module
-        requests_module: the python request module
 
     Returns:
         True on success, false else
@@ -378,7 +365,7 @@ def upload_assets(
     terminal.info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
     asset_url = github_json["upload_url"].replace("{?name,label}", "")
-    paths = [path(f"{str(p)}.asc") for p in file_paths]
+    paths = [Path(f"{str(p)}.asc") for p in file_paths]
 
     headers = {
         "Accept": "application/vnd.github.v3+json",
@@ -388,7 +375,7 @@ def upload_assets(
 
     for file_path in paths:
         to_upload = file_path.read_bytes()
-        resp = requests_module.post(
+        resp = requests.post(
             f"{asset_url}?name={file_path.name}",
             headers=headers,
             auth=auth,

@@ -24,7 +24,7 @@ from pathlib import Path
 
 import requests
 
-from pontos import changelog, version
+from pontos import changelog
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
@@ -45,12 +45,8 @@ def release(
     terminal: Terminal,
     args: Namespace,
     *,
-    path: Path,
-    version_module: version,
     username: str,
     token: str,
-    requests_module: requests,
-    changelog_module: changelog,
     **_kwargs,
 ) -> bool:
     project: str = (
@@ -84,13 +80,13 @@ def release(
     shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
 
     terminal.info(f"Creating release for v{release_version}")
-    changelog_text: str = path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
+    changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
 
     headers = {"Accept": "application/vnd.github.v3+json"}
 
     base_url = f"https://api.github.com/repos/{space}/{project}/releases"
     git_version = f"{git_tag_prefix}{release_version}"
-    response = requests_module.post(
+    response = requests.post(
         base_url,
         headers=headers,
         auth=(username, token),
@@ -105,7 +101,7 @@ def release(
         terminal.error(json.dumps(response.text, indent=4, sort_keys=True))
         return False
 
-    path(RELEASE_TEXT_FILE).unlink()
+    Path(RELEASE_TEXT_FILE).unlink()
 
     commit_msg = (
         f"Automatic adjustments after release\n\n"
@@ -115,15 +111,15 @@ def release(
     # set to new version add skeleton
     changelog_bool = False
     if not args.conventional_commits:
-        change_log_path = path.cwd() / "CHANGELOG.md"
+        change_log_path = Path.cwd() / "CHANGELOG.md"
         if args.changelog:
-            tmp_path = path.cwd() / Path(args.changelog)
+            tmp_path = Path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:
                 terminal.warning(f"{tmp_path} is not a file.")
 
-        updated = changelog_module.add_skeleton(
+        updated = changelog.add_skeleton(
             markdown=change_log_path.read_text(encoding="utf-8"),
             new_version=release_version,
             project_name=project,
@@ -135,9 +131,7 @@ def release(
 
         commit_msg += f"* Add empty changelog after {release_version}"
 
-    executed, filename = update_version(
-        terminal, next_version, version_module, develop=True
-    )
+    executed, filename = update_version(terminal, next_version, develop=True)
     if not executed:
         return False
 

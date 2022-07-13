@@ -26,7 +26,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos import version
 from pontos.release.helper import (
     calculate_calendar_version,
     find_signing_key,
@@ -127,9 +126,7 @@ class TestHelperFunctions(unittest.TestCase):
         terminal = MagicMock()
         proj_path = Path.cwd()
         os.chdir(self.tmpdir)
-        executed, filename = update_version(
-            terminal, to="21.4.4", _version=version, develop=True
-        )
+        executed, filename = update_version(terminal, to="21.4.4", develop=True)
         self.assertFalse(executed)
         self.assertEqual(filename, "")
 
@@ -156,7 +153,7 @@ class TestHelperFunctions(unittest.TestCase):
             encoding="utf-8",
         )
         executed, filename = update_version(
-            terminal, to="21.4.4", _version=version, develop=False
+            terminal, to="21.4.4", develop=False
         )
         toml_text = toml.read_text(encoding="utf-8")
         self.assertEqual(filename, "pyproject.toml")

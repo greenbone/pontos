@@ -21,7 +21,7 @@ import sys
 from argparse import Namespace
 from pathlib import Path
 
-from pontos import changelog, version
+from pontos import changelog
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
@@ -41,10 +41,6 @@ RELEASE_TEXT_FILE = ".release.md"
 def prepare(
     terminal: Terminal,
     args: Namespace,
-    *,
-    path: Path,
-    version_module: version,
-    changelog_module: changelog,
     **_kwargs,
 ) -> bool:
     git_tag_prefix: str = args.git_tag_prefix
@@ -78,9 +74,7 @@ def prepare(
         terminal.error(f"git tag {git_version} is already taken.")
         sys.exit(1)
 
-    executed, filename = update_version(
-        terminal, release_version, version_module
-    )
+    executed, filename = update_version(terminal, release_version)
     if not executed:
         return False
 
@@ -98,8 +92,8 @@ def prepare(
             project=project,
             config=args.cc_config,
         )
-        changelog_builder = changelog_module.ChangelogBuilder(
-            terminal=terminal,
+        changelog_builder = changelog.ChangelogBuilder(
+            terminal=shell_cmd_runner,
             args=cargs,
         )
 
@@ -121,16 +115,16 @@ def prepare(
             "",
         )
     else:
-        change_log_path = path.cwd() / "CHANGELOG.md"
+        change_log_path = Path.cwd() / "CHANGELOG.md"
         if args.changelog:
-            tmp_path = path.cwd() / Path(args.changelog)
+            tmp_path = Path.cwd() / Path(args.changelog)
             if tmp_path.is_file():
                 change_log_path = tmp_path
             else:
                 terminal.warning(f"{tmp_path} is not a file.")
 
         # Try to get the unreleased section of the specific version
-        updated, changelog_text = changelog_module.update(
+        updated, changelog_text = changelog.update(
             change_log_path.read_text(encoding="utf-8"),
             release_version,
             git_tag_prefix=git_tag_prefix,
@@ -139,7 +133,7 @@ def prepare(
 
         if not updated:
             # Try to get unversioned unrelease section
-            updated, changelog_text = changelog_module.update(
+            updated, changelog_text = changelog.update(
                 change_log_path.read_text(encoding="utf-8"),
                 release_version,
                 git_tag_prefix=git_tag_prefix,
@@ -171,7 +165,7 @@ def prepare(
     else:
         shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
 
-    release_text = path(RELEASE_TEXT_FILE)
+    release_text = Path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text, encoding="utf-8")
 
     terminal.warning(
