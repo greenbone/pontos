@@ -125,6 +125,9 @@ class PythonVersionCommand(VersionCommand):
 
         if "poetry" not in pyproject_toml["tool"]:
             poetry_table = tomlkit.table()
+            # pylint: disable=line-too-long
+            # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member)
+            # pylint: disable=no-member
             pyproject_toml["tool"].add("poetry", poetry_table)
 
         pyproject_toml["tool"]["poetry"]["version"] = new_version
