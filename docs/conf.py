@@ -14,6 +14,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
+from pontos.version import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +23,7 @@ copyright = '2022, Greenbone Networks GmbH <info@greenbone.net>'
 author = 'Greenbone Networks GmbH <info@greenbone.net>'
 
 # The full version, including alpha/beta/rc tags
-release = '22.7.3.dev1'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -67,7 +68,7 @@ html_favicon = 'favicon.gif'
 #
 html_theme_options = {
     'github_user': 'greenbone',
-    'github_repo': 'python-gvm',
+    'github_repo': 'pontos',
     'github_banner': True,
     'show_powered_by': False,
 }
