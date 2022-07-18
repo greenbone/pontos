@@ -14,7 +14,7 @@ This sections explains how to install **Pontos** and shows example use cases.
 .. toctree::
    :maxdepth: 2
 
-   readme
+   README
 
 The Pontos Documentation
 ------------------------
