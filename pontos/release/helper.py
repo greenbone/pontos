@@ -235,19 +235,17 @@ def get_current_version(terminal: Terminal) -> str:
     sys.exit(1)
 
 
-def get_last_release_version():
+def get_last_release_version() -> Optional[str]:
     """Get the last released Version from git.
 
     Returns:
         Last released git-tag if tags were found
-        False if none were found
+        or None
     """
 
     git_interface = Git()
     tag_list = git_interface.list_tags()
-    if tag_list:
-        return tag_list[-1]
-    return False
+    return tag_list[-1] if tag_list else None
 
 
 def get_next_patch_version(terminal: Terminal) -> str:

@@ -185,14 +185,14 @@ class TestHelperFunctions(unittest.TestCase):
     @patch("pontos.release.helper.Git", spec=Git)
     def test_get_last_release_version_git(self, _git_interface_mock):
         git_interface = _git_interface_mock.return_value
-        git_interface.list_tags.return_value = [1, 2, 3.55]
-        self.assertTrue(get_last_release_version())
+        git_interface.list_tags.return_value = ["1", "2", "3.55"]
+        self.assertEqual(get_last_release_version(), "3.55")
 
     @patch("pontos.release.helper.Git", spec=Git)
     def test_get_no_release_version_git(self, _git_interface_mock):
         git_interface = _git_interface_mock.return_value
         git_interface.list_tags.return_value = []
-        self.assertFalse(get_last_release_version())
+        self.assertIsNone(get_last_release_version())
 
 
 class CalculateHelperVersionTestCase(unittest.TestCase):
