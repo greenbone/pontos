@@ -19,7 +19,6 @@
 
 import datetime
 import json
-from pickle import FALSE
 import subprocess
 import sys
 import tempfile
@@ -30,11 +29,11 @@ import requests
 from packaging.version import InvalidVersion, Version
 
 from pontos import version
+from pontos.git.git import Git
 from pontos.helper import DownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
-from pontos.git.git import Git
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -235,20 +234,21 @@ def get_current_version(terminal: Terminal) -> str:
     terminal.error("No project settings file found")
     sys.exit(1)
 
+
 def get_last_release_version():
     """Get the last released Version from git.
-    
-    Returns: 
+
+    Returns:
         Last released git-tag if tags were found
-        FALSE if none were found
+        False if none were found
     """
 
     git_interface = Git()
     tag_list = git_interface.list_tags()
     if tag_list:
         return tag_list[-1]
-    else:
-        return FALSE
+    return False
+
 
 def get_next_patch_version(terminal: Terminal) -> str:
     """find the correct next patch version by checking latest version"""
