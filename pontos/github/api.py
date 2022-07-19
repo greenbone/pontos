@@ -18,7 +18,15 @@
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Generator, Iterable, Iterator, List, Optional
+from typing import (
+    Callable,
+    ContextManager,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+)
 
 import httpx
 
@@ -328,7 +336,7 @@ class GitHubRESTApi:
 
     def download_release_tarball(
         self, repo: str, tag: str, destination: Path
-    ) -> Generator[DownloadProgressIterable, None, None]:
+    ) -> ContextManager[DownloadProgressIterable]:
         """
         Download a release tarball (tar.gz) file
 
@@ -345,7 +353,7 @@ class GitHubRESTApi:
 
     def download_release_zip(
         self, repo: str, tag: str, destination: Path
-    ) -> Generator[DownloadProgressIterable, None, None]:
+    ) -> ContextManager[DownloadProgressIterable]:
         """
         Download a release zip file
 
