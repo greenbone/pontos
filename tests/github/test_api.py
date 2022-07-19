@@ -20,12 +20,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos.github.api import (
-    DEFAULT_TIMEOUT,
-    FileStatus,
-    GitHubRESTApi,
-    download,
-)
+from pontos.github.api import FileStatus, GitHubRESTApi
+from pontos.helper import DEFAULT_TIMEOUT
 
 here = Path(__file__).parent
 
@@ -452,100 +448,3 @@ class GitHubApiTestCase(unittest.TestCase):
                 ]
             },
         )
-
-
-class DownloadTestCase(unittest.TestCase):
-    @patch("pontos.github.api.httpx.stream")
-    def test_download_without_destination(
-        self,
-        requests_mock: MagicMock,
-    ):
-        response = MagicMock()
-        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
-        response_headers = MagicMock()
-        response.headers = response_headers
-        response_headers.get.return_value = None
-        response_stream = MagicMock()
-        response_stream.__enter__.return_value = response
-        requests_mock.return_value = response_stream
-
-        with download(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz"  # pylint: disable=line-too-long
-        ) as download_progress:
-
-            requests_mock.assert_called_once_with(
-                "GET",
-                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-                follow_redirects=True,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            response_headers.get.assert_called_once_with("content-length")
-
-            self.assertIsNone(download_progress.length)
-            self.assertEqual(
-                download_progress.destination, Path("v21.11.0.tar.gz")
-            )
-
-            it = iter(download_progress)
-            progress = next(it)
-            self.assertIsNone(progress)
-            progress = next(it)
-            self.assertIsNone(progress)
-            progress = next(it)
-            self.assertIsNone(progress)
-
-            with self.assertRaises(StopIteration):
-                next(it)
-
-            download_progress.destination.unlink()
-
-    @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.httpx.stream")
-    def test_download_with_content_length(
-        self, requests_mock: MagicMock, path_mock: MagicMock
-    ):
-        response = MagicMock()
-        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
-        response_headers = MagicMock()
-        response.headers = response_headers
-        response_headers.get.return_value = "9"
-        response_stream = MagicMock()
-        response_stream.__enter__.return_value = response
-        requests_mock.return_value = response_stream
-
-        download_file = path_mock()
-        file_mock = MagicMock()
-        file_mock.__enter__.return_value = file_mock
-        download_file.open.return_value = file_mock
-
-        with download(
-            "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-            download_file,
-        ) as download_progress:
-
-            requests_mock.assert_called_once_with(
-                "GET",
-                "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-                timeout=DEFAULT_TIMEOUT,
-                follow_redirects=True,
-            )
-            response_headers.get.assert_called_once_with("content-length")
-
-            self.assertEqual(download_progress.length, 9)
-
-            it = iter(download_progress)
-
-            progress = next(it)
-            self.assertEqual(progress, 1 / 3)
-            file_mock.write.assert_called_with(b"foo")
-
-            progress = next(it)
-            self.assertEqual(progress, 2 / 3)
-            file_mock.write.assert_called_with(b"bar")
-
-            progress = next(it)
-            self.assertEqual(progress, 1)
-            file_mock.write.assert_called_with(b"baz")
-
-            with self.assertRaises(StopIteration):
-                next(it)
