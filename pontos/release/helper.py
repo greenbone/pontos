@@ -19,6 +19,7 @@
 
 import datetime
 import json
+from pickle import FALSE
 import subprocess
 import sys
 import tempfile
@@ -235,10 +236,19 @@ def get_current_version(terminal: Terminal) -> str:
     sys.exit(1)
 
 def get_last_release_version():
-    """Get the last released Version from git"""
+    """Get the last released Version from git.
+    
+    Returns: 
+        Last released git-tag if tags were found
+        FALSE if none were found
+    """
+
     git_interface = Git()
-    last_release_version = git_interface.list_tags()[-1]
-    return last_release_version
+    tag_list = git_interface.list_tags()
+    if tag_list:
+        return tag_list[-1]
+    else:
+        return FALSE
 
 def get_next_patch_version(terminal: Terminal) -> str:
     """find the correct next patch version by checking latest version"""
