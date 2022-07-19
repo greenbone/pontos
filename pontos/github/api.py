@@ -46,7 +46,9 @@ def _get_next_url(response) -> Optional[str]:
 
 class GitHubRESTApi:
     def __init__(
-        self, token: str, url: Optional[str] = DEFAULT_GITHUB_API_URL
+        self,
+        token: Optional[str] = None,
+        url: Optional[str] = DEFAULT_GITHUB_API_URL,
     ) -> None:
         self.token = token
         self.url = url
@@ -60,9 +62,11 @@ class GitHubRESTApi:
         request: Optional[Callable] = None,
     ) -> httpx.Response:
         headers = {
-            "Authorization": f"token {self.token}",
             "Accept": "application/vnd.github.v3+json",
         }
+        if self.token:
+            headers["Authorization"] = f"token {self.token}"
+
         request = request or httpx.get
         return request(
             f"{url}",
