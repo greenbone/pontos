@@ -68,12 +68,15 @@ class GitHubRESTApi:
             headers["Authorization"] = f"token {self.token}"
 
         request = request or httpx.get
+        kwargs = {}
+        if data is not None:
+            kwargs["json"] = data
         return request(
             f"{url}",
             headers=headers,
             params=params,
-            json=data,
             follow_redirects=True,
+            **kwargs,
         )
 
     def _request(

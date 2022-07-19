@@ -44,7 +44,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json=None,
         )
         self.assertTrue(exists)
 
@@ -65,7 +64,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json=None,
         )
         self.assertFalse(exists)
 
@@ -85,7 +83,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params={"per_page": "100"},
-            json=None,
             follow_redirects=True,
         )
 
@@ -176,7 +173,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json=None,
         )
 
     @patch("pontos.github.api.httpx.post")
@@ -224,7 +220,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json=None,
         )
         self.assertTrue(exists)
 
@@ -248,7 +243,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
-            json=None,
         )
 
         self.assertEqual(data["id"], 52499047)
@@ -394,7 +388,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params={"per_page": "100"},
-            json=None,
         )
 
         self.assertEqual(
@@ -433,7 +426,6 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params={"per_page": "100"},
-            json=None,
         )
 
         self.assertEqual(
