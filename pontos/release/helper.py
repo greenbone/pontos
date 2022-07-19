@@ -33,6 +33,7 @@ from pontos.helper import DownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
+from pontos.git.git import Git
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -233,6 +234,11 @@ def get_current_version(terminal: Terminal) -> str:
     terminal.error("No project settings file found")
     sys.exit(1)
 
+def get_last_release_version():
+    """Get the last released Version from git"""
+    git_interface = Git()
+    last_release_version = git_interface.list_tags()[-1]
+    return last_release_version
 
 def get_next_patch_version(terminal: Terminal) -> str:
     """find the correct next patch version by checking latest version"""
