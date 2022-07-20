@@ -25,8 +25,6 @@ from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import call, patch
 
-import requests
-
 from pontos import changelog, release
 from pontos.release.helper import version
 
@@ -187,14 +185,12 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.prepare.changelog", spec=changelog)
     def test_not_release_when_updating_version_fails(
         self,
         _changelog_mock,
         _version_mock,
-        _requests_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -215,12 +211,10 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.release.prepare.changelog", spec=changelog)
-    @patch("pontos.release.release.requests", spec=requests)
     @patch("pontos.release.helper.version", spec=version)
     def test_prepare_coventional_commits(
         self,
         _version_mock,
-        _requests_mock,
         _changelog_mock,
         _shell_mock,
     ):
