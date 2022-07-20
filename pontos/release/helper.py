@@ -25,6 +25,7 @@ import tempfile
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Tuple, Union, Optional
 
+import httpx
 import requests
 from packaging.version import InvalidVersion, Version
 
@@ -359,44 +360,40 @@ def update_version(
 
 def upload_assets(
     terminal: Terminal,
-    username: str,
     token: str,
     file_paths: List[Path],
-    github_json: Dict,
+    upload_url: str,
 ) -> bool:
     """Function to upload assets
 
     Arguments:
-        username: The GitHub username to use for the upload
+        terminal: A Terminal for console output
         token: That username's GitHub token
         file_paths: List of paths to asset files
-        github_json: The github dictionary, containing relevant information
-            for the upload
+        upload_url: URL for uploading release assets
 
     Returns:
         True on success, false else
     """
     terminal.info(f"Uploading assets: {[str(p) for p in file_paths]}")
 
-    asset_url = github_json["upload_url"].replace("{?name,label}", "")
     paths = [Path(f"{str(p)}.asc") for p in file_paths]
 
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "content-type": "application/octet-stream",
+        "Authorization": f"token {token}",
     }
-    auth = (username, token)
 
     for file_path in paths:
         to_upload = file_path.read_bytes()
-        resp = requests.post(
-            f"{asset_url}?name={file_path.name}",
+        resp = httpx.post(
+            f"{upload_url}?name={file_path.name}",
             headers=headers,
-            auth=auth,
-            data=to_upload,
+            content=to_upload,
         )
 
-        if resp.status_code != 201:
+        if not resp.is_success:
             terminal.error(
                 f"Wrong response status {resp.status_code}"
                 f" while uploading {file_path.name}"
