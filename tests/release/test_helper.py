@@ -26,9 +26,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from pontos.git.git import Git
 from pontos.release.helper import (
     calculate_calendar_version,
     find_signing_key,
+    get_last_release_version,
     get_next_dev_version,
     get_next_patch_version,
     get_project_name,
@@ -179,6 +181,18 @@ class TestHelperFunctions(unittest.TestCase):
         shutil.rmtree(module_path)
         sys.path.remove(self.tmpdir)
         os.chdir(proj_path)
+
+    @patch("pontos.release.helper.Git", spec=Git)
+    def test_get_last_release_version_git(self, _git_interface_mock):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = ["1", "2", "3.55"]
+        self.assertEqual(get_last_release_version(), "3.55")
+
+    @patch("pontos.release.helper.Git", spec=Git)
+    def test_get_no_release_version_git(self, _git_interface_mock):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = []
+        self.assertIsNone(get_last_release_version())
 
 
 class CalculateHelperVersionTestCase(unittest.TestCase):

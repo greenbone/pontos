@@ -29,7 +29,7 @@ from .helper import (
     calculate_calendar_version,
     commit_files,
     find_signing_key,
-    get_current_version,
+    get_last_release_version,
     get_next_patch_version,
     get_project_name,
     update_version,
@@ -82,10 +82,10 @@ def prepare(
 
     changelog_bool = True
     if args.conventional_commits:
-        current_version = get_current_version(terminal)
+        last_release_version = get_last_release_version()
         output = f"v{release_version}.md"
         cargs = Namespace(
-            current_version=current_version,
+            current_version=last_release_version,
             next_version=release_version,
             output=output,
             space=space,

@@ -23,12 +23,13 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Tuple, Union
+from typing import Callable, Dict, Iterator, List, Tuple, Union, Optional
 
 import requests
 from packaging.version import InvalidVersion, Version
 
 from pontos import version
+from pontos.git.git import Git
 from pontos.helper import DownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
@@ -232,6 +233,19 @@ def get_current_version(terminal: Terminal) -> str:
 
     terminal.error("No project settings file found")
     sys.exit(1)
+
+
+def get_last_release_version() -> Optional[str]:
+    """Get the last released Version from git.
+
+    Returns:
+        Last released git-tag if tags were found
+        or None
+    """
+
+    git_interface = Git()
+    tag_list = git_interface.list_tags()
+    return tag_list[-1] if tag_list else None
 
 
 def get_next_patch_version(terminal: Terminal) -> str:
