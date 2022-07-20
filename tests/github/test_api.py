@@ -18,7 +18,7 @@
 import json
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from pontos.github.api import FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
@@ -440,3 +440,157 @@ class GitHubApiTestCase(unittest.TestCase):
                 ]
             },
         )
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.httpx.stream")
+    def test_download_release_assets(
+        self,
+        stream_mock: MagicMock,
+        request_mock: MagicMock,
+        _path_mock: MagicMock,
+    ):
+        response = MagicMock()
+        response.iter_bytes.side_effect = [
+            [b"foo", b"bar", b"baz"],
+            [b"lorem", b"ipsum"],
+        ]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        stream_mock.return_value = response_stream
+
+        response = MagicMock()
+        response.json.side_effect = [
+            {
+                "assets_url": "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
+            },
+            {
+                "assets": [
+                    {
+                        "name": "foo-21.11.0.tar.gz",
+                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo-21.11.0.tar.gz",  # pylint: disable=line-too-long
+                    },
+                    {
+                        "name": "bar-21.11.0.zip",
+                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/bar-21.11.0.zip",  # pylint: disable=line-too-long
+                    },
+                ],
+            },
+        ]
+
+        request_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_iter = iter(
+            api.download_release_assets("greenbone/pontos", "v21.11.0")
+        )
+
+        download_progress = next(download_iter)
+        self.assertIsNone(download_progress.length)
+
+        progress_it = iter(download_progress)
+        progress = next(progress_it)
+        self.assertIsNone(progress)
+        progress = next(progress_it)
+        self.assertIsNone(progress)
+        progress = next(progress_it)
+        self.assertIsNone(progress)
+
+        with self.assertRaises(StopIteration):
+            next(progress_it)
+
+        download_progress = next(download_iter)
+        progress_it = iter(download_progress)
+        progress = next(progress_it)
+        self.assertIsNone(progress)
+        progress = next(progress_it)
+
+        with self.assertRaises(StopIteration):
+            next(progress_it)
+
+        with self.assertRaises(StopIteration):
+            next(download_iter)
+
+        request_mock.assert_has_calls(
+            [
+                call(
+                    "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params=None,
+                    follow_redirects=True,
+                ),
+                call().raise_for_status(),
+                call().json(),
+                call(
+                    "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params=None,
+                    follow_redirects=True,
+                ),
+                call().raise_for_status(),
+                call().json(),
+            ]
+        )
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.httpx.get")
+    def test_download_release_assets_no_assets(
+        self,
+        request_mock: MagicMock,
+        _path_mock: MagicMock,
+    ):
+        response = MagicMock()
+        response.json.return_value = {}
+        request_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_iter = iter(
+            api.download_release_assets("greenbone/pontos", "v21.11.0")
+        )
+
+        with self.assertRaises(StopIteration):
+            next(download_iter)
+
+    @patch("pontos.github.api.Path")
+    @patch("pontos.github.api.httpx.get")
+    def test_download_release_assets_no_files(
+        self,
+        request_mock: MagicMock,
+        _path_mock: MagicMock,
+    ):
+        response = MagicMock()
+        response.json.side_effect = [
+            {
+                "assets_url": "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
+            },
+            {
+                "assets": [
+                    {
+                        "name": "foo.txt",
+                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt",  # pylint: disable=line-too-long
+                    },
+                    {
+                        "name": "foo.txt.asc",
+                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt.asc",  # pylint: disable=line-too-long
+                    },
+                ],
+            },
+        ]
+        request_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        download_iter = iter(
+            api.download_release_assets("greenbone/pontos", "v21.11.0")
+        )
+
+        with self.assertRaises(StopIteration):
+            next(download_iter)

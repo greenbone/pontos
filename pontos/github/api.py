@@ -368,6 +368,30 @@ class GitHubRESTApi:
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download(api, destination)
 
+    def download_release_assets(
+        self,
+        repo: str,
+        tag: str,
+    ) -> Iterator[DownloadProgressIterable]:
+        release_json = self.release(repo, tag)
+        assets_url = release_json.get("assets_url")
+        if not assets_url:
+            return
+
+        response = self._request_internal(assets_url)
+        response.raise_for_status()
+        response_json = response.json()
+        assets_json = response_json.get("assets", [])
+        for asset_json in assets_json:
+            asset_url: str = asset_json.get("browser_download_url", "")
+            name: str = asset_json.get("name", "")
+            if name.endswith(".zip") or name.endswith(".tar.gz"):
+                with download(
+                    asset_url,
+                    Path(name),
+                ) as progress:
+                    yield progress
+
     def pull_request_files(
         self, repo: str, pull_request: int, status_list: Iterable[FileStatus]
     ) -> Dict[FileStatus, Iterable[Path]]:
