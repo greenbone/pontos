@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# pontos/release/release.py
 # Copyright (C) 2020-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -18,66 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Tuple, Union, Optional
+from typing import Callable, Optional, Tuple
 
-import httpx
-import requests
 from packaging.version import InvalidVersion, Version
 
 from pontos import version
 from pontos.git.git import Git
-from pontos.helper import DownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
-
-
-def build_release_dict(
-    release_version: str,
-    release_changelog: str,
-    *,
-    name: str = "",
-    target_commitish: str = "",
-    draft: bool = False,
-    prerelease: bool = False,
-) -> Dict[str, Union[str, bool]]:
-    """
-    builds the dict for release post on github, see:
-    https://docs.github.com/en/rest/reference/repos#create-a-release
-    for more details.
-
-    Arguments:
-        release_version: The version (str) that will be set
-        release_changelog: content of the Changelog (str) for the release
-        name: name (str) of the release, e.g. 'pontos 1.0.0'
-        target_commitish: needed when tag is not there yet (str)
-        draft: If the release is a draft (bool)
-        prerelease: If the release is a pre release (bool)
-
-    Returns:
-        The dictionary containing the release information.
-    """
-    tag_name = (
-        release_version
-        if release_version.startswith("v")
-        else "v" + release_version
-    )
-    return {
-        "tag_name": tag_name,
-        "target_commitish": target_commitish,
-        "name": name,
-        "body": release_changelog,
-        "draft": draft,
-        "prerelease": prerelease,
-    }
 
 
 def commit_files(
@@ -154,67 +107,6 @@ def calculate_calendar_version(terminal: Terminal) -> str:
             f"'{str(today.year  % 100)}.{str(today.month)}'."
         )
         sys.exit(1)
-
-
-def download(
-    terminal: Terminal,
-    url: str,
-    filename: str,
-    *,
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-    timeout: int = DEFAULT_TIMEOUT,
-) -> DownloadProgressIterable:
-    """Download file in url to filename
-
-    Arguments:
-        terminal: Terminal to print download info to
-        url: The url of the file we want to download
-        filename: The name of the file to store the download in
-
-    Returns:
-       A DownloadProgressIterable for iterating over the download progress
-    """
-
-    destination: Path = Path(tempfile.gettempdir()) / filename
-    response = requests.get(url, stream=True, timeout=timeout)
-    total_length = response.headers.get("content-length")
-
-    terminal.info(f"Downloading {url}")
-
-    return DownloadProgressIterable(
-        response.iter_content(chunk_size=chunk_size),
-        destination,
-        total_length,
-    )
-
-
-def download_assets(
-    terminal: Terminal,
-    assets_url: str,
-) -> Iterator[DownloadProgressIterable]:
-    """Download all .tar.gz and zip assets of a github release"""
-
-    if not assets_url:
-        return
-
-    assets_response = requests.get(assets_url)
-    if assets_response.status_code != 200:
-        terminal.error(
-            f"Wrong response status code {assets_response.status_code} for "
-            f" request {assets_url}"
-        )
-        terminal.out(json.dumps(assets_response.text, indent=4, sort_keys=True))
-    else:
-        assets_json = assets_response.json()
-        for asset_json in assets_json:
-            asset_url: str = asset_json.get("browser_download_url", "")
-            name: str = asset_json.get("name", "")
-            if name.endswith(".zip") or name.endswith(".tar.gz"):
-                yield download(
-                    terminal,
-                    asset_url,
-                    name,
-                )
 
 
 def get_current_version(terminal: Terminal) -> str:
@@ -356,51 +248,3 @@ def update_version(
             terminal.error(f"Unable to update version {to} in {filename}")
 
     return executed, filename
-
-
-def upload_assets(
-    terminal: Terminal,
-    token: str,
-    file_paths: List[Path],
-    upload_url: str,
-) -> bool:
-    """Function to upload assets
-
-    Arguments:
-        terminal: A Terminal for console output
-        token: That username's GitHub token
-        file_paths: List of paths to asset files
-        upload_url: URL for uploading release assets
-
-    Returns:
-        True on success, false else
-    """
-    terminal.info(f"Uploading assets: {[str(p) for p in file_paths]}")
-
-    paths = [Path(f"{str(p)}.asc") for p in file_paths]
-
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "content-type": "application/octet-stream",
-        "Authorization": f"token {token}",
-    }
-
-    for file_path in paths:
-        to_upload = file_path.read_bytes()
-        resp = httpx.post(
-            f"{upload_url}?name={file_path.name}",
-            headers=headers,
-            content=to_upload,
-        )
-
-        if not resp.is_success:
-            terminal.error(
-                f"Wrong response status {resp.status_code}"
-                f" while uploading {file_path.name}"
-            )
-            terminal.out(json.dumps(resp.text, indent=4, sort_keys=True))
-            return False
-        else:
-            terminal.ok(f"Uploaded: {file_path.name}")
-
-    return True
