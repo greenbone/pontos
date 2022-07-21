@@ -25,9 +25,6 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import Tuple
 
-import requests
-
-from pontos import changelog, version
 from pontos.terminal.terminal import ConsoleTerminal
 
 from .prepare import prepare
@@ -225,10 +222,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
 
 
 def main(
-    _path: Path = Path,
-    _requests: requests = requests,
-    _version: version = version,
-    _changelog: changelog = changelog,
     leave: bool = True,
     args=None,
 ):
