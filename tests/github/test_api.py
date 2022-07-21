@@ -20,6 +20,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
+import httpx
+
 from pontos.github.api import FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
 
@@ -594,3 +596,172 @@ class GitHubApiTestCase(unittest.TestCase):
 
         with self.assertRaises(StopIteration):
             next(download_iter)
+
+    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.httpx.get")
+    def test_upload_release_assets(
+        self, get_mock: MagicMock, post_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.json.return_value = {
+            "upload_url": "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets{?name,label}",  # pylint: disable=line-too-long
+        }
+        get_mock.return_value = response
+
+        file1 = MagicMock()
+        file1.name = "foo.txt"
+        content1 = b"foo"
+        file1.read_bytes.return_value = content1
+        file2 = MagicMock()
+        file2.name = "bar.pdf"
+        content2 = b"bar"
+        file2.read_bytes.return_value = content2
+        upload_files = [file1, file2]
+
+        post_response = MagicMock()
+        post_mock.return_value = post_response
+
+        api = GitHubRESTApi("12345")
+        upload_it = iter(
+            api.upload_release_assets(
+                "greenbone/pontos", "v21.11.0", upload_files
+            )
+        )
+        uploaded_file = next(upload_it)
+        post_mock.assert_called_with(
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=foo.txt",  # pylint: disable=line-too-long
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+            content=content1,
+        )
+        self.assertEqual(uploaded_file, file1)
+
+        uploaded_file = next(upload_it)
+        post_mock.assert_called_with(
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=bar.pdf",  # pylint: disable=line-too-long
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+            content=content2,
+        )
+        self.assertEqual(uploaded_file, file2)
+
+        get_mock.assert_called_once_with(
+            "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+            follow_redirects=True,
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params=None,
+        )
+
+    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.httpx.get")
+    def test_upload_release_assets_no_release(
+        self, get_mock: MagicMock, post_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Authentication required 401",
+            request=MagicMock(),
+            response=response,
+        )
+        get_mock.return_value = response
+
+        file1 = MagicMock()
+        file2 = MagicMock()
+        upload_files = [file1, file2]
+
+        post_response = MagicMock()
+        post_mock.return_value = post_response
+
+        api = GitHubRESTApi("12345")
+        upload_it = iter(
+            api.upload_release_assets(
+                "greenbone/pontos", "v21.11.0", upload_files
+            )
+        )
+        with self.assertRaises(httpx.HTTPError):
+            next(upload_it)
+
+        get_mock.assert_called_once_with(
+            "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+            follow_redirects=True,
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params=None,
+        )
+
+    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.httpx.get")
+    def test_upload_release_assets_upload_fails(
+        self, get_mock: MagicMock, post_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.json.return_value = {
+            "upload_url": "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets{?name,label}",  # pylint: disable=line-too-long
+        }
+        get_mock.return_value = response
+
+        file1 = MagicMock()
+        file1.name = "foo.txt"
+        content1 = b"foo"
+        file1.read_bytes.return_value = content1
+        file2 = MagicMock()
+        file2.name = "bar.pdf"
+        content2 = b"bar"
+        file2.read_bytes.return_value = content2
+        upload_files = [file1, file2]
+
+        post_response = MagicMock()
+        post_response.raise_for_status.side_effect = [
+            "",
+            httpx.HTTPStatusError(
+                "Internal Server Error",
+                request=MagicMock(),
+                response=response,
+            ),
+        ]
+        post_mock.return_value = post_response
+
+        api = GitHubRESTApi("12345")
+        upload_it = iter(
+            api.upload_release_assets(
+                "greenbone/pontos", "v21.11.0", upload_files
+            )
+        )
+        uploaded_file = next(upload_it)
+        post_mock.assert_called_with(
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=foo.txt",  # pylint: disable=line-too-long
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+            content=content1,
+        )
+        self.assertEqual(uploaded_file, file1)
+
+        with self.assertRaises(httpx.HTTPError):
+            next(upload_it)
+
+        get_mock.assert_called_once_with(
+            "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+            follow_redirects=True,
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params=None,
+        )

@@ -405,6 +405,42 @@ class GitHubRESTApi:
                 ) as progress:
                     yield progress
 
+    def upload_release_assets(
+        self, repo: str, tag: str, files: Iterable[Path]
+    ) -> Iterator[Path]:
+        # pylint: disable=line-too-long
+        """
+        Upload release assets one after another
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            files: File paths to upload as an asset
+
+        Returns:
+            yields each file after its upload is finished
+
+        Raises:
+            HTTPError if an upload request was invalid
+
+        Example:
+            >>> files = (Path("foo.txt"), Path("bar.txt"),)
+            >>> for uploaded_file in git.upload_release_assets("foo/bar", "1.2.3", files):
+            >>>    print(f"Uploaded: {uploaded_file}")
+        """
+        github_json = self.release(repo, tag)
+        asset_url = github_json["upload_url"].replace("{?name,label}", "")
+
+        for file_path in files:
+            to_upload = file_path.read_bytes()
+            response = self._request_internal(
+                f"{asset_url}?name={file_path.name}",
+                content=to_upload,
+                request=httpx.post,
+            )
+            response.raise_for_status()
+            yield file_path
+
     def pull_request_files(
         self, repo: str, pull_request: int, status_list: Iterable[FileStatus]
     ) -> Dict[FileStatus, Iterable[Path]]:
