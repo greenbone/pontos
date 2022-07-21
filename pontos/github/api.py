@@ -67,6 +67,7 @@ class GitHubRESTApi:
         *,
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
+        content: Optional[bytes] = None,
         request: Optional[Callable] = None,
     ) -> httpx.Response:
         headers = {
@@ -79,6 +80,8 @@ class GitHubRESTApi:
         kwargs = {}
         if data is not None:
             kwargs["json"] = data
+        if content is not None:
+            kwargs["content"] = content
         return request(
             f"{url}",
             headers=headers,
