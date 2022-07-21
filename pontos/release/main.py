@@ -216,8 +216,8 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         "--dry-run", action="store_true", help="Do not upload signed files."
     )
     parsed_args = parser.parse_args(args)
-    token = os.environ["GITHUB_TOKEN"] if not args else "TOKEN"
-    user = os.environ["GITHUB_USER"] if not args else "USER"
+    token = os.getenv("GITHUB_TOKEN") if not args else "TOKEN"
+    user = os.getenv("GITHUB_USER") if not args else "USER"
     return user, token, parsed_args
 
 
