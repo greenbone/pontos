@@ -74,19 +74,17 @@ class SignTestCase(unittest.TestCase):
             )
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.sign.Path", spec=Path)
     @patch("pontos.github.api.httpx")
     @patch("pontos.helper.httpx.stream")
-    @patch("pontos.release.helper.httpx.post")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_upload_fail(
         self,
         changelog_mock,
         version_mock,
-        post_mock,
-        request_mock,
         stream_mock,
+        request_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -100,8 +98,11 @@ class SignTestCase(unittest.TestCase):
         fake_post.status_code = 500
         fake_post.is_success = False
         fake_post.text = self.valid_gh_release_response
+        fake_post.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Server Error", request=MagicMock(), response=fake_post
+        )
         request_mock.get.return_value = fake_get
-        post_mock.return_value = fake_post
+        request_mock.post.return_value = fake_post
 
         response = MagicMock()
         response.iter_bytes.side_effect = [
@@ -128,19 +129,17 @@ class SignTestCase(unittest.TestCase):
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
+    @patch("pontos.release.sign.Path", spec=Path)
     @patch("pontos.github.api.httpx")
     @patch("pontos.helper.httpx.stream")
-    @patch("pontos.release.helper.httpx.post")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_successfully_sign(
         self,
         changelog_mock,
         version_mock,
-        post_mock,
-        request_mock,
         stream_mock,
+        request_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -154,7 +153,7 @@ class SignTestCase(unittest.TestCase):
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         request_mock.get.return_value = fake_get
-        post_mock.return_value = fake_post
+        request_mock.post.return_value = fake_post
 
         response = MagicMock()
         response.iter_bytes.side_effect = [

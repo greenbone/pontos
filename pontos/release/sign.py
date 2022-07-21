@@ -19,12 +19,14 @@
 from argparse import Namespace
 from pathlib import Path
 
+import httpx
+
 from pontos.github.api import GitHubRESTApi
 from pontos.helper import DownloadProgressIterable, shell_cmd_runner
 from pontos.terminal import Terminal
 from pontos.terminal.terminal import Signs
 
-from .helper import get_current_version, get_project_name, upload_assets
+from .helper import get_current_version, get_project_name
 
 
 def display_download_progress(
@@ -113,11 +115,16 @@ def sign(
     if args.dry_run:
         return True
 
-    github_json = github.release(repo, git_version)
-    asset_url = github_json["upload_url"].replace("{?name,label}", "")
-    return upload_assets(
-        terminal,
-        token,
-        file_paths,
-        asset_url,
-    )
+    upload_files = [Path(f"{str(p)}.asc") for p in file_paths]
+    terminal.info(f"Uploading assets: {[str(p) for p in upload_files]}")
+
+    try:
+        for uploaded_file in github.upload_release_assets(
+            repo, git_version, upload_files
+        ):
+            terminal.ok(f"Uploaded: {uploaded_file}")
+    except httpx.HTTPError as e:
+        terminal.error(f"Failed uploading asset {e}")
+        return False
+
+    return True
