@@ -376,6 +376,16 @@ class GitHubRESTApi:
         repo: str,
         tag: str,
     ) -> Iterator[DownloadProgressIterable]:
+        """
+        Download release assets
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            HTTPError if the request was invalid
+        """
         release_json = self.release(repo, tag)
         assets_url = release_json.get("assets_url")
         if not assets_url:
