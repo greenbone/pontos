@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# pontos/release/release.py
 # Copyright (C) 2020-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -18,18 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import json
 from argparse import Namespace
 from pathlib import Path
 
-import requests
+import httpx
 
 from pontos import changelog
+from pontos.github.api import GitHubRESTApi
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
 from .helper import (
-    build_release_dict,
     commit_files,
     find_signing_key,
     get_current_version,
@@ -45,7 +42,6 @@ def release(
     terminal: Terminal,
     args: Namespace,
     *,
-    username: str,
     token: str,
     **_kwargs,
 ) -> bool:
@@ -82,23 +78,20 @@ def release(
     terminal.info(f"Creating release for v{release_version}")
     changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
 
-    headers = {"Accept": "application/vnd.github.v3+json"}
+    github = GitHubRESTApi(token=token)
 
-    base_url = f"https://api.github.com/repos/{space}/{project}/releases"
     git_version = f"{git_tag_prefix}{release_version}"
-    response = requests.post(
-        base_url,
-        headers=headers,
-        auth=(username, token),
-        json=build_release_dict(
+    repo = f"{space}/{project}"
+
+    try:
+        github.create_release(
+            repo,
             git_version,
-            changelog_text,
             name=f"{project} {release_version}",
-        ),
-    )
-    if response.status_code != 201:
-        terminal.error(f"Wrong response status code: {response.status_code}")
-        terminal.error(json.dumps(response.text, indent=4, sort_keys=True))
+            body=changelog_text,
+        )
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
         return False
 
     Path(RELEASE_TEXT_FILE).unlink()
