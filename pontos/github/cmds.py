@@ -18,7 +18,7 @@
 import sys
 from argparse import Namespace
 
-import requests
+import httpx
 
 from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
@@ -58,7 +58,7 @@ def create_pull_request(terminal: Terminal, args: Namespace):
             title=args.title,
             body=args.body,
         )
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPError as e:
         terminal.error(str(e))
         sys.exit(1)
 
@@ -86,7 +86,7 @@ def update_pull_request(terminal: Terminal, args: Namespace):
             title=args.title,
             body=args.body,
         )
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPError as e:
         terminal.error(str(e))
         sys.exit(1)
 
@@ -123,7 +123,7 @@ def file_status(terminal: Terminal, args: Namespace):
             if args.output:
                 args.output.write("\n".join(files) + "\n")
 
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPError as e:
         terminal.error(str(e))
         sys.exit(1)
 
@@ -150,6 +150,6 @@ def labels(terminal: Terminal, args: Namespace):
 
         git.set_labels(repo=args.repo, issue=args.issue, labels=issue_labels)
 
-    except requests.exceptions.RequestException as e:
+    except httpx.HTTPError as e:
         terminal.error(str(e))
         sys.exit(1)

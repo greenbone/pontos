@@ -17,8 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, Iterator, Optional
+from typing import Generator, Iterable, Iterator, Optional
+
+import httpx
+
+DEFAULT_TIMEOUT = 1000
+DEFAULT_CHUNK_SIZE = 4096
 
 
 class DownloadProgressIterable:
@@ -65,6 +71,52 @@ class DownloadProgressIterable:
                 next(it)
         except StopIteration:
             pass
+
+
+@contextmanager
+def download(
+    url: str,
+    destination: Optional[Path] = None,
+    *,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    timeout: int = DEFAULT_TIMEOUT,
+) -> Generator[DownloadProgressIterable, None, None]:
+    """Download file in url to filename
+
+    Arguments:
+        url: The url of the file we want to download
+        destination: Path of the file to store the download in. If set it will
+                     be derived from the passed URL.
+        chunk_size: Download file in chunks of this size
+        timeout: Connection timeout
+
+    Raises:
+        HTTPError if the request was invalid
+
+    Returns:
+        A DownloadProgressIterator that yields the progress of the download in
+        percent for each downloaded chunk or None for each chunk if the progress
+        is unknown.
+
+    Example:
+        with download("https://example.com/some/file")) as progress_it:
+            for progress in progress_it:
+                print(progress)
+    """
+    destination = Path(url.split("/")[-1]) if not destination else destination
+
+    with httpx.stream(
+        "GET", url, timeout=timeout, follow_redirects=True
+    ) as response:
+        response.raise_for_status()
+
+        total_length = response.headers.get("content-length")
+
+        yield DownloadProgressIterable(
+            response.iter_bytes(chunk_size=chunk_size),
+            destination,
+            total_length,
+        )
 
 
 def shell_cmd_runner(args: Iterable[str]) -> subprocess.CompletedProcess:

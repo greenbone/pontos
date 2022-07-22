@@ -24,7 +24,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
-import requests
+import httpx
 
 from pontos import changelog, release
 from pontos.release.helper import version
@@ -41,7 +41,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.release.release.requests", spec=requests)
+    @patch("pontos.github.api.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_successfully(
@@ -55,7 +55,7 @@ class ReleaseTestCase(unittest.TestCase):
         _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock(spec=httpx.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post
@@ -77,7 +77,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.release.release.requests", spec=requests)
+    @patch("pontos.github.api.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_conventional_commits_successfully(
@@ -91,7 +91,7 @@ class ReleaseTestCase(unittest.TestCase):
         _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock(spec=httpx.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post
@@ -110,7 +110,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.release.release.requests", spec=requests)
+    @patch("pontos.github.api.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_not_release_successfully_when_github_create_release_fails(
@@ -125,9 +125,14 @@ class ReleaseTestCase(unittest.TestCase):
         _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock(spec=httpx.Response).return_value
         fake_post.status_code = 401
         fake_post.text = self.valid_gh_release_response
+        fake_post.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Authorization required",
+            response=fake_post,
+            request=_requests_mock.post,
+        )
         _requests_mock.post.return_value = fake_post
 
         args = [
@@ -145,7 +150,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.release.release.requests", spec=requests)
+    @patch("pontos.github.api.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_to_specific_git_remote(
@@ -159,7 +164,7 @@ class ReleaseTestCase(unittest.TestCase):
         _version_mock.main.return_value = (True, "MyProject.conf")
         _changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock(spec=httpx.Response).return_value
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# pontos/release/release.py
 # Copyright (C) 2020-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -18,22 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import json
 from argparse import Namespace
+from pathlib import Path
 
-import requests
+import httpx
 
+from pontos.github.api import GitHubRESTApi
 from pontos.helper import DownloadProgressIterable, shell_cmd_runner
 from pontos.terminal import Terminal
 from pontos.terminal.terminal import Signs
 
-from .helper import (
-    download,
-    download_assets,
-    get_current_version,
-    get_project_name,
-    upload_assets,
-)
+from .helper import get_current_version, get_project_name
 
 
 def display_download_progress(
@@ -60,7 +53,6 @@ def sign(
     terminal: Terminal,
     args: Namespace,
     *,
-    username: str,
     token: str,
     **_kwargs,
 ) -> bool:
@@ -78,57 +70,30 @@ def sign(
     )
     signing_key: str = args.signing_key
 
-    headers = {"Accept": "application/vnd.github.v3+json"}
-
     git_version: str = f"{git_tag_prefix}{release_version}"
+    repo = f"{space}/{project}"
 
-    base_url = (
-        f"https://api.github.com/repos/{space}/{project}"
-        f"/releases/tags/{git_version}"
-    )
+    github = GitHubRESTApi(token=token)
 
-    response = requests.get(
-        base_url,
-        headers=headers,
-    )
-    if response.status_code != 200:
-        terminal.error(
-            f"Wrong response status code {response.status_code} for request "
-            f"{base_url}"
-        )
-        terminal.print(json.dumps(response.text, indent=4, sort_keys=True))
+    if not github.release_exists(repo, git_version):
+        terminal.error(f"Release version {git_version} does not exist.")
         return False
 
-    zipball_url = (
-        f"https://github.com/{space}/{project}/archive/refs/"
-        f"tags/{git_version}.zip"
-    )
-    github_json = json.loads(response.text)
-    zip_progress = download(
-        terminal,
-        zipball_url,
-        f"{project}-{release_version}.zip",
-    )
-    display_download_progress(terminal, zip_progress)
+    zip_destination = Path(f"{project}-{release_version}.zip")
+    with github.download_release_zip(
+        repo, git_version, zip_destination
+    ) as zip_progress:
+        display_download_progress(terminal, zip_progress)
 
-    tarball_url = (
-        f"https://github.com/{space}/{project}/archive/refs/"
-        f"tags/{git_version}.tar.gz"
-    )
-    tar_progress = download(
-        terminal,
-        tarball_url,
-        f"{project}-{release_version}.tar.gz",
-    )
-    display_download_progress(terminal, tar_progress)
+    tarball_destination = Path(f"{project}-{release_version}.tar.gz")
+    with github.download_release_tarball(
+        repo, git_version, tarball_destination
+    ) as tar_progress:
+        display_download_progress(terminal, tar_progress)
 
-    file_paths = [zip_progress.destination, tar_progress.destination]
+    file_paths = [zip_destination, tarball_destination]
 
-    assets_progress = download_assets(
-        terminal,
-        github_json.get("assets_url"),
-    )
-    for progress in assets_progress:
+    for progress in github.download_release_assets(repo, git_version):
         file_paths.append(progress.destination)
         display_download_progress(terminal, progress)
 
@@ -150,10 +115,16 @@ def sign(
     if args.dry_run:
         return True
 
-    return upload_assets(
-        terminal,
-        username,
-        token,
-        file_paths,
-        github_json,
-    )
+    upload_files = [Path(f"{str(p)}.asc") for p in file_paths]
+    terminal.info(f"Uploading assets: {[str(p) for p in upload_files]}")
+
+    try:
+        for uploaded_file in github.upload_release_assets(
+            repo, git_version, upload_files
+        ):
+            terminal.ok(f"Uploaded: {uploaded_file}")
+    except httpx.HTTPError as e:
+        terminal.error(f"Failed uploading asset {e}")
+        return False
+
+    return True

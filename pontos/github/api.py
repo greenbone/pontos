@@ -18,16 +18,21 @@
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Iterable, Iterator, List, Optional
+from typing import (
+    Callable,
+    ContextManager,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+)
 
-import requests
+import httpx
 
-from pontos.helper import DownloadProgressIterable
+from pontos.helper import DownloadProgressIterable, download
 
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
-
-DEFAULT_TIMEOUT = 1000
-DEFAULT_CHUNK_SIZE = 4096
 
 
 class FileStatus(Enum):
@@ -35,44 +40,6 @@ class FileStatus(Enum):
     DELETED = "deleted"
     MODIFIED = "modified"
     RENAMED = "renamed"
-
-
-def download(
-    url: str,
-    destination: Optional[Path] = None,
-    *,
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-    timeout: int = DEFAULT_TIMEOUT,
-) -> DownloadProgressIterable:
-    """Download file in url to filename
-
-    Arguments:
-        url: The url of the file we want to download
-        destination: Path of the file to store the download in. If set it will
-                     be derived from the passed URL.
-        chunk_size: Download file in chunks of this size
-        timeout: Connection timeout
-
-    Raises:
-        HTTPError if the request was invalid
-
-    Returns:
-        A DownloadProgressIterator that yields the progress of the download in
-        percent for each downloaded chunk or None for each chunk if the progress
-        is unknown.
-    """
-    destination = Path(url.split("/")[-1]) if not destination else destination
-
-    response = requests.get(url, stream=True, timeout=timeout)
-    response.raise_for_status()
-
-    total_length = response.headers.get("content-length")
-
-    return DownloadProgressIterable(
-        response.iter_content(chunk_size=chunk_size),
-        destination,
-        total_length,
-    )
 
 
 def _get_next_url(response) -> Optional[str]:
@@ -87,7 +54,9 @@ def _get_next_url(response) -> Optional[str]:
 
 class GitHubRESTApi:
     def __init__(
-        self, token: str, url: Optional[str] = DEFAULT_GITHUB_API_URL
+        self,
+        token: Optional[str] = None,
+        url: Optional[str] = DEFAULT_GITHUB_API_URL,
     ) -> None:
         self.token = token
         self.url = url
@@ -98,14 +67,28 @@ class GitHubRESTApi:
         *,
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
+        content: Optional[bytes] = None,
         request: Optional[Callable] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         headers = {
-            "Authorization": f"token {self.token}",
             "Accept": "application/vnd.github.v3+json",
         }
-        request = request or requests.get
-        return request(f"{url}", headers=headers, params=params, json=data)
+        if self.token:
+            headers["Authorization"] = f"token {self.token}"
+
+        request = request or httpx.get
+        kwargs = {}
+        if data is not None:
+            kwargs["json"] = data
+        if content is not None:
+            kwargs["content"] = content
+        return request(
+            f"{url}",
+            headers=headers,
+            params=params,
+            follow_redirects=True,
+            **kwargs,
+        )
 
     def _request(
         self,
@@ -114,7 +97,7 @@ class GitHubRESTApi:
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
         request: Optional[Callable] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         return self._request_internal(
             f"{self.url}{api}", params=params, data=data, request=request
         )
@@ -154,7 +137,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/branches/{branch}"
         response = self._request(api)
-        return response.ok
+        return response.is_success
 
     def pull_request_exists(self, repo: str, pull_request: int) -> bool:
         """
@@ -166,7 +149,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
         response = self._request(api)
-        return response.ok
+        return response.is_success
 
     def pull_request_commits(
         self, repo: str, pull_request: int
@@ -218,7 +201,7 @@ class GitHubRESTApi:
             "title": title,
             "body": body.replace("\\n", "\n"),
         }
-        response = self._request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
     def update_pull_request(
@@ -253,7 +236,7 @@ class GitHubRESTApi:
         if body:
             data["body"] = body.replace("\\n", "\n")
 
-        response = self._request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
     def add_pull_request_comment(
@@ -272,7 +255,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data = {"body": comment}
-        response = self._request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
     def delete_branch(self, repo: str, branch: str):
@@ -287,7 +270,7 @@ class GitHubRESTApi:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/git/refs/{branch}"
-        response = self._request(api, request=requests.delete)
+        response = self._request(api, request=httpx.delete)
         response.raise_for_status()
 
     def create_release(
@@ -320,7 +303,7 @@ class GitHubRESTApi:
             "prerelease": prerelease,
         }
         api = f"/repos/{repo}/releases"
-        response = self._request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
     def release_exists(self, repo: str, tag: str) -> bool:
@@ -336,7 +319,7 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = self._request(api)
-        return response.ok
+        return response.is_success
 
     def release(self, repo: str, tag: str) -> Dict[str, str]:
         """
@@ -356,7 +339,7 @@ class GitHubRESTApi:
 
     def download_release_tarball(
         self, repo: str, tag: str, destination: Path
-    ) -> DownloadProgressIterable:
+    ) -> ContextManager[DownloadProgressIterable]:
         """
         Download a release tarball (tar.gz) file
 
@@ -373,7 +356,7 @@ class GitHubRESTApi:
 
     def download_release_zip(
         self, repo: str, tag: str, destination: Path
-    ) -> DownloadProgressIterable:
+    ) -> ContextManager[DownloadProgressIterable]:
         """
         Download a release zip file
 
@@ -387,6 +370,76 @@ class GitHubRESTApi:
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download(api, destination)
+
+    def download_release_assets(
+        self,
+        repo: str,
+        tag: str,
+    ) -> Iterator[DownloadProgressIterable]:
+        """
+        Download release assets
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            HTTPError if the request was invalid
+        """
+        release_json = self.release(repo, tag)
+        assets_url = release_json.get("assets_url")
+        if not assets_url:
+            return
+
+        response = self._request_internal(assets_url)
+        response.raise_for_status()
+        response_json = response.json()
+        assets_json = response_json.get("assets", [])
+        for asset_json in assets_json:
+            asset_url: str = asset_json.get("browser_download_url", "")
+            name: str = asset_json.get("name", "")
+            if name.endswith(".zip") or name.endswith(".tar.gz"):
+                with download(
+                    asset_url,
+                    Path(name),
+                ) as progress:
+                    yield progress
+
+    def upload_release_assets(
+        self, repo: str, tag: str, files: Iterable[Path]
+    ) -> Iterator[Path]:
+        # pylint: disable=line-too-long
+        """
+        Upload release assets one after another
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            files: File paths to upload as an asset
+
+        Returns:
+            yields each file after its upload is finished
+
+        Raises:
+            HTTPError if an upload request was invalid
+
+        Example:
+            >>> files = (Path("foo.txt"), Path("bar.txt"),)
+            >>> for uploaded_file in git.upload_release_assets("foo/bar", "1.2.3", files):
+            >>>    print(f"Uploaded: {uploaded_file}")
+        """
+        github_json = self.release(repo, tag)
+        asset_url = github_json["upload_url"].replace("{?name,label}", "")
+
+        for file_path in files:
+            to_upload = file_path.read_bytes()
+            response = self._request_internal(
+                f"{asset_url}?name={file_path.name}",
+                content=to_upload,
+                request=httpx.post,
+            )
+            response.raise_for_status()
+            yield file_path
 
     def pull_request_files(
         self, repo: str, pull_request: int, status_list: Iterable[FileStatus]
@@ -438,7 +491,7 @@ class GitHubRESTApi:
             List of existing labels
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
-        response = self._request(api, request=requests.get)
+        response = self._request(api, request=httpx.get)
         return [f["name"] for f in response.json()]
 
     def set_labels(self, repo: str, issue: int, labels: List[str]):
@@ -453,5 +506,5 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
-        response = self._request(api, data=data, request=requests.post)
+        response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()

@@ -24,7 +24,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import requests
+import httpx
 
 from pontos import changelog, release
 from pontos.release.helper import version
@@ -33,7 +33,6 @@ from pontos.release.helper import version
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
         os.environ["GITHUB_TOKEN"] = "foo"
-        os.environ["GITHUB_USER"] = "bar"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'
@@ -41,24 +40,24 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.helper.requests", spec=requests)
+    @patch("pontos.github.api.httpx")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_invalid_get_response(
         self,
-        _changelog_mock,
-        _version_mock,
-        _requests_mock,
+        changelog_mock,
+        version_mock,
+        requests_mock,
         _path_mock,
         _shell_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
-        _changelog_mock.update.return_value = ("updated", "changelog")
+        version_mock.main.return_value = (True, "MyProject.conf")
+        changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get = MagicMock()
         fake_get.status_code = 404
         fake_get.text = self.valid_gh_release_response
-        _requests_mock.get.return_value = fake_get
+        requests_mock.get.return_value = fake_get
 
         args = [
             "sign",
@@ -68,37 +67,51 @@ class SignTestCase(unittest.TestCase):
             "0.0.1",
         ]
 
-        with redirect_stdout(StringIO()):
-            released = release.main(
+        with redirect_stdout(StringIO()), self.assertRaises(httpx.HTTPError):
+            release.main(
                 leave=False,
                 args=args,
             )
-        self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.helper.requests", spec=requests)
+    @patch("pontos.release.sign.Path", spec=Path)
+    @patch("pontos.github.api.httpx")
+    @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_upload_fail(
         self,
-        _changelog_mock,
-        _version_mock,
-        _requests_mock,
+        changelog_mock,
+        version_mock,
+        stream_mock,
+        request_mock,
         _path_mock,
         _shell_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
-        _changelog_mock.update.return_value = ("updated", "changelog")
+        version_mock.main.return_value = (True, "MyProject.conf")
+        changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get = MagicMock()
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock()
         fake_post.status_code = 500
+        fake_post.is_success = False
         fake_post.text = self.valid_gh_release_response
-        _requests_mock.get.return_value = fake_get
-        _requests_mock.post.return_value = fake_post
+        fake_post.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Server Error", request=MagicMock(), response=fake_post
+        )
+        request_mock.get.return_value = fake_get
+        request_mock.post.return_value = fake_post
+
+        response = MagicMock()
+        response.iter_bytes.side_effect = [
+            [b"foo", b"bar", b"baz"],
+            [b"lorem", b"ipsum"],
+        ]
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        stream_mock.return_value = response_stream
 
         args = [
             "sign",
@@ -112,35 +125,44 @@ class SignTestCase(unittest.TestCase):
                 leave=False,
                 args=args,
             )
+
         self.assertFalse(released)
 
     @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.release.helper.requests", spec=requests)
-    @patch("pontos.release.sign.requests", spec=requests)
+    @patch("pontos.release.sign.Path", spec=Path)
+    @patch("pontos.github.api.httpx")
+    @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_successfully_sign(
         self,
-        _changelog_mock,
-        _version_mock,
-        _sign_requests_mock,
-        _requests_mock,
+        changelog_mock,
+        version_mock,
+        stream_mock,
+        request_mock,
         _path_mock,
         _shell_mock,
     ):
-        _version_mock.main.return_value = (True, "MyProject.conf")
-        _changelog_mock.update.return_value = ("updated", "changelog")
+        version_mock.main.return_value = (True, "MyProject.conf")
+        changelog_mock.update.return_value = ("updated", "changelog")
 
-        fake_get = MagicMock(spec=requests.Response).return_value
+        fake_get = MagicMock()
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
-        fake_post = MagicMock(spec=requests.Response).return_value
+        fake_post = MagicMock()
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
-        _sign_requests_mock.get.return_value = fake_get
-        _requests_mock.get.return_value = fake_get
-        _requests_mock.post.return_value = fake_post
+        request_mock.get.return_value = fake_get
+        request_mock.post.return_value = fake_post
+
+        response = MagicMock()
+        response.iter_bytes.side_effect = [
+            [b"foo", b"bar", b"baz"],
+            [b"lorem", b"ipsum"],
+        ]
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        stream_mock.return_value = response_stream
 
         args = [
             "sign",
