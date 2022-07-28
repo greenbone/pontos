@@ -57,6 +57,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         description="valid subcommands",
         help="additional help",
         dest="command",
+        required=True,
     )
 
     prepare_parser = subparsers.add_parser("prepare")
