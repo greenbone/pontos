@@ -469,18 +469,16 @@ class GitHubApiTestCase(unittest.TestCase):
             {
                 "assets_url": "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             },
-            {
-                "assets": [
-                    {
-                        "name": "foo-21.11.0.tar.gz",
-                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo-21.11.0.tar.gz",  # pylint: disable=line-too-long
-                    },
-                    {
-                        "name": "bar-21.11.0.zip",
-                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/bar-21.11.0.zip",  # pylint: disable=line-too-long
-                    },
-                ],
-            },
+            [
+                {
+                    "name": "foo-21.11.0.tar.gz",
+                    "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo-21.11.0.tar.gz",  # pylint: disable=line-too-long
+                },
+                {
+                    "name": "bar-21.11.0.zip",
+                    "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/bar-21.11.0.zip",  # pylint: disable=line-too-long
+                },
+            ],
         ]
 
         request_mock.return_value = response
@@ -574,18 +572,16 @@ class GitHubApiTestCase(unittest.TestCase):
             {
                 "assets_url": "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             },
-            {
-                "assets": [
-                    {
-                        "name": "foo.txt",
-                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt",  # pylint: disable=line-too-long
-                    },
-                    {
-                        "name": "foo.txt.asc",
-                        "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt.asc",  # pylint: disable=line-too-long
-                    },
-                ],
-            },
+            [
+                {
+                    "name": "foo.txt",
+                    "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt",  # pylint: disable=line-too-long
+                },
+                {
+                    "name": "foo.txt.asc",
+                    "browser_download_url": "https://github.com/greenbone/pontos/releases/download/v21.11.0/foo.txt.asc",  # pylint: disable=line-too-long
+                },
+            ],
         ]
         request_mock.return_value = response
 
