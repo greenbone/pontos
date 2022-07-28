@@ -22,31 +22,10 @@ from pathlib import Path
 import httpx
 
 from pontos.github.api import GitHubRESTApi
-from pontos.helper import DownloadProgressIterable, shell_cmd_runner
+from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
-from pontos.terminal.terminal import Signs
 
 from .helper import get_current_version, get_project_name
-
-
-def display_download_progress(
-    terminal: Terminal, progress: DownloadProgressIterable
-) -> None:
-    spinner = ["-", "\\", "|", "/"]
-    if progress.length:
-        for percent in progress:
-            done = int(50 * percent)
-            terminal.out(
-                f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
-            )
-    else:
-        i = 0
-        for _ in progress:
-            i = i + 1
-            if i == 4:
-                i = 0
-            terminal.out(f"\r[{spinner[i]}]", end="", flush=True)
-    terminal.out(f"\r[{Signs.OK}]{' ' * 50}", end="", flush=True)
 
 
 def sign(
@@ -83,19 +62,19 @@ def sign(
     with github.download_release_zip(
         repo, git_version, zip_destination
     ) as zip_progress:
-        display_download_progress(terminal, zip_progress)
+        terminal.download_progress(zip_progress)
 
     tarball_destination = Path(f"{project}-{release_version}.tar.gz")
     with github.download_release_tarball(
         repo, git_version, tarball_destination
     ) as tar_progress:
-        display_download_progress(terminal, tar_progress)
+        terminal.download_progress(tar_progress)
 
     file_paths = [zip_destination, tarball_destination]
 
     for progress in github.download_release_assets(repo, git_version):
         file_paths.append(progress.destination)
-        display_download_progress(terminal, progress)
+        terminal.download_progress(progress)
 
     for file_path in file_paths:
         terminal.info(f"Signing {file_path}")

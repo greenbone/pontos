@@ -25,7 +25,7 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import Tuple
 
-from pontos.terminal.terminal import ConsoleTerminal
+from pontos.terminal.rich import RichTerminal
 
 from .prepare import prepare
 from .release import release
@@ -227,10 +227,11 @@ def main(
     args=None,
 ):
     username, token, parsed_args = parse_args(args)
-    term = ConsoleTerminal(
-        verbose=1 if not parsed_args.quiet else 0,
-        log_file=parsed_args.log_file,
-    )
+    term = RichTerminal()
+    # term = ConsoleTerminal(
+    #     verbose=1 if not parsed_args.quiet else 0,
+    #     log_file=parsed_args.log_file,
+    # )
 
     term.bold_info(f"pontos-release => {parsed_args.func.__name__}")
 
