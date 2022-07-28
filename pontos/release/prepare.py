@@ -22,6 +22,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from pontos import changelog
+from pontos.git import Git
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
@@ -68,9 +69,10 @@ def prepare(
     terminal.info(f"Preparing the release {release_version}")
 
     # guardian
-    git_tags = shell_cmd_runner("git tag -l")
+    git = Git()
+    git_tags = git.list_tags()
     git_version = f"{git_tag_prefix}{release_version}"
-    if git_version.encode() in git_tags.stdout.splitlines():
+    if git_version in git_tags:
         terminal.error(f"git tag {git_version} is already taken.")
         sys.exit(1)
 

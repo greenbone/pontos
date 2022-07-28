@@ -22,7 +22,6 @@ import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
-from subprocess import CompletedProcess
 from unittest.mock import call, patch
 
 from pontos import changelog, release
@@ -126,17 +125,19 @@ class PrepareTestCase(unittest.TestCase):
     @patch("pontos.release.prepare.Path", spec=Path)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git")
     def test_fail_if_tag_is_already_taken(
         self,
+        git_mock,
         _changelog_mock,
-        _version_mock,
+        version_mock,
         _path_mock,
-        shell_mock,
+        _shell_mock,
     ):
+        git_instance = git_mock.return_value
+        git_instance.list_tags.return_value = ["v0.0.1"]
 
-        shell_mock.return_value = CompletedProcess(
-            args="foo", returncode=1, stdout=b"v0.0.1"
-        )
+        version_mock.main.return_value = (True, "MyProject.conf")
 
         args = [
             "prepare",
@@ -154,8 +155,7 @@ class PrepareTestCase(unittest.TestCase):
                 args=args,
             )
 
-            shell_mock.assert_called_with("git tag -l")
-            shell_mock.assert_called_with("git tag v0.0.1 is already taken")
+        git_instance.list_tags.assert_called_once()
 
     @patch("pontos.release.prepare.shell_cmd_runner")
     @patch("pontos.release.prepare.Path", spec=Path)
