@@ -393,8 +393,7 @@ class GitHubRESTApi:
 
         response = self._request_internal(assets_url)
         response.raise_for_status()
-        response_json = response.json()
-        assets_json = response_json.get("assets", [])
+        assets_json = response.json()
         for asset_json in assets_json:
             asset_url: str = asset_json.get("browser_download_url", "")
             name: str = asset_json.get("name", "")
