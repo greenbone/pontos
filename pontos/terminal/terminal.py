@@ -24,6 +24,8 @@ from typing import Any, Callable, Generator
 
 import colorful as cf
 
+from pontos.helper import DownloadProgressIterable
+
 # from pontos.terminal.log_config import process_logger
 from pontos.terminal.logger import TerminalLogger
 
@@ -161,6 +163,12 @@ class Terminal(ABC):
                      implementation.
         """
 
+    @abstractmethod
+    def download_progress(self, progress: DownloadProgressIterable) -> None:
+        """
+        Display a download progress
+        """
+
 
 class ConsoleTerminal(Terminal):
     def __init__(self, *, verbose: int = 1, log_file: Path = None):
@@ -278,3 +286,21 @@ class ConsoleTerminal(Terminal):
             {"status": Signs.INFO, "color": cf.cyan, "style": cf.bold}
         )
         self._print_status(*messages, **kwargs)
+
+    def download_progress(self, progress: DownloadProgressIterable) -> None:
+        spinner = ["-", "\\", "|", "/"]
+        if progress.length:
+            for percent in progress:
+                done = int(50 * percent)
+                self.out(
+                    f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
+                )
+        else:
+            i = 0
+            for _ in progress:
+                i = i + 1
+                if i == 4:
+                    i = 0
+                self.out(f"\r[{spinner[i]}]", end="", flush=True)
+
+        self.out(f"\r[{Signs.OK}]{' ' * 50}", end="", flush=True)

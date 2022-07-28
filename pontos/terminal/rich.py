@@ -29,6 +29,8 @@ from rich.progress import (
     TextColumn,
 )
 
+from pontos.helper import DownloadProgressIterable
+
 from .terminal import Signs, Terminal
 
 
@@ -126,3 +128,19 @@ class RichTerminal(Terminal):
     def bold_info(self, *messages: Any, **kwargs: Any) -> None:
         kwargs.update({"status": Signs.INFO, "color": cyan, "style": "bold"})
         self._print_status(*messages, **kwargs)
+
+    def download_progress(self, progress: DownloadProgressIterable) -> None:
+        with self.progress() as rich_progress:
+            task_description = f"Downloading [blue]{progress.url}"
+            if progress.length:
+                task_id = rich_progress.add_task(
+                    task_description, total=progress.length
+                )
+                for percent in progress:
+                    rich_progress.advance(task_id, percent)
+            else:
+                task_id = rich_progress.add_task(task_description, total=None)
+                for _ in progress:
+                    rich_progress.advance(task_id)
+
+            rich_progress.update(task_id, total=1, completed=1)
