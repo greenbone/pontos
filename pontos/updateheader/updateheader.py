@@ -29,7 +29,8 @@ from subprocess import CalledProcessError, run
 from typing import Dict, List, Tuple, Union
 
 from pontos.terminal import Terminal
-from pontos.terminal.terminal import ConsoleTerminal
+from pontos.terminal.null import NullTerminal
+from pontos.terminal.rich import RichTerminal
 
 SUPPORTED_FILE_TYPES = [
     ".bash",
@@ -339,10 +340,10 @@ def main() -> None:
     parsed_args = _parse_args()
     exclude_list = []
 
-    term = ConsoleTerminal(
-        verbose=1 if not parsed_args.quiet else 0,
-        log_file=parsed_args.log_file,
-    )
+    if parsed_args.quiet:
+        term = NullTerminal()
+    else:
+        term = RichTerminal()
 
     term.bold_info("pontos-update-header")
 
