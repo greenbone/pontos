@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import subprocess
 from argparse import Namespace
 from pathlib import Path
 
@@ -77,27 +76,22 @@ def sign(
         file_paths.append(progress.destination)
         terminal.download_progress(progress)
 
-    try:
-        for file_path in file_paths:
-            terminal.info(f"Signing {file_path}")
+    for file_path in file_paths:
+        terminal.info(f"Signing {file_path}")
 
-            if args.passphrase:
-                process = shell_cmd_runner(
-                    f"gpg --pinentry-mode loopback --default-key {signing_key}"
-                    f" --yes --detach-sign --passphrase {args.passphrase}"
-                    f" --armor {file_path}"
-                )
-            else:
-                process = shell_cmd_runner(
-                    f"gpg --default-key {signing_key} --yes --detach-sign "
-                    f"--armor {file_path}"
-                )
+        if args.passphrase:
+            process = shell_cmd_runner(
+                f"gpg --pinentry-mode loopback --default-key {signing_key}"
+                f" --yes --detach-sign --passphrase {args.passphrase}"
+                f" --armor {file_path}"
+            )
+        else:
+            process = shell_cmd_runner(
+                f"gpg --default-key {signing_key} --yes --detach-sign "
+                f"--armor {file_path}"
+            )
 
-            process.check_returncode()
-
-    except subprocess.CalledProcessError as e:
-        terminal.error(f"Failed to sign file. {e}")
-        return False
+        process.check_returncode()
 
     if args.dry_run:
         return True
