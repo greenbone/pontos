@@ -168,6 +168,10 @@ class Terminal(ABC):
 
 
 class ConsoleTerminal(Terminal):
+    """
+    A simple Terminal using colorful internally for highlighting
+    """
+
     # Keep arguments for backwards compatibility but ignore them
     # pylint: disable=unused-argument
     def __init__(self, *, verbose: int = 1, log_file: Path = None):
