@@ -168,11 +168,10 @@ class Terminal(ABC):
 
 
 class ConsoleTerminal(Terminal):
-    def __init__(
-        self, *, verbose: int = 1, log_file: Path = None
-    ):  # pylint: disable=unused-argument
+    # Keep arguments for backwards compatibility but ignore them
+    # pylint: disable=unused-argument
+    def __init__(self, *, verbose: int = 1, log_file: Path = None):
         super().__init__()
-        self._verbose = verbose
 
     @staticmethod
     def get_width() -> int:
@@ -213,12 +212,11 @@ class ConsoleTerminal(Terminal):
                     usable_width=usable_width,
                     offset=offset,
                 )
-        if self._verbose > 0:
-            if new_line:
-                print(style(f"{color(status)} {output}"), **kwargs)
-            else:
-                kwargs.update({"end": "", "flush": True})
-                print(style(f"{color(status)} {output}"), **kwargs)
+        if new_line:
+            print(style(f"{color(status)} {output}"), **kwargs)
+        else:
+            kwargs.update({"end": "", "flush": True})
+            print(style(f"{color(status)} {output}"), **kwargs)
 
     def _format_message(
         self,
