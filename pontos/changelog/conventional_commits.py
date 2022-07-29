@@ -30,7 +30,8 @@ from tomlkit.toml_document import TOMLDocument
 from pontos.helper import shell_cmd_runner
 from pontos.release.helper import get_project_name
 from pontos.terminal import Terminal
-from pontos.terminal.terminal import ConsoleTerminal
+from pontos.terminal.null import NullTerminal
+from pontos.terminal.rich import RichTerminal
 
 ADDRESS = "https://github.com/"
 
@@ -263,10 +264,10 @@ def main(
 
     parsed_args = parse_args(args)
 
-    term = ConsoleTerminal(
-        verbose=1 if not parsed_args.quiet else 0,
-        log_file=parsed_args.log_file,
-    )
+    if parsed_args.quiet:
+        term = NullTerminal()
+    else:
+        term = RichTerminal()
 
     term.bold_info("pontos-changelog")
 
