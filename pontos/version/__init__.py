@@ -17,6 +17,7 @@
 
 import sys
 from pathlib import Path
+from typing import Tuple
 
 from .__version__ import __version__
 from .cmake import CMakeVersionCommand
@@ -24,7 +25,7 @@ from .go import GoVersionCommand
 from .python import PythonVersionCommand
 
 
-def main(leave=True, args=None):
+def main(leave=True, args=None) -> Tuple[bool, str]:
     available_cmds = [
         ("CMakeLists.txt", CMakeVersionCommand),
         ("pyproject.toml", PythonVersionCommand),
