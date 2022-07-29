@@ -26,9 +26,6 @@ import colorful as cf
 
 from pontos.helper import DownloadProgressIterable
 
-# from pontos.terminal.log_config import process_logger
-from pontos.terminal.logger import TerminalLogger
-
 TERMINAL_SIZE_FALLBACK = (80, 24)  # use a small standard size as fallback
 
 
@@ -171,12 +168,10 @@ class Terminal(ABC):
 
 
 class ConsoleTerminal(Terminal):
-    def __init__(self, *, verbose: int = 1, log_file: Path = None):
+    def __init__(
+        self, *, verbose: int = 1, log_file: Path = None
+    ):  # pylint: disable=unused-argument
         super().__init__()
-        if log_file:
-            self._logger = TerminalLogger(log_file=log_file)
-        else:
-            self._logger = None
         self._verbose = verbose
 
     @staticmethod
@@ -224,9 +219,6 @@ class ConsoleTerminal(Terminal):
             else:
                 kwargs.update({"end": "", "flush": True})
                 print(style(f"{color(status)} {output}"), **kwargs)
-
-        if self._logger:
-            self._logger.log(message=f"{status} {output}")
 
     def _format_message(
         self,
