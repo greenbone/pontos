@@ -75,14 +75,12 @@ class JavaScriptVersionCommand(VersionCommand):
 
     def _update_package_json(self, new_version: str) -> None:
         """
-        Update the version in the pyproject.toml file
+        Update the version in the package.json file
         """
-
-        new_version = safe_version(new_version)
         try:
             with self.project_file_path.open(mode="r") as fp:
                 package = json.load(fp)
-                package["version"] = new_version
+            package["version"] = new_version
             with self.project_file_path.open(mode="w") as fp:
                 json.dump(obj=package, fp=fp, indent=2)
         except EnvironmentError as e:
@@ -99,8 +97,6 @@ class JavaScriptVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        new_version = safe_version(new_version)
-
         if GREENBONE_JS_VERSION_FILE.exists():
             content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
             content = re.sub(

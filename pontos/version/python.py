@@ -101,7 +101,6 @@ class PythonVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        new_version = safe_version(new_version)
         self.version_file_path.write_text(
             TEMPLATE.format(new_version), encoding="utf-8"
         )
@@ -113,8 +112,6 @@ class PythonVersionCommand(VersionCommand):
         """
         Update the version in the pyproject.toml file
         """
-
-        new_version = safe_version(new_version)
         pyproject_toml = tomlkit.parse(
             self.project_file_path.read_text(encoding="utf-8")
         )
