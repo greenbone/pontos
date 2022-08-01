@@ -624,12 +624,12 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         uploaded_file = next(upload_it)
         post_mock.assert_called_with(
-            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=foo.txt",  # pylint: disable=line-too-long
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
             },
-            params=None,
+            params={"name": "foo.txt"},
             follow_redirects=True,
             content=content1,
         )
@@ -637,12 +637,12 @@ class GitHubApiTestCase(unittest.TestCase):
 
         uploaded_file = next(upload_it)
         post_mock.assert_called_with(
-            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=bar.pdf",  # pylint: disable=line-too-long
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
             },
-            params=None,
+            params={"name": "bar.pdf"},
             follow_redirects=True,
             content=content2,
         )
@@ -737,12 +737,12 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         uploaded_file = next(upload_it)
         post_mock.assert_called_with(
-            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets?name=foo.txt",  # pylint: disable=line-too-long
+            "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
             },
-            params=None,
+            params={"name": "foo.txt"},
             follow_redirects=True,
             content=content1,
         )

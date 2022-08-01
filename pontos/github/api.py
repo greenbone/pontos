@@ -440,7 +440,8 @@ class GitHubRESTApi:
         for file_path in files:
             to_upload = file_path.read_bytes()
             response = self._request_internal(
-                f"{asset_url}?name={file_path.name}",
+                asset_url,
+                params={"name": file_path.name},
                 content=to_upload,
                 request=httpx.post,
             )
