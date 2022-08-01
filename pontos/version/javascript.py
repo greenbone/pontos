@@ -40,7 +40,7 @@ class JavaScriptVersionCommand(VersionCommand):
         if not project_file_path.exists():
             raise VersionError(f"{str(project_file_path)} file not found.")
 
-        with project_file_path.open(mode="r") as fp:
+        with project_file_path.open(mode="r", encoding="utf-8") as fp:
             self.package = json.load(fp)
         if not self.package.get("version", None):
             raise VersionError(
