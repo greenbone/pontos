@@ -45,6 +45,13 @@ def release(
     token: str,
     **_kwargs,
 ) -> bool:
+    if not token:
+        terminal.error(
+            "Token is missing. The GitHub token is required to create a "
+            "release."
+        )
+        return False
+
     project: str = (
         args.project
         if args.project is not None
