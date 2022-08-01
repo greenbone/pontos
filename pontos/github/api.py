@@ -69,12 +69,15 @@ class GitHubRESTApi:
         data: Optional[Dict[str, str]] = None,
         content: Optional[bytes] = None,
         request: Optional[Callable] = None,
+        content_type: Optional[str] = None,
     ) -> httpx.Response:
         headers = {
             "Accept": "application/vnd.github.v3+json",
         }
         if self.token:
             headers["Authorization"] = f"token {self.token}"
+        if content_type:
+            headers["Content-Type"] = content_type
 
         request = request or httpx.get
         kwargs = {}
