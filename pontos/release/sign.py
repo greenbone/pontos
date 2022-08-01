@@ -105,8 +105,10 @@ def sign(
     if args.dry_run:
         return True
 
-    upload_files = [Path(f"{str(p)}.asc") for p in file_paths]
-    terminal.info(f"Uploading assets: {[str(p) for p in upload_files]}")
+    upload_files = [
+        (Path(f"{str(p)}.asc"), "application/pgp-signature") for p in file_paths
+    ]
+    terminal.info(f"Uploading assets: {[str(p[0]) for p in upload_files]}")
 
     try:
         for uploaded_file in github.upload_release_assets(
