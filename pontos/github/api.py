@@ -296,12 +296,16 @@ class GitHubRESTApi:
         """
         data = {
             "tag_name": tag,
-            "target_commitish": target_commitish,
-            "name": name,
-            "body": body,
             "draft": draft,
             "prerelease": prerelease,
         }
+        if name is not None:
+            data["name"] = name
+        if body is not None:
+            data["body"] = body
+        if target_commitish is not None:
+            data["target_commitish"] = target_commitish
+
         api = f"/repos/{repo}/releases"
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
