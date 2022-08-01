@@ -35,6 +35,15 @@ def sign(
     token: str,
     **_kwargs,
 ) -> bool:
+    if not token and not args.dry_run:
+        # dry run doesn't upload assets. therefore a token MAY NOT be required
+        # for public repositories.
+        terminal.error(
+            "Token is missing. The GitHub token is required to upload "
+            "signature files."
+        )
+        return False
+
     project: str = (
         args.project
         if args.project is not None
