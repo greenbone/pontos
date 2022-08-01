@@ -628,6 +628,7 @@ class GitHubApiTestCase(unittest.TestCase):
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
+                "Content-Type": "application/octet-stream",
             },
             params={"name": "foo.txt"},
             follow_redirects=True,
@@ -641,6 +642,7 @@ class GitHubApiTestCase(unittest.TestCase):
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
+                "Content-Type": "application/octet-stream",
             },
             params={"name": "bar.pdf"},
             follow_redirects=True,
@@ -741,6 +743,7 @@ class GitHubApiTestCase(unittest.TestCase):
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token 12345",
+                "Content-Type": "application/octet-stream",
             },
             params={"name": "foo.txt"},
             follow_redirects=True,
