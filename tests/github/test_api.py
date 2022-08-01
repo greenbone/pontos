@@ -197,7 +197,6 @@ class GitHubApiTestCase(unittest.TestCase):
             params=None,
             json={
                 "tag_name": "v1.2.3",
-                "target_commitish": None,
                 "name": "Foo v1.2.3",
                 "body": "This is a release",
                 "draft": False,
