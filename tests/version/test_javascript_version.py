@@ -68,7 +68,7 @@ class UpdateJavaScriptVersionTestCase(unittest.TestCase):
         cmd = JavaScriptVersionCommand(project_file_path=package_file)
         cmd.update_version("22.4.0.dev1")
 
-        with package_file.open(mode="r") as fp:
+        with package_file.open(mode="r", encoding="utf-8") as fp:
             fake_package = json.load(fp)
 
         self.assertEqual(fake_package["version"], "22.4.0.dev1")
