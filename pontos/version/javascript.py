@@ -40,6 +40,13 @@ class JavaScriptVersionCommand(VersionCommand):
         if not project_file_path.exists():
             raise VersionError(f"{str(project_file_path)} file not found.")
 
+        with project_file_path.open(mode="r") as fp:
+            self.package = json.load(fp)
+        if not self.package.get("version", None):
+            raise VersionError(
+                f"Version field missing in {str(project_file_path)}."
+            )
+
         super().__init__(
             project_file_path=project_file_path,
         )
@@ -49,9 +56,7 @@ class JavaScriptVersionCommand(VersionCommand):
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
         try:
-            with self.project_file_path.open(mode="r") as fp:
-                package = json.load(fp)
-                return package["version"]
+            return self.package["version"]
         except EnvironmentError as e:
             self._print(
                 "No version tag found. Maybe this "
@@ -78,11 +83,9 @@ class JavaScriptVersionCommand(VersionCommand):
         Update the version in the package.json file
         """
         try:
-            with self.project_file_path.open(mode="r") as fp:
-                package = json.load(fp)
-            package["version"] = new_version
+            self.package["version"] = new_version
             with self.project_file_path.open(mode="w") as fp:
-                json.dump(obj=package, fp=fp, indent=2)
+                json.dump(obj=self.package, fp=fp, indent=2)
         except EnvironmentError as e:
             self._print(
                 "No version tag found. Maybe this "
