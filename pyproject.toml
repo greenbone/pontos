@@ -48,7 +48,7 @@ rope = "^1.1.1"
 coverage = "^6.4"
 myst-parser = "^0.18.0"
 Sphinx = "^5.0.2"
-sphinx-autodoc-typehints = "^1.18.3"
+sphinx-autodoc-typehints = "^1.19.1"
 
 [tool.black]
 line-length = 80
