@@ -26,6 +26,8 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Tuple,
+    Union,
 )
 
 import httpx
@@ -69,12 +71,15 @@ class GitHubRESTApi:
         data: Optional[Dict[str, str]] = None,
         content: Optional[bytes] = None,
         request: Optional[Callable] = None,
+        content_type: Optional[str] = None,
     ) -> httpx.Response:
         headers = {
             "Accept": "application/vnd.github.v3+json",
         }
         if self.token:
             headers["Authorization"] = f"token {self.token}"
+        if content_type:
+            headers["Content-Type"] = content_type
 
         request = request or httpx.get
         kwargs = {}
@@ -83,7 +88,7 @@ class GitHubRESTApi:
         if content is not None:
             kwargs["content"] = content
         return request(
-            f"{url}",
+            url,
             headers=headers,
             params=params,
             follow_redirects=True,
@@ -409,7 +414,10 @@ class GitHubRESTApi:
                     yield progress
 
     def upload_release_assets(
-        self, repo: str, tag: str, files: Iterable[Path]
+        self,
+        repo: str,
+        tag: str,
+        files: Iterable[Union[Path, Tuple[Path, str]]],
     ) -> Iterator[Path]:
         # pylint: disable=line-too-long
         """
@@ -418,7 +426,8 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
             tag: The git tag for the release
-            files: File paths to upload as an asset
+            files: An iterable of file paths or an iterable of tuples
+                containing a file path and content types to upload as an asset
 
         Returns:
             yields each file after its upload is finished
@@ -426,8 +435,12 @@ class GitHubRESTApi:
         Raises:
             HTTPError if an upload request was invalid
 
-        Example:
+        Examples:
             >>> files = (Path("foo.txt"), Path("bar.txt"),)
+            >>> for uploaded_file in git.upload_release_assets("foo/bar", "1.2.3", files):
+            >>>    print(f"Uploaded: {uploaded_file}")
+
+            >>> files = [(Path("foo.txt"), "text/ascii"), (Path("bar.pdf"), "application/pdf")]
             >>> for uploaded_file in git.upload_release_assets("foo/bar", "1.2.3", files):
             >>>    print(f"Uploaded: {uploaded_file}")
         """
@@ -435,10 +448,18 @@ class GitHubRESTApi:
         asset_url = github_json["upload_url"].replace("{?name,label}", "")
 
         for file_path in files:
+            if isinstance(file_path, Tuple):
+                file_path, content_type = file_path
+            else:
+                content_type = "application/octet-stream"
+
             to_upload = file_path.read_bytes()
+
             response = self._request_internal(
-                f"{asset_url}?name={file_path.name}",
+                asset_url,
+                params={"name": file_path.name},
                 content=to_upload,
+                content_type=content_type,
                 request=httpx.post,
             )
             response.raise_for_status()
