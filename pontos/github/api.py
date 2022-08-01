@@ -86,7 +86,7 @@ class GitHubRESTApi:
         if content is not None:
             kwargs["content"] = content
         return request(
-            f"{url}",
+            url,
             headers=headers,
             params=params,
             follow_redirects=True,
