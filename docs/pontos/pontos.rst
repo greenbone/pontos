@@ -1,5 +1,5 @@
-pontos package
-==============
+API
+===
 
 Subpackages
 -----------
