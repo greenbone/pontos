@@ -32,11 +32,10 @@ release = __version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints',
-    'myst_parser'
+    "sphinx.ext.autodoc",
+    "sphinx.ext.githubpages",
+    "sphinx.ext.napoleon",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
