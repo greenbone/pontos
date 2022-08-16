@@ -5,6 +5,9 @@ description = "Common utilities and tools maintained by Greenbone Networks"
 authors = ["Greenbone Networks GmbH <info@greenbone.net>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
+homepage = "https://github.com/greenbone/pontos/"
+repository = "https://github.com/greenbone/pontos/"
+documentation = "https://greenbone.github.io/pontos/"
 
 classifiers=[
   # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
@@ -48,6 +51,7 @@ rope = "^1.3.0"
 coverage = "^6.4"
 myst-parser = "^0.18.0"
 Sphinx = "^5.0.2"
+furo = "^2022.6.21"
 
 [tool.black]
 line-length = 80
