@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) <year> <company>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
