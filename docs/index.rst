@@ -12,9 +12,11 @@ User Guide
 This sections explains how to install **Pontos** and shows example use cases.
 
 .. toctree::
-   tools
    :maxdepth: 2
 
+   install
+   tools
+   
    README
 
 .. toctree::
