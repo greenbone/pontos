@@ -43,6 +43,7 @@ pontos-version
 ---------------
 
 ``pontos-version`` - Version handling utility for C, Go and Python Projects
+
 .. code-block:: shell
 
 	# Update version of this project to 22.1.1
