@@ -13,16 +13,13 @@ Using pip
 
 pip 19.0 or later is required.
 
-.. note:: All commands listed here use the general tool names. If some of
- these tools are provided by your distribution, you may need to explicitly use
- the Python 3 version of the tool, e.g. **`pip3`**.
 
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using `pip <https://pip.pypa.io/en/stable/>`_
 
 .. code-block:: shell
 
-    pip install --user pontos
+    python3 -m pip install --user pontos
 
 Using poetry
 ^^^^^^^^^^^^^^^^^^^

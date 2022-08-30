@@ -10,7 +10,7 @@ First install poetry via pip
 
 .. code-block:: shell   
    
-    pip install --user poetry
+    python3 -m pip install --user poetry
 
 Afterwards run
 
