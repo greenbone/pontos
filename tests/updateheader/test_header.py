@@ -39,8 +39,7 @@ from pontos.updateheader.updateheader import _parse_args as parse_args
 from pontos.updateheader.updateheader import _update_file as update_file
 from pontos.updateheader.updateheader import main
 
-HEADER = """# -*- coding: utf-8 -*-
-# Copyright (C) {date} Greenbone Networks GmbH
+HEADER = """# Copyright (C) {date} Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
