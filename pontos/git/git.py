@@ -33,7 +33,7 @@ class GitError(subprocess.CalledProcessError):
         )
 
 
-def _exec_git(
+def exec_git(
     *args: str, ignore_errors: Optional[bool] = False, cwd: Optional[str] = None
 ) -> str:
     """
@@ -89,7 +89,7 @@ class Git:
         args = ["init"]
         if bare:
             args.append("--bare")
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def create_branch(self, branch: str, *, start_point: Optional[str] = None):
         """
@@ -104,7 +104,7 @@ class Git:
         if start_point:
             args.append(start_point)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def rebase(
         self,
@@ -132,7 +132,7 @@ class Git:
         if head:
             args.append(head)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def clone(
         self,
@@ -161,7 +161,7 @@ class Git:
             args.extend(["--depth", depth])
         args.extend([repo_url, str(destination.absolute())])
 
-        _exec_git(
+        exec_git(
             *args,
             cwd=self._cwd,
         )
@@ -191,13 +191,13 @@ class Git:
             if branch:
                 args.append(branch)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def config(self, key: str, value: str):
         """
         Set a (local) git config
         """
-        _exec_git("config", key, value, cwd=self._cwd)
+        exec_git("config", key, value, cwd=self._cwd)
 
     def cherry_pick(self, commits: Union[str, List[str]]):
         """
@@ -213,13 +213,13 @@ class Git:
         args = ["cherry-pick"]
         args.extend(commits)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def list_tags(self) -> List[str]:
         """
         List all available tags
         """
-        return _exec_git("tag", "-l", cwd=self._cwd).splitlines()
+        return exec_git("tag", "-l", cwd=self._cwd).splitlines()
 
     def add(self, files: Union[str, List[str]]):
         """
@@ -234,7 +234,7 @@ class Git:
         args = ["add"]
         args.extend(files)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def commit(
         self,
@@ -259,4 +259,4 @@ class Git:
 
         args.extend(["-m", message])
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
