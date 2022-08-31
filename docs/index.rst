@@ -14,7 +14,11 @@ This sections explains how to install **Pontos** and shows example use cases.
 .. toctree::
    :maxdepth: 2
 
-   README
+   install
+   tools
+   development
+   other
+   
 
 .. toctree::
    :caption: Development
