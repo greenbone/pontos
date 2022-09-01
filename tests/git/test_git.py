@@ -23,7 +23,7 @@ from pontos.git import Git
 
 
 class GitTestCase(unittest.TestCase):
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_clone(self, exec_git_mock):
         git = Git()
         git.clone("http://foo/foo.git", Path("/bar"))
@@ -32,7 +32,7 @@ class GitTestCase(unittest.TestCase):
             "clone", "http://foo/foo.git", "/bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_clone_with_remote(self, exec_git_mock):
         git = Git()
         git.clone("http://foo/foo.git", Path("/bar"), remote="foo")
@@ -41,7 +41,7 @@ class GitTestCase(unittest.TestCase):
             "clone", "-o", "foo", "http://foo/foo.git", "/bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_clone_with_branch(self, exec_git_mock):
         git = Git()
         git.clone("http://foo/foo.git", Path("/bar"), branch="foo")
@@ -50,7 +50,7 @@ class GitTestCase(unittest.TestCase):
             "clone", "-b", "foo", "http://foo/foo.git", "/bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_clone_with_depth(self, exec_git_mock):
         git = Git()
         git.clone("http://foo/foo.git", Path("/bar"), depth=1)
@@ -59,14 +59,14 @@ class GitTestCase(unittest.TestCase):
             "clone", "--depth", 1, "http://foo/foo.git", "/bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_init(self, exec_git_mock):
         git = Git()
         git.init()
 
         exec_git_mock.assert_called_once_with("init", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_init_bare(self, exec_git_mock):
         git = Git()
         git.init(bare=True)
@@ -83,14 +83,14 @@ class GitTestCase(unittest.TestCase):
 
         self.assertEqual(git.cwd, new_cwd.absolute())
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_create_branch(self, exec_git_mock):
         git = Git()
         git.create_branch("foo")
 
         exec_git_mock.assert_called_once_with("checkout", "-b", "foo", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_create_branch_with_starting_point(self, exec_git_mock):
         git = Git()
         git.create_branch("foo", start_point="bar")
@@ -99,21 +99,21 @@ class GitTestCase(unittest.TestCase):
             "checkout", "-b", "foo", "bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_rebase(self, exec_git_mock):
         git = Git()
         git.rebase("foo")
 
         exec_git_mock.assert_called_once_with("rebase", "foo", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_rebase_with_head(self, exec_git_mock):
         git = Git()
         git.rebase("foo", head="bar")
 
         exec_git_mock.assert_called_once_with("rebase", "foo", "bar", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_rebase_with_head_and_onto(self, exec_git_mock):
         git = Git()
         git.rebase("foo", head="bar", onto="staging")
@@ -122,42 +122,42 @@ class GitTestCase(unittest.TestCase):
             "rebase", "--onto", "staging", "foo", "bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_push(self, exec_git_mock):
         git = Git()
         git.push()
 
         exec_git_mock.assert_called_once_with("push", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_push_with_remote(self, exec_git_mock):
         git = Git()
         git.push(remote="foo")
 
         exec_git_mock.assert_called_once_with("push", "foo", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_push_with_remote_and_branch(self, exec_git_mock):
         git = Git()
         git.push(remote="foo", branch="bar")
 
         exec_git_mock.assert_called_once_with("push", "foo", "bar", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_push_with_follow_tags(self, exec_git_mock):
         git = Git()
         git.push(follow_tags=True)
 
         exec_git_mock.assert_called_once_with("push", "--follow-tags", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_config(self, exec_git_mock):
         git = Git()
         git.config("foo", "bar")
 
         exec_git_mock.assert_called_once_with("config", "foo", "bar", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_cherry_pick(self, exec_git_mock):
         git = Git()
         git.cherry_pick(["foo", "bar"])
@@ -166,14 +166,14 @@ class GitTestCase(unittest.TestCase):
             "cherry-pick", "foo", "bar", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_cherry_pick_single_commit(self, exec_git_mock):
         git = Git()
         git.cherry_pick("foo")
 
         exec_git_mock.assert_called_once_with("cherry-pick", "foo", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_list_tags(self, exec_git_mock):
         exec_git_mock.return_value = "v1.0\nv2.0\nv2.1\n"
         git = Git()
@@ -186,21 +186,21 @@ class GitTestCase(unittest.TestCase):
         self.assertEqual(tags[1], "v2.0")
         self.assertEqual(tags[2], "v2.1")
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_add_single_file(self, exec_git_mock):
         git = Git()
         git.add("foo")
 
         exec_git_mock.assert_called_once_with("add", "foo", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_add(self, exec_git_mock):
         git = Git()
         git.add(["foo", "bar"])
 
         exec_git_mock.assert_called_once_with("add", "foo", "bar", cwd=None)
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_commit(self, exec_git_mock):
         git = Git()
         git.commit("Add foo")
@@ -209,7 +209,7 @@ class GitTestCase(unittest.TestCase):
             "commit", "-m", "Add foo", cwd=None
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_commit_with_signing_key(self, exec_git_mock):
         git = Git()
         git.commit(
@@ -225,7 +225,7 @@ class GitTestCase(unittest.TestCase):
             cwd=None,
         )
 
-    @patch("pontos.git.git._exec_git")
+    @patch("pontos.git.git.exec_git")
     def test_commit_without_verify(self, exec_git_mock):
         git = Git()
         git.commit("Add foo", verify=False)

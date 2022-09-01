@@ -12,6 +12,7 @@ Subpackages
    pontos.github
    pontos.release
    pontos.terminal
+   pontos.testing
    pontos.updateheader
    pontos.version
 

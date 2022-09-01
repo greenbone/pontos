@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from os import PathLike, fspath
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -33,16 +34,34 @@ class GitError(subprocess.CalledProcessError):
         )
 
 
-def _exec_git(
-    *args: str, ignore_errors: Optional[bool] = False, cwd: Optional[str] = None
+def exec_git(
+    *args: str,
+    ignore_errors: Optional[bool] = False,
+    cwd: Optional[PathLike] = None,
 ) -> str:
     """
-    Internal module function to abstract calling git via subprocess
+    Internal module function to abstract calling git via subprocess. Most of the
+    cases the Git class should be used.
+
+    Args:
+        ignore_errors: Set to True if errors while running git should be
+            ignored. Default: False.
+        cwd: Set the current working directory
+
+    Raises:
+        GitError: Will be raised if ignore_errors is False and git returns with
+            an exit code != 0.
+
+    Returns:
+        stdout output of git command or empty string if ignore_errors is True
+        and git returns with an exit code != 0.
     """
     try:
         cmd_args = ["git"]
         cmd_args.extend(args)
-        output = subprocess.check_output(cmd_args, cwd=cwd)
+        output = subprocess.check_output(
+            cmd_args, cwd=fspath(cwd) if cwd else None
+        )
         return output.decode()
     except subprocess.CalledProcessError as e:
         if ignore_errors:
@@ -89,7 +108,7 @@ class Git:
         args = ["init"]
         if bare:
             args.append("--bare")
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def create_branch(self, branch: str, *, start_point: Optional[str] = None):
         """
@@ -104,7 +123,7 @@ class Git:
         if start_point:
             args.append(start_point)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def rebase(
         self,
@@ -132,7 +151,7 @@ class Git:
         if head:
             args.append(head)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def clone(
         self,
@@ -161,7 +180,7 @@ class Git:
             args.extend(["--depth", depth])
         args.extend([repo_url, str(destination.absolute())])
 
-        _exec_git(
+        exec_git(
             *args,
             cwd=self._cwd,
         )
@@ -191,13 +210,13 @@ class Git:
             if branch:
                 args.append(branch)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def config(self, key: str, value: str):
         """
         Set a (local) git config
         """
-        _exec_git("config", key, value, cwd=self._cwd)
+        exec_git("config", key, value, cwd=self._cwd)
 
     def cherry_pick(self, commits: Union[str, List[str]]):
         """
@@ -213,28 +232,28 @@ class Git:
         args = ["cherry-pick"]
         args.extend(commits)
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def list_tags(self) -> List[str]:
         """
         List all available tags
         """
-        return _exec_git("tag", "-l", cwd=self._cwd).splitlines()
+        return exec_git("tag", "-l", cwd=self._cwd).splitlines()
 
-    def add(self, files: Union[str, List[str]]):
+    def add(self, files: Union[PathLike, List[PathLike]]):
         """
         Add files to the git staging area
 
         Args:
             files: A single file or a list of files to add to the staging area
         """
-        if isinstance(files, str):
+        if isinstance(files, (PathLike, str, bytes)):
             files = [files]
 
         args = ["add"]
-        args.extend(files)
+        args.extend([fspath(file) for file in files])
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
 
     def commit(
         self,
@@ -259,4 +278,4 @@ class Git:
 
         args.extend(["-m", message])
 
-        _exec_git(*args, cwd=self._cwd)
+        exec_git(*args, cwd=self._cwd)
