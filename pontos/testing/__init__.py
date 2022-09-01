@@ -124,7 +124,7 @@ def temp_git_repository(
     temp_dir = tempfile.TemporaryDirectory()
     temp_path = Path(temp_dir.name)
 
-    os.chdir(str(temp_path))
+    os.chdir(temp_path)
 
     exec_git("init", "-b", branch)
     exec_git("config", "--local", "user.email", user_email)
