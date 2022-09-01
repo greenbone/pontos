@@ -62,7 +62,9 @@ def temp_directory(
     Context Manager to create a temporary directory
 
     Args:
-        change_into: Set the created temporary as the current working directory
+        change_into: Set the created temporary as the current working directory.
+            The behavior of the current working directory when leaving the
+            context manager is undefined.
         add_to_sys_path: Add the created temporary directory to the directories
             for searching for Python modules
 
@@ -186,7 +188,13 @@ def temp_python_module(
     Example:
         .. code-block:: python
 
-            with temp_python_module("print()", name="bar") as python_module_path
+            with temp_python_module(
+                "def hello(value):\\n  print(f'Hello {value}')", name="world"
+            ) as python_module_path:
+                from world import hello
+                hello("World")
+
+
     """
     with temp_directory(
         add_to_sys_path=True,
