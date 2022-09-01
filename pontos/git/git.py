@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from os import PathLike, fspath
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -34,15 +35,33 @@ class GitError(subprocess.CalledProcessError):
 
 
 def exec_git(
-    *args: str, ignore_errors: Optional[bool] = False, cwd: Optional[str] = None
+    *args: str,
+    ignore_errors: Optional[bool] = False,
+    cwd: Optional[PathLike] = None,
 ) -> str:
     """
-    Internal module function to abstract calling git via subprocess
+    Internal module function to abstract calling git via subprocess. Most of the
+    cases the Git class should be used.
+
+    Args:
+        ignore_errors: Set to True if errors while running git should be
+            ignored. Default: False.
+        cwd: Set the current working directory
+
+    Raises:
+        GitError: Will be raised if ignore_errors is False and git returns with
+            an exit code != 0.
+
+    Returns:
+        stdout output of git command or empty string if ignore_errors is True
+        and git returns with an exit code != 0.
     """
     try:
         cmd_args = ["git"]
         cmd_args.extend(args)
-        output = subprocess.check_output(cmd_args, cwd=cwd)
+        output = subprocess.check_output(
+            cmd_args, cwd=fspath(cwd) if cwd else None
+        )
         return output.decode()
     except subprocess.CalledProcessError as e:
         if ignore_errors:
