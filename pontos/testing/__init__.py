@@ -230,5 +230,7 @@ def ensure_unload_module(name: str) -> Generator[None, None, None]:
             with ensure_unload_module("foo.bar"):
                 do_something()
     """
-    yield
-    unload_module(name)
+    try:
+        yield
+    finally:
+        unload_module(name)
