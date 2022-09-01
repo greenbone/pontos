@@ -36,17 +36,19 @@ from pontos.release.helper import (
     get_project_name,
     update_version,
 )
+from pontos.testing import temp_git_repository
 
 
 class TestHelperFunctions(unittest.TestCase):
     def setUp(self):
-        self.shell_cmd_runner = lambda x: subprocess.run(
+        self.shell_cmd_runner = lambda x, cwd=None: subprocess.run(
             x,
             shell=True,
             check=True,
             errors="utf-8",  # use utf-8 encoding for error output
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            cwd=cwd,
         )
         self.tmpdir = Path(tempfile.gettempdir()) / "testrepo"
         self.tmpdir.mkdir(parents=True, exist_ok=True)
@@ -76,53 +78,55 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_find_signing_key(self):
         terminal = MagicMock()
-        # save possibly set git signing key from user temporarily
-        try:
-            saved_key = self.shell_cmd_runner(
-                "git config user.signingkey"
-            ).stdout.strip()
-        except subprocess.CalledProcessError:
-            saved_key = None
 
-        self.shell_cmd_runner(
-            "git config user.signingkey "
-            "1234567890ABCEDEF1234567890ABCEDEF123456"
-        )
+        with temp_git_repository():
+            self.shell_cmd_runner(
+                "git config user.signingkey "
+                "1234567890ABCEDEF1234567890ABCEDEF123456"
+            )
 
-        signing_key = find_signing_key(
-            terminal, shell_cmd_runner=self.shell_cmd_runner
-        )
-        self.assertEqual(
-            signing_key, "1234567890ABCEDEF1234567890ABCEDEF123456"
-        )
-
-        # reset the previously saved signing key ...
-        if saved_key is not None:
-            self.shell_cmd_runner(f"git config user.signingkey {saved_key}")
+            signing_key = find_signing_key(
+                terminal, shell_cmd_runner=self.shell_cmd_runner
+            )
+            self.assertEqual(
+                signing_key, "1234567890ABCEDEF1234567890ABCEDEF123456"
+            )
 
     def test_find_no_signing_key(self):
         terminal = MagicMock()
-        # save possibly set git signing key from user temporarily
-        try:
-            saved_key = self.shell_cmd_runner(
-                "git config user.signingkey"
-            ).stdout.strip()
-        except subprocess.CalledProcessError:
-            saved_key = None
+        saved_key = None
 
         try:
-            self.shell_cmd_runner("git config --unset user.signingkey")
-        except subprocess.CalledProcessError as e:
-            self.assertEqual(e.returncode, 5)
+            # save possibly set git signing key from user temporarily
+            try:
+                saved_key = self.shell_cmd_runner(
+                    "git config --global user.signingkey",
+                    cwd=Path.home(),
+                ).stdout.strip()
+            except subprocess.CalledProcessError:
+                saved_key = None
 
-        signing_key = find_signing_key(
-            terminal, shell_cmd_runner=self.shell_cmd_runner
-        )
-        self.assertEqual(signing_key, "")
+            try:
+                self.shell_cmd_runner(
+                    "git config --global --unset user.signingkey",
+                    cwd=Path.home(),
+                )
+            except subprocess.CalledProcessError as e:
+                self.assertEqual(e.returncode, 5)
 
-        # reset the previously saved signing key ...
-        if saved_key is not None:
-            self.shell_cmd_runner(f"git config user.signingkey {saved_key}")
+            with temp_git_repository():
+                signing_key = find_signing_key(
+                    terminal, shell_cmd_runner=self.shell_cmd_runner
+                )
+                self.assertEqual(signing_key, "")
+
+        finally:
+            # reset the previously saved signing key ...
+            if saved_key is not None:
+                self.shell_cmd_runner(
+                    f'git config --global user.signingkey "{saved_key}"',
+                    cwd=Path.home(),
+                )
 
     def test_update_version_not_found(self):
         terminal = MagicMock()
