@@ -240,18 +240,18 @@ class Git:
         """
         return exec_git("tag", "-l", cwd=self._cwd).splitlines()
 
-    def add(self, files: Union[str, List[str]]):
+    def add(self, files: Union[PathLike, List[PathLike]]):
         """
         Add files to the git staging area
 
         Args:
             files: A single file or a list of files to add to the staging area
         """
-        if isinstance(files, str):
+        if isinstance(files, (PathLike, str, bytes)):
             files = [files]
 
         args = ["add"]
-        args.extend(files)
+        args.extend([fspath(file) for file in files])
 
         exec_git(*args, cwd=self._cwd)
 
