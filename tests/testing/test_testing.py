@@ -44,6 +44,28 @@ class AddSysPathTestCase(unittest.TestCase):
 
         unload_module("mymodule")
 
+    def test_add_sys_path_exception(self):
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
+
+        try:
+            with temp_file("", name="mymodule.py") as module_path, add_sys_path(
+                module_path.parent
+            ):
+                # pylint: disable=import-error,import-outside-toplevel,unused-import
+                import mymodule
+
+                raise ValueError()
+        except ValueError:
+            pass
+        finally:
+            unload_module("mymodule")
+
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
+
 
 class TempDirectoryTestCase(unittest.TestCase):
     def test_temp_directory(self):
@@ -56,6 +78,21 @@ class TempDirectoryTestCase(unittest.TestCase):
 
         self.assertFalse(tmp_dir.exists())
         self.assertFalse(tmp_file.exists())
+
+    def test_temp_directory_exception(self):
+        try:
+            with temp_directory() as tmp_dir:
+                tmp_file = tmp_dir / "test.txt"
+                tmp_file.write_text("Lorem Ipsum", encoding="utf8")
+
+                self.assertTrue(tmp_dir.exists())
+                self.assertTrue(tmp_file.exists())
+                raise ValueError()
+        except ValueError:
+            pass
+        finally:
+            self.assertFalse(tmp_dir.exists())
+            self.assertFalse(tmp_file.exists())
 
     def test_temp_directory_change_into(self):
         old_cwd = Path.cwd()
@@ -95,6 +132,25 @@ class TempGitRepositoryTestCase(unittest.TestCase):
         self.assertFalse(git_directory.exists())
         self.assertFalse(test_file.exists())
 
+    def test_temp_git_repository_exception(self):
+        try:
+            with temp_git_repository(branch="foo") as git_directory:
+                test_file = git_directory / "test.txt"
+                test_file.write_text("Lorem Ipsum", encoding="utf8")
+
+                self.assertTrue(git_directory.exists())
+                self.assertTrue(test_file.exists())
+
+                git = Git(git_directory)
+                git.add(test_file)
+
+                raise ValueError()
+        except ValueError:
+            pass
+        finally:
+            self.assertFalse(git_directory.exists())
+            self.assertFalse(test_file.exists())
+
 
 class TempFileTestCase(unittest.TestCase):
     def test_temp_file(self):
@@ -103,6 +159,21 @@ class TempFileTestCase(unittest.TestCase):
             self.assertEqual("my content", test_file.read_text(encoding="utf8"))
 
         self.assertFalse(test_file.exists())
+
+    def test_temp_file_exception(self):
+        try:
+            with temp_file("my content") as test_file:
+                self.assertTrue(test_file.exists())
+                self.assertEqual(
+                    "my content", test_file.read_text(encoding="utf8")
+                )
+
+                raise ValueError()
+
+        except ValueError:
+            pass
+        finally:
+            self.assertFalse(test_file.exists())
 
     def test_temp_file_name(self):
         with temp_file("my content", name="foo.txt") as test_file:
@@ -140,7 +211,31 @@ class TempPythonModuleTestCase(unittest.TestCase):
 
         self.assertFalse(module_path.exists())
 
-        unload_module("foo")
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import foo
+
+    def test_temp_python_module_exception(self):
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import foo
+
+        try:
+            with temp_python_module("def foo():\n  pass") as module_path:
+                self.assertTrue(module_path.exists())
+
+                # pylint: disable=import-error,import-outside-toplevel,unused-import
+                import foo
+
+                raise ValueError()
+        except ValueError:
+            pass
+        finally:
+            self.assertFalse(module_path.exists())
+
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import foo
 
     def test_temp_python_module_name(self):
         with self.assertRaises(ImportError):
@@ -157,7 +252,9 @@ class TempPythonModuleTestCase(unittest.TestCase):
 
         self.assertFalse(module_path.exists())
 
-        unload_module("foo")
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule3
 
 
 class EnsureUnloadModuleTestCase(unittest.TestCase):

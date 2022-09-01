@@ -45,13 +45,14 @@ def add_sys_path(directory: os.PathLike) -> Generator[None, None, None]:
     if sys.path[0] != directory:
         sys.path.insert(0, directory)
 
-    yield
-
     try:
-        sys.path.remove(directory)
-    except ValueError:
-        # directory was not in the path
-        pass
+        yield
+    finally:
+        try:
+            sys.path.remove(directory)
+        except ValueError:
+            # directory was not in the path
+            pass
 
 
 @contextmanager
@@ -81,15 +82,27 @@ def temp_directory(
     dir_path = Path(temp_dir.name)
 
     if change_into:
+        try:
+            old_cwd = Path.cwd()
+        except FileNotFoundError:
+            old_cwd = Path.home()
+
         os.chdir(dir_path)
 
-    if add_to_sys_path:
-        with add_sys_path(dir_path):
+    try:
+        if add_to_sys_path:
+            with add_sys_path(dir_path):
+                yield Path(dir_path)
+        else:
             yield Path(dir_path)
-    else:
-        yield Path(dir_path)
-
-    temp_dir.cleanup()
+    finally:
+        if change_into:
+            try:
+                os.chdir(old_cwd)
+            finally:
+                temp_dir.cleanup()
+        else:
+            temp_dir.cleanup()
 
 
 @contextmanager
@@ -124,15 +137,24 @@ def temp_git_repository(
     temp_dir = tempfile.TemporaryDirectory()
     temp_path = Path(temp_dir.name)
 
+    try:
+        old_cwd = Path.cwd()
+    except FileNotFoundError:
+        old_cwd = Path.home()
+
     os.chdir(temp_path)
 
     exec_git("init", "-b", branch)
     exec_git("config", "--local", "user.email", user_email)
     exec_git("config", "--local", "user.name", user_name)
 
-    yield temp_path
-
-    temp_dir.cleanup()
+    try:
+        yield temp_path
+    finally:
+        try:
+            os.chdir(old_cwd)
+        finally:
+            temp_dir.cleanup()
 
 
 @contextmanager
