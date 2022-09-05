@@ -15,6 +15,7 @@ the titan of the sea.
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Documentation](#documentation)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Install using pip](#install-using-pip)
@@ -23,6 +24,10 @@ the titan of the sea.
 - [Maintainer](#maintainer)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Documentation
+
+The documentation for pontos can be found at https://greenbone.github.io/pontos/. Please refer to the documentation for more details as this README just gives a short overview.
 
 ## Installation
 
