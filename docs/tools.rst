@@ -65,7 +65,10 @@ pontos-update-header
 --------------------
 
 ``pontos-update-header`` - Handling Copyright header for various file types and licences
-.. note:: We also provide easy-to-use `GitHub Actions <https://github.com/greenbone/actions/#usage>`_, that updates copyright year in header of files and creates a Pull Request.
+
+.. note:: 
+
+	We also provide easy-to-use `GitHub Actions <https://github.com/greenbone/actions/#usage>`_, that updates copyright year in header of files and creates a Pull Request.
 
 .. code-block:: shell
 
