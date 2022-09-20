@@ -248,7 +248,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         self.assertEqual(data["id"], 52499047)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -288,7 +288,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -328,7 +328,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_zip(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -442,7 +442,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.get")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_assets(

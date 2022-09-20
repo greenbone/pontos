@@ -19,7 +19,7 @@
 import subprocess
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, Iterable, Iterator, Optional
+from typing import Generator, Iterable, Iterator, Optional, Union
 
 import httpx
 
@@ -86,7 +86,7 @@ class DownloadProgressIterable:
 @contextmanager
 def download(
     url: str,
-    destination: Optional[Path] = None,
+    destination: Optional[Union[Path, str]] = None,
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
@@ -113,7 +113,9 @@ def download(
             for progress in progress_it:
                 print(progress)
     """
-    destination = Path(url.split("/")[-1]) if not destination else destination
+    destination = (
+        Path(url.split("/")[-1]) if not destination else Path(destination)
+    )
 
     with httpx.stream(
         "GET", url, timeout=timeout, follow_redirects=True
