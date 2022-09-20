@@ -542,17 +542,11 @@ class GitHubRESTApi:
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
-    def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
+    def _get_artifacts(self, api: str) -> Iterable[JSON]:
         """
-        List all artifacts of a repository
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-
-        Returns:
-            Information about the artifacts in the repository as a dict
+        Internal method to get the artifacts information from different REST
+        URLs.
         """
-        api = f"/repos/{repo}/actions/artifacts"
         page = 1
         per_page = 100
         params = {"per_page": per_page, "page": page}
@@ -572,6 +566,19 @@ class GitHubRESTApi:
             downloaded = len(artifacts)
 
         return artifacts
+
+    def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
+        """
+        List all artifacts of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Returns:
+            Information about the artifacts in the repository as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts"
+        return self._get_artifacts(api)
 
     def get_repository_artifact(
         self, repo: str, artifact: str
@@ -623,3 +630,19 @@ class GitHubRESTApi:
         """
         api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
         return download(api, destination, headers=self._request_headers())
+
+    def get_workflow_artifacts(
+        self, repo: str, workflow: str
+    ) -> Iterable[JSON]:
+        """
+        List all artifacts for a workflow run
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: The unique identifier of the workflow run
+
+        Returns:
+            Information about the artifacts in the workflow as a dict
+        """
+        api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
+        return self._get_artifacts(api)

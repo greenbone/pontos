@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=too-many-lines
+
 import json
 import unittest
 from pathlib import Path
@@ -957,3 +959,99 @@ class GitHubApiTestCase(unittest.TestCase):
 
             with self.assertRaises(StopIteration):
                 next(it)
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_artifacts(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.return_value = {
+            "total_count": 1,
+            "artifacts": [
+                {
+                    "id": 11,
+                    "node_id": "MDg6QXJ0aWZhY3QxMQ==",
+                    "name": "Foo",
+                }
+            ],
+        }
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params={"per_page": 100, "page": 1},
+            follow_redirects=True,
+        )
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_artifacts_with_pagination(
+        self, requests_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.links = None
+        response.json.side_effect = [
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(0, 100)
+                ],
+            },
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(100, 120)
+                ],
+            },
+        ]
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+
+        requests_mock.assert_has_calls(
+            [
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
+                    "artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 1},
+                    follow_redirects=True,
+                ),
+                call().json(),
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
+                    "artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 2},
+                    follow_redirects=True,
+                ),
+                call().json(),
+            ]
+        )
+
+        self.assertEqual(len(artifacts), 120)
+        self.assertEqual(artifacts[0]["name"], "Foo-0")
+        self.assertEqual(artifacts[119]["name"], "Foo-119")
