@@ -912,3 +912,48 @@ class GitHubApiTestCase(unittest.TestCase):
             params=None,
             follow_redirects=True,
         )
+
+    @patch("pontos.helper.Path")
+    @patch("pontos.github.api.httpx.stream")
+    def test_download_repository_artifact(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
+
+        api = GitHubRESTApi("12345")
+        download_file = path_mock()
+        with api.download_repository_artifact(
+            "foo/bar", "123", download_file
+        ) as download_progress:
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://api.github.com/repos/foo/bar/actions/artifacts/123/zip",  # pylint: disable=line-too-long
+                timeout=DEFAULT_TIMEOUT,
+                follow_redirects=True,
+                headers={
+                    "Accept": "application/vnd.github.v3+json",
+                    "Authorization": "token 12345",
+                },
+                params=None,
+            )
+            response_headers.get.assert_called_once_with("content-length")
+
+            self.assertIsNone(download_progress.length)
+
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+
+            with self.assertRaises(StopIteration):
+                next(it)

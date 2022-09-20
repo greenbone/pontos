@@ -594,3 +594,32 @@ class GitHubRESTApi:
         response = self._request(api, request=httpx.get)
         response.raise_for_status()
         return response.json()
+
+    def download_repository_artifact(
+        self, repo: str, artifact: str, destination: Union[Path, str]
+    ) -> ContextManager[DownloadProgressIterable]:
+        """
+        Download a repository artifact zip file
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            destination: A path where to store the downloaded file
+
+        Raises:
+            HTTPError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            api = GitHubRESTApi("...")
+
+            print("Downloading", end="")
+
+            with api.download_repository_artifact(
+                "org/repo", "artifact.zip"
+            ) as progress_iterator:
+                for progress in progress_iterator:
+                    print(".", end="")
+        """
+        api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
+        return download(api, destination, headers=self._request_headers())
