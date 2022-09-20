@@ -566,3 +566,25 @@ class GitHubRESTApi:
             downloaded = len(artifacts)
 
         return artifacts
+
+    def get_repository_artifact(
+        self, repo: str, artifact: str
+    ) -> Iterable[JSON]:
+        """
+        Get a single artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the artifact as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
