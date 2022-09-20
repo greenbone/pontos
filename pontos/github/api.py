@@ -535,3 +535,34 @@ class GitHubRESTApi:
         data = {"labels": labels}
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
+
+    def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
+        """
+        List all artifacts of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Returns:
+            Information about the artifacts in the repository as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts"
+        page = 1
+        per_page = 100
+        params = {"per_page": per_page, "page": page}
+        response = self._request(api, request=httpx.get, params=params)
+        json = response.json()
+        total = json.get("total_count", 0)
+        artifacts = list(json.get("artifacts", []))
+        downloaded = len(artifacts)
+
+        # downloading all the artifacts uses a different pagination :-/
+        while total - downloaded > 0:
+            page += 1
+            params = {"per_page": per_page, "page": page}
+            response = self._request(api, request=httpx.get, params=params)
+            json = response.json()
+            artifacts.extend(list(json.get("artifacts", [])))
+            downloaded = len(artifacts)
+
+        return artifacts
