@@ -54,6 +54,9 @@ def _get_next_url(response) -> Optional[str]:
     return None
 
 
+JSON = Dict[str, Union[str, bool, int]]
+
+
 class GitHubRESTApi:
     def __init__(
         self,
@@ -114,7 +117,7 @@ class GitHubRESTApi:
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
         request: Optional[Callable] = None,
-    ) -> Iterator[Dict[str, str]]:
+    ) -> Iterator[JSON]:
         response = self._request(api, params=params, data=data, request=request)
 
         yield from response.json()
@@ -158,7 +161,7 @@ class GitHubRESTApi:
 
     def pull_request_commits(
         self, repo: str, pull_request: int
-    ) -> Iterable[Dict[str, str]]:
+    ) -> Iterable[JSON]:
         """
         Get all commit information of a pull request
 
@@ -330,7 +333,7 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.is_success
 
-    def release(self, repo: str, tag: str) -> Dict[str, str]:
+    def release(self, repo: str, tag: str) -> JSON:
         """
         Get data of a GitHub release by tag
 
