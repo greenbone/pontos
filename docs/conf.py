@@ -10,6 +10,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+
+# pylint: disable=invalid-name,redefined-builtin,wrong-import-position
+
 import os
 import sys
 
@@ -36,6 +39,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
     "myst_parser",
 ]
 
@@ -200,3 +204,4 @@ epub_exclude_files = ["search.html"]
 
 
 # -- Extension configuration -------------------------------------------------
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
