@@ -270,6 +270,8 @@ class GitHubApiTestCase(unittest.TestCase):
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                headers=None,
+                params=None,
                 follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
@@ -310,6 +312,8 @@ class GitHubApiTestCase(unittest.TestCase):
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                params=None,
+                headers=None,
                 follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
@@ -351,6 +355,8 @@ class GitHubApiTestCase(unittest.TestCase):
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
                 follow_redirects=True,
+                headers=None,
+                params=None,
                 timeout=DEFAULT_TIMEOUT,
             )
             response_headers.get.assert_called_once_with("content-length")
