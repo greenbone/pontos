@@ -18,7 +18,7 @@ on GitHub. Bigger changes need to be discussed with the development team via the
 first.
 
 License
-^^^^^^
+^^^^^^^
 
 Copyright (C) 2020-2022 `Greenbone Networks GmbH <https://www.greenbone.net/>`_
 
