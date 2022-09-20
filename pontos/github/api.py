@@ -66,6 +66,19 @@ class GitHubRESTApi:
         self.token = token
         self.url = url
 
+    def _request_headers(
+        self, *, content_type: Optional[str] = None
+    ) -> Dict[str, str]:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+        if self.token:
+            headers["Authorization"] = f"token {self.token}"
+        if content_type:
+            headers["Content-Type"] = content_type
+
+        return headers
+
     def _request_internal(
         self,
         url: str,
@@ -76,15 +89,8 @@ class GitHubRESTApi:
         request: Optional[Callable] = None,
         content_type: Optional[str] = None,
     ) -> httpx.Response:
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-        }
-        if self.token:
-            headers["Authorization"] = f"token {self.token}"
-        if content_type:
-            headers["Content-Type"] = content_type
-
         request = request or httpx.get
+        headers = self._request_headers(content_type=content_type)
         kwargs = {}
         if data is not None:
             kwargs["json"] = data
