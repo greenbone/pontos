@@ -699,7 +699,8 @@ class GitHubRESTApi:
 
         Args:
             repo: GitHub repository (owner/name) to use
-            workflow: ID of the workflow
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
 
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
