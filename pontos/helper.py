@@ -113,6 +113,8 @@ def download(
         is unknown.
 
     Example:
+        .. code-block:: python
+
         with download("https://example.com/some/file")) as progress_it:
             for progress in progress_it:
                 print(progress)
