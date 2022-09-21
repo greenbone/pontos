@@ -753,3 +753,30 @@ class GitHubRESTApi:
 
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
+
+    def get_workflow_runs(
+        self, repo: str, workflow: Optional[str] = None
+    ) -> Iterable[JSON]:
+        """
+        List all workflow runs of a repository or of a specific workflow.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflow runs as an iterable of dicts
+        """
+
+        api = (
+            f"/repos/{repo}/actions/workflows/{workflow}/runs"
+            if workflow
+            else f"/repos/{repo}/actions/runs"
+        )
+
+        return self._get_paged_items(api, "workflow_runs")
