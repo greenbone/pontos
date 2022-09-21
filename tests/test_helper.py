@@ -140,6 +140,8 @@ class DownloadTestCase(unittest.TestCase):
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
                 follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
+                headers=None,
+                params=None,
             )
             response_headers.get.assert_called_once_with("content-length")
 
@@ -161,7 +163,7 @@ class DownloadTestCase(unittest.TestCase):
 
             download_progress.destination.unlink()
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -190,6 +192,8 @@ class DownloadTestCase(unittest.TestCase):
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
                 timeout=DEFAULT_TIMEOUT,
                 follow_redirects=True,
+                headers=None,
+                params=None,
             )
             response_headers.get.assert_called_once_with("content-length")
 

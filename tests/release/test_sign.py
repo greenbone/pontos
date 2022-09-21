@@ -75,6 +75,7 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.sign.Path", spec=Path)
+    @patch("pontos.helper.Path", spec=Path)
     @patch("pontos.github.api.httpx")
     @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
@@ -86,6 +87,7 @@ class SignTestCase(unittest.TestCase):
         stream_mock,
         request_mock,
         _path_mock,
+        _path2_mock,
         _shell_mock,
     ):
         version_mock.main.return_value = (True, "MyProject.conf")
@@ -130,6 +132,7 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.sign.Path", spec=Path)
+    @patch("pontos.helper.Path", spec=Path)
     @patch("pontos.github.api.httpx")
     @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
@@ -141,6 +144,7 @@ class SignTestCase(unittest.TestCase):
         stream_mock,
         request_mock,
         _path_mock,
+        _path2_mock,
         _shell_mock,
     ):
         version_mock.main.return_value = (True, "MyProject.conf")
