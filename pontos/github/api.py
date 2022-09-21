@@ -550,7 +550,10 @@ class GitHubRESTApi:
         page = 1
         per_page = 100
         params = {"per_page": per_page, "page": page}
+
         response = self._request(api, request=httpx.get, params=params)
+        response.raise_for_status()
+
         json = response.json()
         total = json.get("total_count", 0)
         items = json[key]
@@ -559,7 +562,10 @@ class GitHubRESTApi:
         while total - downloaded > 0:
             page += 1
             params = {"per_page": per_page, "page": page}
+
             response = self._request(api, request=httpx.get, params=params)
+            response.raise_for_status()
+
             json = response.json()
             items.extend(json[key])
             downloaded = len(items)
@@ -572,6 +578,10 @@ class GitHubRESTApi:
 
         Args:
             repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
 
         Returns:
             Information about the artifacts in the repository as a dict
@@ -640,6 +650,10 @@ class GitHubRESTApi:
             repo: GitHub repository (owner/name) to use
             workflow: The unique identifier of the workflow run
 
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
         Returns:
             Information about the artifacts in the workflow as a dict
         """
@@ -668,6 +682,10 @@ class GitHubRESTApi:
 
         Args:
             repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
 
         Returns:
             Information about the workflows as an iterable of dicts
