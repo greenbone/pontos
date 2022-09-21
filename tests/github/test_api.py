@@ -1094,3 +1094,94 @@ class GitHubApiTestCase(unittest.TestCase):
             params=None,
             follow_redirects=True,
         )
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflows(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.return_value = {
+            "total_count": 1,
+            "workflows": [
+                {
+                    "id": 11,
+                    "name": "Foo",
+                }
+            ],
+        }
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflows("foo/bar")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/workflows",
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params={"per_page": 100, "page": 1},
+            follow_redirects=True,
+        )
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflows_with_pagination(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.side_effect = [
+            {
+                "total_count": 120,
+                "workflows": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(0, 100)
+                ],
+            },
+            {
+                "total_count": 120,
+                "workflows": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(100, 120)
+                ],
+            },
+        ]
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflows("foo/bar")
+
+        requests_mock.assert_has_calls(
+            [
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/workflows",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 1},
+                    follow_redirects=True,
+                ),
+                call().json(),
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/workflows",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 2},
+                    follow_redirects=True,
+                ),
+                call().json(),
+            ]
+        )
+
+        self.assertEqual(len(artifacts), 120)
+        self.assertEqual(artifacts[0]["name"], "Foo-0")
+        self.assertEqual(artifacts[119]["name"], "Foo-119")

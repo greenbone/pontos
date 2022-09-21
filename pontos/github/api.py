@@ -542,9 +542,9 @@ class GitHubRESTApi:
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
-    def _get_artifacts(self, api: str) -> Iterable[JSON]:
+    def _get_paged_items(self, api: str, key: str) -> Iterable[JSON]:
         """
-        Internal method to get the artifacts information from different REST
+        Internal method to get the paged items information from different REST
         URLs.
         """
         page = 1
@@ -553,19 +553,18 @@ class GitHubRESTApi:
         response = self._request(api, request=httpx.get, params=params)
         json = response.json()
         total = json.get("total_count", 0)
-        artifacts = list(json.get("artifacts", []))
-        downloaded = len(artifacts)
+        items = json[key]
+        downloaded = len(items)
 
-        # downloading all the artifacts uses a different pagination :-/
         while total - downloaded > 0:
             page += 1
             params = {"per_page": per_page, "page": page}
             response = self._request(api, request=httpx.get, params=params)
             json = response.json()
-            artifacts.extend(list(json.get("artifacts", [])))
-            downloaded = len(artifacts)
+            items.extend(json[key])
+            downloaded = len(items)
 
-        return artifacts
+        return items
 
     def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
         """
@@ -578,7 +577,7 @@ class GitHubRESTApi:
             Information about the artifacts in the repository as a dict
         """
         api = f"/repos/{repo}/actions/artifacts"
-        return self._get_artifacts(api)
+        return self._get_paged_items(api, "artifacts")
 
     def get_repository_artifact(
         self, repo: str, artifact: str
@@ -645,7 +644,7 @@ class GitHubRESTApi:
             Information about the artifacts in the workflow as a dict
         """
         api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
-        return self._get_artifacts(api)
+        return self._get_paged_items(api, "artifacts")
 
     def delete_repository_artifact(self, repo: str, artifact: str):
         """
@@ -662,3 +661,20 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = self._request(api, request=httpx.delete)
         response.raise_for_status()
+
+    def get_workflows(self, repo: str) -> Iterable[JSON]:
+        """
+        List all workflows of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the  as a dict
+        """
+        api = f"/repos/{repo}/actions/workflows"
+        return self._get_paged_items(api, "workflows")
