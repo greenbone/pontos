@@ -669,12 +669,28 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
 
+        Returns:
+            Information about the workflows as an iterable of dicts
+        """
+        api = f"/repos/{repo}/actions/workflows"
+        return self._get_paged_items(api, "workflows")
+
+    def get_workflow(self, repo: str, workflow: str) -> JSON:
+        """
+        List all workflows of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow
+
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
-            Information about the  as a dict
+            Information about the workflows as a dict
         """
-        api = f"/repos/{repo}/actions/workflows"
-        return self._get_paged_items(api, "workflows")
+        api = f"/repos/{repo}/actions/workflows/{workflow}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
