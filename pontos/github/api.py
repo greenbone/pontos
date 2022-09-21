@@ -646,3 +646,19 @@ class GitHubRESTApi:
         """
         api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
         return self._get_artifacts(api)
+
+    def delete_repository_artifact(self, repo: str, artifact: str):
+        """
+        Delete an artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = self._request(api, request=httpx.delete)
+        response.raise_for_status()

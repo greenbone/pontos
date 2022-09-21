@@ -1055,3 +1055,42 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 120)
         self.assertEqual(artifacts[0]["name"], "Foo-0")
         self.assertEqual(artifacts[119]["name"], "Foo-119")
+
+    @patch("pontos.github.api.httpx.delete")
+    def test_delete_repository_artifact(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.delete_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
+    @patch("pontos.github.api.httpx.delete")
+    def test_delete_repository_artifact_failure(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.is_success = False
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Delete Failed", request=None, response=response
+        )
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            api.delete_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
