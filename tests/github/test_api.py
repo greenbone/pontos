@@ -1406,3 +1406,52 @@ class GitHubApiTestCase(unittest.TestCase):
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_run(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.json.return_value = {
+            "id": 123,
+            "name": "Foo",
+        }
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_run("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/runs/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
+        self.assertEqual(artifacts["id"], 123)
+        self.assertEqual(artifacts["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_run_invalid(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.is_success = False
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Workflow Run Not Found", request=None, response=response
+        )
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            api.get_workflow_run("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/runs/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )

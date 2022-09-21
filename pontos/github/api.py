@@ -780,3 +780,22 @@ class GitHubRESTApi:
         )
 
         return self._get_paged_items(api, "workflow_runs")
+
+    def get_workflow_run(self, repo: str, run: str) -> JSON:
+        """
+        Get information about a single workflow run
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflow runs as a dict
+        """
+        api = f"/repos/{repo}/actions/runs/{run}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
