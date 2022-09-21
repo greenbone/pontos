@@ -847,6 +847,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 1},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
                 call(
@@ -858,6 +859,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 2},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
             ]
         )
@@ -1036,6 +1038,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 1},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
                 call(
@@ -1048,6 +1051,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 2},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
             ]
         )
@@ -1167,6 +1171,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 1},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
                 call(
@@ -1178,6 +1183,7 @@ class GitHubApiTestCase(unittest.TestCase):
                     params={"per_page": 100, "page": 2},
                     follow_redirects=True,
                 ),
+                call().raise_for_status(),
                 call().json(),
             ]
         )
