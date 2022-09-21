@@ -54,6 +54,9 @@ def _get_next_url(response) -> Optional[str]:
     return None
 
 
+JSON = Dict[str, Union[str, bool, int]]
+
+
 class GitHubRESTApi:
     def __init__(
         self,
@@ -62,6 +65,19 @@ class GitHubRESTApi:
     ) -> None:
         self.token = token
         self.url = url
+
+    def _request_headers(
+        self, *, content_type: Optional[str] = None
+    ) -> Dict[str, str]:
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+        if self.token:
+            headers["Authorization"] = f"token {self.token}"
+        if content_type:
+            headers["Content-Type"] = content_type
+
+        return headers
 
     def _request_internal(
         self,
@@ -73,15 +89,8 @@ class GitHubRESTApi:
         request: Optional[Callable] = None,
         content_type: Optional[str] = None,
     ) -> httpx.Response:
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-        }
-        if self.token:
-            headers["Authorization"] = f"token {self.token}"
-        if content_type:
-            headers["Content-Type"] = content_type
-
         request = request or httpx.get
+        headers = self._request_headers(content_type=content_type)
         kwargs = {}
         if data is not None:
             kwargs["json"] = data
@@ -114,7 +123,7 @@ class GitHubRESTApi:
         params: Optional[Dict[str, str]] = None,
         data: Optional[Dict[str, str]] = None,
         request: Optional[Callable] = None,
-    ) -> Iterator[Dict[str, str]]:
+    ) -> Iterator[JSON]:
         response = self._request(api, params=params, data=data, request=request)
 
         yield from response.json()
@@ -158,7 +167,7 @@ class GitHubRESTApi:
 
     def pull_request_commits(
         self, repo: str, pull_request: int
-    ) -> Iterable[Dict[str, str]]:
+    ) -> Iterable[JSON]:
         """
         Get all commit information of a pull request
 
@@ -330,7 +339,7 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.is_success
 
-    def release(self, repo: str, tag: str) -> Dict[str, str]:
+    def release(self, repo: str, tag: str) -> JSON:
         """
         Get data of a GitHub release by tag
 
@@ -531,4 +540,125 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
         response = self._request(api, data=data, request=httpx.post)
+        response.raise_for_status()
+
+    def _get_artifacts(self, api: str) -> Iterable[JSON]:
+        """
+        Internal method to get the artifacts information from different REST
+        URLs.
+        """
+        page = 1
+        per_page = 100
+        params = {"per_page": per_page, "page": page}
+        response = self._request(api, request=httpx.get, params=params)
+        json = response.json()
+        total = json.get("total_count", 0)
+        artifacts = list(json.get("artifacts", []))
+        downloaded = len(artifacts)
+
+        # downloading all the artifacts uses a different pagination :-/
+        while total - downloaded > 0:
+            page += 1
+            params = {"per_page": per_page, "page": page}
+            response = self._request(api, request=httpx.get, params=params)
+            json = response.json()
+            artifacts.extend(list(json.get("artifacts", [])))
+            downloaded = len(artifacts)
+
+        return artifacts
+
+    def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
+        """
+        List all artifacts of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Returns:
+            Information about the artifacts in the repository as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts"
+        return self._get_artifacts(api)
+
+    def get_repository_artifact(
+        self, repo: str, artifact: str
+    ) -> Iterable[JSON]:
+        """
+        Get a single artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the artifact as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
+
+    def download_repository_artifact(
+        self, repo: str, artifact: str, destination: Union[Path, str]
+    ) -> ContextManager[DownloadProgressIterable]:
+        """
+        Download a repository artifact zip file
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            destination: A path where to store the downloaded file
+
+        Raises:
+            HTTPError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            api = GitHubRESTApi("...")
+
+            print("Downloading", end="")
+
+            with api.download_repository_artifact(
+                "org/repo", "artifact.zip"
+            ) as progress_iterator:
+                for progress in progress_iterator:
+                    print(".", end="")
+        """
+        api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
+        return download(api, destination, headers=self._request_headers())
+
+    def get_workflow_artifacts(
+        self, repo: str, workflow: str
+    ) -> Iterable[JSON]:
+        """
+        List all artifacts for a workflow run
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: The unique identifier of the workflow run
+
+        Returns:
+            Information about the artifacts in the workflow as a dict
+        """
+        api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
+        return self._get_artifacts(api)
+
+    def delete_repository_artifact(self, repo: str, artifact: str):
+        """
+        Delete an artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = self._request(api, request=httpx.delete)
         response.raise_for_status()

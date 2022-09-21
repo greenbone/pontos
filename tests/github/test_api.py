@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=too-many-lines
+
 import json
 import unittest
 from pathlib import Path
@@ -248,7 +250,7 @@ class GitHubApiTestCase(unittest.TestCase):
 
         self.assertEqual(data["id"], 52499047)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -270,6 +272,8 @@ class GitHubApiTestCase(unittest.TestCase):
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                headers=None,
+                params=None,
                 follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
@@ -288,7 +292,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_tarball_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -310,6 +314,8 @@ class GitHubApiTestCase(unittest.TestCase):
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
+                params=None,
+                headers=None,
                 follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
@@ -328,7 +334,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_zip(
         self, requests_mock: MagicMock, path_mock: MagicMock
@@ -351,6 +357,8 @@ class GitHubApiTestCase(unittest.TestCase):
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
                 follow_redirects=True,
+                headers=None,
+                params=None,
                 timeout=DEFAULT_TIMEOUT,
             )
             response_headers.get.assert_called_once_with("content-length")
@@ -442,7 +450,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.Path")
+    @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.get")
     @patch("pontos.github.api.httpx.stream")
     def test_download_release_assets(
@@ -762,4 +770,327 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Accept": "application/vnd.github.v3+json",
             },
             params=None,
+        )
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_repository_artifacts(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.return_value = {
+            "total_count": 1,
+            "artifacts": [
+                {
+                    "id": 11,
+                    "node_id": "MDg6QXJ0aWZhY3QxMQ==",
+                    "name": "Foo",
+                }
+            ],
+        }
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_repository_artifacts("foo/bar")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts",
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params={"per_page": 100, "page": 1},
+            follow_redirects=True,
+        )
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_repository_artifacts_with_pagination(
+        self, requests_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.links = None
+        response.json.side_effect = [
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(0, 100)
+                ],
+            },
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(100, 120)
+                ],
+            },
+        ]
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_repository_artifacts("foo/bar")
+
+        requests_mock.assert_has_calls(
+            [
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 1},
+                    follow_redirects=True,
+                ),
+                call().json(),
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 2},
+                    follow_redirects=True,
+                ),
+                call().json(),
+            ]
+        )
+
+        self.assertEqual(len(artifacts), 120)
+        self.assertEqual(artifacts[0]["name"], "Foo-0")
+        self.assertEqual(artifacts[119]["name"], "Foo-119")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_repository_artifact(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.json.return_value = {
+            "id": 123,
+            "name": "Foo",
+        }
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
+        self.assertEqual(artifacts["id"], 123)
+        self.assertEqual(artifacts["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_repository_artifact_invalid(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.is_success = False
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Testing Status Message", request=None, response=response
+        )
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            api.get_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
+    @patch("pontos.helper.Path")
+    @patch("pontos.github.api.httpx.stream")
+    def test_download_repository_artifact(
+        self, requests_mock: MagicMock, path_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.iter_bytes.return_value = [b"foo", b"bar", b"baz"]
+        response_headers = MagicMock()
+        response.headers = response_headers
+        response_headers.get.return_value = None
+        response_stream = MagicMock()
+        response_stream.__enter__.return_value = response
+        requests_mock.return_value = response_stream
+
+        api = GitHubRESTApi("12345")
+        download_file = path_mock()
+        with api.download_repository_artifact(
+            "foo/bar", "123", download_file
+        ) as download_progress:
+            requests_mock.assert_called_once_with(
+                "GET",
+                "https://api.github.com/repos/foo/bar/actions/artifacts/123/zip",  # pylint: disable=line-too-long
+                timeout=DEFAULT_TIMEOUT,
+                follow_redirects=True,
+                headers={
+                    "Accept": "application/vnd.github.v3+json",
+                    "Authorization": "token 12345",
+                },
+                params=None,
+            )
+            response_headers.get.assert_called_once_with("content-length")
+
+            self.assertIsNone(download_progress.length)
+
+            it = iter(download_progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+            progress = next(it)
+            self.assertIsNone(progress)
+
+            with self.assertRaises(StopIteration):
+                next(it)
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_artifacts(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.return_value = {
+            "total_count": 1,
+            "artifacts": [
+                {
+                    "id": 11,
+                    "node_id": "MDg6QXJ0aWZhY3QxMQ==",
+                    "name": "Foo",
+                }
+            ],
+        }
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params={"per_page": 100, "page": 1},
+            follow_redirects=True,
+        )
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_artifacts_with_pagination(
+        self, requests_mock: MagicMock
+    ):
+        response = MagicMock()
+        response.links = None
+        response.json.side_effect = [
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(0, 100)
+                ],
+            },
+            {
+                "total_count": 120,
+                "artifacts": [
+                    {
+                        "id": id,
+                        "name": f"Foo-{id}",
+                    }
+                    for id in range(100, 120)
+                ],
+            },
+        ]
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+
+        requests_mock.assert_has_calls(
+            [
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
+                    "artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 1},
+                    follow_redirects=True,
+                ),
+                call().json(),
+                call.__bool__(),
+                call(
+                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
+                    "artifacts",
+                    headers={
+                        "Accept": "application/vnd.github.v3+json",
+                        "Authorization": "token 12345",
+                    },
+                    params={"per_page": 100, "page": 2},
+                    follow_redirects=True,
+                ),
+                call().json(),
+            ]
+        )
+
+        self.assertEqual(len(artifacts), 120)
+        self.assertEqual(artifacts[0]["name"], "Foo-0")
+        self.assertEqual(artifacts[119]["name"], "Foo-119")
+
+    @patch("pontos.github.api.httpx.delete")
+    def test_delete_repository_artifact(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.delete_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
+    @patch("pontos.github.api.httpx.delete")
+    def test_delete_repository_artifact_failure(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.is_success = False
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Delete Failed", request=None, response=response
+        )
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            api.delete_repository_artifact("foo/bar", "123")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/artifacts/123",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
         )

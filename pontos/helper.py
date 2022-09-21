@@ -19,7 +19,7 @@
 import subprocess
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, Iterable, Iterator, Optional
+from typing import Any, Dict, Generator, Iterable, Iterator, Optional, Union
 
 import httpx
 
@@ -86,8 +86,10 @@ class DownloadProgressIterable:
 @contextmanager
 def download(
     url: str,
-    destination: Optional[Path] = None,
+    destination: Optional[Union[Path, str]] = None,
     *,
+    headers: Dict[str, Any] = None,
+    params: Dict[str, Any] = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> Generator[DownloadProgressIterable, None, None]:
@@ -97,6 +99,8 @@ def download(
         url: The url of the file we want to download
         destination: Path of the file to store the download in. If set it will
                      be derived from the passed URL.
+        headers: HTTP headers to use for the download
+        params: HTTP request parameters to use for the download
         chunk_size: Download file in chunks of this size
         timeout: Connection timeout
 
@@ -109,14 +113,23 @@ def download(
         is unknown.
 
     Example:
+        .. code-block:: python
+
         with download("https://example.com/some/file")) as progress_it:
             for progress in progress_it:
                 print(progress)
     """
-    destination = Path(url.split("/")[-1]) if not destination else destination
+    destination = (
+        Path(url.split("/")[-1]) if not destination else Path(destination)
+    )
 
     with httpx.stream(
-        "GET", url, timeout=timeout, follow_redirects=True
+        "GET",
+        url,
+        timeout=timeout,
+        follow_redirects=True,
+        headers=headers,
+        params=params,
     ) as response:
         response.raise_for_status()
 
