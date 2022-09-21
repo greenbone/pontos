@@ -713,3 +713,43 @@ class GitHubRESTApi:
         response = self._request(api, request=httpx.get)
         response.raise_for_status()
         return response.json()
+
+    def create_workflow_dispatch(
+        self,
+        repo: str,
+        workflow: str,
+        *,
+        ref: str,
+        inputs: Dict[str, str] = None,
+    ):
+        """
+        Create a workflow dispatch event to manually trigger a GitHub Actions
+        workflow run.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
+            ref: The git reference for the workflow. The reference can be a
+                branch or tag name.
+            inputs: Input keys and values configured in the workflow file. Any
+                default properties configured in the workflow file will be used
+                when inputs are omitted.
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Example:
+            .. code-block:: python
+
+            api = GitHubRESTApi("...")
+            api.create_workflow_dispatch("foo/bar", "ci.yml", ref="main")
+        """
+        api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
+        data = {"ref": ref}
+
+        if inputs:
+            data["inputs"] = inputs
+
+        response = self._request(api, data=data, request=httpx.post)
+        response.raise_for_status()

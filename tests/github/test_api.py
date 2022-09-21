@@ -1234,3 +1234,46 @@ class GitHubApiTestCase(unittest.TestCase):
             params=None,
             follow_redirects=True,
         )
+
+    @patch("pontos.github.api.httpx.post")
+    def test_create_workflow_dispatch(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_workflow_dispatch("foo/bar", "123", ref="main")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/workflows/123"
+            "/dispatches",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+            json={"ref": "main"},
+        )
+
+    @patch("pontos.github.api.httpx.post")
+    def test_create_workflow_dispatch_failure(self, requests_mock: MagicMock):
+        response = MagicMock(autospec=httpx.Response)
+        response.is_success = False
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "Dispatch Failed", request=None, response=response
+        )
+
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            api.create_workflow_dispatch("foo/bar", "123", ref="main")
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/workflows/123"
+            "/dispatches",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token 12345",
+            },
+            params=None,
+            follow_redirects=True,
+            json={"ref": "main"},
+        )
