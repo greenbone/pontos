@@ -542,14 +542,17 @@ class GitHubRESTApi:
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
-    def _get_paged_items(self, api: str, key: str) -> Iterable[JSON]:
+    def _get_paged_items(
+        self, api: str, key: str, *, params: Optional[JSON] = None
+    ) -> Iterable[JSON]:
         """
         Internal method to get the paged items information from different REST
         URLs.
         """
         page = 1
         per_page = 100
-        params = {"per_page": per_page, "page": page}
+        params = params or {}
+        params.update({"per_page": per_page, "page": page})
 
         response = self._request(api, request=httpx.get, params=params)
         response.raise_for_status()
@@ -755,8 +758,18 @@ class GitHubRESTApi:
         response.raise_for_status()
 
     def get_workflow_runs(
-        self, repo: str, workflow: Optional[str] = None
+        self,
+        repo: str,
+        workflow: Optional[str] = None,
+        *,
+        actor: Optional[str] = None,
+        branch: Optional[str] = None,
+        event: Optional[str] = None,
+        status: Optional[str] = None,
+        created: Optional[str] = None,
+        exclude_pull_requests: Optional[bool] = None,
     ) -> Iterable[JSON]:
+        # pylint: disable=line-too-long
         """
         List all workflow runs of a repository or of a specific workflow.
 
@@ -764,6 +777,22 @@ class GitHubRESTApi:
             repo: GitHub repository (owner/name) to use
             workflow: ID of the workflow or workflow file name. For example
                 `main.yml`.
+            actor: Only return workflow runs of this user ID.
+            branch: Only return workflow runs for a specific branch.
+            event: Only returns workflows runs triggered by the event specified.
+                For example, `push`, `pull_request` or `issue`.
+                For more information, see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows.
+            status: Only return workflow runs with the check run status or
+                conclusion that specified. For example, a conclusion can be
+                `success` or a status can be `in_progress`. Can be one of:
+                `completed`, `action_required`, `cancelled`, `failure`,
+                `neutral`, `skipped`, `stale`, `success`, `timed_out`,
+                `in_progress`, `queued`, `requested`, `waiting`.
+            created: Only returns workflow runs created within the given
+                date-time range. For more information on the syntax, see
+                https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax#query-for-dates
+            exclude_pull_requests: If true pull requests are omitted from the
+                response.
 
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
@@ -778,8 +807,21 @@ class GitHubRESTApi:
             if workflow
             else f"/repos/{repo}/actions/runs"
         )
+        params = {}
+        if actor:
+            params["actor"] = actor
+        if branch:
+            params["branch"] = branch
+        if event:
+            params["event"] = event
+        if status:
+            params["status"] = status
+        if created:
+            params["created"] = created
+        if exclude_pull_requests is not None:
+            params["exclude_pull_requests"] = exclude_pull_requests
 
-        return self._get_paged_items(api, "workflow_runs")
+        return self._get_paged_items(api, "workflow_runs", params=params)
 
     def get_workflow_run(self, repo: str, run: str) -> JSON:
         """
@@ -787,6 +829,7 @@ class GitHubRESTApi:
 
         Args:
             repo: GitHub repository (owner/name) to use
+            run: The ID of the workflow run
 
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request

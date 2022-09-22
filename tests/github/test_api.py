@@ -1378,6 +1378,53 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[119]["name"], "Foo-119")
 
     @patch("pontos.github.api.httpx.get")
+    def test_get_workflow_runs_with_params(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.links = None
+        response.json.return_value = {
+            "total_count": 1,
+            "workflow_runs": [
+                {
+                    "id": 11,
+                    "name": "Foo",
+                }
+            ],
+        }
+        requests_mock.return_value = response
+        api = GitHubRESTApi("12345")
+        artifacts = api.get_workflow_runs(
+            "foo/bar",
+            actor="Foo",
+            branch="main",
+            event="workflow_dispatch",
+            status="completed",
+            created=">=2022-09-01",
+            exclude_pull_requests=True,
+        )
+
+        requests_mock.assert_called_once_with(
+            "https://api.github.com/repos/foo/bar/actions/runs",
+            headers={
+                "Authorization": "token 12345",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            params={
+                "per_page": 100,
+                "page": 1,
+                "actor": "Foo",
+                "branch": "main",
+                "event": "workflow_dispatch",
+                "status": "completed",
+                "created": ">=2022-09-01",
+                "exclude_pull_requests": True,
+            },
+            follow_redirects=True,
+        )
+
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["name"], "Foo")
+
+    @patch("pontos.github.api.httpx.get")
     def test_get_workflow_runs_for_workflow(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
