@@ -21,7 +21,7 @@ from typing import Dict, Iterable, Optional
 
 import httpx
 
-from pontos.github.api.helper import JSON_OBJECT, FileStatus
+from pontos.github.api.api import JSON_OBJECT, FileStatus
 
 
 class GitHubRESTPullRequestsMixin:

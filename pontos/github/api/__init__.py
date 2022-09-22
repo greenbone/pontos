@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pontos.github.api.api import GitHubRESTApi
-from pontos.github.api.helper import (
-    DEFAULT_GITHUB_API_URL,
-    DEFAULT_TIMEOUT_CONFIG,
-    JSON,
-    JSON_OBJECT,
-    FileStatus,
-)
+from pontos.github.api.api import GitHubREST
+from pontos.github.api.artifacts import GitHubRESTArtifactsMixin
+from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
+from pontos.github.api.release import GitHubRESTReleaseMixin
+from pontos.github.api.workflows import GitHubAPIWorkflowsMixin
 
-__all__ = [
-    "JSON",
-    "JSON_OBJECT",
-    "FileStatus",
-    "GitHubRESTApi",
-    "DEFAULT_TIMEOUT_CONFIG",
-    "DEFAULT_GITHUB_API_URL",
-]
+
+class GitHubRESTApi(
+    GitHubREST,
+    GitHubRESTPullRequestsMixin,
+    GitHubRESTReleaseMixin,
+    GitHubRESTArtifactsMixin,
+    GitHubRESTBranchMixin,
+    GitHubAPIWorkflowsMixin,
+):
+    """GitHubRESTApi Mixin"""

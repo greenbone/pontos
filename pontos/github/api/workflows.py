@@ -19,7 +19,7 @@ from typing import Dict, Iterable, Optional
 
 import httpx
 
-from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.api.api import JSON_OBJECT
 
 
 class GitHubAPIWorkflowsMixin:
