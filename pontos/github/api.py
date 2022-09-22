@@ -542,30 +542,35 @@ class GitHubRESTApi:
         response = self._request(api, data=data, request=httpx.post)
         response.raise_for_status()
 
-    def _get_artifacts(self, api: str) -> Iterable[JSON]:
+    def _get_paged_items(self, api: str, key: str) -> Iterable[JSON]:
         """
-        Internal method to get the artifacts information from different REST
+        Internal method to get the paged items information from different REST
         URLs.
         """
         page = 1
         per_page = 100
         params = {"per_page": per_page, "page": page}
+
         response = self._request(api, request=httpx.get, params=params)
+        response.raise_for_status()
+
         json = response.json()
         total = json.get("total_count", 0)
-        artifacts = list(json.get("artifacts", []))
-        downloaded = len(artifacts)
+        items = json[key]
+        downloaded = len(items)
 
-        # downloading all the artifacts uses a different pagination :-/
         while total - downloaded > 0:
             page += 1
             params = {"per_page": per_page, "page": page}
-            response = self._request(api, request=httpx.get, params=params)
-            json = response.json()
-            artifacts.extend(list(json.get("artifacts", [])))
-            downloaded = len(artifacts)
 
-        return artifacts
+            response = self._request(api, request=httpx.get, params=params)
+            response.raise_for_status()
+
+            json = response.json()
+            items.extend(json[key])
+            downloaded = len(items)
+
+        return items
 
     def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
         """
@@ -574,11 +579,15 @@ class GitHubRESTApi:
         Args:
             repo: GitHub repository (owner/name) to use
 
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
         Returns:
             Information about the artifacts in the repository as a dict
         """
         api = f"/repos/{repo}/actions/artifacts"
-        return self._get_artifacts(api)
+        return self._get_paged_items(api, "artifacts")
 
     def get_repository_artifact(
         self, repo: str, artifact: str
@@ -641,11 +650,15 @@ class GitHubRESTApi:
             repo: GitHub repository (owner/name) to use
             workflow: The unique identifier of the workflow run
 
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
         Returns:
             Information about the artifacts in the workflow as a dict
         """
         api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
-        return self._get_artifacts(api)
+        return self._get_paged_items(api, "artifacts")
 
     def delete_repository_artifact(self, repo: str, artifact: str):
         """
@@ -662,3 +675,127 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = self._request(api, request=httpx.delete)
         response.raise_for_status()
+
+    def get_workflows(self, repo: str) -> Iterable[JSON]:
+        """
+        List all workflows of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflows as an iterable of dicts
+        """
+        api = f"/repos/{repo}/actions/workflows"
+        return self._get_paged_items(api, "workflows")
+
+    def get_workflow(self, repo: str, workflow: str) -> JSON:
+        """
+        Get the information for the given workflow
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflows as a dict
+        """
+        api = f"/repos/{repo}/actions/workflows/{workflow}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
+
+    def create_workflow_dispatch(
+        self,
+        repo: str,
+        workflow: str,
+        *,
+        ref: str,
+        inputs: Dict[str, str] = None,
+    ):
+        """
+        Create a workflow dispatch event to manually trigger a GitHub Actions
+        workflow run.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
+            ref: The git reference for the workflow. The reference can be a
+                branch or tag name.
+            inputs: Input keys and values configured in the workflow file. Any
+                default properties configured in the workflow file will be used
+                when inputs are omitted.
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Example:
+            .. code-block:: python
+
+            api = GitHubRESTApi("...")
+            api.create_workflow_dispatch("foo/bar", "ci.yml", ref="main")
+        """
+        api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
+        data = {"ref": ref}
+
+        if inputs:
+            data["inputs"] = inputs
+
+        response = self._request(api, data=data, request=httpx.post)
+        response.raise_for_status()
+
+    def get_workflow_runs(
+        self, repo: str, workflow: Optional[str] = None
+    ) -> Iterable[JSON]:
+        """
+        List all workflow runs of a repository or of a specific workflow.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            workflow: ID of the workflow or workflow file name. For example
+                `main.yml`.
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflow runs as an iterable of dicts
+        """
+
+        api = (
+            f"/repos/{repo}/actions/workflows/{workflow}/runs"
+            if workflow
+            else f"/repos/{repo}/actions/runs"
+        )
+
+        return self._get_paged_items(api, "workflow_runs")
+
+    def get_workflow_run(self, repo: str, run: str) -> JSON:
+        """
+        Get information about a single workflow run
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the workflow runs as a dict
+        """
+        api = f"/repos/{repo}/actions/runs/{run}"
+        response = self._request(api, request=httpx.get)
+        response.raise_for_status()
+        return response.json()
