@@ -24,7 +24,7 @@ from contextlib import redirect_stderr
 from pathlib import Path
 from unittest.mock import Mock
 
-from pontos.github.api import FileStatus
+from pontos.github.api.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
     create_pull_request,
