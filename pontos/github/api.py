@@ -695,7 +695,7 @@ class GitHubRESTApi:
 
     def get_workflow(self, repo: str, workflow: str) -> JSON:
         """
-        List all workflows of a repository
+        Get the information for the given workflow
 
         Args:
             repo: GitHub repository (owner/name) to use
