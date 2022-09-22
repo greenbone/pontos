@@ -41,7 +41,8 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.httpx", spec=httpx)
+    @patch("pontos.github.api.api.httpx", spec=httpx)
+    @patch("pontos.github.api.release.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_successfully(
@@ -49,6 +50,7 @@ class ReleaseTestCase(unittest.TestCase):
         _changelog_mock,
         _version_mock,
         _requests_mock,
+        _requests2_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -59,6 +61,7 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post
+        _requests2_mock.post.return_value = fake_post
 
         args = [
             "release",
@@ -77,7 +80,8 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.httpx", spec=httpx)
+    @patch("pontos.github.api.api.httpx", spec=httpx)
+    @patch("pontos.github.api.release.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_conventional_commits_successfully(
@@ -85,6 +89,7 @@ class ReleaseTestCase(unittest.TestCase):
         _changelog_mock,
         _version_mock,
         _requests_mock,
+        _requests2_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -95,6 +100,7 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post
+        _requests2_mock.post.return_value = fake_post
 
         args = [
             "release",
@@ -110,7 +116,8 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.httpx", spec=httpx)
+    @patch("pontos.github.api.api.httpx", spec=httpx)
+    @patch("pontos.github.api.release.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_not_release_successfully_when_github_create_release_fails(
@@ -118,6 +125,7 @@ class ReleaseTestCase(unittest.TestCase):
         _changelog_mock,
         _version_mock,
         _requests_mock,
+        _requests2_mock,
         _path_mock,
         _shell_mock,
     ):
@@ -134,6 +142,7 @@ class ReleaseTestCase(unittest.TestCase):
             request=_requests_mock.post,
         )
         _requests_mock.post.return_value = fake_post
+        _requests2_mock.post.return_value = fake_post
 
         args = [
             "release",
@@ -150,7 +159,8 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.shell_cmd_runner")
     @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.httpx", spec=httpx)
+    @patch("pontos.github.api.api.httpx", spec=httpx)
+    @patch("pontos.github.api.release.httpx", spec=httpx)
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.release.release.changelog", spec=changelog)
     def test_release_to_specific_git_remote(
@@ -158,6 +168,7 @@ class ReleaseTestCase(unittest.TestCase):
         _changelog_mock,
         _version_mock,
         _requests_mock,
+        _requests2_mock,
         _path_mock,
         shell_mock,
     ):
@@ -168,6 +179,7 @@ class ReleaseTestCase(unittest.TestCase):
         fake_post.status_code = 201
         fake_post.text = self.valid_gh_release_response
         _requests_mock.post.return_value = fake_post
+        _requests2_mock.post.return_value = fake_post
 
         args = [
             "release",
