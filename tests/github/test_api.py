@@ -24,10 +24,24 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 
-from pontos.github.api import FileStatus, GitHubRESTApi
+from pontos.github.api import DEFAULT_TIMEOUT_CONFIG, FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
 
 here = Path(__file__).parent
+
+
+def default_request(*args, **kwargs):
+    default_kwargs = {
+        "follow_redirects": True,
+        "headers": {
+            "Authorization": "token 12345",
+            "Accept": "application/vnd.github.v3+json",
+        },
+        "params": None,
+        "timeout": DEFAULT_TIMEOUT_CONFIG,
+    }
+    default_kwargs.update(kwargs)
+    return args, default_kwargs
 
 
 class GitHubApiTestCase(unittest.TestCase):
@@ -40,15 +54,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         exists = api.branch_exists("foo/bar", "main")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/branches/main",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertTrue(exists)
 
     @patch("pontos.github.api.httpx.get")
@@ -60,15 +69,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         exists = api.branch_exists("foo/bar", "main")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/branches/main",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertFalse(exists)
 
     @patch("pontos.github.api.httpx.get")
@@ -80,15 +84,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         commits = api.pull_request_commits("foo/bar", pull_request=1)
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/pulls/1/commits",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": "100"},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(commits), 1)
         self.assertEqual(commits[0]["sha"], "1")
@@ -104,14 +104,8 @@ class GitHubApiTestCase(unittest.TestCase):
             body="This is bar",
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/pulls",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
             json={
                 "head": "foo",
                 "base": "main",
@@ -119,6 +113,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 "body": "This is bar",
             },
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     def test_update_pull_request(self, requests_mock: MagicMock):
@@ -131,20 +126,15 @@ class GitHubApiTestCase(unittest.TestCase):
             body="This is bar",
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/pulls/123",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
             json={
                 "base": "main",
                 "title": "Foo",
                 "body": "This is bar",
             },
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
@@ -153,31 +143,21 @@ class GitHubApiTestCase(unittest.TestCase):
             "foo/bar", pull_request=123, comment="This is a comment"
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/issues/123/comments",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
             json={"body": "This is a comment"},
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.delete")
     def test_delete_branch(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.delete_branch("foo/bar", "foo")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/git/refs/foo",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     def test_create_release(self, requests_mock: MagicMock):
@@ -189,14 +169,8 @@ class GitHubApiTestCase(unittest.TestCase):
             body="This is a release",
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/releases",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
             json={
                 "tag_name": "v1.2.3",
                 "name": "Foo v1.2.3",
@@ -205,6 +179,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 "prerelease": False,
             },
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.get")
     def test_release_exists(self, requests_mock: MagicMock):
@@ -215,15 +190,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         exists = api.release_exists("foo/bar", "v1.2.3")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/releases/tags/v1.2.3",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertTrue(exists)
 
     @patch("pontos.github.api.httpx.get")
@@ -238,15 +208,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         data = api.release("greenbone/pontos", "v21.11.0")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(data["id"], 52499047)
 
@@ -269,14 +234,13 @@ class GitHubApiTestCase(unittest.TestCase):
         with api.download_release_tarball(
             "greenbone/pontos", "v21.11.0", download_file
         ) as download_progress:
-            requests_mock.assert_called_once_with(
+            args, kwargs = default_request(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
                 headers=None,
-                params=None,
-                follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
+            requests_mock.assert_called_once_with(*args, **kwargs)
             response_headers.get.assert_called_once_with("content-length")
 
             self.assertIsNone(download_progress.length)
@@ -311,14 +275,13 @@ class GitHubApiTestCase(unittest.TestCase):
         with api.download_release_tarball(
             "greenbone/pontos", "v21.11.0", download_file
         ) as download_progress:
-            requests_mock.assert_called_once_with(
+            args, kwargs = default_request(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
-                params=None,
                 headers=None,
-                follow_redirects=True,
                 timeout=DEFAULT_TIMEOUT,
             )
+            requests_mock.assert_called_once_with(*args, **kwargs)
             response_headers.get.assert_called_once_with("content-length")
 
             self.assertEqual(download_progress.length, 9)
@@ -353,14 +316,13 @@ class GitHubApiTestCase(unittest.TestCase):
         with api.download_release_zip(
             "greenbone/pontos", "v21.11.0", download_file
         ) as download_progress:
-            requests_mock.assert_called_once_with(
+            args, kwargs = default_request(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.zip",  # pylint: disable=line-too-long
-                follow_redirects=True,
                 headers=None,
-                params=None,
                 timeout=DEFAULT_TIMEOUT,
             )
+            requests_mock.assert_called_once_with(*args, **kwargs)
             response_headers.get.assert_called_once_with("content-length")
 
             self.assertIsNone(download_progress.length)
@@ -389,15 +351,11 @@ class GitHubApiTestCase(unittest.TestCase):
             "foo/bar", pull_request=1, status_list=[FileStatus.MODIFIED]
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/pulls/1/files",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": "100"},
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(
             files,
@@ -427,15 +385,11 @@ class GitHubApiTestCase(unittest.TestCase):
             "foo/bar", pull_request=1, status_list=[FileStatus.ADDED]
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/pulls/1/files",
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": "100"},
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(
             files,
@@ -521,27 +475,23 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(download_iter)
 
+        args1, kwargs1 = default_request(
+            "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
+        )
+        args2, kwargs2 = default_request(
+            "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
+        )
         request_mock.assert_has_calls(
             [
                 call(
-                    "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params=None,
-                    follow_redirects=True,
+                    *args1,
+                    **kwargs1,
                 ),
                 call().raise_for_status(),
                 call().json(),
                 call(
-                    "https://api.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params=None,
-                    follow_redirects=True,
+                    *args2,
+                    **kwargs2,
                 ),
                 call().raise_for_status(),
                 call().json(),
@@ -630,8 +580,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 "greenbone/pontos", "v21.11.0", upload_files
             )
         )
-        uploaded_file = next(upload_it)
-        post_mock.assert_called_with(
+        args, kwargs = default_request(
             "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -639,13 +588,13 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Content-Type": "application/octet-stream",
             },
             params={"name": "foo.txt"},
-            follow_redirects=True,
             content=content1,
         )
+        uploaded_file = next(upload_it)
+        post_mock.assert_called_with(*args, **kwargs)
         self.assertEqual(uploaded_file, file1)
 
-        uploaded_file = next(upload_it)
-        post_mock.assert_called_with(
+        args, kwargs = default_request(
             "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -653,20 +602,16 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Content-Type": "application/octet-stream",
             },
             params={"name": "bar.pdf"},
-            follow_redirects=True,
             content=content2,
         )
+        uploaded_file = next(upload_it)
+        post_mock.assert_called_with(*args, **kwargs)
         self.assertEqual(uploaded_file, file2)
 
-        get_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        get_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     @patch("pontos.github.api.httpx.get")
@@ -697,15 +642,10 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPError):
             next(upload_it)
 
-        get_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        get_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     @patch("pontos.github.api.httpx.get")
@@ -746,7 +686,7 @@ class GitHubApiTestCase(unittest.TestCase):
             )
         )
         uploaded_file = next(upload_it)
-        post_mock.assert_called_with(
+        args, kwargs = default_request(
             "https://uploads.github.com/repos/greenbone/pontos/releases/52499047/assets",  # pylint: disable=line-too-long
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -754,23 +694,18 @@ class GitHubApiTestCase(unittest.TestCase):
                 "Content-Type": "application/octet-stream",
             },
             params={"name": "foo.txt"},
-            follow_redirects=True,
             content=content1,
         )
+        post_mock.assert_called_with(*args, **kwargs)
         self.assertEqual(uploaded_file, file1)
 
         with self.assertRaises(httpx.HTTPError):
             next(upload_it)
 
-        get_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/greenbone/pontos/releases/tags/v21.11.0",  # pylint: disable=line-too-long
-            follow_redirects=True,
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
-            params=None,
         )
+        get_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.get")
     def test_get_repository_artifacts(self, requests_mock: MagicMock):
@@ -790,15 +725,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_repository_artifacts("foo/bar")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/artifacts",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": 100, "page": 1},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -835,30 +766,22 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_repository_artifacts("foo/bar")
 
+        args1, kwargs1 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/artifacts",
+            params={"per_page": 100, "page": 1},
+        )
+        args2, kwargs2 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/artifacts",
+            params={"per_page": 100, "page": 2},
+        )
         requests_mock.assert_has_calls(
             [
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/artifacts",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 1},
-                    follow_redirects=True,
-                ),
+                call(*args1, **kwargs1),
                 call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/artifacts",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 2},
-                    follow_redirects=True,
-                ),
+                call(*args2, **kwargs2),
                 call().raise_for_status(),
                 call().json(),
             ]
@@ -880,15 +803,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_repository_artifact("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/artifacts/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
@@ -907,15 +825,10 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPStatusError):
             api.get_repository_artifact("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/artifacts/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.helper.Path")
     @patch("pontos.github.api.httpx.stream")
@@ -936,17 +849,12 @@ class GitHubApiTestCase(unittest.TestCase):
         with api.download_repository_artifact(
             "foo/bar", "123", download_file
         ) as download_progress:
-            requests_mock.assert_called_once_with(
+            args, kwargs = default_request(
                 "GET",
                 "https://api.github.com/repos/foo/bar/actions/artifacts/123/zip",  # pylint: disable=line-too-long
                 timeout=DEFAULT_TIMEOUT,
-                follow_redirects=True,
-                headers={
-                    "Accept": "application/vnd.github.v3+json",
-                    "Authorization": "token 12345",
-                },
-                params=None,
             )
+            requests_mock.assert_called_once_with(*args, **kwargs)
             response_headers.get.assert_called_once_with("content-length")
 
             self.assertIsNone(download_progress.length)
@@ -980,15 +888,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_artifacts("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": 100, "page": 1},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -1025,32 +929,22 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_artifacts("foo/bar", "123")
 
+        args1, kwargs1 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
+            params={"per_page": 100, "page": 1},
+        )
+        args2, kwargs2 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
+            params={"per_page": 100, "page": 2},
+        )
         requests_mock.assert_has_calls(
             [
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
-                    "artifacts",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 1},
-                    follow_redirects=True,
-                ),
+                call(*args1, **kwargs1),
                 call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/runs/123/"
-                    "artifacts",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 2},
-                    follow_redirects=True,
-                ),
+                call(*args2, **kwargs2),
                 call().raise_for_status(),
                 call().json(),
             ]
@@ -1065,15 +959,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         api.delete_repository_artifact("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/artifacts/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.delete")
     def test_delete_repository_artifact_failure(self, requests_mock: MagicMock):
@@ -1089,15 +978,10 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPStatusError):
             api.delete_repository_artifact("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/artifacts/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.get")
     def test_get_workflows(self, requests_mock: MagicMock):
@@ -1116,15 +1000,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflows("foo/bar")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": 100, "page": 1},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -1159,30 +1039,22 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflows("foo/bar")
 
+        args1, kwargs1 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/workflows",
+            params={"per_page": 100, "page": 1},
+        )
+        args2, kwargs2 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/workflows",
+            params={"per_page": 100, "page": 2},
+        )
         requests_mock.assert_has_calls(
             [
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/workflows",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 1},
-                    follow_redirects=True,
-                ),
+                call(*args1, **kwargs1),
                 call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/workflows",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 2},
-                    follow_redirects=True,
-                ),
+                call(*args2, **kwargs2),
                 call().raise_for_status(),
                 call().json(),
             ]
@@ -1204,15 +1076,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
@@ -1231,32 +1098,22 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPStatusError):
             api.get_workflow("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     def test_create_workflow_dispatch(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_workflow_dispatch("foo/bar", "123", ref="main")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows/123"
             "/dispatches",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
             json={"ref": "main"},
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.post")
     def test_create_workflow_dispatch_failure(self, requests_mock: MagicMock):
@@ -1272,17 +1129,12 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPStatusError):
             api.create_workflow_dispatch("foo/bar", "123", ref="main")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows/123"
             "/dispatches",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
             json={"ref": "main"},
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.github.api.httpx.get")
     def test_get_workflow_runs(self, requests_mock: MagicMock):
@@ -1301,15 +1153,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_runs("foo/bar")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": 100, "page": 1},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -1344,30 +1192,22 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_runs("foo/bar")
 
+        args1, kwargs1 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/runs",
+            params={"per_page": 100, "page": 1},
+        )
+        args2, kwargs2 = default_request(
+            "https://api.github.com/repos/foo/bar/actions/runs",
+            params={"per_page": 100, "page": 2},
+        )
         requests_mock.assert_has_calls(
             [
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/runs",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 1},
-                    follow_redirects=True,
-                ),
+                call(*args1, **kwargs1),
                 call().raise_for_status(),
                 call().json(),
                 call.__bool__(),
-                call(
-                    "https://api.github.com/repos/foo/bar/actions/runs",
-                    headers={
-                        "Accept": "application/vnd.github.v3+json",
-                        "Authorization": "token 12345",
-                    },
-                    params={"per_page": 100, "page": 2},
-                    follow_redirects=True,
-                ),
+                call(*args2, **kwargs2),
                 call().raise_for_status(),
                 call().json(),
             ]
@@ -1402,12 +1242,8 @@ class GitHubApiTestCase(unittest.TestCase):
             exclude_pull_requests=True,
         )
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={
                 "per_page": 100,
                 "page": 1,
@@ -1418,8 +1254,8 @@ class GitHubApiTestCase(unittest.TestCase):
                 "created": ">=2022-09-01",
                 "exclude_pull_requests": True,
             },
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -1441,15 +1277,11 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_runs("foo/bar", "foo")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/workflows/foo/runs",
-            headers={
-                "Authorization": "token 12345",
-                "Accept": "application/vnd.github.v3+json",
-            },
             params={"per_page": 100, "page": 1},
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
@@ -1466,15 +1298,10 @@ class GitHubApiTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         artifacts = api.get_workflow_run("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
 
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
@@ -1493,12 +1320,7 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(httpx.HTTPStatusError):
             api.get_workflow_run("foo/bar", "123")
 
-        requests_mock.assert_called_once_with(
+        args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs/123",
-            headers={
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": "token 12345",
-            },
-            params=None,
-            follow_redirects=True,
         )
+        requests_mock.assert_called_once_with(*args, **kwargs)
