@@ -99,7 +99,7 @@ class TempDirectoryTestCase(unittest.TestCase):
         with temp_directory(change_into=True) as tmp_dir:
             new_cwd = Path.cwd()
 
-            self.assertEqual(new_cwd, tmp_dir)
+            self.assertEqual(new_cwd, tmp_dir.resolve())
             self.assertNotEqual(old_cwd, new_cwd)
 
     def test_temp_directory_add_to_sys_path(self):
@@ -191,7 +191,7 @@ class TempFileTestCase(unittest.TestCase):
             self.assertTrue(test_file.exists())
             self.assertEqual("my content", test_file.read_text(encoding="utf8"))
 
-            self.assertEqual(new_cwd, test_file.parent)
+            self.assertEqual(new_cwd, test_file.parent.resolve())
             self.assertNotEqual(old_cwd, new_cwd)
 
         self.assertFalse(test_file.exists())
