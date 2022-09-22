@@ -35,6 +35,7 @@ import httpx
 from pontos.helper import DownloadProgressIterable, download
 
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
+DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
 
 
 class FileStatus(Enum):
@@ -62,9 +63,12 @@ class GitHubRESTApi:
         self,
         token: Optional[str] = None,
         url: Optional[str] = DEFAULT_GITHUB_API_URL,
+        *,
+        timeout: httpx.Timeout = DEFAULT_TIMEOUT_CONFIG,
     ) -> None:
         self.token = token
         self.url = url
+        self.timeout = timeout
 
     def _request_headers(
         self, *, content_type: Optional[str] = None
@@ -101,6 +105,7 @@ class GitHubRESTApi:
             headers=headers,
             params=params,
             follow_redirects=True,
+            timeout=self.timeout,
             **kwargs,
         )
 
