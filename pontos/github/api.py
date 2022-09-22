@@ -55,7 +55,8 @@ def _get_next_url(response) -> Optional[str]:
     return None
 
 
-JSON = Dict[str, Union[str, bool, int]]
+JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
+JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
 
 
 class GitHubRESTApi:
@@ -172,7 +173,7 @@ class GitHubRESTApi:
 
     def pull_request_commits(
         self, repo: str, pull_request: int
-    ) -> Iterable[JSON]:
+    ) -> Iterable[JSON_OBJECT]:
         """
         Get all commit information of a pull request
 
@@ -344,7 +345,7 @@ class GitHubRESTApi:
         response = self._request(api)
         return response.is_success
 
-    def release(self, repo: str, tag: str) -> JSON:
+    def release(self, repo: str, tag: str) -> JSON_OBJECT:
         """
         Get data of a GitHub release by tag
 
@@ -548,8 +549,8 @@ class GitHubRESTApi:
         response.raise_for_status()
 
     def _get_paged_items(
-        self, api: str, key: str, *, params: Optional[JSON] = None
-    ) -> Iterable[JSON]:
+        self, api: str, key: str, *, params: Optional[JSON_OBJECT] = None
+    ) -> Iterable[JSON_OBJECT]:
         """
         Internal method to get the paged items information from different REST
         URLs.
@@ -580,7 +581,7 @@ class GitHubRESTApi:
 
         return items
 
-    def get_repository_artifacts(self, repo: str) -> Iterable[JSON]:
+    def get_repository_artifacts(self, repo: str) -> Iterable[JSON_OBJECT]:
         """
         List all artifacts of a repository
 
@@ -597,9 +598,7 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/actions/artifacts"
         return self._get_paged_items(api, "artifacts")
 
-    def get_repository_artifact(
-        self, repo: str, artifact: str
-    ) -> Iterable[JSON]:
+    def get_repository_artifact(self, repo: str, artifact: str) -> JSON_OBJECT:
         """
         Get a single artifact of a repository
 
@@ -650,7 +649,7 @@ class GitHubRESTApi:
 
     def get_workflow_artifacts(
         self, repo: str, workflow: str
-    ) -> Iterable[JSON]:
+    ) -> Iterable[JSON_OBJECT]:
         """
         List all artifacts for a workflow run
 
@@ -684,7 +683,7 @@ class GitHubRESTApi:
         response = self._request(api, request=httpx.delete)
         response.raise_for_status()
 
-    def get_workflows(self, repo: str) -> Iterable[JSON]:
+    def get_workflows(self, repo: str) -> Iterable[JSON_OBJECT]:
         """
         List all workflows of a repository
 
@@ -701,7 +700,7 @@ class GitHubRESTApi:
         api = f"/repos/{repo}/actions/workflows"
         return self._get_paged_items(api, "workflows")
 
-    def get_workflow(self, repo: str, workflow: str) -> JSON:
+    def get_workflow(self, repo: str, workflow: str) -> JSON_OBJECT:
         """
         Get the information for the given workflow
 
@@ -773,7 +772,7 @@ class GitHubRESTApi:
         status: Optional[str] = None,
         created: Optional[str] = None,
         exclude_pull_requests: Optional[bool] = None,
-    ) -> Iterable[JSON]:
+    ) -> Iterable[JSON_OBJECT]:
         # pylint: disable=line-too-long
         """
         List all workflow runs of a repository or of a specific workflow.
@@ -828,7 +827,7 @@ class GitHubRESTApi:
 
         return self._get_paged_items(api, "workflow_runs", params=params)
 
-    def get_workflow_run(self, repo: str, run: str) -> JSON:
+    def get_workflow_run(self, repo: str, run: str) -> JSON_OBJECT:
         """
         Get information about a single workflow run
 
