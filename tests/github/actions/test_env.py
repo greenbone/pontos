@@ -84,3 +84,13 @@ class GitHubEnvironmentTestCase(unittest.TestCase):
     def test_action_id(self):
         env = GitHubEnvironment()
         self.assertEqual(env.action_id, "54321")
+
+    @patch.dict("os.environ", {"RUNNER_DEBUG": "1"}, clear=True)
+    def test_is_debug_enabled(self):
+        env = GitHubEnvironment()
+        self.assertTrue(env.is_debug)
+
+    @patch.dict("os.environ", {"RUNNER_DEBUG": ""}, clear=True)
+    def test_is_debug_disabled(self):
+        env = GitHubEnvironment()
+        self.assertFalse(env.is_debug)
