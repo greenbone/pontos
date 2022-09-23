@@ -76,3 +76,7 @@ class GitHubEnvironment:
     @property
     def action_id(self) -> Optional[str]:
         return os.environ.get("GITHUB_ACTION")
+
+    @property
+    def is_debug(self) -> bool:
+        return os.environ.get("RUNNER_DEBUG") == "1"
