@@ -15,37 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
-from typing import Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import Callable, Dict, Iterable, Iterator, Optional
 
 import httpx
 
-DEFAULT_GITHUB_API_URL = "https://api.github.com"
-DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
+from pontos.github.api.artifacts import GitHubRESTArtifactsMixin
+from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.helper import (
+    DEFAULT_GITHUB_API_URL,
+    DEFAULT_TIMEOUT_CONFIG,
+    JSON,
+    JSON_OBJECT,
+    _get_next_url,
+)
+from pontos.github.api.labels import GitHubRESTLabelsMixin
+from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
+from pontos.github.api.release import GitHubRESTReleaseMixin
+from pontos.github.api.workflows import GitHubAPIWorkflowsMixin
 
 
-class FileStatus(Enum):
-    ADDED = "added"
-    DELETED = "deleted"
-    MODIFIED = "modified"
-    RENAMED = "renamed"
+class GitHubRESTApi(
+    GitHubRESTPullRequestsMixin,
+    GitHubRESTReleaseMixin,
+    GitHubRESTArtifactsMixin,
+    GitHubRESTBranchMixin,
+    GitHubRESTLabelsMixin,
+    GitHubAPIWorkflowsMixin,
+):
+    """GitHubRESTApi Mixin"""
 
-
-def _get_next_url(response) -> Optional[str]:
-    if response and response.links:
-        try:
-            return response.links["next"]["url"]
-        except KeyError:
-            pass
-
-    return None
-
-
-JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
-JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
-
-
-class GitHubREST:
     def __init__(
         self,
         token: Optional[str] = None,
@@ -132,40 +130,6 @@ class GitHubREST:
             next_url = _get_next_url(response)
 
         return data
-
-    def get_labels(
-        self,
-        repo: str,
-        issue: int,
-    ) -> List[str]:
-        """
-        Get all labels that are set in the issue/pr
-
-        Args:
-            repo:   GitHub repository (owner/name) to use
-            issue:  Issue/Pull request number
-
-        Returns:
-            List of existing labels
-        """
-        api = f"/repos/{repo}/issues/{issue}/labels"
-        response = self._request(api, request=httpx.get)
-        return [f["name"] for f in response.json()]
-
-    def set_labels(self, repo: str, issue: int, labels: List[str]):
-        """
-        Set labels in the issue/pr. Existing labels will be overwritten
-
-        Args:
-            repo:   GitHub repository (owner/name) to use
-            issue:  Issue/Pull request number
-            labels: List of labels, that should be set.
-                    Existing labels will be overwritten
-        """
-        api = f"/repos/{repo}/issues/{issue}/labels"
-        data = {"labels": labels}
-        response = self._request(api, data=data, request=httpx.post)
-        response.raise_for_status()
 
     def _get_paged_items(
         self, api: str, key: str, *, params: Optional[JSON_OBJECT] = None

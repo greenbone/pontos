@@ -24,8 +24,7 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 
-from pontos.github.api import GitHubRESTApi
-from pontos.github.api.api import DEFAULT_TIMEOUT_CONFIG, FileStatus
+from pontos.github.api import DEFAULT_TIMEOUT_CONFIG, FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
 
 here = Path(__file__).parent
@@ -499,7 +498,7 @@ class GitHubApiTestCase(unittest.TestCase):
             ]
         )
 
-    @patch("pontos.github.api.api.Path")
+    @patch("pontos.github.api.release.Path")
     @patch("pontos.github.api.api.httpx.get")
     def test_download_release_assets_no_assets(
         self,
@@ -518,7 +517,7 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(download_iter)
 
-    @patch("pontos.github.api.api.Path")
+    @patch("pontos.github.api.release.Path")
     @patch("pontos.github.api.api.httpx.get")
     def test_download_release_assets_no_files(
         self,

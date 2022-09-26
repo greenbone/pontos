@@ -20,7 +20,7 @@ from typing import ContextManager, Iterable, Union
 
 import httpx
 
-from pontos.github.api.api import JSON_OBJECT
+from pontos.github.api.helper import JSON_OBJECT
 from pontos.helper import DownloadProgressIterable, download
 
 
