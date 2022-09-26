@@ -15,20 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pontos.github.api.api import GitHubRESTApi
-from pontos.github.api.helper import (
-    DEFAULT_GITHUB_API_URL,
-    DEFAULT_TIMEOUT_CONFIG,
-    JSON,
-    JSON_OBJECT,
-    FileStatus,
-)
+from enum import Enum
+from typing import Dict, List, Optional, Union
 
-__all__ = [
-    "JSON",
-    "JSON_OBJECT",
-    "FileStatus",
-    "GitHubRESTApi",
-    "DEFAULT_TIMEOUT_CONFIG",
-    "DEFAULT_GITHUB_API_URL",
-]
+import httpx
+
+DEFAULT_GITHUB_API_URL = "https://api.github.com"
+DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
+
+
+class FileStatus(Enum):
+    ADDED = "added"
+    DELETED = "deleted"
+    MODIFIED = "modified"
+    RENAMED = "renamed"
+
+
+def _get_next_url(response) -> Optional[str]:
+    if response and response.links:
+        try:
+            return response.links["next"]["url"]
+        except KeyError:
+            pass
+
+    return None
+
+
+JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
+JSON = Union[List[JSON_OBJECT], JSON_OBJECT]

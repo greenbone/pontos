@@ -24,8 +24,7 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 
-from pontos.github.api import GitHubRESTApi
-from pontos.github.api.api import DEFAULT_TIMEOUT_CONFIG, FileStatus
+from pontos.github.api import DEFAULT_TIMEOUT_CONFIG, FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
 
 here = Path(__file__).parent
