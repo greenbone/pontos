@@ -40,7 +40,7 @@ class SignTestCase(unittest.TestCase):
 
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.github.api.httpx")
+    @patch("pontos.github.api.api.httpx")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
     def test_fail_sign_on_invalid_get_response(
@@ -76,7 +76,8 @@ class SignTestCase(unittest.TestCase):
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.sign.Path", spec=Path)
     @patch("pontos.helper.Path", spec=Path)
-    @patch("pontos.github.api.httpx")
+    @patch("pontos.github.api.api.httpx")
+    @patch("pontos.github.api.release.httpx")
     @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
@@ -86,6 +87,7 @@ class SignTestCase(unittest.TestCase):
         version_mock,
         stream_mock,
         request_mock,
+        request2_mock,
         _path_mock,
         _path2_mock,
         _shell_mock,
@@ -105,6 +107,8 @@ class SignTestCase(unittest.TestCase):
         )
         request_mock.get.return_value = fake_get
         request_mock.post.return_value = fake_post
+        request2_mock.get.return_value = fake_get
+        request2_mock.post.return_value = fake_post
 
         response = MagicMock()
         response.iter_bytes.side_effect = [
@@ -133,7 +137,8 @@ class SignTestCase(unittest.TestCase):
     @patch("pontos.release.sign.shell_cmd_runner")
     @patch("pontos.release.sign.Path", spec=Path)
     @patch("pontos.helper.Path", spec=Path)
-    @patch("pontos.github.api.httpx")
+    @patch("pontos.github.api.api.httpx")
+    @patch("pontos.github.api.release.httpx")
     @patch("pontos.helper.httpx.stream")
     @patch("pontos.release.helper.version", spec=version)
     @patch("pontos.changelog", spec=changelog)
@@ -143,6 +148,7 @@ class SignTestCase(unittest.TestCase):
         version_mock,
         stream_mock,
         request_mock,
+        request_mock2,
         _path_mock,
         _path2_mock,
         _shell_mock,
@@ -158,6 +164,8 @@ class SignTestCase(unittest.TestCase):
         fake_post.text = self.valid_gh_release_response
         request_mock.get.return_value = fake_get
         request_mock.post.return_value = fake_post
+        request_mock2.get.return_value = fake_get
+        request_mock2.post.return_value = fake_post
 
         response = MagicMock()
         response.iter_bytes.side_effect = [

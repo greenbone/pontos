@@ -117,7 +117,7 @@ class DownloadProgressIterableTestCase(unittest.TestCase):
 
 
 class DownloadTestCase(unittest.TestCase):
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_without_destination(
         self,
         requests_mock: MagicMock,
@@ -164,7 +164,7 @@ class DownloadTestCase(unittest.TestCase):
             download_progress.destination.unlink()
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):

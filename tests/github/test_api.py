@@ -45,7 +45,7 @@ def default_request(*args, **kwargs):
 
 
 class GitHubApiTestCase(unittest.TestCase):
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_branch_exists(self, requests_mock: MagicMock):
         response = MagicMock()
         response.ok = True
@@ -60,7 +60,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertTrue(exists)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_branch_not_exists(self, requests_mock: MagicMock):
         response = MagicMock()
         response.is_success = False
@@ -75,7 +75,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertFalse(exists)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_pull_request_commits(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -93,7 +93,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(commits), 1)
         self.assertEqual(commits[0]["sha"], "1")
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_pull_request(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_pull_request(
@@ -115,7 +115,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_update_pull_request(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.update_pull_request(
@@ -136,7 +136,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_add_pull_request_comment(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.add_pull_request_comment(
@@ -149,7 +149,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.delete")
+    @patch("pontos.github.api.api.httpx.delete")
     def test_delete_branch(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.delete_branch("foo/bar", "foo")
@@ -159,7 +159,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_release(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_release(
@@ -181,7 +181,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_release_exists(self, requests_mock: MagicMock):
         response = MagicMock()
         response.ok = True
@@ -196,7 +196,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertTrue(exists)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_release(self, requests_mock: MagicMock):
         response = MagicMock()
         response.json.return_value = json.loads(
@@ -216,7 +216,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(data["id"], 52499047)
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_release_tarball(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
@@ -257,7 +257,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 next(it)
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_release_tarball_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
@@ -298,7 +298,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 next(it)
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_release_zip(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
@@ -338,7 +338,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_modified_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -372,7 +372,7 @@ class GitHubApiTestCase(unittest.TestCase):
             },
         )
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_added_files_in_pr(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -405,8 +405,8 @@ class GitHubApiTestCase(unittest.TestCase):
         )
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.get")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_release_assets(
         self,
         stream_mock: MagicMock,
@@ -498,8 +498,8 @@ class GitHubApiTestCase(unittest.TestCase):
             ]
         )
 
-    @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.release.Path")
+    @patch("pontos.github.api.api.httpx.get")
     def test_download_release_assets_no_assets(
         self,
         request_mock: MagicMock,
@@ -517,8 +517,8 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(download_iter)
 
-    @patch("pontos.github.api.Path")
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.release.Path")
+    @patch("pontos.github.api.api.httpx.get")
     def test_download_release_assets_no_files(
         self,
         request_mock: MagicMock,
@@ -550,8 +550,8 @@ class GitHubApiTestCase(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(download_iter)
 
-    @patch("pontos.github.api.httpx.post")
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.get")
     def test_upload_release_assets(
         self, get_mock: MagicMock, post_mock: MagicMock
     ):
@@ -613,8 +613,8 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         get_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.get")
     def test_upload_release_assets_no_release(
         self, get_mock: MagicMock, post_mock: MagicMock
     ):
@@ -647,8 +647,8 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         get_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.get")
     def test_upload_release_assets_upload_fails(
         self, get_mock: MagicMock, post_mock: MagicMock
     ):
@@ -707,7 +707,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         get_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_repository_artifacts(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -734,7 +734,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_repository_artifacts_with_pagination(
         self, requests_mock: MagicMock
     ):
@@ -791,7 +791,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[0]["name"], "Foo-0")
         self.assertEqual(artifacts[119]["name"], "Foo-119")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_repository_artifact(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.json.return_value = {
@@ -811,7 +811,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_repository_artifact_invalid(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.is_success = False
@@ -831,7 +831,7 @@ class GitHubApiTestCase(unittest.TestCase):
         requests_mock.assert_called_once_with(*args, **kwargs)
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.httpx.stream")
+    @patch("pontos.github.api.api.httpx.stream")
     def test_download_repository_artifact(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):
@@ -870,7 +870,7 @@ class GitHubApiTestCase(unittest.TestCase):
             with self.assertRaises(StopIteration):
                 next(it)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_artifacts(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -897,7 +897,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_artifacts_with_pagination(
         self, requests_mock: MagicMock
     ):
@@ -954,7 +954,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[0]["name"], "Foo-0")
         self.assertEqual(artifacts[119]["name"], "Foo-119")
 
-    @patch("pontos.github.api.httpx.delete")
+    @patch("pontos.github.api.api.httpx.delete")
     def test_delete_repository_artifact(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.delete_repository_artifact("foo/bar", "123")
@@ -964,7 +964,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.delete")
+    @patch("pontos.github.api.api.httpx.delete")
     def test_delete_repository_artifact_failure(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.is_success = False
@@ -983,7 +983,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflows(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1009,7 +1009,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflows_with_pagination(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1064,7 +1064,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[0]["name"], "Foo-0")
         self.assertEqual(artifacts[119]["name"], "Foo-119")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.json.return_value = {
@@ -1084,7 +1084,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_invalid(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.is_success = False
@@ -1103,7 +1103,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_workflow_dispatch(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_workflow_dispatch("foo/bar", "123", ref="main")
@@ -1115,7 +1115,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.post")
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_workflow_dispatch_failure(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.is_success = False
@@ -1136,7 +1136,7 @@ class GitHubApiTestCase(unittest.TestCase):
         )
         requests_mock.assert_called_once_with(*args, **kwargs)
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_runs(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1162,7 +1162,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_runs_with_pagination(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1217,7 +1217,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[0]["name"], "Foo-0")
         self.assertEqual(artifacts[119]["name"], "Foo-119")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_runs_with_params(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1260,7 +1260,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_runs_for_workflow(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
@@ -1286,7 +1286,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0]["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_run(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.json.return_value = {
@@ -1306,7 +1306,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts["id"], 123)
         self.assertEqual(artifacts["name"], "Foo")
 
-    @patch("pontos.github.api.httpx.get")
+    @patch("pontos.github.api.api.httpx.get")
     def test_get_workflow_run_invalid(self, requests_mock: MagicMock):
         response = MagicMock(autospec=httpx.Response)
         response.is_success = False
