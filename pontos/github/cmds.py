@@ -153,3 +153,22 @@ def labels(terminal: Terminal, args: Namespace):
     except httpx.HTTPError as e:
         terminal.error(str(e))
         sys.exit(1)
+
+
+def repos(terminal: Terminal, args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if Orga is existing
+        if not git.organisation_exists(orga=args.orga):
+            terminal.error(
+                f"PR {args.orga} is not existing or authorisation failed."
+            )
+            sys.exit(1)
+        terminal.ok(f"Organization {args.orga} exists.")
+        orga_json = git.get_repositories(orga=args.orga)
+        print(orga_json)
+
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)

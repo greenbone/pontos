@@ -20,15 +20,32 @@ from typing import Callable, Dict, Iterable, Iterator, List, Optional, Union
 
 import httpx
 
-DEFAULT_GITHUB_API_URL = "https://api.github.com"
-DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
+from pontos.github.api.artifacts import GitHubRESTArtifactsMixin
+from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.helper import (
+    DEFAULT_GITHUB_API_URL,
+    DEFAULT_TIMEOUT_CONFIG,
+    JSON,
+    JSON_OBJECT,
+    _get_next_url,
+)
+from pontos.github.api.labels import GitHubRESTLabelsMixin
+from pontos.github.api.organizations import GitHubRESTOrganizationsMixin
+from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
+from pontos.github.api.release import GitHubRESTReleaseMixin
+from pontos.github.api.workflows import GitHubAPIWorkflowsMixin
 
 
-class FileStatus(Enum):
-    ADDED = "added"
-    DELETED = "deleted"
-    MODIFIED = "modified"
-    RENAMED = "renamed"
+class GitHubRESTApi(
+    GitHubRESTPullRequestsMixin,
+    GitHubRESTReleaseMixin,
+    GitHubRESTArtifactsMixin,
+    GitHubRESTBranchMixin,
+    GitHubRESTLabelsMixin,
+    GitHubAPIWorkflowsMixin,
+    GitHubRESTOrganizationsMixin,
+):
+    """GitHubRESTApi Mixin"""
 
 
 def _get_next_url(response) -> Optional[str]:

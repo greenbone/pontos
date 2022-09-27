@@ -24,25 +24,11 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 
-from pontos.github.api import GitHubRESTApi
-from pontos.github.api.api import DEFAULT_TIMEOUT_CONFIG, FileStatus
+from pontos.github.api import FileStatus, GitHubRESTApi
 from pontos.helper import DEFAULT_TIMEOUT
+from tests.github.api import default_request
 
 here = Path(__file__).parent
-
-
-def default_request(*args, **kwargs):
-    default_kwargs = {
-        "follow_redirects": True,
-        "headers": {
-            "Authorization": "token 12345",
-            "Accept": "application/vnd.github.v3+json",
-        },
-        "params": None,
-        "timeout": DEFAULT_TIMEOUT_CONFIG,
-    }
-    default_kwargs.update(kwargs)
-    return args, default_kwargs
 
 
 class GitHubApiTestCase(unittest.TestCase):
