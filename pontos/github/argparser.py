@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import List
 
 from pontos.github.api import FileStatus
+from pontos.github.api.helper import RepositoryType
 from pontos.github.cmds import (
     create_pull_request,
     file_status,
@@ -188,7 +189,7 @@ def parse_args(
         choices=FileStatus,
         default=[FileStatus.ADDED, FileStatus.MODIFIED],
         nargs="+",
-        help=("What file status should be returned" "Default: %(default)s"),
+        help="What file status should be returned. Default: %(default)s",
     )
 
     file_status_parser.add_argument(
@@ -245,12 +246,12 @@ def parse_args(
         ),
     )
 
-    # orga
+    # orga-repos
     repos_parser = subparsers.add_parser("repos", aliases=["R"])
 
     repos_parser.set_defaults(func=repos)
 
-    repos_parser.add_argument("orga", help=("GitHub organization to use"))
+    repos_parser.add_argument("orga", help="GitHub organization to use")
 
     repos_parser.add_argument(
         "-t",
@@ -260,6 +261,16 @@ def parse_args(
         help=(
             "GitHub Token to access the repository. "
             "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    repos_parser.add_argument(
+        "--type",
+        choices=RepositoryType.__members__,
+        default=RepositoryType.PUBLIC,
+        help=(
+            "Define the type of repositories that should be covered. "
+            "Default: %(default)s"
         ),
     )
 

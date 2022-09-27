@@ -29,7 +29,36 @@ class GitHubRESTOrganizationsMixin:
         response = self._request(api)
         return response.is_success
 
-    def get_repositories(self, orga: str):
+    def get_organization_repository_number(
+        self, orga: str, repository_type: str
+    ) -> int:
+        """
+        Get total number of repositories of organization
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number to check
+        """
+        api = f"/orgs/{orga}"
+        response = self._request(api)
+        response.raise_for_status()
+        response_json = response.json()
+
+        if repository_type == "ALL":
+            return (
+                response_json["public_repos"]
+                + response_json["total_private_repos"]
+            )
+        if repository_type == "PUBLIC":
+            return response_json["public_repos"]
+        if repository_type == "PRIVATE":
+            return response_json["total_private_repos"]
+
+    def get_repositories(
+        self,
+        orga: str,
+        repository_type: str,
+    ):
         """
         Get information about organization repositories
 
@@ -37,6 +66,21 @@ class GitHubRESTOrganizationsMixin:
             orga: GitHub organization to use
         """
         api = f"/orgs/{orga}/repos"
-        response = self._request(api)
+
+        count = self.get_organization_repository_number(
+            orga=orga, repository_type=repository_type
+        )
+        downloaded = 0
+
+        repos = []
+        params = {}
+        params["type"] = repository_type
+        params["per_page"] = 100  # max
+        while count - downloaded > 0:
+            params["page"] = downloaded / params["per_page"] + 1
+            response = self._request(api, params=params)
+            downloaded += params["per_page"]
+            repos.extend(response.json())
         response.raise_for_status()
+
         return response.json()
