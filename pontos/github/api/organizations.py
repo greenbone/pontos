@@ -46,15 +46,14 @@ class GitHubRESTOrganizationsMixin:
         response.raise_for_status()
         response_json = response.json()
 
-        if repository_type == "ALL":
-            return (
-                response_json["public_repos"]
-                + response_json["total_private_repos"]
-            )
         if repository_type == "PUBLIC":
             return response_json["public_repos"]
         if repository_type == "PRIVATE":
             return response_json["total_private_repos"]
+            # Use ALL for currently unsupported "types" (INTERNAL, FORKS ...)
+        return (
+            response_json["public_repos"] + response_json["total_private_repos"]
+        )
 
     def get_repositories(
         self,
