@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from pontos.github.api.helper import JSON
+
+
 class GitHubRESTOrganizationsMixin:
     def organisation_exists(self, orga: str) -> bool:
         """
@@ -57,7 +60,7 @@ class GitHubRESTOrganizationsMixin:
         self,
         orga: str,
         repository_type: str,
-    ):
+    ) -> JSON:
         """
         Get information about organization repositories
 

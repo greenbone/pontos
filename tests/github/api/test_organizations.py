@@ -21,6 +21,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import httpx
+
 from pontos.github.api import GitHubRESTApi
 from tests.github.api import default_request
 
@@ -61,9 +63,24 @@ class GitHubOrganizationsTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
     def test_get_repositories(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
-        api.get_repositories(orga="foo")
+        response1 = httpx.Response(
+            status_code=200,
+            json={"public_repos": 10, "total_private_repos": 10},
+            request=MagicMock(),
+        )
+        response2 = httpx.Response(
+            status_code=200, json=[{"foo": "bar"}], request=MagicMock()
+        )
+        requests_mock.side_effect = [response1, response2]
+        ret = api.get_repositories(orga="foo", repository_type="ALL")
 
         args, kwargs = default_request(
-            "https://api.github.com/orgs/foo/repos",
+            "https://api.github.com/orgs/foo",
         )
-        requests_mock.assert_called_once_with(*args, **kwargs)
+        requests_mock.assert_any_call(*args, **kwargs)
+        args2, kwargs2 = default_request(
+            "https://api.github.com/orgs/foo/repos",
+            params={"per_page": 100, "page": 1, "type": "ALL"},
+        )
+        requests_mock.assert_any_call(*args2, **kwargs2)
+        self.assertEqual(ret, [{"foo": "bar"}])
