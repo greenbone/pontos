@@ -91,15 +91,15 @@ class GitHubRESTArtifactsMixin:
         api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
         return download(api, destination, headers=self._request_headers())
 
-    def get_workflow_artifacts(
-        self, repo: str, workflow: str
+    def get_workflow_run_artifacts(
+        self, repo: str, run: str
     ) -> Iterable[JSON_OBJECT]:
         """
         List all artifacts for a workflow run
 
         Args:
             repo: GitHub repository (owner/name) to use
-            workflow: The unique identifier of the workflow run
+            run: The unique identifier of the workflow run
 
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
@@ -108,7 +108,7 @@ class GitHubRESTArtifactsMixin:
         Returns:
             Information about the artifacts in the workflow as a dict
         """
-        api = f"/repos/{repo}/actions/runs/{workflow}/artifacts"
+        api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return self._get_paged_items(api, "artifacts")
 
     def delete_repository_artifact(self, repo: str, artifact: str):
