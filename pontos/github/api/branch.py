@@ -53,7 +53,7 @@ class GitHubRESTBranchMixin:
 
         Args:
             repo: GitHub repository (owner/name) to use
-            branch: Branch to be deleted
+            branch: Get protection rules for this branch
 
         Raises:
             HTTPError if the request was invalid
