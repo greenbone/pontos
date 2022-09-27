@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import sys
 from argparse import Namespace
+from pathlib import Path
 
 import httpx
 
@@ -167,7 +169,12 @@ def repos(terminal: Terminal, args: Namespace):
             sys.exit(1)
         terminal.ok(f"Organization {args.orga} exists.")
         orga_json = git.get_repositories(orga=args.orga)
-        print(orga_json)
+        if args.path:
+            repo_info = Path(args.path)
+            with open(repo_info, encoding="utf-8") as fp:
+                json.dump(orga_json, fp)
+        else:
+            terminal.print(orga_json)
 
     except httpx.HTTPError as e:
         terminal.error(str(e))
