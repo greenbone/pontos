@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import sys
 from argparse import Namespace
+from pathlib import Path
 
 import httpx
 
@@ -149,6 +151,30 @@ def labels(terminal: Terminal, args: Namespace):
         issue_labels.extend(args.labels)
 
         git.set_labels(repo=args.repo, issue=args.issue, labels=issue_labels)
+
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)
+
+
+def repos(terminal: Terminal, args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if Orga is existing
+        if not git.organisation_exists(orga=args.orga):
+            terminal.error(
+                f"PR {args.orga} is not existing or authorisation failed."
+            )
+            sys.exit(1)
+        terminal.ok(f"Organization {args.orga} exists.")
+        orga_json = git.get_repositories(orga=args.orga)
+        if args.path:
+            repo_info = Path(args.path)
+            with open(repo_info, encoding="utf-8", mode="w") as fp:
+                json.dump(orga_json, fp, indent=2)
+        else:
+            terminal.print(orga_json)
 
     except httpx.HTTPError as e:
         terminal.error(str(e))

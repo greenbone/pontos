@@ -45,3 +45,19 @@ class GitHubRESTBranchMixin:
         api = f"/repos/{repo}/git/refs/{branch}"
         response = self._request(api, request=httpx.delete)
         response.raise_for_status()
+
+    def branch_protection_rules(self, repo: str, branch: str):
+        """
+        Get branch protection rules for a specific repository
+        branch
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            branch: Get protection rules for this branch
+
+        Raises:
+            HTTPError if the request was invalid
+        """
+        api = f"/repos/{repo}/branches/{branch}/protection"
+        response = self._request(api)
+        return response.json

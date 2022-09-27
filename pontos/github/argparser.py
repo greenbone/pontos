@@ -28,6 +28,7 @@ from pontos.github.cmds import (
     file_status,
     labels,
     pull_request,
+    repos,
     update_pull_request,
 )
 
@@ -242,6 +243,30 @@ def parse_args(
             "GitHub Token to access the repository. "
             "Default looks for environment variable 'GITHUB_TOKEN'"
         ),
+    )
+
+    # orga
+    repos_parser = subparsers.add_parser("repos", aliases=["R"])
+
+    repos_parser.set_defaults(func=repos)
+
+    repos_parser.add_argument("orga", help=("GitHub organization to use"))
+
+    repos_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    repos_parser.add_argument(
+        "-p",
+        "--path",
+        help="Define the Path to save the Repository Information JSON",
     )
 
     return parser.parse_args(args)

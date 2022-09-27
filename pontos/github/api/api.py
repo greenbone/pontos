@@ -29,6 +29,7 @@ from pontos.github.api.helper import (
     _get_next_url,
 )
 from pontos.github.api.labels import GitHubRESTLabelsMixin
+from pontos.github.api.organizations import GitHubRESTOrganizationsMixin
 from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
 from pontos.github.api.release import GitHubRESTReleaseMixin
 from pontos.github.api.workflows import GitHubAPIWorkflowsMixin
@@ -41,6 +42,7 @@ class GitHubRESTApi(
     GitHubRESTBranchMixin,
     GitHubRESTLabelsMixin,
     GitHubAPIWorkflowsMixin,
+    GitHubRESTOrganizationsMixin,
 ):
     """GitHubRESTApi Mixin"""
 
