@@ -48,7 +48,7 @@ class GitHubRESTBranchMixin:
 
     def branch_protection_rules(self, repo: str, branch: str):
         """
-        Get branch protection rules for a specific repositories
+        Get branch protection rules for a specific repository
         branch
 
         Args:

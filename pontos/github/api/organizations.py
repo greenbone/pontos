@@ -23,7 +23,6 @@ class GitHubRESTOrganizationsMixin:
 
         Args:
             repo: GitHub repository (owner/name) to use
-            pull_request: Pull request number to check
         """
         api = f"/orgs/{orga}"
         response = self._request(api)
