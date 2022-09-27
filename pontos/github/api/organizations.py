@@ -19,7 +19,7 @@
 class GitHubRESTOrganizationsMixin:
     def organisation_exists(self, orga: str) -> bool:
         """
-        Check if a single branch in a repository exists
+        Check if an organization exists
 
         Args:
             repo: GitHub repository (owner/name) to use
