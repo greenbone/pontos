@@ -84,3 +84,72 @@ class GitHubOrganizationsTestCase(unittest.TestCase):
         )
         requests_mock.assert_any_call(*args2, **kwargs2)
         self.assertEqual(ret, [{"foo": "bar"}])
+
+    @patch("pontos.github.api.api.httpx.get")
+    def test_get_organization_repository_number_all(
+        self, requests_mock: MagicMock
+    ):
+        api = GitHubRESTApi("12345")
+        response = httpx.Response(
+            status_code=200,
+            json={"public_repos": 10, "total_private_repos": 10},
+            request=MagicMock(),
+        )
+
+        requests_mock.return_value = response
+        ret = api.get_organization_repository_number(
+            orga="foo", repository_type="ALL"
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/orgs/foo",
+        )
+        requests_mock.assert_any_call(*args, **kwargs)
+
+        self.assertEqual(ret, 20)
+
+    @patch("pontos.github.api.api.httpx.get")
+    def test_get_organization_repository_number_private(
+        self, requests_mock: MagicMock
+    ):
+        api = GitHubRESTApi("12345")
+        response = httpx.Response(
+            status_code=200,
+            json={"public_repos": 10, "total_private_repos": 10},
+            request=MagicMock(),
+        )
+
+        requests_mock.return_value = response
+        ret = api.get_organization_repository_number(
+            orga="foo", repository_type="PRIVATE"
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/orgs/foo",
+        )
+        requests_mock.assert_any_call(*args, **kwargs)
+
+        self.assertEqual(ret, 10)
+
+    @patch("pontos.github.api.api.httpx.get")
+    def test_get_organization_repository_number_public(
+        self, requests_mock: MagicMock
+    ):
+        api = GitHubRESTApi("12345")
+        response = httpx.Response(
+            status_code=200,
+            json={"public_repos": 10, "total_private_repos": 10},
+            request=MagicMock(),
+        )
+
+        requests_mock.return_value = response
+        ret = api.get_organization_repository_number(
+            orga="foo", repository_type="PUBLIC"
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/orgs/foo",
+        )
+        requests_mock.assert_any_call(*args, **kwargs)
+
+        self.assertEqual(ret, 10)
