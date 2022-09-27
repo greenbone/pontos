@@ -29,6 +29,36 @@ here = Path(__file__).parent
 
 class GitHubBranchTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
+    def test_branch_exists(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.ok = True
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        exists = api.branch_exists("foo/bar", "main")
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/branches/main",
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+        self.assertTrue(exists)
+
+    @patch("pontos.github.api.api.httpx.get")
+    def test_branch_not_exists(self, requests_mock: MagicMock):
+        response = MagicMock()
+        response.is_success = False
+        requests_mock.return_value = response
+
+        api = GitHubRESTApi("12345")
+        exists = api.branch_exists("foo/bar", "main")
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/branches/main",
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+        self.assertFalse(exists)
+
+    @patch("pontos.github.api.api.httpx.get")
     def test_branch_protection_rules(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.get_repositories(orga="foo")

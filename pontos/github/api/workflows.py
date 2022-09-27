@@ -22,7 +22,7 @@ import httpx
 from pontos.github.api.helper import JSON_OBJECT
 
 
-class GitHubAPIWorkflowsMixin:
+class GitHubRESTWorkflowsMixin:
     def get_workflows(self, repo: str) -> Iterable[JSON_OBJECT]:
         """
         List all workflows of a repository

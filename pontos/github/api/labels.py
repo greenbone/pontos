@@ -38,7 +38,7 @@ class GitHubRESTLabelsMixin:
             List of existing labels
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
-        response = self._request(api, request=httpx.get)
+        response: httpx.Response = self._request(api)
         return [f["name"] for f in response.json()]
 
     def set_labels(self, repo: str, issue: int, labels: List[str]):
@@ -53,5 +53,7 @@ class GitHubRESTLabelsMixin:
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
-        response = self._request(api, data=data, request=httpx.post)
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
