@@ -263,4 +263,10 @@ def parse_args(
         ),
     )
 
+    repos_parser.add_argument(
+        "-p",
+        "--path",
+        help="Define the Path to save the Repository Information JSON",
+    )
+
     return parser.parse_args(args)
