@@ -23,7 +23,7 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos.github.api.api import FileStatus
+from pontos.github.api import FileStatus
 from pontos.github.cmds import file_status
 
 here = Path(__file__).parent

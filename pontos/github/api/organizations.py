@@ -15,49 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import httpx
 
-
-class GitHubRESTBranchMixin:
-    def branch_exists(self, repo: str, branch: str) -> bool:
+class GitHubRESTOrganizationsMixin:
+    def organisation_exists(self, orga: str) -> bool:
         """
         Check if a single branch in a repository exists
 
         Args:
             repo: GitHub repository (owner/name) to use
-            branch: Branch name to check
+            pull_request: Pull request number to check
         """
-        api = f"/repos/{repo}/branches/{branch}"
+        api = f"/orgs/{orga}"
         response = self._request(api)
         return response.is_success
 
-    def delete_branch(self, repo: str, branch: str):
+    def get_repositories(self, orga: str):
         """
-        Delete a branch on GitHub
+        Get information about organization repositories
 
         Args:
-            repo: GitHub repository (owner/name) to use
-            branch: Branch to be deleted
-
-        Raises:
-            HTTPError if the request was invalid
+            orga: GitHub organization to use
         """
-        api = f"/repos/{repo}/git/refs/{branch}"
-        response = self._request(api, request=httpx.delete)
-        response.raise_for_status()
-
-    def branch_protection_rules(self, repo: str, branch: str):
-        """
-        Get branch protection rules for a specific repositories
-        branch
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            branch: Branch to be deleted
-
-        Raises:
-            HTTPError if the request was invalid
-        """
-        api = f"/repos/{repo}/branches/{branch}/protection"
+        api = f"/orgs/{orga}/repos"
         response = self._request(api)
-        return response.json
+        response.raise_for_status()
+        return response.json()

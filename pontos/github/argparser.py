@@ -22,12 +22,13 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List
 
-from pontos.github.api.api import FileStatus
+from pontos.github.api import FileStatus
 from pontos.github.cmds import (
     create_pull_request,
     file_status,
     labels,
     pull_request,
+    repos,
     update_pull_request,
 )
 
@@ -234,6 +235,24 @@ def parse_args(
     )
 
     label_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    # orga
+    repos_parser = subparsers.add_parser("repos", aliases=["R"])
+
+    repos_parser.set_defaults(func=repos)
+
+    repos_parser.add_argument("orga", help=("GitHub organization to use"))
+
+    repos_parser.add_argument(
         "-t",
         "--token",
         default="GITHUB_TOKEN",
