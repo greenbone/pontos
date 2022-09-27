@@ -171,8 +171,8 @@ def repos(terminal: Terminal, args: Namespace):
         orga_json = git.get_repositories(orga=args.orga)
         if args.path:
             repo_info = Path(args.path)
-            with open(repo_info, encoding="utf-8") as fp:
-                json.dump(orga_json, fp)
+            with open(repo_info, encoding="utf-8", mode="w") as fp:
+                json.dump(orga_json, fp, indent=2)
         else:
             terminal.print(orga_json)
 
