@@ -58,6 +58,16 @@ class GitHubBranchTestCase(unittest.TestCase):
         requests_mock.assert_called_once_with(*args, **kwargs)
         self.assertFalse(exists)
 
+    @patch("pontos.github.api.api.httpx.delete")
+    def test_delete_branch(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.delete_branch("foo/bar", "foo")
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/git/refs/foo",
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+
     @patch("pontos.github.api.api.httpx.get")
     def test_branch_protection_rules(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
