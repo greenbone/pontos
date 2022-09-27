@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import httpx
+
 
 class GitHubRESTOrganizationsMixin:
     def organisation_exists(self, orga: str) -> bool:
@@ -25,7 +27,7 @@ class GitHubRESTOrganizationsMixin:
             repo: GitHub repository (owner/name) to use
         """
         api = f"/orgs/{orga}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.is_success
 
     def get_repositories(self, orga: str):
@@ -36,6 +38,6 @@ class GitHubRESTOrganizationsMixin:
             orga: GitHub organization to use
         """
         api = f"/orgs/{orga}/repos"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         response.raise_for_status()
         return response.json()

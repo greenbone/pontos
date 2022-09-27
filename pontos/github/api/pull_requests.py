@@ -17,11 +17,11 @@
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, Iterator, Optional
 
 import httpx
 
-from pontos.github.api.helper import JSON_OBJECT, FileStatus
+from pontos.github.api.helper import JSON, JSON_OBJECT, FileStatus
 
 
 class GitHubRESTPullRequestsMixin:
@@ -34,7 +34,7 @@ class GitHubRESTPullRequestsMixin:
             pull_request: Pull request number to check
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.is_success
 
     def pull_request_commits(
@@ -87,7 +87,9 @@ class GitHubRESTPullRequestsMixin:
             "title": title,
             "body": body.replace("\\n", "\n"),
         }
-        response = self._request(api, data=data, request=httpx.post)
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
 
     def update_pull_request(
@@ -122,7 +124,9 @@ class GitHubRESTPullRequestsMixin:
         if body:
             data["body"] = body.replace("\\n", "\n")
 
-        response = self._request(api, data=data, request=httpx.post)
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
 
     def add_pull_request_comment(
@@ -141,7 +145,9 @@ class GitHubRESTPullRequestsMixin:
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data = {"body": comment}
-        response = self._request(api, data=data, request=httpx.post)
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
 
     def pull_request_files(
@@ -164,7 +170,7 @@ class GitHubRESTPullRequestsMixin:
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/files"
-        data = self._request_all(api, params=params)
+        data: Iterator[JSON] = self._request_all(api, params=params)
         file_dict = defaultdict(list)
         for f in data:
             try:

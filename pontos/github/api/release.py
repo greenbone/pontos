@@ -59,7 +59,9 @@ class GitHubRESTReleaseMixin:
             data["target_commitish"] = target_commitish
 
         api = f"/repos/{repo}/releases"
-        response = self._request(api, data=data, request=httpx.post)
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
 
     def release_exists(self, repo: str, tag: str) -> bool:
@@ -74,7 +76,7 @@ class GitHubRESTReleaseMixin:
             True if the release exists
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.is_success
 
     def release(self, repo: str, tag: str) -> JSON_OBJECT:
@@ -89,7 +91,7 @@ class GitHubRESTReleaseMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         response.raise_for_status()
         return response.json()
 
@@ -147,7 +149,7 @@ class GitHubRESTReleaseMixin:
         if not assets_url:
             return
 
-        response = self._request_internal(assets_url)
+        response: httpx.Response = self._request_internal(assets_url)
         response.raise_for_status()
         assets_json = response.json()
         for asset_json in assets_json:
@@ -202,7 +204,7 @@ class GitHubRESTReleaseMixin:
 
             to_upload = file_path.read_bytes()
 
-            response = self._request_internal(
+            response: httpx.Response = self._request_internal(
                 asset_url,
                 params={"name": file_path.name},
                 content=to_upload,
