@@ -858,7 +858,7 @@ class GitHubApiTestCase(unittest.TestCase):
                 next(it)
 
     @patch("pontos.github.api.api.httpx.get")
-    def test_get_workflow_artifacts(self, requests_mock: MagicMock):
+    def test_get_workflow_run_artifacts(self, requests_mock: MagicMock):
         response = MagicMock()
         response.links = None
         response.json.return_value = {
@@ -873,7 +873,7 @@ class GitHubApiTestCase(unittest.TestCase):
         }
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+        artifacts = api.get_workflow_run_artifacts("foo/bar", "123")
 
         args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
@@ -885,7 +885,7 @@ class GitHubApiTestCase(unittest.TestCase):
         self.assertEqual(artifacts[0]["name"], "Foo")
 
     @patch("pontos.github.api.api.httpx.get")
-    def test_get_workflow_artifacts_with_pagination(
+    def test_get_workflow_run_artifacts_with_pagination(
         self, requests_mock: MagicMock
     ):
         response = MagicMock()
@@ -914,7 +914,7 @@ class GitHubApiTestCase(unittest.TestCase):
         ]
         requests_mock.return_value = response
         api = GitHubRESTApi("12345")
-        artifacts = api.get_workflow_artifacts("foo/bar", "123")
+        artifacts = api.get_workflow_run_artifacts("foo/bar", "123")
 
         args1, kwargs1 = default_request(
             "https://api.github.com/repos/foo/bar/actions/runs/123/artifacts",
