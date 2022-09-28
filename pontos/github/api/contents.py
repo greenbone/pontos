@@ -34,6 +34,7 @@ class GitHubRESTContentMixin:
         """
         api = f"/repos/{repo}/contents/{path}"
         params = {}
-        params["ref"] = branch
+        if branch:
+            params["ref"] = branch
         response: httpx.Response = self._request(api, params=params)
         return response.is_success
