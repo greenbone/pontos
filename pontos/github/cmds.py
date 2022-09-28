@@ -168,7 +168,9 @@ def repos(terminal: Terminal, args: Namespace):
             )
             sys.exit(1)
         terminal.ok(f"Organization {args.orga} exists.")
-        orga_json = git.get_repositories(orga=args.orga)
+        orga_json = git.get_repositories(
+            orga=args.orga, repository_type=args.type
+        )
         if args.path:
             repo_info = Path(args.path)
             with open(repo_info, encoding="utf-8", mode="w") as fp:

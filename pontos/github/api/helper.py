@@ -22,6 +22,8 @@ import httpx
 
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
 DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
+JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
+JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
 
 
 class FileStatus(Enum):
@@ -29,6 +31,16 @@ class FileStatus(Enum):
     DELETED = "deleted"
     MODIFIED = "modified"
     RENAMED = "renamed"
+
+
+class RepositoryType(Enum):
+    ALL = "all"
+    PUBLIC = "public"
+    PRIVATE = "private"
+    FORKS = "forks"
+    SOURCES = "sources"
+    MEMBER = "member"
+    INTERNAL = "internal"
 
 
 class WorkflowRunStatus(Enum):
@@ -55,7 +67,3 @@ def _get_next_url(response) -> Optional[str]:
             pass
 
     return None
-
-
-JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
-JSON = Union[List[JSON_OBJECT], JSON_OBJECT]

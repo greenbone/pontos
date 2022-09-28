@@ -31,9 +31,9 @@ class GitHubBranchTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
     def test_branch_protection_rules(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
-        api.get_repositories(orga="foo")
+        api.branch_protection_rules(repo="foo/bar", branch="baz")
 
         args, kwargs = default_request(
-            "https://api.github.com/orgs/foo/repos",
+            "https://api.github.com/repos/foo/bar/branches/baz/protection",
         )
         requests_mock.assert_called_once_with(*args, **kwargs)

@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import List
 
 from pontos.github.api import FileStatus
+from pontos.github.api.helper import RepositoryType
 from pontos.github.cmds import (
     create_pull_request,
     file_status,
@@ -37,6 +38,10 @@ body_template = Path(__file__).parent / "pr_template.md"
 
 def from_env(name: str) -> str:
     return os.environ.get(name, name)
+
+
+def get_repository_type(rtype: str) -> RepositoryType:
+    return RepositoryType[rtype]
 
 
 def parse_args(
@@ -188,7 +193,7 @@ def parse_args(
         choices=FileStatus,
         default=[FileStatus.ADDED, FileStatus.MODIFIED],
         nargs="+",
-        help=("What file status should be returned" "Default: %(default)s"),
+        help="What file status should be returned. Default: %(default)s",
     )
 
     file_status_parser.add_argument(
@@ -245,12 +250,12 @@ def parse_args(
         ),
     )
 
-    # orga
+    # orga-repos
     repos_parser = subparsers.add_parser("repos", aliases=["R"])
 
     repos_parser.set_defaults(func=repos)
 
-    repos_parser.add_argument("orga", help=("GitHub organization to use"))
+    repos_parser.add_argument("orga", help="GitHub organization to use")
 
     repos_parser.add_argument(
         "-t",
@@ -264,9 +269,22 @@ def parse_args(
     )
 
     repos_parser.add_argument(
+        "--type",
+        choices=RepositoryType,
+        type=get_repository_type,
+        default=RepositoryType.PUBLIC,
+        help=(
+            "Define the type of repositories that should be covered. "
+            "Default: %(default)s"
+        ),
+    )
+
+    repos_parser.add_argument(
         "-p",
         "--path",
         help="Define the Path to save the Repository Information JSON",
     )
 
-    return parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
+
+    return parsed_args
