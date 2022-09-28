@@ -23,12 +23,26 @@ import httpx
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
 DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
 
-
 class FileStatus(Enum):
     ADDED = "added"
     DELETED = "deleted"
     MODIFIED = "modified"
     RENAMED = "renamed"
+
+class WorkflowRunStatus(Enum):
+    ACTION_REQUIRED = "action_required"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    FAILURE = "failure"
+    IN_PROGRESS = "in_progress"
+    NEUTRAL = "neutral"
+    QUEUED = "queued"
+    REQUESTED = "requested"
+    SKIPPED = "skipped"
+    STALE = "stale"
+    SUCCESS = "success"
+    TIMED_OUT = "timed_out"
+    WAITING = "waiting"
 
 
 def _get_next_url(response: httpx.Response) -> Optional[str]:
