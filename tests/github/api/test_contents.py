@@ -33,7 +33,7 @@ class GitHubContentTestCase(unittest.TestCase):
         requests_mock.return_value = response
 
         api = GitHubRESTApi("12345")
-        exists = api.path_exits(repo="foo/bar", path="baz", branch="main")
+        exists = api.path_exists(repo="foo/bar", path="baz", branch="main")
 
         args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/contents/baz",
@@ -51,7 +51,7 @@ class GitHubContentTestCase(unittest.TestCase):
         requests_mock.return_value = response
 
         api = GitHubRESTApi("12345")
-        exists = api.path_exits(repo="foo/bar", path="baz", branch="main")
+        exists = api.path_exists(repo="foo/bar", path="baz", branch="main")
 
         args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/contents/baz",
