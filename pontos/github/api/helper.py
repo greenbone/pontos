@@ -25,6 +25,7 @@ DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
 JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
 JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
 
+
 class FileStatus(Enum):
     ADDED = "added"
     DELETED = "deleted"
