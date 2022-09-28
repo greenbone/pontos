@@ -31,6 +31,22 @@ class FileStatus(Enum):
     RENAMED = "renamed"
 
 
+class WorkflowRunStatus(Enum):
+    ACTION_REQUIRED = "action_required"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    FAILURE = "failure"
+    IN_PROGRESS = "in_progress"
+    NEUTRAL = "neutral"
+    QUEUED = "queued"
+    REQUESTED = "requested"
+    SKIPPED = "skipped"
+    STALE = "stale"
+    SUCCESS = "success"
+    TIMED_OUT = "timed_out"
+    WAITING = "waiting"
+
+
 def _get_next_url(response) -> Optional[str]:
     if response and response.links:
         try:
