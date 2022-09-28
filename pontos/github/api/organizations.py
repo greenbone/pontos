@@ -32,7 +32,7 @@ class GitHubRESTOrganizationsMixin:
         return response.is_success
 
     def get_organization_repository_number(
-        self, orga: str, repository_type: str
+        self, orga: str, repository_type: RepositoryType
     ) -> int:
         """
         Get total number of repositories of organization
@@ -46,9 +46,9 @@ class GitHubRESTOrganizationsMixin:
         response.raise_for_status()
         response_json = response.json()
 
-        if repository_type == RepositoryType.PUBLIC.value:
+        if repository_type == RepositoryType.PUBLIC:
             return response_json["public_repos"]
-        if repository_type == RepositoryType.PRIVATE.value:
+        if repository_type == RepositoryType.PRIVATE:
             return response_json["total_private_repos"]
             # Use ALL for currently unsupported "types" (INTERNAL, FORKS ...)
         return (
@@ -58,7 +58,7 @@ class GitHubRESTOrganizationsMixin:
     def get_repositories(
         self,
         orga: str,
-        repository_type: str,
+        repository_type: RepositoryType,
     ) -> JSON:
         """
         Get information about organization repositories
@@ -75,7 +75,7 @@ class GitHubRESTOrganizationsMixin:
 
         repos = []
         params = {}
-        params["type"] = repository_type
+        params["type"] = repository_type.value
         params["per_page"] = 100  # max
         while count - downloaded > 0:
             params["page"] = downloaded / params["per_page"] + 1
