@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import httpx
+
 from pontos.github.api.helper import JSON, RepositoryType
 
 
@@ -42,7 +44,7 @@ class GitHubRESTOrganizationsMixin:
             pull_request: Pull request number to check
         """
         api = f"/orgs/{orga}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         response.raise_for_status()
         response_json = response.json()
 
@@ -79,7 +81,7 @@ class GitHubRESTOrganizationsMixin:
         while count - downloaded > 0:
             page += 1
             params["page"] = page
-            response = self._request(api, params=params)
+            response: httpx.Response = self._request(api, params=params)
             response.raise_for_status()
 
             repos.extend(response.json())

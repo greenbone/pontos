@@ -66,11 +66,13 @@ class GitHubOrganizationsTestCase(unittest.TestCase):
         api = GitHubRESTApi("12345")
         response1 = httpx.Response(
             status_code=200,
-            json={"public_repos": 10, "total_private_repos": 10},
+            json={"public_repos": 1, "total_private_repos": 1},
             request=MagicMock(),
         )
         response2 = httpx.Response(
-            status_code=200, json=[{"foo": "bar"}], request=MagicMock()
+            status_code=200,
+            json=[{"foo": "bar"}, {"foo": "baz"}],
+            request=MagicMock(),
         )
         requests_mock.side_effect = [response1, response2]
         ret = api.get_repositories(
@@ -86,7 +88,7 @@ class GitHubOrganizationsTestCase(unittest.TestCase):
             params={"per_page": 100, "page": 1, "type": "all"},
         )
         requests_mock.assert_any_call(*args2, **kwargs2)
-        self.assertEqual(ret, [{"foo": "bar"}])
+        self.assertEqual(ret, [{"foo": "bar"}, {"foo": "baz"}])
 
     @patch("pontos.github.api.api.httpx.get")
     def test_get_organization_repository_number_all(
