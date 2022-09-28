@@ -22,8 +22,7 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List
 
-from pontos.github.api import FileStatus
-from pontos.github.api.helper import RepositoryType
+from pontos.github.api import FileStatus, RepositoryType
 from pontos.github.cmds import (
     create_pull_request,
     file_status,

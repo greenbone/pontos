@@ -23,8 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 
-from pontos.github.api import GitHubRESTApi
-from pontos.github.api.helper import RepositoryType
+from pontos.github.api import GitHubRESTApi, RepositoryType
 from tests.github.api import default_request
 
 here = Path(__file__).parent
