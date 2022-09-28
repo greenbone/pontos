@@ -17,9 +17,6 @@
 
 import httpx
 
-
-import httpx
-
 from pontos.github.api.helper import JSON, RepositoryType
 
 
