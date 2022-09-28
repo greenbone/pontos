@@ -17,7 +17,7 @@
 
 import httpx
 
-from pontos.github.api.helper import JSON, RepositoryType
+from pontos.github.api import JSON, RepositoryType
 
 
 class GitHubRESTOrganizationsMixin:
