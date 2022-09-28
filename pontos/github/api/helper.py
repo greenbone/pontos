@@ -59,7 +59,7 @@ class WorkflowRunStatus(Enum):
     WAITING = "waiting"
 
 
-def _get_next_url(response) -> Optional[str]:
+def _get_next_url(response: httpx.Response) -> Optional[str]:
     if response and response.links:
         try:
             return response.links["next"]["url"]

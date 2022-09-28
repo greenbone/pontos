@@ -28,7 +28,7 @@ class GitHubRESTBranchMixin:
             branch: Branch name to check
         """
         api = f"/repos/{repo}/branches/{branch}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.is_success
 
     def delete_branch(self, repo: str, branch: str):
@@ -43,7 +43,7 @@ class GitHubRESTBranchMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/git/refs/{branch}"
-        response = self._request(api, request=httpx.delete)
+        response: httpx.Response = self._request(api, request=httpx.delete)
         response.raise_for_status()
 
     def branch_protection_rules(self, repo: str, branch: str):
@@ -59,5 +59,5 @@ class GitHubRESTBranchMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.json()

@@ -33,18 +33,18 @@ from pontos.github.api.labels import GitHubRESTLabelsMixin
 from pontos.github.api.organizations import GitHubRESTOrganizationsMixin
 from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
 from pontos.github.api.release import GitHubRESTReleaseMixin
-from pontos.github.api.workflows import GitHubAPIWorkflowsMixin
+from pontos.github.api.workflows import GitHubRESTWorkflowsMixin
 
 
 class GitHubRESTApi(
-    GitHubRESTPullRequestsMixin,
-    GitHubRESTReleaseMixin,
     GitHubRESTArtifactsMixin,
     GitHubRESTBranchMixin,
     GitHubRESTContentMixin,
     GitHubRESTLabelsMixin,
-    GitHubAPIWorkflowsMixin,
     GitHubRESTOrganizationsMixin,
+    GitHubRESTPullRequestsMixin,
+    GitHubRESTReleaseMixin,
+    GitHubRESTWorkflowsMixin,
 ):
     """GitHubRESTApi Mixin"""
 
@@ -118,7 +118,9 @@ class GitHubRESTApi(
         data: Optional[Dict[str, str]] = None,
         request: Optional[Callable] = None,
     ) -> Iterator[JSON]:
-        response = self._request(api, params=params, data=data, request=request)
+        response: httpx.Response = self._request(
+            api, params=params, data=data, request=request
+        )
 
         yield from response.json()
 
@@ -147,7 +149,9 @@ class GitHubRESTApi(
         params = params or {}
         params.update({"per_page": per_page, "page": page})
 
-        response = self._request(api, request=httpx.get, params=params)
+        response: httpx.Response = self._request(
+            api, request=httpx.get, params=params
+        )
         response.raise_for_status()
 
         json = response.json()

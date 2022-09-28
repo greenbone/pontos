@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import httpx
 
 from pontos.github.api.helper import JSON, RepositoryType
@@ -30,7 +29,7 @@ class GitHubRESTOrganizationsMixin:
             repo: GitHub repository (owner/name) to use
         """
         api = f"/orgs/{orga}"
-        response = self._request(api)
+        response: httpx.Response = self._request(api)
         return response.is_success
 
     def get_organization_repository_number(

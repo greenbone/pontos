@@ -58,7 +58,7 @@ class GitHubRESTArtifactsMixin:
             Information about the artifact as a dict
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response = self._request(api, request=httpx.get)
+        response: httpx.Response = self._request(api, request=httpx.get)
         response.raise_for_status()
         return response.json()
 
@@ -125,5 +125,5 @@ class GitHubRESTArtifactsMixin:
                 failed.
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response = self._request(api, request=httpx.delete)
+        response: httpx.Response = self._request(api, request=httpx.delete)
         response.raise_for_status()
