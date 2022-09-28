@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from pontos.github.api.helper import JSON
+from pontos.github.api.helper import JSON, RepositoryType
 
 
 class GitHubRESTOrganizationsMixin:
@@ -46,9 +46,9 @@ class GitHubRESTOrganizationsMixin:
         response.raise_for_status()
         response_json = response.json()
 
-        if repository_type == "PUBLIC":
+        if repository_type == RepositoryType.PUBLIC.value:
             return response_json["public_repos"]
-        if repository_type == "PRIVATE":
+        if repository_type == RepositoryType.PRIVATE.value:
             return response_json["total_private_repos"]
             # Use ALL for currently unsupported "types" (INTERNAL, FORKS ...)
         return (
