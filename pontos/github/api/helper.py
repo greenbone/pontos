@@ -32,6 +32,7 @@ class FileStatus(Enum):
     MODIFIED = "modified"
     RENAMED = "renamed"
 
+
 class RepositoryType(Enum):
     ALL = "all"
     PUBLIC = "public"
@@ -40,6 +41,7 @@ class RepositoryType(Enum):
     SOURCES = "sources"
     MEMBER = "member"
     INTERNAL = "internal"
+
 
 class WorkflowRunStatus(Enum):
     ACTION_REQUIRED = "action_required"
