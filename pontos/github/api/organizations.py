@@ -58,7 +58,7 @@ class GitHubRESTOrganizationsMixin:
     def get_repositories(
         self,
         orga: str,
-        repository_type: RepositoryType,
+        repository_type: RepositoryType = RepositoryType.ALL,
     ) -> JSON:
         """
         Get information about organization repositories
