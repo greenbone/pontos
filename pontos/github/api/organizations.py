@@ -74,14 +74,15 @@ class GitHubRESTOrganizationsMixin:
         downloaded = 0
 
         repos = []
-        params = {}
-        params["type"] = repository_type.value
-        params["per_page"] = 100  # max
+        params = {"type": repository_type.value, "per_page": 100}
+        page = 0
         while count - downloaded > 0:
-            params["page"] = downloaded / params["per_page"] + 1
+            page += 1
+            params["page"] = page
             response = self._request(api, params=params)
-            downloaded += params["per_page"]
-            repos.extend(response.json())
-        response.raise_for_status()
+            response.raise_for_status()
 
-        return response.json()
+            repos.extend(response.json())
+            downloaded = len(repos)
+            
+        return repos
