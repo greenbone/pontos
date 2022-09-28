@@ -21,6 +21,7 @@ import httpx
 
 from pontos.github.api.artifacts import GitHubRESTArtifactsMixin
 from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.contents import GitHubRESTContentMixin
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
@@ -40,6 +41,7 @@ class GitHubRESTApi(
     GitHubRESTReleaseMixin,
     GitHubRESTArtifactsMixin,
     GitHubRESTBranchMixin,
+    GitHubRESTContentMixin,
     GitHubRESTLabelsMixin,
     GitHubAPIWorkflowsMixin,
     GitHubRESTOrganizationsMixin,
