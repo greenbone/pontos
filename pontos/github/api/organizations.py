@@ -84,5 +84,5 @@ class GitHubRESTOrganizationsMixin:
 
             repos.extend(response.json())
             downloaded = len(repos)
-            
+
         return repos
