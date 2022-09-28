@@ -70,6 +70,7 @@ class GitHubRESTArtifactsMixin:
 
         Args:
             repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
             destination: A path where to store the downloaded file
 
         Raises:
@@ -83,7 +84,7 @@ class GitHubRESTArtifactsMixin:
             print("Downloading", end="")
 
             with api.download_repository_artifact(
-                "org/repo", "artifact.zip"
+                "org/repo", "123", "/tmp/artifact.zip"
             ) as progress_iterator:
                 for progress in progress_iterator:
                     print(".", end="")

@@ -60,4 +60,4 @@ class GitHubRESTBranchMixin:
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
         response: httpx.Response = self._request(api)
-        return response.json
+        return response.json()
