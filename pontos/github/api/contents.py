@@ -20,7 +20,7 @@ import httpx
 
 
 class GitHubRESTContentMixin:
-    def path_exits(self, repo: str, path: str, branch: str = None) -> bool:
+    def path_exists(self, repo: str, path: str, branch: str = None) -> bool:
         """
         Check if a path exists in a branch of a repository
 
