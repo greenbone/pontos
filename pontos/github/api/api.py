@@ -15,12 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib import AbstractAsyncContextManager
+from types import TracebackType
 from typing import Callable, Dict, Iterable, Iterator, Optional
 
 import httpx
 
-from pontos.github.api.artifacts import GitHubRESTArtifactsMixin
+from pontos.github.api.artifacts import (
+    GitHubAsyncRESTArtifacts,
+    GitHubRESTArtifactsMixin,
+)
 from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.contents import GitHubRESTContentMixin
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
@@ -30,10 +36,44 @@ from pontos.github.api.helper import (
     _get_next_url,
 )
 from pontos.github.api.labels import GitHubRESTLabelsMixin
-from pontos.github.api.organizations import GitHubRESTOrganizationsMixin
+from pontos.github.api.organizations import (
+    GitHubAsyncRESTOrganizations,
+    GitHubRESTOrganizationsMixin,
+)
 from pontos.github.api.pull_requests import GitHubRESTPullRequestsMixin
 from pontos.github.api.release import GitHubRESTReleaseMixin
 from pontos.github.api.workflows import GitHubRESTWorkflowsMixin
+
+
+class GitHubAsyncRESTApi(AbstractAsyncContextManager):
+    def __init__(
+        self,
+        token: Optional[str] = None,
+        url: Optional[str] = DEFAULT_GITHUB_API_URL,
+        *,
+        timeout: Optional[httpx.Timeout] = DEFAULT_TIMEOUT_CONFIG,
+    ) -> None:
+        self._client = GitHubAsyncRESTClient(token, url, timeout=timeout)
+
+    @property
+    def organizations(self):
+        return GitHubAsyncRESTOrganizations(self._client)
+
+    @property
+    def artifacts(self):
+        return GitHubAsyncRESTArtifacts(self._client)
+
+    async def __aenter__(self) -> "GitHubAsyncRESTApi":
+        await self._client.__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
+        return await self._client.__aexit__(exc_type, exc_value, traceback)
 
 
 class GitHubRESTApi(
