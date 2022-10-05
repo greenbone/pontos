@@ -16,12 +16,97 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import ContextManager, Iterable, Union
+from typing import ContextManager, Iterable, Optional, Union
 
 import httpx
 
+from pontos.github.api.client import GitHubAsyncREST, Params
 from pontos.github.api.helper import JSON_OBJECT
 from pontos.helper import DownloadProgressIterable, download
+
+
+class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
+    async def _get_paged_artifacts(
+        self, api, *, params: Optional[Params] = None
+    ) -> Iterable[JSON_OBJECT]:
+        return await self._get_paged_items(api, "artifacts", params=params)
+
+    async def get_repository_artifacts(
+        self, repo: str
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        List all artifacts of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the artifacts in the repository as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts"
+        return await self._get_paged_artifacts(api)
+
+    async def get_repository_artifact(
+        self, repo: str, artifact: str
+    ) -> JSON_OBJECT:
+        """
+        Get a single artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the artifact as a dict
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return response.json()
+
+    async def get_workflow_run_artifacts(
+        self, repo: str, run: str
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        List all artifacts for a workflow run
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            run: The unique identifier of the workflow run
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the artifacts in the workflow as a dict
+        """
+        api = f"/repos/{repo}/actions/runs/{run}/artifacts"
+        return await self._get_paged_artifacts(api)
+
+    async def delete_repository_artifact(self, repo: str, artifact: str):
+        """
+        Delete an artifact of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
 
 
 class GitHubRESTArtifactsMixin:

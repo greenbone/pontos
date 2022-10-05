@@ -15,9 +15,51 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Iterable
+
 import httpx
 
-from pontos.github.api.helper import JSON, RepositoryType
+from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.helper import JSON, JSON_OBJECT, RepositoryType
+
+
+class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
+    async def exists(self, organization: str) -> bool:
+        """
+        Check if an organization exists
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+        """
+        api = f"/orgs/{organization}"
+        response = await self._client.get(api)
+        return response.is_success
+
+    async def get_repositories(
+        self,
+        organization: str,
+        *,
+        repository_type: RepositoryType = RepositoryType.ALL,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get information about organization repositories
+
+        Args:
+            organization: GitHub organization to use
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/repos"
+        params = {"type": repository_type.value, "per_page": 100}
+        repos = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            repos.extend(response.json())
+
+        return repos
 
 
 class GitHubRESTOrganizationsMixin:
