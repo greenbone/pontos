@@ -41,7 +41,10 @@ from pontos.github.api.helper import (
     JSON_OBJECT,
     _get_next_url,
 )
-from pontos.github.api.labels import GitHubRESTLabelsMixin
+from pontos.github.api.labels import (
+    GitHubAsyncRESTLabels,
+    GitHubRESTLabelsMixin,
+)
 from pontos.github.api.organizations import (
     GitHubAsyncRESTOrganizations,
     GitHubRESTOrganizationsMixin,
@@ -100,6 +103,14 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
         """
         return GitHubAsyncRESTContent(self._client)
+
+    @property
+    def labels(self):
+        """
+        Labels related API
+
+        """
+        return GitHubAsyncRESTLabels(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
