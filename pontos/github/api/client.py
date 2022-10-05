@@ -166,6 +166,23 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         url = self._request_api_url(api)
         return await self._client.delete(url, params=params, headers=headers)
 
+    async def post(
+        self, api, *, params: Optional[Params] = None, data: Optional[JSON]
+    ) -> httpx.Response:
+        """
+        Post request to a GitHub API
+
+        Args:
+            api: API path to use for the post request
+            params: Optional params to use for the post request
+            data: Optional data to include in the post request
+        """
+        headers = self._request_headers()
+        url = self._request_api_url(api)
+        return await self._client.post(
+            url, params=params, headers=headers, json=data
+        )
+
     async def __aenter__(self) -> "GitHubAsyncRESTClient":
         await self._client.__aenter__()
         return self
