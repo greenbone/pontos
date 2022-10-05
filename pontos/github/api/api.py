@@ -30,7 +30,10 @@ from pontos.github.api.branch import (
     GitHubRESTBranchMixin,
 )
 from pontos.github.api.client import GitHubAsyncRESTClient
-from pontos.github.api.contents import GitHubRESTContentMixin
+from pontos.github.api.contents import (
+    GitHubAsyncRESTContent,
+    GitHubRESTContentMixin,
+)
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
@@ -89,6 +92,14 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
         """
         return GitHubAsyncRESTBranches(self._client)
+
+    @property
+    def contents(self):
+        """
+        Contents related API
+
+        """
+        return GitHubAsyncRESTContent(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
