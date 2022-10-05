@@ -25,7 +25,10 @@ from pontos.github.api.artifacts import (
     GitHubAsyncRESTArtifacts,
     GitHubRESTArtifactsMixin,
 )
-from pontos.github.api.branch import GitHubRESTBranchMixin
+from pontos.github.api.branch import (
+    GitHubAsyncRESTBranches,
+    GitHubRESTBranchMixin,
+)
 from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.contents import GitHubRESTContentMixin
 from pontos.github.api.helper import (
@@ -78,6 +81,14 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Artifacts related API
         """
         return GitHubAsyncRESTArtifacts(self._client)
+
+    @property
+    def branches(self):
+        """
+        Branches related API
+
+        """
+        return GitHubAsyncRESTBranches(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
