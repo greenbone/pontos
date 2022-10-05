@@ -18,7 +18,6 @@
 
 import contextlib
 import datetime
-import os
 import subprocess
 import unittest
 from pathlib import Path
@@ -214,28 +213,23 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             f"{str(today.year % 100)}.{str(today.month)}.2",
         ]
 
-        tmp_path = Path.cwd() / "tmp"
+        with temp_directory(change_into=True) as tmp_path:
+            for filename, mock in zip(filenames, mocks):
+                for current_version, assert_version in zip(
+                    current_versions, assert_versions
+                ):
+                    proj_file = tmp_path / filename
+                    proj_file.touch()
+                    with patch(mock) as cmd_mock:
+                        # pylint: disable=line-too-long
+                        cmd_mock.return_value.get_current_version.return_value = (
+                            current_version
+                        )
 
-        for filename, mock in zip(filenames, mocks):
-            for current_version, assert_version in zip(
-                current_versions, assert_versions
-            ):
-                tmp_path.mkdir(parents=True, exist_ok=True)
-                os.chdir(tmp_path)
-                proj_file = Path.cwd() / filename
-                proj_file.touch()
-                with patch(mock) as cmd_mock:
-                    cmd_mock.return_value.get_current_version.return_value = (
-                        current_version
-                    )
+                        release_version = calculate_calendar_version(terminal)
+                        self.assertEqual(release_version, assert_version)
 
-                    release_version = calculate_calendar_version(terminal)
-                    self.assertEqual(release_version, assert_version)
-
-                os.chdir("..")
-                proj_file.unlink()
-
-        tmp_path.rmdir()
+                    proj_file.unlink()
 
     def test_get_next_dev_version(self):
         current_versions = [
@@ -284,26 +278,21 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             "20.6.2",
         ]
 
-        tmp_path = Path.cwd() / "tmp"
+        with temp_directory(change_into=True) as tmp_path:
+            for filename, mock in zip(filenames, mocks):
+                for current_version, assert_version in zip(
+                    current_versions, assert_versions
+                ):
+                    proj_file = tmp_path / filename
+                    proj_file.touch()
+                    with patch(mock) as cmd_mock:
+                        # pylint: disable=line-too-long
+                        cmd_mock.return_value.get_current_version.return_value = (
+                            current_version
+                        )
 
-        for filename, mock in zip(filenames, mocks):
-            for current_version, assert_version in zip(
-                current_versions, assert_versions
-            ):
-                tmp_path.mkdir(parents=True, exist_ok=True)
-                os.chdir(tmp_path)
-                proj_file = Path.cwd() / filename
-                proj_file.touch()
-                with patch(mock) as cmd_mock:
-                    cmd_mock.return_value.get_current_version.return_value = (
-                        current_version
-                    )
+                        release_version = get_next_patch_version(terminal)
 
-                    release_version = get_next_patch_version(terminal)
+                        self.assertEqual(release_version, assert_version)
 
-                    self.assertEqual(release_version, assert_version)
-
-                os.chdir("..")
-                proj_file.unlink()
-
-        tmp_path.rmdir()
+                    proj_file.unlink()
