@@ -46,6 +46,16 @@ from pontos.github.api.workflows import GitHubRESTWorkflowsMixin
 
 
 class GitHubAsyncRESTApi(AbstractAsyncContextManager):
+    """
+    A asynchronous GitHub REST API
+
+    Example:
+        .. code-block:: python
+
+        with GitHubAsyncRESTApi(token) as api:
+            repositories = await api.organizations.get_repositories("foo")
+    """
+
     def __init__(
         self,
         token: Optional[str] = None,
@@ -57,10 +67,16 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
     @property
     def organizations(self):
+        """
+        Organizations related API
+        """
         return GitHubAsyncRESTOrganizations(self._client)
 
     @property
     def artifacts(self):
+        """
+        Artifacts related API
+        """
         return GitHubAsyncRESTArtifacts(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
