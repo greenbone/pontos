@@ -72,6 +72,14 @@ class GitHubRESTApi(
 
         return headers
 
+    def _request_kwargs(self, *, data, content) -> Dict[str, str]:
+        kwargs = {}
+        if data is not None:
+            kwargs["json"] = data
+        if content is not None:
+            kwargs["content"] = content
+        return kwargs
+
     def _request_internal(
         self,
         url: str,
@@ -84,11 +92,7 @@ class GitHubRESTApi(
     ) -> httpx.Response:
         request = request or httpx.get
         headers = self._request_headers(content_type=content_type)
-        kwargs = {}
-        if data is not None:
-            kwargs["json"] = data
-        if content is not None:
-            kwargs["content"] = content
+        kwargs = self._request_kwargs(data=data, content=content)
         return request(
             url,
             headers=headers,
@@ -97,6 +101,9 @@ class GitHubRESTApi(
             timeout=self.timeout,
             **kwargs,
         )
+
+    def _request_api_url(self, api) -> str:
+        return f"{self.url}{api}"
 
     def _request(
         self,
@@ -107,7 +114,10 @@ class GitHubRESTApi(
         request: Optional[Callable] = None,
     ) -> httpx.Response:
         return self._request_internal(
-            f"{self.url}{api}", params=params, data=data, request=request
+            self._request_api_url(api),
+            params=params,
+            data=data,
+            request=request,
         )
 
     def _request_all(
