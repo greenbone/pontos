@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import contextlib
+import io
 import json
 import unittest
 from pathlib import Path
@@ -65,8 +67,9 @@ class UpdateJavaScriptVersionTestCase(unittest.TestCase):
         package_file.write_text(
             '{"name":"foo", "version":"1.2.3"}', encoding="utf-8"
         )
-        cmd = JavaScriptVersionCommand(project_file_path=package_file)
-        cmd.update_version("22.4.0.dev1")
+        with contextlib.redirect_stdout(io.StringIO()):
+            cmd = JavaScriptVersionCommand(project_file_path=package_file)
+            cmd.update_version("22.4.0.dev1")
 
         with package_file.open(mode="r", encoding="utf-8") as fp:
             fake_package = json.load(fp)
