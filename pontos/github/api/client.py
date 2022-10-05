@@ -18,7 +18,7 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Iterable, Optional
 
 import httpx
 
@@ -26,6 +26,7 @@ from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
     JSON,
+    JSON_OBJECT,
     _get_next_url,
 )
 
@@ -185,3 +186,24 @@ class GitHubAsyncREST:
 
     def __init__(self, client: GitHubAsyncRESTClient):
         self._client = client
+
+    async def _get_paged_items(
+        self, api: str, name: str, *, params: Optional[Params] = None
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Internal method to get the paged items information from different REST
+        URLs.
+        """
+        if not params:
+            params = {}
+
+        params["per_page"] = 100  # max number
+
+        items = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+            data: JSON_OBJECT = response.json()
+            items.extend(data.get(name, []))
+
+        return items
