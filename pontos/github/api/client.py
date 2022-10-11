@@ -18,7 +18,7 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Any, AsyncIterator, Dict, Iterable, Optional
+from typing import Any, AsyncIterator, Dict, Iterable, Optional, Type
 
 import httpx
 
@@ -189,7 +189,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
+        exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:

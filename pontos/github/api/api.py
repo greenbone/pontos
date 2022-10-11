@@ -17,7 +17,7 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Callable, Dict, Iterable, Iterator, Optional
+from typing import Callable, Dict, Iterable, Iterator, Optional, Type
 
 import httpx
 
@@ -151,7 +151,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
+        exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
