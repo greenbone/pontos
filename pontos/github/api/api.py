@@ -53,7 +53,10 @@ from pontos.github.api.pull_requests import (
     GitHubAsyncRESTPullRequests,
     GitHubRESTPullRequestsMixin,
 )
-from pontos.github.api.release import GitHubRESTReleaseMixin
+from pontos.github.api.release import (
+    GitHubAsyncRESTReleases,
+    GitHubRESTReleaseMixin,
+)
 from pontos.github.api.workflows import GitHubRESTWorkflowsMixin
 
 
@@ -122,6 +125,14 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
         """
         return GitHubAsyncRESTPullRequests(self._client)
+
+    @property
+    def releases(self):
+        """
+        Releases related API
+
+        """
+        return GitHubAsyncRESTReleases(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()

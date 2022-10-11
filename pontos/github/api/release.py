@@ -20,8 +20,84 @@ from typing import ContextManager, Iterable, Iterator, Optional, Tuple, Union
 
 import httpx
 
+from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
 from pontos.helper import DownloadProgressIterable, download
+
+
+class GitHubAsyncRESTReleases(GitHubAsyncREST):
+    async def create(
+        self,
+        repo: str,
+        tag: str,
+        *,
+        body: Optional[str] = None,
+        name: Optional[str] = None,
+        target_commitish: Optional[str] = None,
+        draft: Optional[bool] = False,
+        prerelease: Optional[bool] = False,
+    ):
+        """
+        Create a new GitHub release
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            body: Content of the changelog for the release
+            name: name of the release, e.g. 'pontos 1.0.0'
+            target_commitish: Only needed when tag is not there yet
+            draft: If the release is a draft. False by default.
+            prerelease: If the release is a pre release. False by default.
+
+        Raises:
+            httpx.HTTPStatusError if the request was invalid
+        """
+        data = {
+            "tag_name": tag,
+            "draft": draft,
+            "prerelease": prerelease,
+        }
+        if name is not None:
+            data["name"] = name
+        if body is not None:
+            data["body"] = body
+        if target_commitish is not None:
+            data["target_commitish"] = target_commitish
+
+        api = f"/repos/{repo}/releases"
+        response = await self._client.post(api, data=data)
+        response.raise_for_status()
+
+    async def exists(self, repo: str, tag: str) -> bool:
+        """
+        Check wether a GitHub release exists by tag
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Returns:
+            True if the release exists
+        """
+        api = f"/repos/{repo}/releases/tags/{tag}"
+        response = await self._client.get(api)
+        return response.is_success
+
+    async def get(self, repo: str, tag: str) -> JSON_OBJECT:
+        """
+        Get data of a GitHub release by tag
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            httpx.HTTPStatusError if the request was invalid
+        """
+        api = f"/repos/{repo}/releases/tags/{tag}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return response.json()
 
 
 class GitHubRESTReleaseMixin:
