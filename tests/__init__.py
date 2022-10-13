@@ -20,7 +20,7 @@
 import builtins
 import sys
 import unittest
-from typing import Any
+from typing import Any, AsyncIterator, Awaitable, Iterable
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -79,6 +79,17 @@ else:
 
         def assert_not_awaited(self):
             pass
+
+
+class AsyncIteratorMock(AsyncIterator):
+    def __init__(self, iterable: Iterable[Any]) -> None:
+        self.iterator = iter(iterable)
+
+    async def __anext__(self) -> Awaitable[Any]:
+        try:
+            return next(self.iterator)
+        except StopIteration:
+            raise StopAsyncIteration() from None
 
 
 __all__ = ["IsolatedAsyncioTestCase", "AsyncMock"]
