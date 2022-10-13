@@ -17,11 +17,29 @@
 
 # pylint: disable=no-name-in-module,no-member
 
+import builtins
 import sys
 import unittest
 from typing import Any
 from unittest import TestCase
 from unittest.mock import MagicMock
+
+if sys.version_info.minor < 10:
+    # aiter and anext have been added in Python 3.10
+    def aiter(obj):  # pylint: disable=redefined-builtin
+        return obj.__aiter__()
+
+    def anext(obj):  # pylint: disable=redefined-builtin
+        return obj.__anext__()
+
+else:
+
+    def aiter(obj):  # pylint: disable=redefined-builtin
+        return builtins.aiter(obj)
+
+    def anext(obj):  # pylint: disable=redefined-builtin
+        return builtins.anext(obj)
+
 
 if sys.version_info.minor > 7:
     from unittest import IsolatedAsyncioTestCase

@@ -15,23 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=arguments-differ
+# pylint: disable=arguments-differ,redefined-builtin
 
-import sys
 from unittest.mock import MagicMock, call, patch
 
 from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.helper import DEFAULT_GITHUB_API_URL
-from tests import AsyncMock, IsolatedAsyncioTestCase
-
-if sys.version_info.minor < 10:
-    # aiter and anext have been added in Python 3.10
-
-    def aiter(obj):  # pylint: disable=redefined-builtin
-        return obj.__aiter__()
-
-    def anext(obj):  # pylint: disable=redefined-builtin
-        return obj.__anext__()
+from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 
 
 class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
