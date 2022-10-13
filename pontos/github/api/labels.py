@@ -21,6 +21,7 @@ from typing import Iterable, List
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.helper import JSON
 
 
 class GitHubAsyncRESTLabels(GitHubAsyncREST):
@@ -40,10 +41,20 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             Iterable of existing labels
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
-        response = await self._client.get(api)
-        return [l["name"] for l in response.json()]
+        params = {"per_page": "100"}
 
-    def set_labels(self, repo: str, issue: int, labels: Iterable[str]):
+        items = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+            data: JSON = response.json()
+
+            for label in data:
+                items.append(label["name"])
+
+        return items
+
+    async def set_labels(self, repo: str, issue: int, labels: Iterable[str]):
         """
         Set labels in the issue/pr. Existing labels will be overwritten
 
@@ -55,7 +66,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
-        response: httpx.Response = self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)
         response.raise_for_status()
 
 
