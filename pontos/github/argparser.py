@@ -346,11 +346,11 @@ def parse_args(
         "-d",
         "--draft",
         action="store_true",
-        help="Create draf release.",
+        help="Create a draft release.",
     )
 
     create_re_parser.add_argument(
-        "-p", "--prerelease", action="store_true", help="Create pre-release."
+        "-p", "--prerelease", action="store_true", help="Create a pre-release."
     )
 
     parsed_args = parser.parse_args(args)
