@@ -43,7 +43,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Branch to be deleted
 
         Raises:
-            HTTPError if the request was invalid
+            HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/git/refs/{branch}"
         response = await self._client.delete(api)
@@ -59,10 +59,11 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Get protection rules for this branch
 
         Raises:
-            HTTPError if the request was invalid
+            HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
         response = await self._client.get(api)
+        response.raise_for_status()
         return response.json()
 
 
