@@ -26,19 +26,25 @@ from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
 
 
-def release(terminal: Terminal, args: Namespace):
+def release(terminal: Terminal, args: Namespace) -> None:
+    """Github release function for argument class to call"""
+
     args.re_func(terminal, args)
 
 
-def create_release(terminal: Terminal, args: Namespace):
+def create_release(terminal: Terminal, args: Namespace) -> None:
+    """Github create release function for
+    argument class to call"""
+
     git = GitHubRESTApi(token=args.token)
 
     try:
-        # check if release exist
-        if not git.release_exists(repo=args.repo, tag=args.tag):
+        # Check if release exist
+        if git.release_exists(repo=args.repo, tag=args.tag):
             terminal.error(f"Release {args.tag} exist.")
             sys.exit(1)
 
+        # Create release
         git.create_release(
             repo=args.repo,
             tag=args.tag,
