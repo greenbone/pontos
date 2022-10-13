@@ -23,10 +23,121 @@ from unittest.mock import MagicMock, call, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi
+from pontos.github.api.release import GitHubAsyncRESTReleases
 from pontos.helper import DEFAULT_TIMEOUT
-from tests.github.api import default_request
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
+
+
+class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTReleases
+
+    async def test_exists(self):
+        response = create_response(is_success=True)
+        self.client.get.return_value = response
+
+        self.assertTrue(await self.api.exists("foo/bar", "v1.2.3"))
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3"
+        )
+
+    async def test_not_exists(self):
+        response = create_response(is_success=False)
+        self.client.get.return_value = response
+
+        self.assertFalse(await self.api.exists("foo/bar", "v1.2.3"))
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3"
+        )
+
+    async def test_create(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.create(
+            "foo/bar",
+            "v1.2.3",
+            body="foo",
+            name="baz",
+            target_commitish="stable",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/releases",
+            data={
+                "tag_name": "v1.2.3",
+                "draft": False,
+                "prerelease": False,
+                "name": "baz",
+                "body": "foo",
+                "target_commitish": "stable",
+            },
+        )
+
+    async def test_create_failure(self):
+        response = create_response()
+        self.client.post.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.create(
+                "foo/bar",
+                "v1.2.3",
+                body="foo",
+                name="baz",
+                target_commitish="stable",
+            )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/releases",
+            data={
+                "tag_name": "v1.2.3",
+                "draft": False,
+                "prerelease": False,
+                "name": "baz",
+                "body": "foo",
+                "target_commitish": "stable",
+            },
+        )
+
+    async def test_get(self):
+        response = create_response()
+        response.json.return_value = {"id": 1}
+        self.client.get.return_value = response
+
+        release = await self.api.get(
+            "foo/bar",
+            "v1.2.3",
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3",
+        )
+        self.assertEqual(release, {"id": 1})
+
+    async def test_get_failure(self):
+        response = create_response()
+        self.client.get.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.get(
+                "foo/bar",
+                "v1.2.3",
+            )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3",
+        )
 
 
 class GitHubReleaseTestCase(unittest.TestCase):
