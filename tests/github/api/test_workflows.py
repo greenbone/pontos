@@ -24,9 +24,173 @@ from unittest.mock import MagicMock, call, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi
-from tests.github.api import default_request
+from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
+from tests import AsyncIteratorMock
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
+
+
+class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTWorkflows
+
+    async def test_get(self):
+        response = create_response()
+        self.client.get.return_value = response
+
+        await self.api.get("foo/bar", "ci.yml")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/workflows/ci.yml"
+        )
+
+    async def test_get_failure(self):
+        response = create_response()
+        self.client.get.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.get("foo/bar", "ci.yml")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/workflows/ci.yml"
+        )
+
+    async def test_get_all(self):
+        response1 = create_response()
+        response1.json.return_value = {"workflows": [{"id": 1}]}
+        response2 = create_response()
+        response2.json.return_value = {"workflows": [{"id": 2}, {"id": 3}]}
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        workflows = await self.api.get_all("foo/bar")
+
+        self.assertEqual(len(workflows), 3)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/actions/workflows",
+            params={"per_page": "100"},
+        )
+
+    async def test_get_workflow_runs(self):
+        response1 = create_response()
+        response1.json.return_value = {"workflow_runs": [{"id": 1}]}
+        response2 = create_response()
+        response2.json.return_value = {"workflow_runs": [{"id": 2}, {"id": 3}]}
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        runs = await self.api.get_workflow_runs(
+            "foo/bar", actor="foo", branch="stable", exclude_pull_requests=True
+        )
+
+        self.assertEqual(len(runs), 3)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/actions/runs",
+            params={
+                "actor": "foo",
+                "branch": "stable",
+                "exclude_pull_requests": True,
+                "per_page": "100",
+            },
+        )
+
+    async def test_get_workflow_runs_for_workflow(self):
+        response1 = create_response()
+        response1.json.return_value = {"workflow_runs": [{"id": 1}]}
+        response2 = create_response()
+        response2.json.return_value = {"workflow_runs": [{"id": 2}, {"id": 3}]}
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        runs = await self.api.get_workflow_runs(
+            "foo/bar",
+            "ci.yml",
+            actor="foo",
+            branch="stable",
+            exclude_pull_requests=True,
+        )
+
+        self.assertEqual(len(runs), 3)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/actions/workflows/ci.yml/runs",
+            params={
+                "actor": "foo",
+                "branch": "stable",
+                "exclude_pull_requests": True,
+                "per_page": "100",
+            },
+        )
+
+    async def test_get_workflow_run(self):
+        response = create_response()
+        self.client.get.return_value = response
+
+        await self.api.get_workflow_run("foo/bar", "123")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/runs/123"
+        )
+
+    async def test_get_workflow_run_failure(self):
+        response = create_response()
+        self.client.get.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.get_workflow_run("foo/bar", "123")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/runs/123"
+        )
+
+    async def test_create_workflow_dispatch(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        input_dict = {"foo": "bar"}
+
+        await self.api.create_workflow_dispatch(
+            "foo/bar", "ci.yml", ref="stable", inputs=input_dict
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/actions/workflows/ci.yml/dispatches",
+            data={"ref": "stable", "inputs": input_dict},
+        )
+
+    async def test_create_workflow_dispatch_failure(self):
+        response = create_response()
+        self.client.post.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        input_dict = {"foo": "bar"}
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.create_workflow_dispatch(
+                "foo/bar", "ci.yml", ref="stable", inputs=input_dict
+            )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/actions/workflows/ci.yml/dispatches",
+            data={"ref": "stable", "inputs": input_dict},
+        )
 
 
 class GitHubWorkflowsTestCase(unittest.TestCase):

@@ -122,8 +122,8 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
 
         Args:
             repo: GitHub repository (owner/name) to use
-            workflow: ID of the workflow or workflow file name. For example
-                `main.yml`.
+            workflow: Optional ID of the workflow or workflow file name. For
+                example `main.yml`.
             actor: Only return workflow runs of this user ID.
             branch: Only return workflow runs for a specific branch.
             event: Only returns workflows runs triggered by the event specified.

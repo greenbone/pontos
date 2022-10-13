@@ -214,7 +214,7 @@ class GitHubAsyncREST:
         if not params:
             params = {}
 
-        params["per_page"] = 100  # max number
+        params["per_page"] = "100"  # max number
 
         items = []
 
