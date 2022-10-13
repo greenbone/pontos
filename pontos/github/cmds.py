@@ -40,7 +40,7 @@ def create_release(terminal: Terminal, args: Namespace) -> None:
 
     try:
         # Check if release exist
-        if git.release_exists(repo=args.repo, tag=args.tag):
+        if not git.release_exists(repo=args.repo, tag=args.tag):
             terminal.error(f"Release {args.tag} exist.")
             sys.exit(1)
 

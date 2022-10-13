@@ -323,7 +323,7 @@ def parse_args(
 
     create_re_parser.add_argument(
         "tag",
-        help=("Tag to create on release"),
+        help=("Tag to use for release"),
     )
 
     create_re_parser.add_argument(
