@@ -19,38 +19,38 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from httpx import HTTPStatusError, Response
+from httpx import HTTPStatusError
 
 from pontos.github.api import GitHubRESTApi
 from pontos.github.api.branch import GitHubAsyncRESTBranches
-from pontos.github.api.client import GitHubAsyncRESTClient
-from tests import AsyncMock, IsolatedAsyncioTestCase
-from tests.github.api import default_request
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
 
 
-class GitHubAsyncRESTBranchesTestCase(IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.client = AsyncMock(spec=GitHubAsyncRESTClient)
-        self.api = GitHubAsyncRESTBranches(self.client)
+class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTBranches
 
     async def test_exists(self):
-        response = MagicMock(spec=Response, is_success=True)
+        response = create_response(is_success=True)
         self.client.get.return_value = response
 
         self.assertTrue(await self.api.exists("foo/bar", "baz"))
         self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
 
     async def test_not_exists(self):
-        response = MagicMock(spec=Response, is_success=False)
+        response = create_response(is_success=False)
         self.client.get.return_value = response
 
         self.assertFalse(await self.api.exists("foo/bar", "baz"))
         self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
 
     async def test_delete_branch(self):
-        response = MagicMock(spec=Response)
+        response = create_response()
         self.client.delete.return_value = response
 
         await self.api.delete("foo/bar", "baz")
@@ -60,7 +60,7 @@ class GitHubAsyncRESTBranchesTestCase(IsolatedAsyncioTestCase):
         )
 
     async def test_delete_branch_failure(self):
-        response = MagicMock(spec=Response)
+        response = create_response()
         error = HTTPStatusError("404", request=MagicMock(), response=response)
         response.raise_for_status.side_effect = error
 
@@ -79,7 +79,7 @@ class GitHubAsyncRESTBranchesTestCase(IsolatedAsyncioTestCase):
             "enforce_admins": {},
             "required_pull_request_reviews": {},
         }
-        response = MagicMock(spec=Response)
+        response = create_response()
         response.json.return_value = rules
 
         self.client.get.return_value = response
@@ -92,7 +92,7 @@ class GitHubAsyncRESTBranchesTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(data, rules)
 
     async def test_protection_rules_failure(self):
-        response = MagicMock(spec=Response)
+        response = create_response()
         error = HTTPStatusError("404", request=MagicMock(), response=response)
         response.raise_for_status.side_effect = error
 
