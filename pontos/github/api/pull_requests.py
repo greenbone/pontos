@@ -59,7 +59,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         api = f"/repos/{repo}/pulls/{pull_request}/commits"
         commits = []
 
-        async for response in self._client.get_all(api, params):
+        async for response in self._client.get_all(api, params=params):
             commits.extend(response.json())
 
         return commits
@@ -151,17 +151,22 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         response.raise_for_status()
 
     async def files(
-        self, repo: str, pull_request: int, status_list: Iterable[FileStatus]
+        self,
+        repo: str,
+        pull_request: int,
+        *,
+        status_list: Optional[Iterable[FileStatus]] = None,
     ) -> Dict[FileStatus, Iterable[Path]]:
         """
-        Get all modified files of a pull request
+        Get files of a pull request
 
         Hint: At maximum GitHub allows to receive 3000 files of a commit.
 
         Args:
             repo: GitHub repository (owner/name) to use
             pull_request: Pull request number
-            status_list: Iterable of status change types that should be included
+            status_list: Optional iterable of status change types that should be
+                included in the response
 
         Returns:
             Information about the commits in the pull request as a dict
@@ -180,7 +185,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
                     # unknown status
                     continue
 
-                if status in status_list:
+                if not status_list or status in status_list:
                     file_dict[status].append(Path(f["filename"]))
 
         return file_dict
