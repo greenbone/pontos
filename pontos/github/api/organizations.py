@@ -51,7 +51,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/repos"
-        params = {"type": repository_type.value, "per_page": 100}
+        params = {"type": repository_type.value, "per_page": "100"}
         repos = []
 
         async for response in self._client.get_all(api, params=params):
