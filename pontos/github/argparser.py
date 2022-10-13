@@ -24,6 +24,8 @@ from typing import List
 
 from pontos.github.api import FileStatus, RepositoryType
 from pontos.github.cmds import (
+    release,
+    create_release,
     create_pull_request,
     file_status,
     labels,
@@ -282,6 +284,73 @@ def parse_args(
         "-p",
         "--path",
         help="Define the Path to save the Repository Information JSON",
+    )
+
+    # create a release from command line
+    re_parser = subparsers.add_parser(
+        "release", aliases=["re", "RE", "release"]
+    )
+
+    re_parser.set_defaults(func=release)
+
+    re_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    re_subparsers = re_parser.add_subparsers(
+        title="method",
+        dest="re_method",
+        metavar="name",
+        description="valid release method",
+        help="Release method",
+        required=True,
+    )
+
+    create_re_parser = re_subparsers.add_parser("create", help="Create release")
+
+    create_re_parser.set_defaults(re_func=create_release)
+
+    create_re_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+
+    create_re_parser.add_argument(
+        "tag",
+        help=("Tag to create on release"),
+    )
+
+    create_re_parser.add_argument(
+        "name",
+        help="Name of the release",
+    )
+
+    create_re_parser.add_argument(
+        "-b",
+        "--body",
+        default=body_template.read_text(encoding="utf-8"),
+        help=("Description for the Release. Can be formatted in Markdown."),
+    )
+
+    create_re_parser.add_argument(
+        "-tc", "--target-commitish", default=None, help="??"
+    )
+
+    create_re_parser.add_argument(
+        "-d",
+        "--draft",
+        default=None,
+        help="Create draf release.",
+    )
+
+    create_re_parser.add_argument(
+        "-p", "--prerelease", default=None, help="Create pre-release."
     )
 
     parsed_args = parser.parse_args(args)

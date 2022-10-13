@@ -26,6 +26,35 @@ from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
 
 
+def release(terminal: Terminal, args: Namespace):
+    args.re_func(terminal, args)
+
+
+def create_release(terminal: Terminal, args: Namespace):
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # check if release exist
+        if not git.release_exists(repo=args.repo, tag=args.tag):
+            terminal.error(f"Release {args.tag} exist.")
+            sys.exit(1)
+
+        git.create_release(
+            repo=args.repo,
+            tag=args.tag,
+            body=args.body,
+            name=args.name,
+            target_commitish=args.target_commitish,
+            draft=args.draft,
+            prerelease=args.prerelease,
+        )
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)
+
+    terminal.ok("Release created.")
+
+
 def pull_request(terminal: Terminal, args: Namespace):
     args.pr_func(terminal, args)
 
