@@ -27,14 +27,14 @@ from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
     @patch("pontos.github.api.client.httpx.AsyncClient")
     def setUp(self, async_client: MagicMock) -> None:
-        self.async_client_instance = AsyncMock()
-        async_client.return_value = self.async_client_instance
+        self.http_client = AsyncMock()
+        async_client.return_value = self.http_client
         self.client = GitHubAsyncRESTClient("token")
 
     async def test_get(self):
         await self.client.get("/foo/bar")
 
-        self.async_client_instance.get.assert_awaited_once_with(
+        self.http_client.get.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -49,7 +49,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         response1 = MagicMock(links={"next": {"url": url}})
         response2 = MagicMock(links=None)
 
-        self.async_client_instance.get.side_effect = [
+        self.http_client.get.side_effect = [
             response1,
             response2,
         ]
@@ -61,7 +61,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             await anext(it)
 
-        self.async_client_instance.get.assert_has_awaits(
+        self.http_client.get.assert_has_awaits(
             [
                 call(
                     f"{DEFAULT_GITHUB_API_URL}/foo/bar",
@@ -87,7 +87,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
     async def test_delete(self):
         await self.client.delete("/foo/bar")
 
-        self.async_client_instance.delete.assert_awaited_once_with(
+        self.http_client.delete.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -99,7 +99,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
     async def test_post(self):
         await self.client.delete("/foo/bar")
 
-        self.async_client_instance.delete.assert_awaited_once_with(
+        self.http_client.delete.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
                 "Accept": "application/vnd.github.v3+json",
@@ -112,5 +112,5 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         async with self.client:
             pass
 
-        self.async_client_instance.__aenter__.assert_awaited_once()
-        self.async_client_instance.__aexit__.assert_awaited_once()
+        self.http_client.__aenter__.assert_awaited_once()
+        self.http_client.__aexit__.assert_awaited_once()
