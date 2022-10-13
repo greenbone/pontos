@@ -18,11 +18,11 @@
 # pylint: disable=arguments-differ
 
 import sys
-from unittest import IsolatedAsyncioTestCase
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from unittest.mock import MagicMock, call, patch
 
 from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.helper import DEFAULT_GITHUB_API_URL
+from tests import AsyncMock, IsolatedAsyncioTestCase
 
 if sys.version_info.minor < 10:
     # aiter and anext have been added in Python 3.10
