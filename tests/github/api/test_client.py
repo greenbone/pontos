@@ -97,14 +97,15 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         )
 
     async def test_post(self):
-        await self.client.delete("/foo/bar")
+        await self.client.post("/foo/bar", data={"foo": "bar"})
 
-        self.http_client.delete.assert_awaited_once_with(
+        self.http_client.post.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token token",
             },
+            json={"foo": "bar"},
             params=None,
         )
 
