@@ -142,6 +142,20 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_update_simple(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.update(
+            "foo/bar",
+            123,
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/pulls/123",
+            data={},
+        )
+
     async def test_update_failure(self):
         response = create_response()
         self.client.post.side_effect = HTTPStatusError(
