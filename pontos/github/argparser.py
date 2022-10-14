@@ -334,7 +334,7 @@ def parse_args(
     create_re_parser.add_argument(
         "-b",
         "--body",
-        default=body_template.read_text(encoding="utf-8"),
+        default=None,
         help=("Description for the Release. Can be formatted in Markdown."),
     )
 
