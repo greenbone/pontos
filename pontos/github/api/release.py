@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 from pathlib import Path
 from typing import ContextManager, Iterable, Iterator, Optional, Tuple, Union
 
@@ -25,6 +26,97 @@ from pontos.helper import DownloadProgressIterable, download
 
 
 class GitHubRESTReleaseMixin:
+    def create_github_tag(
+        self,
+        owner: str,
+        repo: str,
+        tag: str,
+        message: str,
+        gobject: str,
+        name: str,
+        email: str,
+        *,
+        otype: str = "commit",
+        date: str = str(datetime.now().isoformat()),
+    ) -> str:
+        """
+        Create a github tag
+
+        Args:
+            owner: The account owner of the repository.
+                The name is not case sensitive.
+            repo: The name of the repository.
+                The name is not case sensitive.
+            tag: The tag's name.
+                This is typically a version (e.g., "v0.0.1").
+            message: The tag message.
+            gobject: The SHA of the git object this is tagging.
+            otype: The type of the object we're tagging.
+                Normally this is a commit
+                but it can also be a tree or a blob.
+            name: The name of the author of the tag
+            email: The email of the author of the tag
+            date: When this object was tagged.
+                This is a timestamp in
+                ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+
+        Return:
+            Tag sha
+        """
+
+        data = {
+            "owner": owner,
+            "repo": repo,
+            "tag": tag,
+            "message": message,
+            "object": gobject,
+            "type": otype,
+            "tagger": {
+                "name": name,
+                "email": email,
+                "date": date,
+            },
+        }
+
+        api = f"/repos/{owner}/{repo}/git/tags"
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
+        response.raise_for_status()
+        return response.json()["object"]["sha"]
+
+    def create_github_tag_reference(
+        self,
+        owner: str,
+        repo: str,
+        tag: str,
+        sha: str,
+    ) -> None:
+        """
+        Create git tag reference (A real tag in git).
+
+        Args:
+            owner: The account owner of the repository.
+                The name is not case sensitive.
+            repo: The name of the repository.
+                The name is not case sensitive.
+            tag: Github tag name.
+            sha: The SHA1 value for this Github tag.
+        """
+
+        data = {
+            "owner": owner,
+            "repo": repo,
+            "ref": f"refs/tags/{tag}",
+            "sha": sha,
+        }
+
+        api = f"/repos/{owner}/{repo}/git/refs"
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
+        response.raise_for_status()
+
     def create_release(
         self,
         repo: str,
