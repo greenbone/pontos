@@ -24,10 +24,104 @@ from unittest.mock import MagicMock, call, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi
+from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.helper import DEFAULT_TIMEOUT
-from tests.github.api import default_request
+from tests import AsyncIteratorMock
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
+
+
+class GitHubAsyncRESTArtifactsTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTArtifacts
+
+    async def test_get(self):
+        response = create_response()
+        self.client.get.return_value = response
+
+        await self.api.get("foo/bar", "123")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/artifacts/123"
+        )
+
+    async def test_get_failure(self):
+        response = create_response()
+        self.client.get.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.get("foo/bar", "123")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/actions/artifacts/123"
+        )
+
+    async def test_get_all(self):
+        response1 = create_response()
+        response1.json.return_value = {"artifacts": [{"id": 1}]}
+        response2 = create_response()
+        response2.json.return_value = {"artifacts": [{"id": 2}, {"id": 3}]}
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        workflows = await self.api.get_all("foo/bar")
+
+        self.assertEqual(len(workflows), 3)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/actions/artifacts",
+            params={"per_page": "100"},
+        )
+
+    async def test_get_workflow_run_artifacts(self):
+        response1 = create_response()
+        response1.json.return_value = {"artifacts": [{"id": 1}]}
+        response2 = create_response()
+        response2.json.return_value = {"artifacts": [{"id": 2}, {"id": 3}]}
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        workflows = await self.api.get_workflow_run_artifacts("foo/bar", "123")
+
+        self.assertEqual(len(workflows), 3)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/actions/runs/123/artifacts",
+            params={"per_page": "100"},
+        )
+
+    async def test_delete(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.delete("foo/bar", "123")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/actions/artifacts/123"
+        )
+
+    async def test_delete_failure(self):
+        response = create_response()
+        self.client.delete.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.delete("foo/bar", "123")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/actions/artifacts/123"
+        )
 
 
 class GitHubArtifactsTestCase(unittest.TestCase):

@@ -31,9 +31,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     ) -> Iterable[JSON_OBJECT]:
         return await self._get_paged_items(api, "artifacts", params=params)
 
-    async def get_repository_artifacts(
-        self, repo: str
-    ) -> Iterable[JSON_OBJECT]:
+    async def get_all(self, repo: str) -> Iterable[JSON_OBJECT]:
         """
         List all artifacts of a repository
 
@@ -50,9 +48,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts"
         return await self._get_paged_artifacts(api)
 
-    async def get_repository_artifact(
-        self, repo: str, artifact: str
-    ) -> JSON_OBJECT:
+    async def get(self, repo: str, artifact: str) -> JSON_OBJECT:
         """
         Get a single artifact of a repository
 
@@ -92,7 +88,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return await self._get_paged_artifacts(api)
 
-    async def delete_repository_artifact(self, repo: str, artifact: str):
+    async def delete(self, repo: str, artifact: str):
         """
         Delete an artifact of a repository
 
