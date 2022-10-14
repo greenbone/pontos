@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines
+# pylint: disable=redefined-builtin
 
 import unittest
 from pathlib import Path
@@ -26,7 +26,7 @@ import httpx
 from pontos.github.api import GitHubRESTApi
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.helper import DEFAULT_TIMEOUT
-from tests import AsyncIteratorMock, AsyncMock
+from tests import AsyncIteratorMock, AsyncMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
