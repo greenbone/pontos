@@ -16,13 +16,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import ContextManager, Iterable, Optional, Union
+from typing import (
+    AsyncContextManager,
+    ContextManager,
+    Iterable,
+    Optional,
+    Union,
+)
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST, Params
 from pontos.github.api.helper import JSON_OBJECT
-from pontos.helper import DownloadProgressIterable, download
+from pontos.helper import (
+    AsyncDownloadProgressIterable,
+    DownloadProgressIterable,
+    download,
+    download_async,
+)
 
 
 class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
@@ -103,6 +114,35 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = await self._client.delete(api)
         response.raise_for_status()
+
+    def download(
+        self, repo: str, artifact: str
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+        """
+        Download a repository artifact zip file
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            artifact: ID of the artifact
+
+        Raises:
+            HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            api = GitHubAsyncRESTApi("...")
+
+            print("Downloading", end="")
+
+            with Path("foo.baz").open("w") as f:
+                async with api.download("org/repo", "123") as download:
+                    async for content, progress in download:
+                        f.write(content)
+                        print(".", end="")
+        """
+        api = f"/repos/{repo}/actions/artifacts/{artifact}/zip"
+        return download_async(self._client.stream(api))
 
 
 class GitHubRESTArtifactsMixin:
