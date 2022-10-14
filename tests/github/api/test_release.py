@@ -81,6 +81,24 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_create_simple(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.create(
+            "foo/bar",
+            "v1.2.3",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/releases",
+            data={
+                "tag_name": "v1.2.3",
+                "draft": False,
+                "prerelease": False,
+            },
+        )
+
     async def test_create_failure(self):
         response = create_response()
         self.client.post.side_effect = httpx.HTTPStatusError(
