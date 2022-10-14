@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-builtin
+
 import json
 import unittest
 from pathlib import Path
@@ -25,6 +27,7 @@ import httpx
 from pontos.github.api import GitHubRESTApi
 from pontos.github.api.release import GitHubAsyncRESTReleases
 from pontos.helper import DEFAULT_TIMEOUT
+from tests import AsyncIteratorMock, AsyncMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
@@ -155,6 +158,56 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
 
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/releases/tags/v1.2.3",
+        )
+
+    async def test_download_release_tarball(self):
+        response = create_response(headers=MagicMock())
+        response.headers.get.return_value = 2
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream_context = AsyncMock()
+        stream_context.__aenter__.return_value = response
+        self.client.stream.return_value = stream_context
+
+        async with self.api.download_release_tarball(
+            "foo/bar", "v1.2.3"
+        ) as download_iterable:
+            it = aiter(download_iterable)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+        self.client.stream.assert_called_once_with(
+            "https://github.com/foo/bar/archive/refs/tags/v1.2.3.tar.gz"
+        )
+
+    async def test_download_release_zip(self):
+        response = create_response(headers=MagicMock())
+        response.headers.get.return_value = 2
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream_context = AsyncMock()
+        stream_context.__aenter__.return_value = response
+        self.client.stream.return_value = stream_context
+
+        async with self.api.download_release_zip(
+            "foo/bar", "v1.2.3"
+        ) as download_iterable:
+            it = aiter(download_iterable)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+        self.client.stream.assert_called_once_with(
+            "https://github.com/foo/bar/archive/refs/tags/v1.2.3.zip"
         )
 
 

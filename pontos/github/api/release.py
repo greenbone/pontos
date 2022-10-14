@@ -16,13 +16,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import ContextManager, Iterable, Iterator, Optional, Tuple, Union
+from typing import (
+    AsyncContextManager,
+    ContextManager,
+    Iterable,
+    Iterator,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
-from pontos.helper import DownloadProgressIterable, download
+from pontos.helper import (
+    AsyncDownloadProgressIterable,
+    DownloadProgressIterable,
+    download,
+    download_async,
+)
 
 
 class GitHubAsyncRESTReleases(GitHubAsyncREST):
@@ -98,6 +111,40 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         response = await self._client.get(api)
         response.raise_for_status()
         return response.json()
+
+    def download_release_tarball(
+        self, repo: str, tag: str
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+        """
+        Download a release tarball (tar.gz) file
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            HTTPStatusError if the request was invalid
+        """
+        api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
+        return download_async(self._client.stream(api))
+
+    def download_release_zip(
+        self,
+        repo: str,
+        tag: str,
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+        """
+        Download a release zip file
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+
+        Raises:
+            HTTPStatusError if the request was invalid
+        """
+        api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
+        return download_async(self._client.stream(api))
 
 
 class GitHubRESTReleaseMixin:
