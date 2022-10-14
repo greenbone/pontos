@@ -109,6 +109,19 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             params=None,
         )
 
+    def test_stream(self):
+        self.client.stream("/foo/bar")
+
+        self.http_client.stream.assert_called_once_with(
+            "GET",
+            f"{DEFAULT_GITHUB_API_URL}/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            follow_redirects=True,
+        )
+
     async def test_context_manager(self):
         async with self.client:
             pass

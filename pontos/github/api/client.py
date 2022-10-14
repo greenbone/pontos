@@ -18,7 +18,15 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Any, AsyncIterator, Dict, Iterable, Optional, Type
+from typing import (
+    Any,
+    AsyncContextManager,
+    AsyncIterator,
+    Dict,
+    Iterable,
+    Optional,
+    Type,
+)
 
 import httpx
 
@@ -181,6 +189,19 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         url = self._request_api_url(api)
         return await self._client.post(
             url, params=params, headers=headers, json=data
+        )
+
+    def stream(self, api: str) -> AsyncContextManager[httpx.Response]:
+        """
+        Stream data from a GitHub API
+
+        Args:
+            api: API path to use for the post request
+        """
+        headers = self._request_headers()
+        url = self._request_api_url(api)
+        return self._client.stream(
+            "GET", url, headers=headers, follow_redirects=True
         )
 
     async def __aenter__(self) -> "GitHubAsyncRESTClient":
