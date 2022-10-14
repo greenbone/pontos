@@ -199,7 +199,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             api: API path to use for the post request
         """
         headers = self._request_headers()
-        url = self._request_api_url(api)
+        url = api if api.startswith("https") else self._request_api_url(api)
         return self._client.stream(
             "GET", url, headers=headers, follow_redirects=True
         )
