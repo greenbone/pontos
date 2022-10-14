@@ -153,7 +153,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             next_url = _get_next_url(response)
 
     async def delete(
-        self, api, *, params: Optional[Params] = None
+        self, api: str, *, params: Optional[Params] = None
     ) -> httpx.Response:
         """
         Delete request to a GitHub API
@@ -167,7 +167,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         return await self._client.delete(url, params=params, headers=headers)
 
     async def post(
-        self, api, *, params: Optional[Params] = None, data: Optional[JSON]
+        self, api: str, *, params: Optional[Params] = None, data: Optional[JSON]
     ) -> httpx.Response:
         """
         Post request to a GitHub API
