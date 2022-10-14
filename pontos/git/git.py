@@ -279,3 +279,34 @@ class Git:
         args.extend(["-m", message])
 
         exec_git(*args, cwd=self._cwd)
+
+    def tag(
+        self,
+        tag: str,
+    ):
+        """
+        Create a Tag
+
+        Args:
+            Tag: Tag name to create
+        """
+        args = ["tag"]
+
+        args.append(tag)
+
+        exec_git(*args, cwd=self._cwd)
+
+    def push_tag(
+        self,
+        tag: str,
+    ):
+        """
+        Push tag changes to remote repository
+
+        Args:
+            Tag: Push tag to the named remote
+        """
+        args = ["push", "origin"]
+        args.append(f"refs/tags/{tag}")
+
+        exec_git(*args, cwd=self._cwd)
