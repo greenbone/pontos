@@ -37,7 +37,7 @@ class GitHubRESTReleaseMixin:
         email: str,
         *,
         otype: str = "commit",
-        date: str = str(datetime.now().isoformat()),
+        date: str = None,
     ) -> str:
         """
         Create a github tag
@@ -63,6 +63,9 @@ class GitHubRESTReleaseMixin:
         Return:
             Tag sha
         """
+
+        if not date:
+            date = str(datetime.now().isoformat())
 
         data = {
             "owner": owner,
