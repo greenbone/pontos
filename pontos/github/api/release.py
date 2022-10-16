@@ -26,7 +26,7 @@ from pontos.helper import DownloadProgressIterable, download
 
 
 class GitHubRESTReleaseMixin:
-    def create_github_tag(
+    def create_tag(
         self,
         owner: str,
         repo: str,
@@ -85,7 +85,7 @@ class GitHubRESTReleaseMixin:
         response.raise_for_status()
         return response.json()["object"]["sha"]
 
-    def create_github_tag_reference(
+    def create_tag_reference(
         self,
         owner: str,
         repo: str,
