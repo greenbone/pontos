@@ -325,7 +325,7 @@ def parse_args(
 
     create_re_parser.add_argument(
         "tag",
-        help=("Tag to use for release"),
+        help="Tag to use for release",
     )
 
     create_re_parser.add_argument(
@@ -337,7 +337,7 @@ def parse_args(
         "-b",
         "--body",
         default=None,
-        help=("Description for the Release. Can be formatted in Markdown."),
+        help="Description for the Release. Can be formatted in Markdown.",
     )
 
     create_re_parser.add_argument(
