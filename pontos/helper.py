@@ -122,6 +122,9 @@ async def download_async(
     Returns:
         A context manager containing an AsyncDownloadProgressIterable
 
+    Raises:
+        HTTPStatusError if the request was invalid
+
     Example:
         .. code-block:: python
 
