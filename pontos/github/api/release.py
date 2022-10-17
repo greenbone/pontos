@@ -32,12 +32,12 @@ class GitHubRESTReleaseMixin:
         repo: str,
         tag: str,
         message: str,
-        gobject: str,
+        git_object: str,
         name: str,
         email: str,
         *,
-        otype: str = "commit",
-        date: str = None,
+        git_object_type: str = "commit",
+        date: Optional[str] = None,
     ) -> str:
         """
         Create a github tag
@@ -50,8 +50,8 @@ class GitHubRESTReleaseMixin:
             tag: The tag's name.
                 This is typically a version (e.g., "v0.0.1").
             message: The tag message.
-            gobject: The SHA of the git object this is tagging.
-            otype: The type of the object we're tagging.
+            git_object: The SHA of the git object this is tagging.
+            git_object_type: The type of the object we're tagging.
                 Normally this is a commit
                 but it can also be a tree or a blob.
             name: The name of the author of the tag
@@ -72,8 +72,8 @@ class GitHubRESTReleaseMixin:
             "repo": repo,
             "tag": tag,
             "message": message,
-            "object": gobject,
-            "type": otype,
+            "object": git_object,
+            "type": git_object_type,
             "tagger": {
                 "name": name,
                 "email": email,
