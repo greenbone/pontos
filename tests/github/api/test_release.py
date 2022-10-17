@@ -210,6 +210,148 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
             "https://github.com/foo/bar/archive/refs/tags/v1.2.3.zip"
         )
 
+    async def test_download_release_assets(self):
+        get_assets_url_response = create_response()
+        get_assets_url_response.json.return_value = {
+            "assets_url": "https://foo.bar/assets"
+        }
+        get_assets_response = create_response()
+        get_assets_response.json.return_value = [
+            {"browser_download_url": "http://bar", "name": "bar"},
+            {"browser_download_url": "http://baz", "name": "baz"},
+        ]
+        response = create_response(headers=MagicMock())
+        response.headers.get.return_value = 2
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream_context = AsyncMock()
+        stream_context.__aenter__.return_value = response
+        self.client.stream.return_value = stream_context
+        self.client.get.side_effect = [
+            get_assets_url_response,
+            get_assets_response,
+        ]
+
+        assets_it = aiter(self.api.download_release_assets("foo/bar", "v1.2.3"))
+
+        name, cm = await anext(assets_it)
+
+        self.client.get.assert_has_awaits(
+            [
+                call("/repos/foo/bar/releases/tags/v1.2.3"),
+                call("https://foo.bar/assets"),
+            ]
+        )
+
+        self.client.stream.assert_called_once_with("http://bar")
+
+        self.assertEqual(name, "bar")
+
+        async with cm as progress_it:
+            it = aiter(progress_it)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+        self.client.stream.reset_mock()
+        response = create_response(headers=MagicMock())
+        response.headers.get.return_value = 2
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream_context = AsyncMock()
+        stream_context.__aenter__.return_value = response
+        self.client.stream.return_value = stream_context
+
+        name, cm = await anext(assets_it)
+
+        self.client.stream.assert_called_once_with("http://baz")
+
+        self.assertEqual(name, "baz")
+
+        async with cm as progress_it:
+            it = aiter(progress_it)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(assets_it)
+
+    async def test_download_release_assets_no_assets_url(self):
+        get_assets_url_response = create_response()
+        get_assets_url_response.json.return_value = {}
+        self.client.get.return_value = get_assets_url_response
+        assets_it = aiter(self.api.download_release_assets("foo/bar", "v1.2.3"))
+
+        with self.assertRaises(RuntimeError):
+            await anext(assets_it)
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3"
+        )
+
+    async def test_download_release_assets_filter(self):
+        get_assets_url_response = create_response()
+        get_assets_url_response.json.return_value = {
+            "assets_url": "https://foo.bar/assets"
+        }
+        get_assets_response = create_response()
+        get_assets_response.json.return_value = [
+            {"browser_download_url": "http://bar", "name": "bar"},
+            {"browser_download_url": "http://baz", "name": "baz"},
+        ]
+        response = create_response(headers=MagicMock())
+        response.headers.get.return_value = 2
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream_context = AsyncMock()
+        stream_context.__aenter__.return_value = response
+        self.client.stream.return_value = stream_context
+        self.client.get.side_effect = [
+            get_assets_url_response,
+            get_assets_response,
+        ]
+
+        assets_it = aiter(
+            self.api.download_release_assets(
+                "foo/bar", "v1.2.3", match_pattern="*r"
+            )
+        )
+
+        name, cm = await anext(assets_it)
+
+        self.client.get.assert_has_awaits(
+            [
+                call("/repos/foo/bar/releases/tags/v1.2.3"),
+                call("https://foo.bar/assets"),
+            ]
+        )
+
+        self.client.stream.assert_called_once_with("http://bar")
+
+        self.assertEqual(name, "bar")
+
+        async with cm as progress_it:
+            it = aiter(progress_it)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(assets_it)
+
 
 class GitHubReleaseTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.post")

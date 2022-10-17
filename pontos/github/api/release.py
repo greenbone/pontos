@@ -18,6 +18,7 @@
 from pathlib import Path
 from typing import (
     AsyncContextManager,
+    AsyncIterator,
     ContextManager,
     Iterable,
     Iterator,
@@ -145,6 +146,69 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download_async(self._client.stream(api))
+
+    async def download_release_assets(
+        self,
+        repo: str,
+        tag: str,
+        *,
+        match_pattern: Optional[str] = None,
+    ) -> AsyncIterator[
+        Tuple[str, AsyncContextManager[AsyncDownloadProgressIterable]]
+    ]:
+        """
+        Download release assets
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            match_pattern: Optional pattern which the name of the available
+                artifact must match. For example "*.zip". Allows to download
+                only specific artifacts.
+
+        Raises:
+            HTTPError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            async def download_asset(name, download_cm):
+                async with download_cm as iterator:
+                    with Path(name).open("wb") as f:
+                        async for content, progress in iterator:
+                            f.write(content)
+                            print(name, progress)
+
+
+            tasks = []
+            async for name, download_cm in api.download_release_assets(
+                "foo/bar, "v1.2.3",
+            ):
+                tasks.append(asyncio.create_task(
+                    download_asset(name, download_cm)
+                )
+
+            await asyncio.gather(*tasks)
+
+        """
+        release_json = await self.get(repo, tag)
+        assets_url = release_json.get("assets_url")
+        if not assets_url:
+            raise RuntimeError("assets URL not found")
+
+        response = await self._client.get(assets_url)
+        response.raise_for_status()
+
+        assets_json = response.json()
+        for asset_json in assets_json:
+            asset_url: str = asset_json.get("browser_download_url", "")
+            name: str = asset_json.get("name", "")
+
+            print("matches", name, Path(name), Path(name).match(match_pattern))
+            if match_pattern and not Path(name).match(match_pattern):
+                continue
+
+            yield name, download_async(self._client.stream(asset_url))
 
 
 class GitHubRESTReleaseMixin:
