@@ -341,7 +341,10 @@ def parse_args(
     )
 
     create_re_parser.add_argument(
-        "-tc", "--target-commitish", default=None, help="??"
+        "-tc",
+        "--target-commitish",
+        default=None,
+        help="Git reference to use for the release",
     )
 
     create_re_parser.add_argument(
@@ -395,7 +398,7 @@ def parse_args(
 
     create_tag_parser.add_argument(
         "tag",
-        help=("Tag name to use"),
+        help="Tag name to use",
     )
 
     create_tag_parser.add_argument(
@@ -414,7 +417,7 @@ def parse_args(
     )
 
     create_tag_parser.add_argument(
-        "gobject",
+        "git_object",
         help="The SHA of the git object this is tagging.",
     )
     create_tag_parser.add_argument(
@@ -423,10 +426,10 @@ def parse_args(
     )
 
     create_tag_parser.add_argument(
-        "-ot",
-        "--otype",
+        "-got",
+        "--git-object-type",
         default="commit",
-        help=("The type of the object we're taggin"),
+        help="The type of the object we're taggin",
     )
 
     create_tag_parser.add_argument(
