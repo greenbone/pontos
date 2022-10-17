@@ -26,6 +26,44 @@ from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
 
 
+def tag(terminal: Terminal, args: Namespace) -> None:
+    """Github release function for argument class to call"""
+
+    args.tag_func(terminal, args)
+
+
+def create_tag(terminal: Terminal, args: Namespace) -> None:
+    """Github create tag function for
+    argument class to call"""
+
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # Create tag
+        sha = git.create_tag(
+            owner=args.owner,
+            repo=args.repo,
+            tag=args.tag,
+            message=args.message,
+            gobject=args.gobject,
+            name=args.name,
+            email=args.email,
+            otype=args.otype,
+            date=args.date,
+        )
+
+        # Create tag reference
+        git.create_tag_reference(
+            owner=args.owner, repo=args.repo, tag=args.tag, sha=sha
+        )
+
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)
+
+    terminal.ok("Tag created.")
+
+
 def release(terminal: Terminal, args: Namespace) -> None:
     """Github release function for argument class to call"""
 
