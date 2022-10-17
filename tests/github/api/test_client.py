@@ -132,6 +132,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             },
             json={"foo": "bar"},
             params=None,
+            content=None,
         )
 
     async def test_post_url(self):
@@ -147,6 +148,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             },
             json={"foo": "bar"},
             params=None,
+            content=None,
         )
 
     def test_stream(self):

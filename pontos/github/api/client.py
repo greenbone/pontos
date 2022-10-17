@@ -171,7 +171,13 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         return await self._client.delete(url, params=params, headers=headers)
 
     async def post(
-        self, api: str, *, params: Optional[Params] = None, data: Optional[JSON]
+        self,
+        api: str,
+        *,
+        data: Optional[JSON],
+        params: Optional[Params] = None,
+        content: Optional[str] = None,
+        content_type: Optional[str] = None,
     ) -> httpx.Response:
         """
         Post request to a GitHub API
@@ -181,10 +187,10 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             params: Optional params to use for the post request
             data: Optional data to include in the post request
         """
-        headers = self._request_headers()
+        headers = self._request_headers(content_type=content_type)
         url = self._request_url(api)
         return await self._client.post(
-            url, params=params, headers=headers, json=data
+            url, params=params, headers=headers, json=data, content=content
         )
 
     def stream(self, api: str) -> AsyncContextManager[httpx.Response]:
