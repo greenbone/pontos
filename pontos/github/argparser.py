@@ -24,6 +24,8 @@ from typing import List
 
 from pontos.github.api import FileStatus, RepositoryType
 from pontos.github.cmds import (
+    tag,
+    create_tag,
     release,
     create_release,
     create_pull_request,
@@ -356,6 +358,85 @@ def parse_args(
         action="store_true",
         default=False,
         help="Create a pre-release.",
+    )
+
+    # Create a tag from command line
+    tag_parser = subparsers.add_parser("release", aliases=["tag", "TAG"])
+
+    tag_parser.set_defaults(func=tag)
+
+    tag_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    tag_subparsers = tag_parser.add_subparsers(
+        title="method",
+        dest="tag_method",
+        metavar="name",
+        description="valid tag method",
+        help="Release method",
+        required=True,
+    )
+
+    create_tag_parser = tag_subparsers.add_parser("create", help="Create tag")
+
+    create_tag_parser.set_defaults(tag_func=create_tag)
+
+    create_tag_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+
+    create_tag_parser.add_argument(
+        "tag",
+        help=("Tag name to use"),
+    )
+
+    create_tag_parser.add_argument(
+        "name",
+        help="Name of the user",
+    )
+
+    create_tag_parser.add_argument(
+        "owner",
+        help="Name of repo owner",
+    )
+
+    create_tag_parser.add_argument(
+        "message",
+        help="Tag message",
+    )
+
+    create_tag_parser.add_argument(
+        "gobject",
+        help="The SHA of the git object this is tagging.",
+    )
+    create_tag_parser.add_argument(
+        "email",
+        help="Email address of the user",
+    )
+
+    create_tag_parser.add_argument(
+        "-ot",
+        "--otype",
+        default="commit",
+        help=("The type of the object we're taggin"),
+    )
+
+    create_tag_parser.add_argument(
+        "-d",
+        "--date",
+        default=None,
+        help=(
+            "When this object was tagged. ISO 8601 format:"
+            " YYYY-MM-DDTHH:MM:SSZ."
+        ),
     )
 
     parsed_args = parser.parse_args(args)
