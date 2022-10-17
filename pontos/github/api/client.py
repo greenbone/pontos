@@ -96,26 +96,14 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             kwargs["content"] = content
         return kwargs
 
-    def _request_api_url(self, api) -> str:
+    def _request_api_url(self, api: str) -> str:
         return f"{self.url}{api}"
 
-    async def _get(
-        self,
-        url: str,
-        *,
-        params: Optional[Params] = None,
-    ) -> httpx.Response:
-        """
-        Internal get request. Requires the full API URL.
-        """
-        headers = self._request_headers()
-        kwargs = self._request_kwargs()
-        return await self._client.get(
-            url,
-            headers=headers,
-            params=params,
-            follow_redirects=True,
-            **kwargs,
+    def _request_url(self, api_or_url: str) -> str:
+        return (
+            api_or_url
+            if api_or_url.startswith("https")
+            else self._request_api_url(api_or_url)
         )
 
     async def get(
@@ -131,8 +119,16 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             api: API path to use for the get request
             params: Optional params to use for the get request
         """
-        url = self._request_api_url(api)
-        return await self._get(url, params=params)
+        url = self._request_url(api)
+        headers = self._request_headers()
+        kwargs = self._request_kwargs()
+        return await self._client.get(
+            url,
+            headers=headers,
+            params=params,
+            follow_redirects=True,
+            **kwargs,
+        )
 
     async def get_all(
         self,
@@ -154,7 +150,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         next_url = _get_next_url(response)
 
         while next_url:
-            response = await self._get(next_url, params=params)
+            response = await self.get(next_url, params=params)
 
             yield response
 
@@ -171,7 +167,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             params: Optional params to use for the delete request
         """
         headers = self._request_headers()
-        url = self._request_api_url(api)
+        url = self._request_url(api)
         return await self._client.delete(url, params=params, headers=headers)
 
     async def post(
@@ -186,7 +182,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             data: Optional data to include in the post request
         """
         headers = self._request_headers()
-        url = self._request_api_url(api)
+        url = self._request_url(api)
         return await self._client.post(
             url, params=params, headers=headers, json=data
         )
@@ -199,7 +195,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             api: API path to use for the post request
         """
         headers = self._request_headers()
-        url = api if api.startswith("https") else self._request_api_url(api)
+        url = self._request_url(api)
         return self._client.stream(
             "GET", url, headers=headers, follow_redirects=True
         )

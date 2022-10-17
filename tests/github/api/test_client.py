@@ -44,6 +44,19 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             follow_redirects=True,
         )
 
+    async def test_get_url(self):
+        await self.client.get("https://github.com/foo/bar")
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://github.com/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            params=None,
+            follow_redirects=True,
+        )
+
     async def test_get_all(self):
         url = "https://foo.bar"
         response1 = MagicMock(links={"next": {"url": url}})
@@ -96,11 +109,38 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             params=None,
         )
 
+    async def test_delete_url(self):
+        await self.client.delete("https://github.com/foo/bar")
+
+        self.http_client.delete.assert_awaited_once_with(
+            "https://github.com/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            params=None,
+        )
+
     async def test_post(self):
         await self.client.post("/foo/bar", data={"foo": "bar"})
 
         self.http_client.post.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            json={"foo": "bar"},
+            params=None,
+        )
+
+    async def test_post_url(self):
+        await self.client.post(
+            "https://github.com/foo/bar", data={"foo": "bar"}
+        )
+
+        self.http_client.post.assert_awaited_once_with(
+            "https://github.com/foo/bar",
             headers={
                 "Accept": "application/vnd.github.v3+json",
                 "Authorization": "token token",
