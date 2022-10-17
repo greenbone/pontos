@@ -38,6 +38,15 @@ import httpx
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
 
+
+async def upload(file_path: Path) -> AsyncIterator[bytes]:
+    with file_path.open("rb") as f:
+        read = f.read(DEFAULT_CHUNK_SIZE)
+        while read:
+            yield read
+            read = f.read(DEFAULT_CHUNK_SIZE)
+
+
 T = TypeVar("T", str, bytes)
 
 
