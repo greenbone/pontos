@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 from pathlib import Path
 from typing import (
     AsyncContextManager,
@@ -36,6 +37,7 @@ from pontos.helper import (
     DownloadProgressIterable,
     download,
     download_async,
+    upload,
 )
 
 
@@ -204,11 +206,75 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             asset_url: str = asset_json.get("browser_download_url", "")
             name: str = asset_json.get("name", "")
 
-            print("matches", name, Path(name), Path(name).match(match_pattern))
             if match_pattern and not Path(name).match(match_pattern):
                 continue
 
             yield name, download_async(self._client.stream(asset_url))
+
+    async def upload_release_assets(
+        self,
+        repo: str,
+        tag: str,
+        files: Iterable[Union[Path, Tuple[Path, str]]],
+    ) -> AsyncIterator[Path]:
+        """
+        Upload release assets asynchronously
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            tag: The git tag for the release
+            files: An iterable of file paths or an iterable of tuples
+                containing a file path and content types to upload as an asset
+
+        Returns:
+            yields each file after its upload is finished
+
+        Raises:
+            HTTPError if an upload request was invalid
+
+        Example:
+            .. code-block:: python
+
+            files = (Path("foo.txt"), Path("bar.txt"),)
+            async for uploaded_file in api.upload_release_assets(
+                "foo/bar", "1.2.3", files
+            ):
+                print(f"Uploaded: {uploaded_file}")
+
+            files = [
+                (Path("foo.txt"), "text/ascii"),
+                (Path("bar.pdf"), "application/pdf"),
+            ]
+            async for uploaded_file in api.upload_release_assets(
+                "foo/bar", "1.2.3", files
+            ):
+               print(f"Uploaded: {uploaded_file}")
+        """
+        github_json = await self.get(repo, tag)
+        asset_url = github_json["upload_url"].replace("{?name,label}", "")
+
+        async def upload_file(file_path, content_type):
+            response = await self._client.post(
+                asset_url,
+                params={"name": file_path.name},
+                content_type=content_type,
+                content=upload(file_path),
+            )
+            return response, file_path
+
+        tasks = []
+        for file_path in files:
+            if isinstance(file_path, Tuple):
+                file_path, content_type = file_path
+            else:
+                content_type = "application/octet-stream"
+
+            tasks.append(upload_file(file_path, content_type))
+
+        for coroutine in asyncio.as_completed(tasks):
+            response, file_path = await coroutine
+            response.raise_for_status()
+            yield file_path
 
 
 class GitHubRESTReleaseMixin:

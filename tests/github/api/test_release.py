@@ -352,6 +352,54 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
         with self.assertRaises(StopAsyncIteration):
             await anext(assets_it)
 
+    async def test_upload_release_assets(self):
+        response = create_response()
+        response.json.return_value = {
+            "upload_url": "https://uploads/assets{?name,label}",
+        }
+        post_response = create_response()
+        self.client.get.return_value = response
+        self.client.post.return_value = post_response
+
+        file1 = MagicMock(spec=Path)
+        file1.name = "foo.txt"
+        content1 = b"foo"
+        file1.open.return_value.__enter__.return_value.read.side_effect = [
+            content1
+        ]
+        file2 = MagicMock(spec=Path)
+        file2.name = "bar.pdf"
+        content2 = b"bar"
+        file2.open.return_value.__enter__.return_value.read.side_effect = [
+            content2
+        ]
+        upload_files = [file1, (file2, "application/pdf")]
+
+        it = aiter(
+            self.api.upload_release_assets("foo/bar", "v1.2.3", upload_files)
+        )
+        f = await anext(it)
+        self.assertEqual(f, file1)
+
+        f = await anext(it)
+        self.assertEqual(f, file2)
+
+        args = self.client.post.await_args_list[0].args
+        self.assertEqual(args, ("https://uploads/assets",))
+        kwargs = self.client.post.await_args_list[0].kwargs
+        self.assertEqual(kwargs["params"], {"name": "foo.txt"})
+        self.assertEqual(kwargs["content_type"], "application/octet-stream")
+
+        args = self.client.post.await_args_list[1].args
+        self.assertEqual(args, ("https://uploads/assets",))
+        kwargs = self.client.post.await_args_list[1].kwargs
+        self.assertEqual(kwargs["params"], {"name": "bar.pdf"})
+        self.assertEqual(kwargs["content_type"], "application/pdf")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3"
+        )
+
 
 class GitHubReleaseTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.post")
