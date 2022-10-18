@@ -24,7 +24,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.github.api import FileStatus
-from pontos.github.cmds import file_status, create_release
+from pontos.github.cmds import file_status, create_release, create_tag
 
 here = Path(__file__).parent
 
@@ -108,3 +108,26 @@ class TestArgparsing(unittest.TestCase):
         )
 
         create_release(terminal, args)
+
+    @patch("pontos.github.cmds.GitHubRESTApi")
+    def test_create_tag(self, api_mock):
+        terminal = MagicMock()
+        api_mock.return_value.create_tag_reference.return_value = True
+        api_mock.return_value.create_tag.return_value = True
+
+        args = Namespace(
+            command="TAG",
+            func=create_tag,
+            owner="test user",
+            repo="foo/bar",
+            tag="test_tag",
+            name="test_release",
+            message="test msg",
+            git_object="commit-sha",
+            git_object_type=None,
+            email="test@test.test",
+            date=None,
+            token="GITHUB_TOKEN",
+        )
+
+        create_tag(terminal, args)
