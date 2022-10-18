@@ -36,7 +36,7 @@ class GitHubRESTReleaseMixin:
         name: str,
         email: str,
         *,
-        git_object_type: str = "commit",
+        git_object_type: Optional[str] = None,
         date: Optional[str] = None,
     ) -> str:
         """
@@ -64,6 +64,8 @@ class GitHubRESTReleaseMixin:
             Tag sha
         """
 
+        if not git_object_type:
+            git_object_type = "commit"
         if not date:
             date = str(datetime.now().isoformat())
 
