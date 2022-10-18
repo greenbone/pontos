@@ -45,10 +45,10 @@ def create_tag(terminal: Terminal, args: Namespace) -> None:
             repo=args.repo,
             tag=args.tag,
             message=args.message,
-            gobject=args.gobject,
+            git_object=args.git_object,
             name=args.name,
             email=args.email,
-            otype=args.otype,
+            git_object_type=args.git_object_type,
             date=args.date,
         )
 
