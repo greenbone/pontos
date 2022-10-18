@@ -31,6 +31,27 @@ here = Path(__file__).parent
 
 class GitHubReleaseTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.post")
+    def test_create_tag_reference(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_tag_reference(
+            owner="foo",
+            repo="bar",
+            tag="v1.2.3",
+            sha="sha",
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/git/refs",
+            json={
+                "owner": "foo",
+                "repo": "bar",
+                "ref": "refs/tags/v1.2.3",
+                "sha": "sha",
+            },
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_tag(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_tag(
