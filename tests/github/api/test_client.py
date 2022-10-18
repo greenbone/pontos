@@ -151,8 +151,14 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             content=None,
         )
 
-    def test_stream(self):
-        self.client.stream("/foo/bar")
+    async def test_stream(self):
+        response = MagicMock()
+        response.__aenter__.return_value = MagicMock()
+        self.http_client.stream = MagicMock()
+        self.http_client.stream.return_value = response
+
+        async with self.client.stream("/foo/bar"):
+            pass
 
         self.http_client.stream.assert_called_once_with(
             "GET",
@@ -164,8 +170,14 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             follow_redirects=True,
         )
 
-    def test_stream_url(self):
-        self.client.stream("https://github.com/foo/bar")
+    async def test_stream_url(self):
+        response = MagicMock()
+        response.__aenter__.return_value = MagicMock()
+        self.http_client.stream = MagicMock()
+        self.http_client.stream.return_value = response
+
+        async with self.client.stream("https://github.com/foo/bar"):
+            pass
 
         self.http_client.stream.assert_called_once_with(
             "GET",
