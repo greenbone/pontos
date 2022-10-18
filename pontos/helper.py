@@ -25,6 +25,7 @@ from typing import (
     AsyncIterator,
     Dict,
     Generator,
+    Generic,
     Iterable,
     Iterator,
     Optional,
@@ -50,7 +51,7 @@ async def upload(file_path: Path) -> AsyncIterator[bytes]:
 T = TypeVar("T", str, bytes)
 
 
-class AsyncDownloadProgressIterable:
+class AsyncDownloadProgressIterable(Generic[T]):
     def __init__(
         self,
         *,
@@ -116,7 +117,7 @@ async def download_async(
     *,
     content_length: Optional[int] = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
-) -> AsyncIterator[AsyncDownloadProgressIterable]:
+) -> AsyncIterator[AsyncDownloadProgressIterable[bytes]]:
     """
     An async context manager that returns an AsyncDownloadProgressIterable.
 

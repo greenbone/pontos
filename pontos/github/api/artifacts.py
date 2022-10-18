@@ -117,7 +117,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
 
     def download(
         self, repo: str, artifact: str
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a repository artifact zip file
 

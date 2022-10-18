@@ -117,7 +117,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
     def download_release_tarball(
         self, repo: str, tag: str
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a release tarball (tar.gz) file
 
@@ -135,7 +135,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         self,
         repo: str,
         tag: str,
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable]:
+    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a release zip file
 
@@ -156,7 +156,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         *,
         match_pattern: Optional[str] = None,
     ) -> AsyncIterator[
-        Tuple[str, AsyncContextManager[AsyncDownloadProgressIterable]]
+        Tuple[str, AsyncContextManager[AsyncDownloadProgressIterable[bytes]]]
     ]:
         """
         Download release assets
@@ -253,7 +253,9 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         github_json = await self.get(repo, tag)
         asset_url = github_json["upload_url"].replace("{?name,label}", "")
 
-        async def upload_file(file_path, content_type):
+        async def upload_file(
+            file_path, content_type
+        ) -> Tuple[httpx.Response, Path]:
             response = await self._client.post(
                 asset_url,
                 params={"name": file_path.name},
