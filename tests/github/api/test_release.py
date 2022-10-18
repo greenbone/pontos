@@ -375,26 +375,37 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
         ]
         upload_files = [file1, (file2, "application/pdf")]
 
+        def assert_file1(index: int):
+            args = self.client.post.await_args_list[index].args
+            self.assertEqual(args, ("https://uploads/assets",))
+            kwargs = self.client.post.await_args_list[index].kwargs
+            self.assertEqual(kwargs["params"], {"name": "foo.txt"})
+            self.assertEqual(kwargs["content_type"], "application/octet-stream")
+
+        def assert_file2(index: int):
+            args = self.client.post.await_args_list[index].args
+            self.assertEqual(args, ("https://uploads/assets",))
+            kwargs = self.client.post.await_args_list[index].kwargs
+            self.assertEqual(kwargs["params"], {"name": "bar.pdf"})
+            self.assertEqual(kwargs["content_type"], "application/pdf")
+
         it = aiter(
             self.api.upload_release_assets("foo/bar", "v1.2.3", upload_files)
         )
-        f = await anext(it)
-        self.assertEqual(f, file1)
+
+        # the order of the files is non-deterministic
 
         f = await anext(it)
-        self.assertEqual(f, file2)
+        if f == file1:
+            assert_file1(0)
+        else:
+            assert_file2(0)
 
-        args = self.client.post.await_args_list[0].args
-        self.assertEqual(args, ("https://uploads/assets",))
-        kwargs = self.client.post.await_args_list[0].kwargs
-        self.assertEqual(kwargs["params"], {"name": "foo.txt"})
-        self.assertEqual(kwargs["content_type"], "application/octet-stream")
-
-        args = self.client.post.await_args_list[1].args
-        self.assertEqual(args, ("https://uploads/assets",))
-        kwargs = self.client.post.await_args_list[1].kwargs
-        self.assertEqual(kwargs["params"], {"name": "bar.pdf"})
-        self.assertEqual(kwargs["content_type"], "application/pdf")
+        f = await anext(it)
+        if f == file1:
+            assert_file1(1)
+        else:
+            assert_file2(1)
 
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/releases/tags/v1.2.3"
