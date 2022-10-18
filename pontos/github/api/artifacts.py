@@ -135,7 +135,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
 
             print("Downloading", end="")
 
-            with Path("foo.baz").open("w") as f:
+            with Path("foo.baz").open("wb") as f:
                 async with api.download("org/repo", "123") as download:
                     async for content, progress in download:
                         f.write(content)
