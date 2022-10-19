@@ -41,8 +41,6 @@ class GitHubRESTReleaseMixin:
         Create a github tag
 
         Args:
-            owner: The account owner of the repository.
-                The name is not case sensitive.
             repo: The name of the repository.
                 The name is not case sensitive.
             tag: The tag's name.
@@ -97,8 +95,6 @@ class GitHubRESTReleaseMixin:
         Create git tag reference (A real tag in git).
 
         Args:
-            owner: The account owner of the repository.
-                The name is not case sensitive.
             repo: The name of the repository.
                 The name is not case sensitive.
             tag: Github tag name.
