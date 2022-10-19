@@ -68,7 +68,7 @@ class TestArgparsing(unittest.TestCase):
     @patch("pontos.github.cmds.GitHubRESTApi")
     def test_create_release_no_tag(self, api_mock):
         terminal = MagicMock()
-        api_mock.return_value.release_exists.return_value = False
+        api_mock.return_value.release_exists.return_value = True
 
         args = Namespace(
             command="RE",
@@ -91,7 +91,7 @@ class TestArgparsing(unittest.TestCase):
     @patch("pontos.github.cmds.GitHubRESTApi")
     def test_create_release(self, api_mock):
         terminal = MagicMock()
-        api_mock.return_value.release_exists.return_value = True
+        api_mock.return_value.release_exists.return_value = False
         api_mock.return_value.create_release.return_value = True
 
         args = Namespace(
@@ -118,7 +118,6 @@ class TestArgparsing(unittest.TestCase):
         args = Namespace(
             command="TAG",
             func=create_tag,
-            owner="test user",
             repo="foo/bar",
             tag="test_tag",
             name="test_release",

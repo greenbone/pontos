@@ -28,7 +28,6 @@ from pontos.helper import DownloadProgressIterable, download
 class GitHubRESTReleaseMixin:
     def create_tag(
         self,
-        owner: str,
         repo: str,
         tag: str,
         message: str,
@@ -66,11 +65,8 @@ class GitHubRESTReleaseMixin:
 
         if not git_object_type:
             git_object_type = "commit"
-        if not date:
-            date = str(datetime.now().isoformat())
 
         data = {
-            "owner": owner,
             "repo": repo,
             "tag": tag,
             "message": message,
@@ -79,11 +75,13 @@ class GitHubRESTReleaseMixin:
             "tagger": {
                 "name": name,
                 "email": email,
-                "date": date,
             },
         }
 
-        api = f"/repos/{owner}/{repo}/git/tags"
+        if date:
+            data["tagger"]["date"] = date
+
+        api = f"/repos/{repo}/git/tags"
         response: httpx.Response = self._request(
             api, data=data, request=httpx.post
         )
@@ -92,7 +90,6 @@ class GitHubRESTReleaseMixin:
 
     def create_tag_reference(
         self,
-        owner: str,
         repo: str,
         tag: str,
         sha: str,
@@ -110,13 +107,12 @@ class GitHubRESTReleaseMixin:
         """
 
         data = {
-            "owner": owner,
             "repo": repo,
             "ref": f"refs/tags/{tag}",
             "sha": sha,
         }
 
-        api = f"/repos/{owner}/{repo}/git/refs"
+        api = f"/repos/{repo}/git/refs"
         response: httpx.Response = self._request(
             api, data=data, request=httpx.post
         )

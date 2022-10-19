@@ -41,7 +41,6 @@ def create_tag(terminal: Terminal, args: Namespace) -> None:
     try:
         # Create tag
         sha = git.create_tag(
-            owner=args.owner,
             repo=args.repo,
             tag=args.tag,
             message=args.message,
@@ -54,7 +53,7 @@ def create_tag(terminal: Terminal, args: Namespace) -> None:
 
         # Create tag reference
         git.create_tag_reference(
-            owner=args.owner, repo=args.repo, tag=args.tag, sha=sha
+            repo=args.repo, tag=args.tag, sha=sha
         )
 
     except httpx.HTTPError as e:
@@ -78,7 +77,7 @@ def create_release(terminal: Terminal, args: Namespace) -> None:
 
     try:
         # Check if release exist
-        if not git.release_exists(repo=args.repo, tag=args.tag):
+        if git.release_exists(repo=args.repo, tag=args.tag):
             terminal.error(f"Release {args.tag} exist.")
             sys.exit(1)
 

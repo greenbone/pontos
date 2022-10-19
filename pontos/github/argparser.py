@@ -407,11 +407,6 @@ def parse_args(
     )
 
     create_tag_parser.add_argument(
-        "owner",
-        help="Name of repo owner",
-    )
-
-    create_tag_parser.add_argument(
         "message",
         help="Tag message",
     )
