@@ -27,6 +27,8 @@ from unittest.mock import Mock
 from pontos.github.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
+    create_tag,
+    create_release,
     create_pull_request,
     file_status,
     update_pull_request,
@@ -133,3 +135,49 @@ class TestArgparsing(unittest.TestCase):
 
         output.close()
         parsed_args.output.close()
+
+    def test_create_release_parse_args(self):
+        argv = [
+            "re",
+            "create",
+            "foo/bar",
+            "123",
+            "release_name",
+            "--body",
+            "foo",
+        ]
+
+        parsed_args = parse_args(argv)
+
+        self.assertEqual(parsed_args.command, "re")
+        self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
+        self.assertEqual(parsed_args.re_func, create_release)
+        self.assertEqual(parsed_args.repo, "foo/bar")
+        self.assertEqual(parsed_args.tag, "123")
+        self.assertEqual(parsed_args.name, "release_name")
+        self.assertEqual(parsed_args.body, "foo")
+        self.assertEqual(parsed_args.target_commitish, None)
+        self.assertFalse(parsed_args.draft)
+        self.assertFalse(parsed_args.prerelease)
+
+    def test_create_tag_parse_args(self):
+        argv = [
+            "tag",
+            "create",
+            "foo/bar",
+            "v1",
+            "test user",
+            "",
+            "sha",
+            "test@test.test",
+        ]
+
+        parsed_args = parse_args(argv)
+
+        self.assertEqual(parsed_args.command, "tag")
+        self.assertEqual(parsed_args.tag_func, create_tag)
+        self.assertEqual(parsed_args.repo, "foo/bar")
+        self.assertEqual(parsed_args.tag, "v1")
+        self.assertEqual(parsed_args.message, "")
+        self.assertEqual(parsed_args.git_object, "sha")
+        self.assertEqual(parsed_args.email, "test@test.test")

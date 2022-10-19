@@ -26,6 +26,76 @@ from pontos.github.api import GitHubRESTApi
 from pontos.terminal import Terminal
 
 
+def tag(terminal: Terminal, args: Namespace) -> None:
+    """Github release function for argument class to call"""
+
+    args.tag_func(terminal, args)
+
+
+def create_tag(terminal: Terminal, args: Namespace) -> None:
+    """Github create tag function for
+    argument class to call"""
+
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # Create tag
+        sha = git.create_tag(
+            repo=args.repo,
+            tag=args.tag,
+            message=args.message,
+            git_object=args.git_object,
+            name=args.name,
+            email=args.email,
+            git_object_type=args.git_object_type,
+            date=args.date,
+        )
+
+        # Create tag reference
+        git.create_tag_reference(repo=args.repo, tag=args.tag, sha=sha)
+
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)
+
+    terminal.ok("Tag created.")
+
+
+def release(terminal: Terminal, args: Namespace) -> None:
+    """Github release function for argument class to call"""
+
+    args.re_func(terminal, args)
+
+
+def create_release(terminal: Terminal, args: Namespace) -> None:
+    """Github create release function for
+    argument class to call"""
+
+    git = GitHubRESTApi(token=args.token)
+
+    try:
+        # Check if release exist
+        if git.release_exists(repo=args.repo, tag=args.tag):
+            terminal.error(f"Release {args.tag} exist.")
+            sys.exit(1)
+
+        # Create release
+        git.create_release(
+            repo=args.repo,
+            tag=args.tag,
+            body=args.body,
+            name=args.name,
+            target_commitish=args.target_commitish,
+            draft=args.draft,
+            prerelease=args.prerelease,
+        )
+    except httpx.HTTPError as e:
+        terminal.error(str(e))
+        sys.exit(1)
+
+    terminal.ok("Release created.")
+
+
 def pull_request(terminal: Terminal, args: Namespace):
     args.pr_func(terminal, args)
 

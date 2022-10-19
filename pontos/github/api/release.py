@@ -25,6 +25,94 @@ from pontos.helper import DownloadProgressIterable, download
 
 
 class GitHubRESTReleaseMixin:
+    def create_tag(
+        self,
+        repo: str,
+        tag: str,
+        message: str,
+        git_object: str,
+        name: str,
+        email: str,
+        *,
+        git_object_type: Optional[str] = None,
+        date: Optional[str] = None,
+    ) -> str:
+        """
+        Create a github tag
+
+        Args:
+            repo: The name of the repository.
+                The name is not case sensitive.
+            tag: The tag's name.
+                This is typically a version (e.g., "v0.0.1").
+            message: The tag message.
+            git_object: The SHA of the git object this is tagging.
+            git_object_type: The type of the object we're tagging.
+                Normally this is a commit
+                but it can also be a tree or a blob.
+            name: The name of the author of the tag
+            email: The email of the author of the tag
+            date: When this object was tagged.
+                This is a timestamp in
+                ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+
+        Return:
+            Tag sha
+        """
+
+        if not git_object_type:
+            git_object_type = "commit"
+
+        data = {
+            "repo": repo,
+            "tag": tag,
+            "message": message,
+            "object": git_object,
+            "type": git_object_type,
+            "tagger": {
+                "name": name,
+                "email": email,
+            },
+        }
+
+        if date:
+            data["tagger"]["date"] = date
+
+        api = f"/repos/{repo}/git/tags"
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
+        response.raise_for_status()
+        return response.json()["object"]["sha"]
+
+    def create_tag_reference(
+        self,
+        repo: str,
+        tag: str,
+        sha: str,
+    ) -> None:
+        """
+        Create git tag reference (A real tag in git).
+
+        Args:
+            repo: The name of the repository.
+                The name is not case sensitive.
+            tag: Github tag name.
+            sha: The SHA1 value for this Github tag.
+        """
+
+        data = {
+            "repo": repo,
+            "ref": f"refs/tags/{tag}",
+            "sha": sha,
+        }
+
+        api = f"/repos/{repo}/git/refs"
+        response: httpx.Response = self._request(
+            api, data=data, request=httpx.post
+        )
+        response.raise_for_status()
+
     def create_release(
         self,
         repo: str,

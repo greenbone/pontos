@@ -233,3 +233,10 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with(
             "commit", "--no-verify", "-m", "Add foo", cwd=None
         )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag(self, exec_git_mock):
+        git = Git()
+        git.tag(tag="test")
+
+        exec_git_mock.assert_called_once_with("tag", "test", cwd=None)

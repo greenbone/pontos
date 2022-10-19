@@ -279,3 +279,19 @@ class Git:
         args.extend(["-m", message])
 
         exec_git(*args, cwd=self._cwd)
+
+    def tag(
+        self,
+        tag: str,
+    ):
+        """
+        Create a Tag
+
+        Args:
+            Tag: Tag name to create
+        """
+        args = ["tag"]
+
+        args.append(tag)
+
+        exec_git(*args, cwd=self._cwd)

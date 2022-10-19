@@ -24,6 +24,10 @@ from typing import List
 
 from pontos.github.api import FileStatus, RepositoryType
 from pontos.github.cmds import (
+    tag,
+    create_tag,
+    release,
+    create_release,
     create_pull_request,
     file_status,
     labels,
@@ -282,6 +286,155 @@ def parse_args(
         "-p",
         "--path",
         help="Define the Path to save the Repository Information JSON",
+    )
+
+    # create a release from command line
+    re_parser = subparsers.add_parser(
+        "release", aliases=["re", "RE", "release"]
+    )
+
+    re_parser.set_defaults(func=release)
+
+    re_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    re_subparsers = re_parser.add_subparsers(
+        title="method",
+        dest="re_method",
+        metavar="name",
+        description="valid release method",
+        help="Release method",
+        required=True,
+    )
+
+    create_re_parser = re_subparsers.add_parser("create", help="Create release")
+
+    create_re_parser.set_defaults(re_func=create_release)
+
+    create_re_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+
+    create_re_parser.add_argument(
+        "tag",
+        help="Tag to use for release",
+    )
+
+    create_re_parser.add_argument(
+        "name",
+        help="Name of the release",
+    )
+
+    create_re_parser.add_argument(
+        "-b",
+        "--body",
+        default=None,
+        help="Description for the Release. Can be formatted in Markdown.",
+    )
+
+    create_re_parser.add_argument(
+        "-tc",
+        "--target-commitish",
+        default=None,
+        help="Git reference to use for the release",
+    )
+
+    create_re_parser.add_argument(
+        "-d",
+        "--draft",
+        action="store_true",
+        default=False,
+        help="Create a draft release.",
+    )
+
+    create_re_parser.add_argument(
+        "-p",
+        "--prerelease",
+        action="store_true",
+        default=False,
+        help="Create a pre-release.",
+    )
+
+    # Create a tag from command line
+    tag_parser = subparsers.add_parser("tag", aliases=["tag", "TAG"])
+
+    tag_parser.set_defaults(func=tag)
+
+    tag_parser.add_argument(
+        "-t",
+        "--token",
+        default="GITHUB_TOKEN",
+        type=from_env,
+        help=(
+            "GitHub Token to access the repository. "
+            "Default looks for environment variable 'GITHUB_TOKEN'"
+        ),
+    )
+
+    tag_subparsers = tag_parser.add_subparsers(
+        title="method",
+        dest="tag_method",
+        metavar="name",
+        description="valid tag method",
+        help="Release method",
+        required=True,
+    )
+
+    create_tag_parser = tag_subparsers.add_parser("create", help="Create tag")
+
+    create_tag_parser.set_defaults(tag_func=create_tag)
+
+    create_tag_parser.add_argument(
+        "repo", help="GitHub repository (owner/name) to use"
+    )
+
+    create_tag_parser.add_argument(
+        "tag",
+        help="Tag name to use",
+    )
+
+    create_tag_parser.add_argument(
+        "name",
+        help="Name of the user",
+    )
+
+    create_tag_parser.add_argument(
+        "message",
+        help="Tag message",
+    )
+
+    create_tag_parser.add_argument(
+        "git_object",
+        help="The SHA of the git object this is tagging.",
+    )
+    create_tag_parser.add_argument(
+        "email",
+        help="Email address of the user",
+    )
+
+    create_tag_parser.add_argument(
+        "-got",
+        "--git-object-type",
+        default="commit",
+        help="The type of the object we're taggin",
+    )
+
+    create_tag_parser.add_argument(
+        "-d",
+        "--date",
+        default=None,
+        help=(
+            "When this object was tagged. ISO 8601 format:"
+            " YYYY-MM-DDTHH:MM:SSZ."
+        ),
     )
 
     parsed_args = parser.parse_args(args)

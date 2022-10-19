@@ -31,6 +31,84 @@ here = Path(__file__).parent
 
 class GitHubReleaseTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.post")
+    def test_create_tag_reference(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_tag_reference(
+            repo="foo/bar",
+            tag="v1.2.3",
+            sha="sha",
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/git/refs",
+            json={
+                "repo": "foo/bar",
+                "ref": "refs/tags/v1.2.3",
+                "sha": "sha",
+            },
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+
+    @patch("pontos.github.api.api.httpx.post")
+    def test_create_tag(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_tag(
+            repo="foo/bar",
+            tag="v1.2.3",
+            message="test tag",
+            git_object="sha",
+            name="Test user",
+            email="test@test.test",
+            git_object_type="commit",
+            date="2022-10-18T04:40:22.157178",
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/git/tags",
+            json={
+                "repo": "foo/bar",
+                "tag": "v1.2.3",
+                "message": "test tag",
+                "object": "sha",
+                "type": "commit",
+                "tagger": {
+                    "name": "Test user",
+                    "email": "test@test.test",
+                    "date": "2022-10-18T04:40:22.157178",
+                },
+            },
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+
+    @patch("pontos.github.api.api.httpx.post")
+    def test_create_tag_no_data_git_object_type(self, requests_mock: MagicMock):
+        api = GitHubRESTApi("12345")
+        api.create_tag(
+            repo="foo/bar",
+            tag="v1.2.3",
+            message="test tag",
+            git_object="sha",
+            name="Test user",
+            email="test@test.test",
+        )
+
+        args, kwargs = default_request(
+            "https://api.github.com/repos/foo/bar/git/tags",
+            json={
+                "repo": "foo/bar",
+                "tag": "v1.2.3",
+                "message": "test tag",
+                "object": "sha",
+                "type": "commit",
+                "tagger": {
+                    "name": "Test user",
+                    "email": "test@test.test",
+                },
+            },
+        )
+        requests_mock.assert_called_once_with(*args, **kwargs)
+
+    @patch("pontos.github.api.api.httpx.post")
     def test_create_release(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_release(
