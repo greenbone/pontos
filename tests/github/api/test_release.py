@@ -34,7 +34,7 @@ class GitHubReleaseTestCase(unittest.TestCase):
     def test_create_tag_reference(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_tag_reference(
-            repo="bar",
+            repo="foo/bar",
             tag="v1.2.3",
             sha="sha",
         )
@@ -42,7 +42,7 @@ class GitHubReleaseTestCase(unittest.TestCase):
         args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/git/refs",
             json={
-                "repo": "bar",
+                "repo": "foo/bar",
                 "ref": "refs/tags/v1.2.3",
                 "sha": "sha",
             },
@@ -53,7 +53,7 @@ class GitHubReleaseTestCase(unittest.TestCase):
     def test_create_tag(self, requests_mock: MagicMock):
         api = GitHubRESTApi("12345")
         api.create_tag(
-            repo="bar",
+            repo="foo/bar",
             tag="v1.2.3",
             message="test tag",
             git_object="sha",
@@ -65,7 +65,7 @@ class GitHubReleaseTestCase(unittest.TestCase):
         args, kwargs = default_request(
             "https://api.github.com/repos/foo/bar/git/tags",
             json={
-                "repo": "bar",
+                "repo": "foo/bar",
                 "tag": "v1.2.3",
                 "message": "test tag",
                 "object": "sha",
