@@ -364,7 +364,7 @@ def parse_args(
     )
 
     # Create a tag from command line
-    tag_parser = subparsers.add_parser("release", aliases=["tag", "TAG"])
+    tag_parser = subparsers.add_parser("tag", aliases=["tag", "TAG"])
 
     tag_parser.set_defaults(func=tag)
 
