@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
 from pathlib import Path
 from typing import ContextManager, Iterable, Iterator, Optional, Tuple, Union
 

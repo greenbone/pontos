@@ -52,9 +52,7 @@ def create_tag(terminal: Terminal, args: Namespace) -> None:
         )
 
         # Create tag reference
-        git.create_tag_reference(
-            repo=args.repo, tag=args.tag, sha=sha
-        )
+        git.create_tag_reference(repo=args.repo, tag=args.tag, sha=sha)
 
     except httpx.HTTPError as e:
         terminal.error(str(e))
