@@ -16,9 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from pontos.github.actions.core import ActionIO, Console
+from pontos.github.actions.errors import GitHubActionsError
+from pontos.testing import temp_directory
 
 
 @patch("builtins.print")
@@ -103,8 +105,28 @@ class ActionIOTestCase(unittest.TestCase):
         self.assertEqual(ActionIO.input("FOO_BAR"), "2345")
         self.assertEqual(ActionIO.input("FoO BaR"), "2345")
 
-    @patch("builtins.print")
-    def test_output(self, print_mock: MagicMock):
-        ActionIO.output("foo", "bar")
+    def test_output(self):
+        with temp_directory() as temp_dir:
+            file_path = temp_dir / "github.output"
 
-        print_mock.assert_called_once_with("::set-output name=foo::bar")
+            with patch.dict(
+                "os.environ", {"GITHUB_OUTPUT": str(file_path)}, clear=True
+            ):
+                ActionIO.output("foo", "bar")
+                ActionIO.output("lorem", "ipsum")
+
+                output = file_path.read_text(encoding="utf8")
+
+                self.assertEqual(output, "foo=bar\nlorem=ipsum\n")
+
+    def test_output_no_env(self):
+        with patch.dict("os.environ", {}, clear=True), self.assertRaises(
+            GitHubActionsError
+        ):
+            ActionIO.output("foo", "bar")
+
+    def test_output_empty_env(self):
+        with patch.dict(
+            "os.environ", {"GITHUB_OUTPUT": ""}, clear=True
+        ), self.assertRaises(GitHubActionsError):
+            ActionIO.output("foo", "bar")
