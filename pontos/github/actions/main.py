@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Greenbone Networks GmbH
+# Copyright (C) 2021 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -15,10 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .errors import GitHubActionsError
-from .main import main
+from pontos.github.actions.argparser import parse_args
+from pontos.terminal.null import NullTerminal
+from pontos.terminal.rich import RichTerminal
 
-__all__ = (
-    "main",
-    "GitHubActionsError",
-)
+
+def main(args=None):
+    parsed_args = parse_args(args)
+
+    if parsed_args.quiet:
+        term = NullTerminal()
+    else:
+        term = RichTerminal()
+
+    parsed_args.func(term, parsed_args)
+
+
+if __name__ == "__main__":
+    main()
