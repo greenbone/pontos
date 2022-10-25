@@ -28,7 +28,7 @@ class GitHubAsyncRESTContent(GitHubAsyncREST):
         self, repo: str, path: str, *, branch: Optional[str] = None
     ) -> bool:
         """
-        Check if a path exists in a branch of a repository
+        Check if a path (file or directory) exists in a branch of a repository
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -52,7 +52,7 @@ class GitHubRESTContentMixin:
         self, repo: str, path: str, *, branch: Optional[str] = None
     ) -> bool:
         """
-        Check if a path exists in a branch of a repository
+        Check if a path (file or directory) exists in a branch of a repository
 
         Args:
             repo: GitHub repository (owner/name) to use

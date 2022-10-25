@@ -25,7 +25,7 @@ from pontos.github.api.helper import JSON
 
 
 class GitHubAsyncRESTLabels(GitHubAsyncREST):
-    async def get_labels(
+    async def get_all(
         self,
         repo: str,
         issue: int,
@@ -54,7 +54,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
 
         return items
 
-    async def set_labels(self, repo: str, issue: int, labels: Iterable[str]):
+    async def set_all(self, repo: str, issue: int, labels: Iterable[str]):
         """
         Set labels in the issue/pr. Existing labels will be overwritten
 

@@ -27,7 +27,7 @@ from tests.github.api import GitHubAsyncRESTTestCase, create_response
 class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTLabels
 
-    async def test_get_labels(self):
+    async def test_get_all(self):
         response1 = create_response()
         response1.json.return_value = [{"id": 1, "name": "a"}]
         response2 = create_response()
@@ -40,7 +40,7 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        workflows = await self.api.get_labels("foo/bar", 123)
+        workflows = await self.api.get_all("foo/bar", 123)
 
         self.assertEqual(len(workflows), 3)
 
@@ -49,11 +49,11 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
             params={"per_page": "100"},
         )
 
-    async def test_set_labels(self):
+    async def test_set_all(self):
         response = create_response()
         self.client.post.return_value = response
 
-        await self.api.set_labels("foo/bar", 123, ["a", "b"])
+        await self.api.set_all("foo/bar", 123, ["a", "b"])
 
         self.client.post.assert_awaited_once_with(
             "/repos/foo/bar/issues/123/labels", data={"labels": ["a", "b"]}
@@ -66,7 +66,7 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
         )
 
         with self.assertRaises(httpx.HTTPStatusError):
-            await self.api.set_labels("foo/bar", 123, ["a", "b"])
+            await self.api.set_all("foo/bar", 123, ["a", "b"])
 
         self.client.post.assert_awaited_once_with(
             "/repos/foo/bar/issues/123/labels", data={"labels": ["a", "b"]}
