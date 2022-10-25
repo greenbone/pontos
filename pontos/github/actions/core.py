@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from .errors import GitHubActionsError
+from pontos.github.actions.errors import GitHubActionsError
 
 
 def _to_options(
