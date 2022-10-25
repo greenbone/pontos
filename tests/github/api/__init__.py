@@ -15,10 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any, Dict, Tuple
+from unittest.mock import MagicMock
+
+import httpx
+
+from pontos.github.api.client import GitHubAsyncREST, GitHubAsyncRESTClient
 from pontos.github.api.helper import DEFAULT_TIMEOUT_CONFIG
+from tests import AsyncMock, IsolatedAsyncioTestCase
 
 
-def default_request(*args, **kwargs):
+def create_response(*args, **kwargs) -> MagicMock:
+    return MagicMock(spec=httpx.Response, *args, **kwargs)
+
+
+def default_request(*args, **kwargs) -> Tuple[Tuple[Any], Dict[str, Any]]:
     default_kwargs = {
         "follow_redirects": True,
         "headers": {
@@ -30,3 +41,12 @@ def default_request(*args, **kwargs):
     }
     default_kwargs.update(kwargs)
     return args, default_kwargs
+
+
+class GitHubAsyncRESTTestCase(IsolatedAsyncioTestCase):
+
+    api_cls = GitHubAsyncREST
+
+    def setUp(self) -> None:
+        self.client = AsyncMock(spec=GitHubAsyncRESTClient)
+        self.api = self.api_cls(self.client)

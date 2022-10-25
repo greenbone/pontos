@@ -24,9 +24,77 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi, RepositoryType
-from tests.github.api import default_request
+from pontos.github.api.organizations import GitHubAsyncRESTOrganizations
+from tests import AsyncIteratorMock
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
+
+
+class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTOrganizations
+
+    async def test_exists(self):
+        response = create_response(is_success=True)
+        self.client.get.return_value = response
+
+        self.assertTrue(await self.api.exists("foo"))
+
+        self.client.get.assert_awaited_once_with("/orgs/foo")
+
+    async def test_not_exists(self):
+        response = create_response(is_success=False)
+        self.client.get.return_value = response
+
+        self.assertFalse(await self.api.exists("foo"))
+
+        self.client.get.assert_awaited_once_with("/orgs/foo")
+
+    async def test_get_repositories(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        repos = await self.api.get_repositories("foo")
+
+        self.assertEqual(len(repos), 3)
+        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/repos",
+            params={"per_page": "100", "type": "all"},
+        )
+
+    async def test_get_private_repositories(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        repos = await self.api.get_repositories(
+            "foo", repository_type=RepositoryType.PRIVATE
+        )
+
+        self.assertEqual(len(repos), 3)
+        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/repos",
+            params={"per_page": "100", "type": "private"},
+        )
 
 
 class GitHubOrganizationsTestCase(unittest.TestCase):

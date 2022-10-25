@@ -15,16 +15,95 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines
-
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from httpx import HTTPStatusError
+
 from pontos.github.api import GitHubRESTApi
-from tests.github.api import default_request
+from pontos.github.api.branch import GitHubAsyncRESTBranches
+from tests.github.api import (
+    GitHubAsyncRESTTestCase,
+    create_response,
+    default_request,
+)
 
 here = Path(__file__).parent
+
+
+class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTBranches
+
+    async def test_exists(self):
+        response = create_response(is_success=True)
+        self.client.get.return_value = response
+
+        self.assertTrue(await self.api.exists("foo/bar", "baz"))
+        self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
+
+    async def test_not_exists(self):
+        response = create_response(is_success=False)
+        self.client.get.return_value = response
+
+        self.assertFalse(await self.api.exists("foo/bar", "baz"))
+        self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
+
+    async def test_delete_branch(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.delete("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/git/refs/baz"
+        )
+
+    async def test_delete_branch_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.delete.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.delete("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/git/refs/baz"
+        )
+
+    async def test_protection_rules(self):
+        rules = {
+            "required_status_checks": {},
+            "enforce_admins": {},
+            "required_pull_request_reviews": {},
+        }
+        response = create_response()
+        response.json.return_value = rules
+
+        self.client.get.return_value = response
+
+        data = await self.api.protection_rules("foo/bar", "baz")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection"
+        )
+        self.assertEqual(data, rules)
+
+    async def test_protection_rules_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.protection_rules("foo/bar", "baz")
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection"
+        )
 
 
 class GitHubBranchTestCase(unittest.TestCase):

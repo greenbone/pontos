@@ -15,11 +15,128 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-builtin
+
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
-from pontos.helper import DEFAULT_TIMEOUT, DownloadProgressIterable, download
+import httpx
+
+from pontos.helper import (
+    DEFAULT_TIMEOUT,
+    AsyncDownloadProgressIterable,
+    DownloadProgressIterable,
+    download,
+    download_async,
+)
+from tests import (
+    AsyncIteratorMock,
+    AsyncMock,
+    IsolatedAsyncioTestCase,
+    aiter,
+    anext,
+)
+from tests.github.api import create_response
+
+
+class AsyncDownloadProgressIterableTestCase(IsolatedAsyncioTestCase):
+    def test_properties(self):
+        content_iterator = AsyncIteratorMock(["1", "2"])
+
+        download_iterable = AsyncDownloadProgressIterable(
+            content_iterator=content_iterator, length=2, url="https://foo.bar"
+        )
+
+        self.assertEqual(download_iterable.length, 2)
+        self.assertEqual(download_iterable.url, "https://foo.bar")
+
+    async def test_download_progress(self):
+        content_iterator = AsyncIteratorMock(["1", "2"])
+
+        download_iterable = AsyncDownloadProgressIterable(
+            content_iterator=content_iterator, length=2, url="https://foo.bar"
+        )
+
+        it = aiter(download_iterable)
+        content, progress = await anext(it)
+
+        self.assertEqual(content, "1")
+        self.assertEqual(progress, 50)
+
+        content, progress = await anext(it)
+        self.assertEqual(content, "2")
+        self.assertEqual(progress, 100)
+
+    async def test_download_progress_without_length(self):
+        content_iterator = AsyncIteratorMock(["1", "2"])
+
+        download_iterable = AsyncDownloadProgressIterable(
+            content_iterator=content_iterator,
+            length=None,
+            url="https://foo.bar",
+        )
+
+        it = aiter(download_iterable)
+        content, progress = await anext(it)
+
+        self.assertEqual(content, "1")
+        self.assertIsNone(progress)
+
+        content, progress = await anext(it)
+        self.assertEqual(content, "2")
+        self.assertIsNone(progress)
+
+
+class DownloadAsyncTestCase(IsolatedAsyncioTestCase):
+    async def test_download_async(self):
+        response = create_response()
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream = AsyncMock()
+        stream.__aenter__.return_value = response
+
+        async with download_async(
+            stream, content_length=2
+        ) as download_iterable:
+            it = aiter(download_iterable)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+    async def test_download_async_content_length(self):
+        response = create_response(headers=MagicMock())
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        response.headers.get.return_value = 2
+        stream = AsyncMock()
+        stream.__aenter__.return_value = response
+
+        async with download_async(stream) as download_iterable:
+            it = aiter(download_iterable)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+    async def test_download_async_failure(self):
+        response = create_response()
+        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+        stream = AsyncMock()
+        stream.__aenter__.return_value = response
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            async with download_async(stream, content_length=2):
+                pass
 
 
 class DownloadProgressIterableTestCase(unittest.TestCase):
