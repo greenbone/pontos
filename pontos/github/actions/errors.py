@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .errors import GitHubActionsError
-from .main import main
 
-__all__ = (
-    "main",
-    "GitHubActionsError",
-)
+class GitHubActionsError(Exception):
+    """
+    A GitHub Actions related error has occurred
+    """

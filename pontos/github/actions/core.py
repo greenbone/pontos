@@ -17,7 +17,10 @@
 
 import contextlib
 import os
+from pathlib import Path
 from typing import Optional
+
+from pontos.github.actions.errors import GitHubActionsError
 
 
 def _to_options(
@@ -208,7 +211,15 @@ class ActionIO:
             name: Name of the output variable
             value: Value of the output variable
         """
-        print(f"::set-output name={name}::{value}")
+        output_filename = os.environ.get("GITHUB_OUTPUT")
+        if not output_filename:
+            raise GitHubActionsError(
+                "GITHUB_OUTPUT environment variable not set. Can't write "
+                "action output."
+            )
+
+        with Path(output_filename).open("a", encoding="utf8") as f:
+            f.write(f"{name}={value}\n")
 
     @staticmethod
     def input(name: str, default: Optional[str] = None) -> str:
