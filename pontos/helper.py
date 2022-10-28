@@ -16,11 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import subprocess
+import sys
 import warnings
 from contextlib import asynccontextmanager, contextmanager
 from functools import wraps
 from pathlib import Path
+from types import ModuleType
 from typing import (
     Any,
     AsyncContextManager,
@@ -359,3 +362,73 @@ def deprecated(
         return decorator_repeat
     else:
         return decorator_repeat(_func_or_cls)
+
+
+@contextmanager
+def add_sys_path(
+    directory: Union[str, os.PathLike]
+) -> Generator[None, None, None]:
+    """
+    Context Manager to add a directory path to the module search path aka.
+    sys.path. The directory path is removed when the context manager is left.
+
+    Args:
+        directory: A os.PathLike directory to add to sys.path
+
+    Example:
+        .. code-block:: python
+
+            with add_sys_path("/tmp/test-modules"):
+                import mymodule
+    """
+    directory = os.fspath(directory)
+
+    if sys.path[0] != directory:
+        sys.path.insert(0, directory)
+
+    try:
+        yield
+    finally:
+        try:
+            sys.path.remove(directory)
+        except ValueError:
+            # directory was not in the path
+            pass
+
+
+def unload_module(module: Union[str, ModuleType]) -> None:
+    """
+    Unload a Python module
+
+    Args:
+        name: Module instance or name of the Python module to unload.
+            For example: foo.bar
+    """
+    name = module.__name__ if isinstance(module, ModuleType) else module
+
+    if name in sys.modules:
+        del sys.modules[name]
+
+
+@contextmanager
+def ensure_unload_module(
+    module: Union[str, ModuleType]
+) -> Generator[None, None, None]:
+    """
+    A context manager to ensure that a module gets removed even if an error
+    occurs
+
+    Args:
+        name: Module instance or name of the Python module to unload.
+            For example: foo.bar
+
+    Example:
+        .. code-block:: python
+
+            with ensure_unload_module("foo.bar"):
+                do_something()
+    """
+    try:
+        yield
+    finally:
+        unload_module(module)

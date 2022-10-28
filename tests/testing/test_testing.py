@@ -19,52 +19,13 @@ import unittest
 from pathlib import Path
 
 from pontos.git.git import Git
+from pontos.helper import unload_module
 from pontos.testing import (
-    add_sys_path,
-    ensure_unload_module,
     temp_directory,
     temp_file,
     temp_git_repository,
     temp_python_module,
-    unload_module,
 )
-
-
-class AddSysPathTestCase(unittest.TestCase):
-    def test_add_sys_path(self):
-        with self.assertRaises(ImportError):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule
-
-        with temp_file("", name="mymodule.py") as module_path, add_sys_path(
-            module_path.parent
-        ):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule
-
-        unload_module("mymodule")
-
-    def test_add_sys_path_exception(self):
-        with self.assertRaises(ImportError):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule
-
-        try:
-            with temp_file("", name="mymodule.py") as module_path, add_sys_path(
-                module_path.parent
-            ):
-                # pylint: disable=import-error,import-outside-toplevel,unused-import
-                import mymodule
-
-                raise ValueError()
-        except ValueError:
-            pass
-        finally:
-            unload_module("mymodule")
-
-        with self.assertRaises(ImportError):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule
 
 
 class TempDirectoryTestCase(unittest.TestCase):
@@ -255,30 +216,3 @@ class TempPythonModuleTestCase(unittest.TestCase):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
             import mymodule3
-
-
-class EnsureUnloadModuleTestCase(unittest.TestCase):
-    def test_ensure_unload_module(self):
-        with temp_python_module(
-            "def foo():\n  pass", name="bar"
-        ), ensure_unload_module("bar"):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import bar
-
-        with self.assertRaises(ImportError):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import bar
-
-    def test_ensure_unload_module_exception(self):
-        with self.assertRaisesRegex(ValueError, "Ipsum"):
-            with temp_python_module(
-                "def func():\n  raise ValueError('Ipsum')", name="bar"
-            ), ensure_unload_module("bar"):
-                # pylint: disable=import-error,import-outside-toplevel,unused-import
-                import bar
-
-                bar.func()
-
-        with self.assertRaises(ImportError):
-            # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import bar

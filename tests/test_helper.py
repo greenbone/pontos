@@ -27,10 +27,14 @@ from pontos.helper import (
     DEFAULT_TIMEOUT,
     AsyncDownloadProgressIterable,
     DownloadProgressIterable,
+    add_sys_path,
     deprecated,
     download,
     download_async,
+    ensure_unload_module,
+    unload_module,
 )
+from pontos.testing import temp_file, temp_python_module
 from tests import (
     AsyncIteratorMock,
     AsyncMock,
@@ -472,3 +476,67 @@ class DeprecatedTestCase(unittest.TestCase):
             DeprecationWarning, "Because it is obsolete"
         ):
             Foo2().bar()
+
+
+class AddSysPathTestCase(unittest.TestCase):
+    def test_add_sys_path(self):
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
+
+        with temp_file("", name="mymodule.py") as module_path, add_sys_path(
+            module_path.parent
+        ):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
+
+        unload_module("mymodule")
+
+
+class EnsureUnloadModuleTestCase(unittest.TestCase):
+    def test_ensure_unload_module(self):
+        with temp_python_module(
+            "def foo():\n  pass", name="bar"
+        ), ensure_unload_module("bar"):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import bar
+
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import bar
+
+    def test_ensure_unload_module_exception(self):
+        with self.assertRaisesRegex(ValueError, "Ipsum"):
+            with temp_python_module(
+                "def func():\n  raise ValueError('Ipsum')", name="bar"
+            ), ensure_unload_module("bar"):
+                # pylint: disable=import-error,import-outside-toplevel,unused-import
+                import bar
+
+                bar.func()
+
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import bar
+
+    def test_add_sys_path_exception(self):
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
+
+        try:
+            with temp_file("", name="mymodule.py") as module_path, add_sys_path(
+                module_path.parent
+            ):
+                # pylint: disable=import-error,import-outside-toplevel,unused-import
+                import mymodule
+
+                raise ValueError()
+        except ValueError:
+            pass
+        finally:
+            unload_module("mymodule")
+
+        with self.assertRaises(ImportError):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import mymodule
