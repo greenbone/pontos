@@ -21,7 +21,8 @@ from typing import Dict, List, Optional, Union
 import httpx
 
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
-DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(180.0)  # three minutes
+DEFAULT_TIMEOUT = 180.0  # three minutes
+DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(DEFAULT_TIMEOUT)  # three minutes
 JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
 JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
 
