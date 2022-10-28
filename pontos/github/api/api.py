@@ -57,6 +57,7 @@ from pontos.github.api.release import (
     GitHubAsyncRESTReleases,
     GitHubRESTReleaseMixin,
 )
+from pontos.github.api.repositories import GitHubAsyncRESTRepositories
 from pontos.github.api.workflows import (
     GitHubAsyncRESTWorkflows,
     GitHubRESTWorkflowsMixin,
@@ -144,6 +145,14 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
 
         """
         return GitHubAsyncRESTWorkflows(self._client)
+
+    @property
+    def repositories(self):
+        """
+        Repositories related API
+
+        """
+        return GitHubAsyncRESTRepositories(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
