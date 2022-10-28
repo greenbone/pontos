@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=redefined-builtin
+# pylint: disable=redefined-builtin,disallowed-name
 
 import unittest
 from pathlib import Path
@@ -27,6 +27,7 @@ from pontos.helper import (
     DEFAULT_TIMEOUT,
     AsyncDownloadProgressIterable,
     DownloadProgressIterable,
+    deprecated,
     download,
     download_async,
 )
@@ -332,3 +333,142 @@ class DownloadTestCase(unittest.TestCase):
 
             with self.assertRaises(StopIteration):
                 next(it)
+
+
+class DeprecatedTestCase(unittest.TestCase):
+    def test_function(self):
+        @deprecated
+        def foo():
+            pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "foo is deprecated"):
+            foo()
+
+        @deprecated()
+        def foo2():
+            pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "foo2 is deprecated"):
+            foo2()
+
+    def test_function_with_since(self):
+        @deprecated(since="1.2.3")
+        def foo():
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "deprecated since version 1.2.3"
+        ):
+            foo()
+
+    def test_function_with_reason(self):
+        @deprecated("Because it is obsolete.")
+        def foo():
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            foo()
+
+        @deprecated(reason="Because it is obsolete.")
+        def foo2():
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            foo2()
+
+    def test_class(self):
+        @deprecated
+        class Foo:
+            pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "Foo is deprecated"):
+            Foo()
+
+        @deprecated()
+        class Foo2:
+            pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "Foo2 is deprecated"):
+            Foo2()
+
+    def test_class_with_since(self):
+        @deprecated(since="1.2.3")
+        class Foo:
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "deprecated since version 1.2.3"
+        ):
+            Foo()
+
+    def test_class_with_reason(self):
+        @deprecated("Because it is obsolete.")
+        class Foo:
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            Foo()
+
+        @deprecated(reason="Because it is obsolete.")
+        class Foo2:
+            pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            Foo2()
+
+    def test_method(self):
+        class Foo:
+            @deprecated
+            def bar(self):
+                pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "bar is deprecated"):
+            Foo().bar()
+
+        class Foo2:
+            @deprecated
+            def bar(self):
+                pass
+
+        with self.assertWarnsRegex(DeprecationWarning, "bar is deprecated"):
+            Foo2().bar()
+
+    def test_method_with_since(self):
+        class Foo:
+            @deprecated(since="1.2.3")
+            def bar(self):
+                pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "deprecated since version 1.2.3"
+        ):
+            Foo().bar()
+
+    def test_method_with_reason(self):
+        class Foo:
+            @deprecated("Because it is obsolete.")
+            def bar(self):
+                pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            Foo().bar()
+
+        class Foo2:
+            @deprecated(reason="Because it is obsolete.")
+            def bar(self):
+                pass
+
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Because it is obsolete"
+        ):
+            Foo2().bar()
