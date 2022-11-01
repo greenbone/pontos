@@ -90,6 +90,7 @@ pontos-update-header = 'pontos.updateheader:main'
 pontos-changelog = 'pontos.changelog:main'
 pontos-github = 'pontos.github:main'
 pontos-github-actions = 'pontos.github.actions:main'
+pontos-github-script = 'pontos.github.script:main'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
