@@ -83,8 +83,20 @@ def run_github_script_function(
             async with GitHubAsyncRESTApi(token, timeout=timeout) as api:
                 return await func(api, args)
 
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(run_async())
+        loop_owner = False
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop_owner = True
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        try:
+            retval = loop.run_until_complete(run_async())
+        finally:
+            if loop_owner:
+                loop.close()
+        return retval
 
     # it's sync
     api = GitHubRESTApi(token, timeout=timeout)

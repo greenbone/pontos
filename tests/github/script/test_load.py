@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 import unittest
 from argparse import ArgumentParser
+from contextlib import redirect_stderr
 
 from pontos.github.script.errors import GitHubScriptError
 from pontos.github.script.load import (
@@ -25,6 +27,7 @@ from pontos.github.script.load import (
     run_github_script_function,
 )
 from pontos.testing import temp_file
+from tests import IsolatedAsyncioTestCase
 
 
 class LoadScriptTestCase(unittest.TestCase):
@@ -63,7 +66,7 @@ class RunAddArgumentsFunction(unittest.TestCase):
         ) as f, load_script(f) as module:
             parser = ArgumentParser()
             run_add_arguments_function(module, parser)
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
                 parser.parse_args(["--foo", "123"])
 
 
@@ -77,6 +80,16 @@ class RunGithubScriptFunctionTestCase(unittest.TestCase):
                 run_github_script_function(module, "123", 123, {}), 1
             )
 
+    def test_no_github_script_function(self):
+        with temp_file(
+            "def foo():\n\tpass",
+            name="foo.py",
+        ) as f, load_script(f) as module:
+            with self.assertRaises(GitHubScriptError):
+                run_github_script_function(module, "123", 123, {})
+
+
+class AsyncRunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
     def test_run_async_github_script_function(self):
         with temp_file(
             "async def github_script(api, args):\n\treturn 1",
@@ -85,11 +98,3 @@ class RunGithubScriptFunctionTestCase(unittest.TestCase):
             self.assertEqual(
                 run_github_script_function(module, "123", 123, {}), 1
             )
-
-    def test_no_github_script_function(self):
-        with temp_file(
-            "def foo():\n\tpass",
-            name="foo.py",
-        ) as f, load_script(f) as module:
-            with self.assertRaises(GitHubScriptError):
-                run_github_script_function(module, "123", 123, {})
