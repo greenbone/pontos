@@ -71,8 +71,8 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     Example:
         .. code-block:: python
 
-        with GitHubAsyncRESTApi(token) as api:
-            repositories = await api.organizations.get_repositories("foo")
+            with GitHubAsyncRESTApi(token) as api:
+                repositories = await api.organizations.get_repositories("foo")
     """
 
     def __init__(
