@@ -16,43 +16,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator, Optional
 
 from pontos.git.git import exec_git
+from pontos.helper import add_sys_path, ensure_unload_module, unload_module
 
-
-@contextmanager
-def add_sys_path(directory: os.PathLike) -> Generator[None, None, None]:
-    """
-    Context Manager to add a directory path to the module search path aka.
-    sys.path. The directory path is removed when the context manager is left.
-
-    Args:
-        directory: A os.PathLike directory to add to sys.path
-
-    Example:
-        .. code-block:: python
-
-            with add_sys_path("/tmp/test-modules"):
-                import mymodule
-    """
-    directory = os.fspath(directory)
-
-    if sys.path[0] != directory:
-        sys.path.insert(0, directory)
-
-    try:
-        yield
-    finally:
-        try:
-            sys.path.remove(directory)
-        except ValueError:
-            # directory was not in the path
-            pass
+__all__ = (
+    "temp_directory",
+    "temp_git_repository",
+    "temp_file",
+    "temp_python_module",
+    "add_sys_path",
+    "ensure_unload_module",
+    "unload_module",
+)
 
 
 @contextmanager
@@ -224,35 +204,3 @@ def temp_python_module(
         test_file = tmp_dir / f"{name}.py"
         test_file.write_text(content, encoding="utf8")
         yield test_file
-
-
-def unload_module(name: str) -> None:
-    """
-    Unload a Python module
-
-    Args:
-        name: Name of the Python module to unload. For example: foo.bar
-    """
-    if name in sys.modules:
-        del sys.modules[name]
-
-
-@contextmanager
-def ensure_unload_module(name: str) -> Generator[None, None, None]:
-    """
-    A context manager to ensure that a module gets removed even if an error
-    occurs
-
-    Args:
-        name: Name of the Python module to unload. For example: foo.bar
-
-    Example:
-        .. code-block:: python
-
-            with ensure_unload_module("foo.bar"):
-                do_something()
-    """
-    try:
-        yield
-    finally:
-        unload_module(name)

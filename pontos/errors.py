@@ -16,10 +16,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from pontos.errors import PontosError
-
-
-class GitHubActionsError(PontosError):
-    """
-    A GitHub Actions related error has occurred
-    """
+class PontosError(Exception):
+    """Base class for all errors originating in pontos"""

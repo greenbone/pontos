@@ -5,20 +5,14 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    pontos.github.actions
+   pontos.github.api
+   pontos.github.script
 
 Submodules
 ----------
-
-pontos.github.api module
-------------------------
-
-.. automodule:: pontos.github.api
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 pontos.github.argparser module
 ------------------------------
@@ -32,14 +26,6 @@ pontos.github.cmds module
 -------------------------
 
 .. automodule:: pontos.github.cmds
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pontos.github.main module
--------------------------
-
-.. automodule:: pontos.github.main
    :members:
    :undoc-members:
    :show-inheritance:
