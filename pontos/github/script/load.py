@@ -110,8 +110,8 @@ def run_add_arguments_function(
     Run a GitHub script add_script_arguments function
 
     Args:
-        module: Module that the GitHub script add_script_arguments function
-            contains
+        module: Module containing the GitHub script add_script_arguments
+            function
         parser: An ArgumentParser to add additional CLI arguments
     """
     func = getattr(module, GITHUB_SCRIPT_PARSER_FUNCTION_NAME, None)
