@@ -193,6 +193,29 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             url, params=params, headers=headers, json=data, content=content
         )
 
+    async def put(
+        self,
+        api: str,
+        *,
+        data: Optional[JSON],
+        params: Optional[Params] = None,
+        content: Optional[str] = None,
+        content_type: Optional[str] = None,
+    ) -> httpx.Response:
+        """
+        Put request to a GitHub API
+
+        Args:
+            api: API path to use for the post request
+            params: Optional params to use for the post request
+            data: Optional data to include in the post request
+        """
+        headers = self._request_headers(content_type=content_type)
+        url = self._request_url(api)
+        return await self._client.put(
+            url, params=params, headers=headers, json=data, content=content
+        )
+
     def stream(self, api: str) -> AsyncContextManager[httpx.Response]:
         """
         Stream data from a GitHub API

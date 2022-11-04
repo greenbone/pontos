@@ -151,6 +151,34 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             content=None,
         )
 
+    async def test_put(self):
+        await self.client.put("/foo/bar", data={"foo": "bar"})
+
+        self.http_client.put.assert_awaited_once_with(
+            f"{DEFAULT_GITHUB_API_URL}/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            json={"foo": "bar"},
+            params=None,
+            content=None,
+        )
+
+    async def test_put_url(self):
+        await self.client.put("https://github.com/foo/bar", data={"foo": "bar"})
+
+        self.http_client.put.assert_awaited_once_with(
+            "https://github.com/foo/bar",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": "token token",
+            },
+            json={"foo": "bar"},
+            params=None,
+            content=None,
+        )
+
     async def test_stream(self):
         response = MagicMock()
         response.__aenter__.return_value = MagicMock()
