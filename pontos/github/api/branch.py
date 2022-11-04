@@ -103,7 +103,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         required_signatures: Optional[bool] = None,
     ) -> None:
         """
-        Update branch protection rules for a specific repository branch
+        Update or create branch protection rules for a specific repository
+        branch.
 
         https://docs.github.com/en/rest/branches/branch-protection#update-branch-protection
 
@@ -169,7 +170,13 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
-        data = {}
+        data = {
+            "enforce_admins": None,
+            "required_status_checks": None,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+        }
+
         if enforce_admins is not None:
             data["enforce_admins"] = enforce_admins
         if required_linear_history is not None:
@@ -190,12 +197,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             data["allow_fork_syncing"] = allow_fork_syncing
 
         if require_branches_to_be_up_to_date is not None:
-            status_checks = data.get("required_status_checks", {})
+            status_checks = data.get("required_status_checks") or {}
             status_checks["strict"] = require_branches_to_be_up_to_date
             data["required_status_checks"] = status_checks
 
         if required_status_checks:
-            status_checks = data.get("required_status_checks", {})
+            status_checks = data.get("required_status_checks") or {}
             checks = []
 
             for context, app_id in required_status_checks:
@@ -209,21 +216,21 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             data["required_status_checks"] = status_checks
 
         if restrictions_users is not None:
-            restrictions = data.get("restrictions", {})
+            restrictions = data.get("restrictions") or {}
             restrictions["users"] = list(restrictions_users)
             data["restrictions"] = restrictions
         if restrictions_teams is not None:
-            restrictions = data.get("restrictions", {})
+            restrictions = data.get("restrictions") or {}
             restrictions["teams"] = list(restrictions_teams)
             data["restrictions"] = restrictions
         if restrictions_apps is not None:
-            restrictions = data.get("restrictions", {})
+            restrictions = data.get("restrictions") or {}
             restrictions["apps"] = list(restrictions_apps)
             data["restrictions"] = restrictions
 
         if dismiss_stale_reviews is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             required_pull_request_reviews[
                 "dismiss_stale_reviews"
@@ -232,8 +239,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if require_code_owner_reviews is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             required_pull_request_reviews[
                 "require_code_owner_reviews"
@@ -242,8 +249,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if required_approving_review_count is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             required_pull_request_reviews[
                 "required_approving_review_count"
@@ -252,8 +259,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if require_last_push_approval is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             required_pull_request_reviews[
                 "require_last_push_approval"
@@ -262,8 +269,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if dismissal_restrictions_users is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             dismissal_restrictions = required_pull_request_reviews.get(
                 "dismissal_restrictions", {}
@@ -276,8 +283,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if dismissal_restrictions_teams is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             dismissal_restrictions = required_pull_request_reviews.get(
                 "dismissal_restrictions", {}
@@ -290,8 +297,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if dismissal_restrictions_apps is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             dismissal_restrictions = required_pull_request_reviews.get(
                 "dismissal_restrictions", {}
@@ -304,8 +311,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if bypass_pull_request_allowances_users is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             bypass_pull_request_allowances = required_pull_request_reviews.get(
                 "bypass_pull_request_allowances", {}
@@ -320,8 +327,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if bypass_pull_request_allowances_teams is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             bypass_pull_request_allowances = required_pull_request_reviews.get(
                 "bypass_pull_request_allowances", {}
@@ -336,8 +343,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
         if bypass_pull_request_allowances_apps is not None:
-            required_pull_request_reviews = data.get(
-                "required_pull_request_reviews", {}
+            required_pull_request_reviews = (
+                data.get("required_pull_request_reviews") or {}
             )
             bypass_pull_request_allowances = required_pull_request_reviews.get(
                 "bypass_pull_request_allowances", {}

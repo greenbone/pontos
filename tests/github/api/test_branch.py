@@ -129,6 +129,24 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/branches/baz/protection"
         )
 
+    async def test_update_protection_rules_defaults(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.update_protection_rules(
+            "foo/bar",
+            "baz",
+        )
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "required_status_checks": None,
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
+        )
+
     async def test_update_protection_rules(self):
         response = create_response()
         self.client.put.return_value = response
@@ -219,7 +237,12 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
 
         self.client.put.assert_awaited_once_with(
             "/repos/foo/bar/branches/baz/protection",
-            data={"enforce_admins": True},
+            data={
+                "enforce_admins": True,
+                "required_status_checks": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
         )
 
     async def test_enable_enforce_admins(self):
