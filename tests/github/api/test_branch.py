@@ -203,6 +203,25 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_update_protection_rules_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.put.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.update_protection_rules(
+                "foo/bar",
+                "baz",
+                enforce_admins=True,
+            )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={"enforce_admins": True},
+        )
+
     async def test_enable_enforce_admins(self):
         response = create_response()
         self.client.post.return_value = response
@@ -225,23 +244,28 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/branches/baz/protection/enforce_admins"
         )
 
-    async def test_update_protection_rules_failure(self):
+    async def test_enable_required_signatures(self):
         response = create_response()
-        error = HTTPStatusError("404", request=MagicMock(), response=response)
-        response.raise_for_status.side_effect = error
+        self.client.post.return_value = response
 
-        self.client.put.return_value = response
+        await self.api.set_required_signatures(
+            "foo/bar", "baz", required_signatures=True
+        )
 
-        with self.assertRaises(HTTPStatusError):
-            await self.api.update_protection_rules(
-                "foo/bar",
-                "baz",
-                enforce_admins=True,
-            )
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_signatures"
+        )
 
-        self.client.put.assert_awaited_once_with(
-            "/repos/foo/bar/branches/baz/protection",
-            data={"enforce_admins": True},
+    async def test_disable_required_signatures(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.set_required_signatures(
+            "foo/bar", "baz", required_signatures=False
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_signatures"
         )
 
 
