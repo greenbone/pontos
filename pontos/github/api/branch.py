@@ -461,6 +461,28 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         response = await self._client.patch(api, data=data)
         response.raise_for_status()
 
+    async def remove_required_status_checks(
+        self,
+        repo: str,
+        branch: str,
+    ) -> None:
+        """
+        Remove required status check branch protection rules of a repository
+        branch.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            branch: Delete protection rules for this branch
+
+        Raises:
+            HTTPStatusError if the request was invalid
+        """
+        api = (
+            f"/repos/{repo}/branches/{branch}/protection/required_status_checks"
+        )
+        response = await self._client.delete(api)
+        response.raise_for_status()
+
 
 class GitHubRESTBranchMixin:
     def branch_exists(self, repo: str, branch: str) -> bool:

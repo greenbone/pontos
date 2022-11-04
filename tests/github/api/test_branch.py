@@ -290,6 +290,30 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_remove_required_required_status_checks(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.remove_required_status_checks("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks"
+        )
+
+    async def test_remove_required_required_status_checks_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.delete.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.remove_required_status_checks("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks"
+        )
+
 
 class GitHubBranchTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
