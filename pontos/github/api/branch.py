@@ -417,6 +417,50 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
 
         response.raise_for_status()
 
+    async def update_required_status_checks(
+        self,
+        repo: str,
+        branch: str,
+        *,
+        required_status_checks: Optional[Iterable[Tuple[str, str]]] = None,
+        require_branches_to_be_up_to_date: Optional[bool] = None,
+    ) -> None:
+        """
+        Update required status check branch protection rules of a repository
+        branch.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            branch: Delete protection rules for this branch
+            required_status_checks: An iterable of status checks to require in
+                order to merge into this branch. Contains tuples of the name of
+                the required check and the ID of the GitHub App that must
+                provide this check. Set this App ID to None to automatically
+                select the GitHub App that has recently provided this check
+            require_branches_to_be_up_to_date: Require branches to be up to date
+                before merging.
+
+        Raises:
+            HTTPStatusError if the request was invalid
+        """
+        api = (
+            f"/repos/{repo}/branches/{branch}/protection/required_status_checks"
+        )
+        data = {}
+        if require_branches_to_be_up_to_date is not None:
+            data["strict"] = require_branches_to_be_up_to_date
+        if required_status_checks is not None:
+            checks = []
+            for context, app_id in required_status_checks:
+                check = {"context": context}
+                if app_id:
+                    check["app_id"] = app_id
+                checks.append(check)
+            data["checks"] = checks
+
+        response = await self._client.patch(api, data=data)
+        response.raise_for_status()
+
 
 class GitHubRESTBranchMixin:
     def branch_exists(self, repo: str, branch: str) -> bool:

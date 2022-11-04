@@ -268,6 +268,28 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/branches/baz/protection/required_signatures"
         )
 
+    async def test_update_required_status_checks(self):
+        response = create_response()
+        self.client.patch.return_value = response
+
+        await self.api.update_required_status_checks(
+            "foo/bar",
+            "baz",
+            required_status_checks=[("foo", "123"), ("bar", None)],
+            require_branches_to_be_up_to_date=True,
+        )
+
+        self.client.patch.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks",
+            data={
+                "strict": True,
+                "checks": [
+                    {"context": "foo", "app_id": "123"},
+                    {"context": "bar"},
+                ],
+            },
+        )
+
 
 class GitHubBranchTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
