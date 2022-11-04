@@ -206,13 +206,36 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         Put request to a GitHub API
 
         Args:
-            api: API path to use for the post request
-            params: Optional params to use for the post request
-            data: Optional data to include in the post request
+            api: API path to use for the put request
+            params: Optional params to use for the put request
+            data: Optional data to include in the put request
         """
         headers = self._request_headers(content_type=content_type)
         url = self._request_url(api)
         return await self._client.put(
+            url, params=params, headers=headers, json=data, content=content
+        )
+
+    async def patch(
+        self,
+        api: str,
+        *,
+        data: Optional[JSON] = None,
+        params: Optional[Params] = None,
+        content: Optional[str] = None,
+        content_type: Optional[str] = None,
+    ) -> httpx.Response:
+        """
+        Patch request to a GitHub API
+
+        Args:
+            api: API path to use for the patch request
+            params: Optional params to use for the patch request
+            data: Optional data to include in the patch request
+        """
+        headers = self._request_headers(content_type=content_type)
+        url = self._request_url(api)
+        return await self._client.patch(
             url, params=params, headers=headers, json=data, content=content
         )
 
