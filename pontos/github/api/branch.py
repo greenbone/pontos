@@ -368,6 +368,29 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         response = await self._client.delete(api)
         response.raise_for_status()
 
+    async def set_enforce_admins(
+        self, repo: str, branch: str, *, enforce_admins: bool
+    ) -> None:
+        """
+        Enable/disable enforce admin branch protection rule for a specific
+        repository branch.
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            branch: Delete protection rules for this branch
+            enforce_admins: True to enable. False do disable.
+
+        Raises:
+            HTTPStatusError if the request was invalid
+        """
+        api = f"/repos/{repo}/branches/{branch}/protection/enforce_admins"
+        if enforce_admins:
+            response = await self._client.post(api)
+        else:
+            response = await self._client.delete(api)
+
+        response.raise_for_status()
+
 
 class GitHubRESTBranchMixin:
     def branch_exists(self, repo: str, branch: str) -> bool:

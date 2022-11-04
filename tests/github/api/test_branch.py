@@ -203,6 +203,28 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_enable_enforce_admins(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.set_enforce_admins("foo/bar", "baz", enforce_admins=True)
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/enforce_admins"
+        )
+
+    async def test_disable_enforce_admins(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.set_enforce_admins(
+            "foo/bar", "baz", enforce_admins=False
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/enforce_admins"
+        )
+
     async def test_update_protection_rules_failure(self):
         response = create_response()
         error = HTTPStatusError("404", request=MagicMock(), response=response)
