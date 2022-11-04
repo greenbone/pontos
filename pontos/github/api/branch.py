@@ -100,6 +100,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         required_conversation_resolution: Optional[bool] = None,
         lock_branch: Optional[bool] = None,
         allow_fork_syncing: Optional[bool] = None,
+        required_signatures: Optional[bool] = None,
     ) -> None:
         """
         Update branch protection rules for a specific repository branch
@@ -162,6 +163,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             allow_fork_syncing: Whether users can pull changes from upstream
                 when the branch is locked. Set to True to allow fork syncing.
                 Set to False to prevent fork syncing.
+            required_signature: True to require signed commits on a branch.
 
         Raises:
             HTTPStatusError if the request was invalid
@@ -349,6 +351,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             data[
                 "required_pull_request_reviews"
             ] = required_pull_request_reviews
+        if required_signatures is not None:
+            data["required_signatures"] = required_signatures
 
         response = await self._client.put(api, data=data)
         response.raise_for_status()
