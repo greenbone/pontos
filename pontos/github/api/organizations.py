@@ -181,6 +181,56 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         response = await self._client.delete(api)
         response.raise_for_status()
 
+    async def outside_collaborators(
+        self,
+        organization: str,
+        *,
+        member_filter: MemberFilter = MemberFilter.ALL,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get information about outside collaborators of an organization
+
+        Args:
+            organization: GitHub organization to use
+            member_filter: Filter the list of outside collaborators.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/outside_collaborators"
+        params = {
+            "filter": member_filter.value,
+            "per_page": "100",
+        }
+        members = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            members.extend(response.json())
+
+        return members
+
+    async def remove_outside_collaborator(
+        self,
+        organization: str,
+        username: str,
+    ) -> None:
+        """
+        Remove an outside collaborator from a GitHub Organization
+
+        Args:
+            organization: GitHub organization to use
+            username: The handle for the GitHub user account to remove from the
+                organization.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/outside_collaborators/{username}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
+
 
 class GitHubRESTOrganizationsMixin:
     def organisation_exists(self, orga: str) -> bool:

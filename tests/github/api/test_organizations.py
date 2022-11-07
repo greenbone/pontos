@@ -240,6 +240,84 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/memberships/bar",
         )
 
+    async def test_remove_member_failure(self):
+        response = create_response()
+        self.client.delete.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.remove_member("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/memberships/bar",
+        )
+
+    async def test_outside_collaborators(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.outside_collaborators("foo")
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/outside_collaborators",
+            params={"per_page": "100", "filter": "all"},
+        )
+
+    async def test_outside_collaborators_filter(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.outside_collaborators(
+            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        )
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/outside_collaborators",
+            params={"per_page": "100", "filter": "2fa_disabled"},
+        )
+
+    async def test_outside_collaborator(self):
+        response = create_response(is_success=False)
+        self.client.delete.return_value = response
+
+        await self.api.remove_outside_collaborator("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/outside_collaborators/bar",
+        )
+
+    async def test_remove_outside_collaborator_failure(self):
+        response = create_response()
+        self.client.delete.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.remove_outside_collaborator("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/outside_collaborators/bar",
+        )
+
 
 class GitHubOrganizationsTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
