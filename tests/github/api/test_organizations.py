@@ -24,7 +24,11 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi, RepositoryType
-from pontos.github.api.organizations import GitHubAsyncRESTOrganizations
+from pontos.github.api.organizations import (
+    GitHubAsyncRESTOrganizations,
+    MemberFilter,
+    Role,
+)
 from tests import AsyncIteratorMock
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
@@ -94,6 +98,68 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/repos",
             params={"per_page": "100", "type": "private"},
+        )
+
+    async def test_members(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members("foo")
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "all", "role": "all"},
+        )
+
+    async def test_members_admins(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members("foo", role=Role.ADMIN)
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "all", "role": "admin"},
+        )
+
+    async def test_members_filter(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members(
+            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        )
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "2fa_disabled", "role": "all"},
         )
 
 

@@ -15,12 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
 from typing import Iterable
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON, JSON_OBJECT, RepositoryType
+
+
+class MemberFilter(Enum):
+    TWO_FA_DISABLED = "2fa_disabled"
+    ALL = "all"
+
+
+class Role(Enum):
+    ALL = "all"
+    ADMIN = "admin"
+    MEMBER = "member"
 
 
 class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
@@ -60,6 +72,38 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             repos.extend(response.json())
 
         return repos
+
+    async def members(
+        self,
+        organization: str,
+        *,
+        member_filter: MemberFilter = MemberFilter.ALL,
+        role: Role = Role.ALL,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get information about organization members
+
+        Args:
+            organization: GitHub organization to use
+            member_filter:
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/members"
+        params = {
+            "filter": member_filter.value,
+            "per_page": "100",
+            "role": role.value,
+        }
+        members = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            members.extend(response.json())
+
+        return members
 
 
 class GitHubRESTOrganizationsMixin:
