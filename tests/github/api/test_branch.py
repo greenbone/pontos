@@ -105,6 +105,238 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/branches/baz/protection"
         )
 
+    async def test_delete_protection_rules(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.delete_protection_rules("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection"
+        )
+
+    async def test_delete_protection_rules_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.delete.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.delete_protection_rules("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection"
+        )
+
+    async def test_update_protection_rules_defaults(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.update_protection_rules(
+            "foo/bar",
+            "baz",
+        )
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "required_status_checks": None,
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
+        )
+
+    async def test_update_protection_rules(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.update_protection_rules(
+            "foo/bar",
+            "baz",
+            required_status_checks=[("foo", "123"), ("bar", None)],
+            require_branches_to_be_up_to_date=True,
+            enforce_admins=True,
+            dismissal_restrictions_users=("foo", "bar"),
+            dismissal_restrictions_teams=("team_foo", "team_bar"),
+            dismissal_restrictions_apps=("123", "321"),
+            dismiss_stale_reviews=True,
+            require_code_owner_reviews=True,
+            required_approving_review_count=2,
+            require_last_push_approval=True,
+            bypass_pull_request_allowances_users=("foo", "bar"),
+            bypass_pull_request_allowances_teams=("team_foo", "team_bar"),
+            bypass_pull_request_allowances_apps=("123", "321"),
+            restrictions_users=("foo", "bar"),
+            restrictions_teams=("team_foo", "team_bar"),
+            restrictions_apps=("123", "321"),
+            required_linear_history=True,
+            allow_force_pushes=True,
+            allow_deletions=True,
+            block_creations=True,
+            required_conversation_resolution=True,
+            lock_branch=True,
+            allow_fork_syncing=True,
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "required_status_checks": {
+                    "strict": True,
+                    "checks": [
+                        {"context": "foo", "app_id": "123"},
+                        {"context": "bar"},
+                    ],
+                },
+                "enforce_admins": True,
+                "required_pull_request_reviews": {
+                    "dismissal_restrictions": {
+                        "users": ["foo", "bar"],
+                        "teams": ["team_foo", "team_bar"],
+                        "apps": ["123", "321"],
+                    },
+                    "dismiss_stale_reviews": True,
+                    "require_code_owner_reviews": True,
+                    "required_approving_review_count": 2,
+                    "require_last_push_approval": True,
+                    "bypass_pull_request_allowances": {
+                        "users": ["foo", "bar"],
+                        "teams": ["team_foo", "team_bar"],
+                        "apps": ["123", "321"],
+                    },
+                },
+                "restrictions": {
+                    "users": ["foo", "bar"],
+                    "teams": ["team_foo", "team_bar"],
+                    "apps": ["123", "321"],
+                },
+                "required_linear_history": True,
+                "allow_force_pushes": True,
+                "allow_deletions": True,
+                "block_creations": True,
+                "required_conversation_resolution": True,
+                "lock_branch": True,
+                "allow_fork_syncing": True,
+            },
+        )
+
+    async def test_update_protection_rules_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.put.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.update_protection_rules(
+                "foo/bar",
+                "baz",
+                enforce_admins=True,
+            )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "enforce_admins": True,
+                "required_status_checks": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
+        )
+
+    async def test_enable_enforce_admins(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.set_enforce_admins("foo/bar", "baz", enforce_admins=True)
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/enforce_admins"
+        )
+
+    async def test_disable_enforce_admins(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.set_enforce_admins(
+            "foo/bar", "baz", enforce_admins=False
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/enforce_admins"
+        )
+
+    async def test_enable_required_signatures(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.set_required_signatures(
+            "foo/bar", "baz", required_signatures=True
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_signatures"
+        )
+
+    async def test_disable_required_signatures(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.set_required_signatures(
+            "foo/bar", "baz", required_signatures=False
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_signatures"
+        )
+
+    async def test_update_required_status_checks(self):
+        response = create_response()
+        self.client.patch.return_value = response
+
+        await self.api.update_required_status_checks(
+            "foo/bar",
+            "baz",
+            required_status_checks=[("foo", "123"), ("bar", None)],
+            require_branches_to_be_up_to_date=True,
+        )
+
+        self.client.patch.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks",
+            data={
+                "strict": True,
+                "checks": [
+                    {"context": "foo", "app_id": "123"},
+                    {"context": "bar"},
+                ],
+            },
+        )
+
+    async def test_remove_required_required_status_checks(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.remove_required_status_checks("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks"
+        )
+
+    async def test_remove_required_required_status_checks_failure(self):
+        response = create_response()
+        error = HTTPStatusError("404", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.delete.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.remove_required_status_checks("foo/bar", "baz")
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection/required_status_checks"
+        )
+
 
 class GitHubBranchTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
