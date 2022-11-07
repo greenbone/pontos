@@ -161,6 +161,26 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
 
+    async def remove_member(
+        self,
+        organization: str,
+        username: str,
+    ) -> None:
+        """
+        Remove a member from a GitHub Organization
+
+        Args:
+            organization: GitHub organization to use
+            username: The handle for the GitHub user account to remove from the
+                organization.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/memberships/{username}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
+
 
 class GitHubRESTOrganizationsMixin:
     def organisation_exists(self, orga: str) -> bool:

@@ -230,6 +230,16 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_remove_member(self):
+        response = create_response(is_success=False)
+        self.client.delete.return_value = response
+
+        await self.api.remove_member("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/memberships/bar",
+        )
+
 
 class GitHubOrganizationsTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")
