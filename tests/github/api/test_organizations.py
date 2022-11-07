@@ -24,10 +24,12 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi, RepositoryType
+from pontos.github.api.errors import GitHubApiError
 from pontos.github.api.organizations import (
     GitHubAsyncRESTOrganizations,
+    InvitationRole,
     MemberFilter,
-    Role,
+    MemberRole,
 )
 from tests import AsyncIteratorMock
 from tests.github.api import (
@@ -130,7 +132,7 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.members("foo", role=Role.ADMIN)
+        members = await self.api.members("foo", role=MemberRole.ADMIN)
 
         self.assertEqual(len(members), 3)
         self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
@@ -160,6 +162,72 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/members",
             params={"per_page": "100", "filter": "2fa_disabled", "role": "all"},
+        )
+
+    async def test_invite_email(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo",
+            email="foo@bar.com",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={"role": "direct_member", "email": "foo@bar.com"},
+        )
+
+    async def test_invite_invitee(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo",
+            invitee_id="foo",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={"role": "direct_member", "invitee_id": "foo"},
+        )
+
+    async def test_invite_missing_user(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        with self.assertRaises(GitHubApiError):
+            await self.api.invite("foo")
+
+    async def test_invite_with_teams(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite("foo", email="foo@bar.com", team_ids=("1", "2"))
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={
+                "role": "direct_member",
+                "email": "foo@bar.com",
+                "team_ids": ["1", "2"],
+            },
+        )
+
+    async def test_invite_with_role(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo", email="foo@bar.com", role=InvitationRole.ADMIN
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={
+                "role": "admin",
+                "email": "foo@bar.com",
+            },
         )
 
 
