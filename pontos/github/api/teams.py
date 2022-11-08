@@ -291,3 +291,33 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
         response = await self._client.delete(api)
         response.raise_for_status()
+
+    async def repositories(
+        self,
+        organization: str,
+        team: str,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Lists a team's repositories visible to the authenticated user.
+
+        https://docs.github.com/en/rest/teams/teams#list-team-repositories
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}/repos"
+        repos = []
+        params = {
+            "per_page": "100",
+        }
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            repos.extend(response.json())
+
+        return repos
