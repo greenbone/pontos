@@ -14,8 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from unittest.mock import MagicMock
 
-from pontos.github.api.teams import GitHubAsyncRESTTeams
+import httpx
+
+from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy
 from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
@@ -41,4 +44,59 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams",
             params={"per_page": "100"},
+        )
+
+    async def test_create(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.create(
+            "foo",
+            "bar",
+            description="A description",
+            maintainers=["foo", "bar"],
+            repo_names=["foo/bar", "foo/baz"],
+            privacy=TeamPrivacy.CLOSED,
+            parent_team_id="123",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/teams",
+            data={
+                "name": "bar",
+                "description": "A description",
+                "maintainers": ["foo", "bar"],
+                "repo_names": ["foo/bar", "foo/baz"],
+                "privacy": "closed",
+                "parent_team_id": "123",
+            },
+        )
+
+    async def test_create_failure(self):
+        response = create_response()
+        self.client.post.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.create(
+                "foo",
+                "bar",
+                description="A description",
+                maintainers=["foo", "bar"],
+                repo_names=["foo/bar", "foo/baz"],
+                privacy=TeamPrivacy.CLOSED,
+                parent_team_id="123",
+            )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/teams",
+            data={
+                "name": "bar",
+                "description": "A description",
+                "maintainers": ["foo", "bar"],
+                "repo_names": ["foo/bar", "foo/baz"],
+                "privacy": "closed",
+                "parent_team_id": "123",
+            },
         )
