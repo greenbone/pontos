@@ -63,6 +63,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         """
         Get information about organization repositories
 
+        https://docs.github.com/en/rest/repos/repos#list-organization-repositories
+
         Args:
             organization: GitHub organization to use
 
@@ -89,6 +91,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
     ) -> Iterable[JSON_OBJECT]:
         """
         Get information about organization members
+
+        https://docs.github.com/en/rest/orgs/members#list-organization-members
 
         Args:
             organization: GitHub organization to use
@@ -123,6 +127,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
     ) -> None:
         """
         Invite a user to a GitHub Organization
+
+        https://docs.github.com/en/rest/orgs/members#create-an-organization-invitation
 
         Args:
             organization: GitHub organization to use
@@ -169,6 +175,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         """
         Remove a member from a GitHub Organization
 
+        https://docs.github.com/en/rest/orgs/members#remove-organization-membership-for-a-user
+
         Args:
             organization: GitHub organization to use
             username: The handle for the GitHub user account to remove from the
@@ -189,6 +197,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
     ) -> Iterable[JSON_OBJECT]:
         """
         Get information about outside collaborators of an organization
+
+        https://docs.github.com/en/rest/orgs/outside-collaborators#list-outside-collaborators-for-an-organization
 
         Args:
             organization: GitHub organization to use
@@ -218,6 +228,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
     ) -> None:
         """
         Remove an outside collaborator from a GitHub Organization
+
+        https://docs.github.com/en/rest/orgs/outside-collaborators#remove-outside-collaborator-from-an-organization
 
         Args:
             organization: GitHub organization to use
