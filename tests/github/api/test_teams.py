@@ -123,3 +123,52 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with(
             "/orgs/foo/teams/bar",
         )
+
+    async def test_update(self):
+        response = create_response()
+        self.client.post.return_value = response
+
+        await self.api.update(
+            "foo",
+            "bar",
+            name="baz",
+            description="A description",
+            privacy=TeamPrivacy.CLOSED,
+            parent_team_id="123",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/teams/bar",
+            data={
+                "name": "baz",
+                "description": "A description",
+                "privacy": "closed",
+                "parent_team_id": "123",
+            },
+        )
+
+    async def test_update_failure(self):
+        response = create_response()
+        self.client.post.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.update(
+                "foo",
+                "bar",
+                name="baz",
+                description="A description",
+                privacy=TeamPrivacy.CLOSED,
+                parent_team_id="123",
+            )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/teams/bar",
+            data={
+                "name": "baz",
+                "description": "A description",
+                "privacy": "closed",
+                "parent_team_id": "123",
+            },
+        )

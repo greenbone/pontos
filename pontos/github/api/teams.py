@@ -132,3 +132,54 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         response = await self._client.get(api)
         response.raise_for_status()
         return response.json()
+
+    async def update(
+        self,
+        organization: str,
+        team: str,
+        *,
+        name: str,
+        description: Optional[str] = None,
+        privacy: Optional[TeamPrivacy] = None,
+        parent_team_id: Optional[str] = None,
+    ) -> JSON_OBJECT:
+        """
+        Update team information in an organization
+
+        https://docs.github.com/en/rest/teams/teams#update-a-team
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+            name: The name of the team.
+            description: The description of the team.
+            privacy: The level of privacy this team should have. The options
+                are:
+                For a non-nested team:
+                    * secret - only visible to organization owners and members
+                        of this team.
+                    * closed - visible to all members of this organization.
+                Default: secret
+
+                For a parent or child team:
+                    * closed - visible to all members of this organization.
+                Default for child team: closed
+            parent_team_id: The ID of a team to set as the parent team.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}"
+        data = {}
+        if name:
+            data["name"] = name
+        if description:
+            data["description"] = description
+        if privacy:
+            data["privacy"] = privacy.value
+        if parent_team_id:
+            data["parent_team_id"] = parent_team_id
+
+        response = await self._client.post(api, data=data)
+        response.raise_for_status()
+        return response.json()
