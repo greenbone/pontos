@@ -24,7 +24,13 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from pontos.github.api import GitHubRESTApi, RepositoryType
-from pontos.github.api.organizations import GitHubAsyncRESTOrganizations
+from pontos.github.api.errors import GitHubApiError
+from pontos.github.api.organizations import (
+    GitHubAsyncRESTOrganizations,
+    InvitationRole,
+    MemberFilter,
+    MemberRole,
+)
 from tests import AsyncIteratorMock
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
@@ -94,6 +100,222 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/repos",
             params={"per_page": "100", "type": "private"},
+        )
+
+    async def test_members(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members("foo")
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "all", "role": "all"},
+        )
+
+    async def test_members_admins(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members("foo", role=MemberRole.ADMIN)
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "all", "role": "admin"},
+        )
+
+    async def test_members_filter(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.members(
+            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        )
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/members",
+            params={"per_page": "100", "filter": "2fa_disabled", "role": "all"},
+        )
+
+    async def test_invite_email(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo",
+            email="foo@bar.com",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={"role": "direct_member", "email": "foo@bar.com"},
+        )
+
+    async def test_invite_invitee(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo",
+            invitee_id="foo",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={"role": "direct_member", "invitee_id": "foo"},
+        )
+
+    async def test_invite_missing_user(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        with self.assertRaises(GitHubApiError):
+            await self.api.invite("foo")
+
+    async def test_invite_with_teams(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite("foo", email="foo@bar.com", team_ids=("1", "2"))
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={
+                "role": "direct_member",
+                "email": "foo@bar.com",
+                "team_ids": ["1", "2"],
+            },
+        )
+
+    async def test_invite_with_role(self):
+        response = create_response(is_success=False)
+        self.client.post.return_value = response
+
+        await self.api.invite(
+            "foo", email="foo@bar.com", role=InvitationRole.ADMIN
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/orgs/foo/invitations",
+            data={
+                "role": "admin",
+                "email": "foo@bar.com",
+            },
+        )
+
+    async def test_remove_member(self):
+        response = create_response(is_success=False)
+        self.client.delete.return_value = response
+
+        await self.api.remove_member("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/memberships/bar",
+        )
+
+    async def test_remove_member_failure(self):
+        response = create_response()
+        self.client.delete.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.remove_member("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/memberships/bar",
+        )
+
+    async def test_outside_collaborators(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.outside_collaborators("foo")
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/outside_collaborators",
+            params={"per_page": "100", "filter": "all"},
+        )
+
+    async def test_outside_collaborators_filter(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        members = await self.api.outside_collaborators(
+            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        )
+
+        self.assertEqual(len(members), 3)
+        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/outside_collaborators",
+            params={"per_page": "100", "filter": "2fa_disabled"},
+        )
+
+    async def test_outside_collaborator(self):
+        response = create_response(is_success=False)
+        self.client.delete.return_value = response
+
+        await self.api.remove_outside_collaborator("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/outside_collaborators/bar",
+        )
+
+    async def test_remove_outside_collaborator_failure(self):
+        response = create_response()
+        self.client.delete.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.remove_outside_collaborator("foo", "bar")
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/outside_collaborators/bar",
         )
 
 

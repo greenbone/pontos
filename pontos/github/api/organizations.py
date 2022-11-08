@@ -15,12 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
+from enum import Enum
+from typing import Iterable, Optional
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.errors import GitHubApiError
 from pontos.github.api.helper import JSON, JSON_OBJECT, RepositoryType
+
+
+class MemberFilter(Enum):
+    TWO_FA_DISABLED = "2fa_disabled"
+    ALL = "all"
+
+
+class MemberRole(Enum):
+    ALL = "all"
+    ADMIN = "admin"
+    MEMBER = "member"
+
+
+class InvitationRole(Enum):
+    ADMIN = "admin"
+    DIRECT_MEMBER = "direct_member"
+    BILLING_MANAGER = "billing_manager"
 
 
 class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
@@ -60,6 +79,157 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             repos.extend(response.json())
 
         return repos
+
+    async def members(
+        self,
+        organization: str,
+        *,
+        member_filter: MemberFilter = MemberFilter.ALL,
+        role: MemberRole = MemberRole.ALL,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get information about organization members
+
+        Args:
+            organization: GitHub organization to use
+            member_filter:
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/members"
+        params = {
+            "filter": member_filter.value,
+            "per_page": "100",
+            "role": role.value,
+        }
+        members = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            members.extend(response.json())
+
+        return members
+
+    async def invite(
+        self,
+        organization: str,
+        *,
+        email: Optional[str] = None,
+        invitee_id: Optional[str] = None,
+        role: InvitationRole = InvitationRole.DIRECT_MEMBER,
+        team_ids: Iterable[str] = None,
+    ) -> None:
+        """
+        Invite a user to a GitHub Organization
+
+        Args:
+            organization: GitHub organization to use
+            email: Email address of the person you are inviting, which can be an
+                existing GitHub user. Either an email or an invitee_id must be
+                given.
+            invitee_id: GitHub user ID for the person you are inviting. Either
+                an email or an invitee_id must be given.
+            role: The role for the new member.
+                * admin - Organization owners with full administrative rights to
+                  the organization and complete access to all repositories and
+                  teams.
+                * direct_member - Non-owner organization members with ability to
+                  see other members and join teams by invitation.
+                * billing_manager - Non-owner organization members with ability
+                  to manage the billing settings of your organization.
+            team_ids: Specify IDs for the teams you want to invite new members
+                to.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        if not email and not invitee_id:
+            raise GitHubApiError("Either email or invitee_id must be provided")
+
+        api = f"/orgs/{organization}/invitations"
+        data = {"role": role.value}
+        if team_ids:
+            data["team_ids"] = list(team_ids)
+
+        if invitee_id:
+            data["invitee_id"] = invitee_id
+        else:
+            data["email"] = email
+
+        response = await self._client.post(api, data=data)
+        response.raise_for_status()
+
+    async def remove_member(
+        self,
+        organization: str,
+        username: str,
+    ) -> None:
+        """
+        Remove a member from a GitHub Organization
+
+        Args:
+            organization: GitHub organization to use
+            username: The handle for the GitHub user account to remove from the
+                organization.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/memberships/{username}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
+
+    async def outside_collaborators(
+        self,
+        organization: str,
+        *,
+        member_filter: MemberFilter = MemberFilter.ALL,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get information about outside collaborators of an organization
+
+        Args:
+            organization: GitHub organization to use
+            member_filter: Filter the list of outside collaborators.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/outside_collaborators"
+        params = {
+            "filter": member_filter.value,
+            "per_page": "100",
+        }
+        members = []
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            members.extend(response.json())
+
+        return members
+
+    async def remove_outside_collaborator(
+        self,
+        organization: str,
+        username: str,
+    ) -> None:
+        """
+        Remove an outside collaborator from a GitHub Organization
+
+        Args:
+            organization: GitHub organization to use
+            username: The handle for the GitHub user account to remove from the
+                organization.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/outside_collaborators/{username}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
 
 
 class GitHubRESTOrganizationsMixin:
