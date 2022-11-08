@@ -27,6 +27,11 @@ class TeamPrivacy(Enum):
     CLOSED = "closed"
 
 
+class TeamRole(Enum):
+    MEMBER = "member"
+    MAINTAINER = "maintainer"
+
+
 class GitHubAsyncRESTTeams(GitHubAsyncREST):
     async def get_all(self, organization: str) -> Iterable[JSON_OBJECT]:
         """
@@ -235,3 +240,31 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             members.extend(response.json())
 
         return members
+
+    async def update_member(
+        self,
+        organization: str,
+        team: str,
+        username: str,
+        *,
+        role: TeamRole = TeamRole.MEMBER,
+    ) -> None:
+        """
+        Add or update a member of a team.
+
+        https://docs.github.com/en/rest/teams/members#add-or-update-team-membership-for-a-user
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+            username: The handle for the GitHub user account.
+            role: The role that this user should have in the team.
+                Default: member. Can be one of: member, maintainer.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
+        data = {"role": role.value}
+        response = await self._client.put(api, data=data)
+        response.raise_for_status()

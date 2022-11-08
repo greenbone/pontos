@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 
 import httpx
 
-from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy
+from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy, TeamRole
 from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
@@ -214,4 +214,29 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams/bar/members",
             params={"per_page": "100"},
+        )
+
+    async def test_update_member(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.update_member(
+            "foo", "bar", "baz", role=TeamRole.MAINTAINER
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/memberships/baz", data={"role": "maintainer"}
+        )
+
+    async def test_update_member_failure(self):
+        response = create_response()
+        self.client.put.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.update_member("foo", "bar", "baz")
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/memberships/baz", data={"role": "member"}
         )
