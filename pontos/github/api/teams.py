@@ -204,3 +204,34 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         api = f"/orgs/{organization}/teams/{team}"
         response = await self._client.delete(api)
         response.raise_for_status()
+
+    async def members(
+        self,
+        organization: str,
+        team: str,
+    ) -> Iterable[JSON_OBJECT]:
+        """
+        Get all members of a team. Team members will include the members of
+        child teams.
+
+        https://docs.github.com/en/rest/teams/members#list-team-members
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}/members"
+        members = []
+        params = {
+            "per_page": "100",
+        }
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            members.extend(response.json())
+
+        return members

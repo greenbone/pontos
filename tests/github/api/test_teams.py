@@ -195,3 +195,23 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
         self.client.delete.assert_awaited_once_with(
             "/orgs/foo/teams/bar",
         )
+
+    async def test_members(self):
+        response1 = create_response()
+        response1.json.return_value = [{"id": 1}]
+        response2 = create_response()
+        response2.json.return_value = [{"id": 2}, {"id": 3}]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        repos = await self.api.members("foo", "bar")
+
+        self.assertEqual(len(repos), 3)
+        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/teams/bar/members",
+            params={"per_page": "100"},
+        )
