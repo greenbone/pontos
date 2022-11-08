@@ -268,3 +268,26 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         data = {"role": role.value}
         response = await self._client.put(api, data=data)
         response.raise_for_status()
+
+    async def remove_member(
+        self,
+        organization: str,
+        team: str,
+        username: str,
+    ) -> None:
+        """
+        Remove a member from a team.
+
+        https://docs.github.com/en/rest/teams/members#remove-team-membership-for-a-user
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+            username: The handle for the GitHub user account.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
