@@ -183,3 +183,24 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
         return response.json()
+
+    async def delete(
+        self,
+        organization: str,
+        team: str,
+    ) -> None:
+        """
+        Delete a new team of an organization
+
+        https://docs.github.com/en/rest/teams/teams#delete-a-team
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
