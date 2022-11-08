@@ -100,3 +100,26 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
                 "parent_team_id": "123",
             },
         )
+
+    async def test_get(self):
+        response = create_response()
+        self.client.get.return_value = response
+
+        await self.api.get("foo", "bar")
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/teams/bar",
+        )
+
+    async def test_get_failure(self):
+        response = create_response()
+        self.client.get.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.get("foo", "bar")
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/teams/bar",
+        )

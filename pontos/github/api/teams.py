@@ -109,3 +109,26 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
         return response.json()
+
+    async def get(
+        self,
+        organization: str,
+        team: str,
+    ) -> JSON_OBJECT:
+        """
+        Gets a team using the team's slug. GitHub generates the slug from the
+        team name.
+
+        https://docs.github.com/en/rest/teams/teams#get-a-team-by-name
+
+        Args:
+            organization: GitHub organization to use
+            team: The team slug of the team.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = f"/orgs/{organization}/teams/{team}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return response.json()
