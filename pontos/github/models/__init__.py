@@ -16,3 +16,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pontos.github.models.base import *
+from pontos.github.models.organization import *
