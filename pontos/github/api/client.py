@@ -65,7 +65,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
     ) -> None:
         self.token = token
         self.url = url
-        self._client = httpx.AsyncClient(timeout=timeout)
+        self._client = httpx.AsyncClient(timeout=timeout, http2=True)
 
     def _request_headers(
         self, *, content_type: Optional[str] = None
