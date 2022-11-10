@@ -228,6 +228,16 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/teams/bar/memberships/baz", data={"role": "maintainer"}
         )
 
+    async def test_add_member(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.add_member("foo", "bar", "baz", role=TeamRole.MAINTAINER)
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/memberships/baz", data={"role": "maintainer"}
+        )
+
     async def test_update_member_failure(self):
         response = create_response()
         self.client.put.side_effect = httpx.HTTPStatusError(

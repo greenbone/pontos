@@ -269,6 +269,9 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         response = await self._client.put(api, data=data)
         response.raise_for_status()
 
+    # add_member is the same API as update_member
+    add_member = update_member
+
     async def remove_member(
         self,
         organization: str,
