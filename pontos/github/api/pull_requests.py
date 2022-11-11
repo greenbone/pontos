@@ -72,7 +72,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         base_branch: str,
         title: str,
         body: str,
-    ):
+    ) -> None:
         """
         Create a new Pull Request on GitHub
 
@@ -104,7 +104,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         base_branch: Optional[str] = None,
         title: Optional[str] = None,
         body: Optional[str] = None,
-    ):
+    ) -> None:
         """
         Update a Pull Request on GitHub
 
@@ -133,7 +133,9 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
 
-    async def add_comment(self, repo: str, pull_request: int, comment: str):
+    async def add_comment(
+        self, repo: str, pull_request: int, comment: str
+    ) -> None:
         """
         Add a comment to a pull request on GitHub
 

@@ -69,7 +69,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         *,
         ref: str,
         inputs: Dict[str, str] = None,
-    ):
+    ) -> None:
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
         workflow run.

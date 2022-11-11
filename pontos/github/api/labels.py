@@ -54,7 +54,9 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
 
         return items
 
-    async def set_all(self, repo: str, issue: int, labels: Iterable[str]):
+    async def set_all(
+        self, repo: str, issue: int, labels: Iterable[str]
+    ) -> None:
         """
         Set labels in the issue/pr. Existing labels will be overwritten
 
