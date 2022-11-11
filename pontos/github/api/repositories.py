@@ -118,7 +118,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         response.raise_for_status()
         return response.json()
 
-    async def delete(self, repo):
+    async def delete(self, repo: str) -> None:
         """
         Delete a repository
 

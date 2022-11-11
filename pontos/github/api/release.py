@@ -52,7 +52,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         target_commitish: Optional[str] = None,
         draft: Optional[bool] = False,
         prerelease: Optional[bool] = False,
-    ):
+    ) -> None:
         """
         Create a new GitHub release
 

@@ -38,7 +38,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         response = await self._client.get(api)
         return response.is_success
 
-    async def delete(self, repo: str, branch: str):
+    async def delete(self, repo: str, branch: str) -> None:
         """
         Delete a branch on GitHub
 
