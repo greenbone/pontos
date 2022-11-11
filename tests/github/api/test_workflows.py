@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, redefined-builtin
 
 import unittest
 from pathlib import Path
@@ -25,7 +25,7 @@ import httpx
 
 from pontos.github.api import GitHubRESTApi
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
-from tests import AsyncIteratorMock
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
@@ -71,9 +71,16 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        workflows = await self.api.get_all("foo/bar")
+        async_it = aiter(self.api.get_all("foo/bar"))
+        workflow = await anext(async_it)
+        self.assertEqual(workflow["id"], 1)
+        workflow = await anext(async_it)
+        self.assertEqual(workflow["id"], 2)
+        workflow = await anext(async_it)
+        self.assertEqual(workflow["id"], 3)
 
-        self.assertEqual(len(workflows), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/actions/workflows",
@@ -90,11 +97,23 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        runs = await self.api.get_workflow_runs(
-            "foo/bar", actor="foo", branch="stable", exclude_pull_requests=True
+        async_it = aiter(
+            self.api.get_workflow_runs(
+                "foo/bar",
+                actor="foo",
+                branch="stable",
+                exclude_pull_requests=True,
+            )
         )
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 1)
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 2)
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 3)
 
-        self.assertEqual(len(runs), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/actions/runs",
@@ -116,15 +135,24 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        runs = await self.api.get_workflow_runs(
-            "foo/bar",
-            "ci.yml",
-            actor="foo",
-            branch="stable",
-            exclude_pull_requests=True,
+        async_it = aiter(
+            self.api.get_workflow_runs(
+                "foo/bar",
+                "ci.yml",
+                actor="foo",
+                branch="stable",
+                exclude_pull_requests=True,
+            )
         )
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 1)
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 2)
+        run = await anext(async_it)
+        self.assertEqual(run["id"], 3)
 
-        self.assertEqual(len(runs), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/actions/workflows/ci.yml/runs",

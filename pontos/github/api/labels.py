@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import Iterable, List
+from typing import AsyncIterator, Iterable, List
 
 import httpx
 
@@ -29,7 +29,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         self,
         repo: str,
         issue: int,
-    ) -> Iterable[str]:
+    ) -> AsyncIterator[str]:
         """
         Get all labels that are set in the issue/pr
 
@@ -43,16 +43,12 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         api = f"/repos/{repo}/issues/{issue}/labels"
         params = {"per_page": "100"}
 
-        items = []
-
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
             data: JSON = response.json()
 
             for label in data:
-                items.append(label["name"])
-
-        return items
+                yield label["name"]
 
     async def set_all(
         self, repo: str, issue: int, labels: Iterable[str]

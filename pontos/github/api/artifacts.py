@@ -18,6 +18,7 @@
 from pathlib import Path
 from typing import (
     AsyncContextManager,
+    AsyncIterator,
     ContextManager,
     Iterable,
     Optional,
@@ -37,12 +38,12 @@ from pontos.helper import (
 
 
 class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
-    async def _get_paged_artifacts(
+    def _get_paged_artifacts(
         self, api, *, params: Optional[Params] = None
-    ) -> Iterable[JSON_OBJECT]:
-        return await self._get_paged_items(api, "artifacts", params=params)
+    ) -> AsyncIterator[JSON_OBJECT]:
+        return self._get_paged_items(api, "artifacts", params=params)
 
-    async def get_all(self, repo: str) -> Iterable[JSON_OBJECT]:
+    def get_all(self, repo: str) -> AsyncIterator[JSON_OBJECT]:
         """
         List all artifacts of a repository
 
@@ -57,7 +58,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             Information about the artifacts in the repository as a dict
         """
         api = f"/repos/{repo}/actions/artifacts"
-        return await self._get_paged_artifacts(api)
+        return self._get_paged_artifacts(api)
 
     async def get(self, repo: str, artifact: str) -> JSON_OBJECT:
         """
@@ -79,9 +80,9 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         response.raise_for_status()
         return response.json()
 
-    async def get_workflow_run_artifacts(
+    def get_workflow_run_artifacts(
         self, repo: str, run: str
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         List all artifacts for a workflow run
 
@@ -97,7 +98,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             Information about the artifacts in the workflow as a dict
         """
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
-        return await self._get_paged_artifacts(api)
+        return self._get_paged_artifacts(api)
 
     async def delete(self, repo: str, artifact: str):
         """

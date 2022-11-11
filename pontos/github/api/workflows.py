@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, Iterable, Optional
+from typing import AsyncIterator, Dict, Iterable, Optional
 
 import httpx
 
@@ -24,7 +24,7 @@ from pontos.github.api.helper import JSON_OBJECT
 
 
 class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
-    async def get_all(self, repo: str) -> Iterable[JSON_OBJECT]:
+    def get_all(self, repo: str) -> AsyncIterator[JSON_OBJECT]:
         """
         List all workflows of a repository
 
@@ -39,7 +39,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             Information about the workflows as an iterable of dicts
         """
         api = f"/repos/{repo}/actions/workflows"
-        return await self._get_paged_items(api, "workflows")
+        return self._get_paged_items(api, "workflows")
 
     async def get(self, repo: str, workflow: str) -> JSON_OBJECT:
         """
@@ -104,7 +104,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
 
-    async def get_workflow_runs(
+    def get_workflow_runs(
         self,
         repo: str,
         workflow: Optional[str] = None,
@@ -115,7 +115,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         status: Optional[str] = None,
         created: Optional[str] = None,
         exclude_pull_requests: Optional[bool] = None,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         # pylint: disable=line-too-long
         """
         List all workflow runs of a repository or of a specific workflow.
@@ -168,7 +168,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         if exclude_pull_requests is not None:
             params["exclude_pull_requests"] = exclude_pull_requests
 
-        return await self._get_paged_items(api, "workflow_runs", params=params)
+        return self._get_paged_items(api, "workflow_runs", params=params)
 
     async def get_workflow_run(self, repo: str, run: str) -> JSON_OBJECT:
         """

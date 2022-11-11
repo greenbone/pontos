@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from typing import Iterable, Optional
+from typing import AsyncIterator, Iterable, Optional
 
 import httpx
 
@@ -59,7 +59,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         organization: str,
         *,
         repository_type: RepositoryType = RepositoryType.ALL,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Get information about organization repositories
 
@@ -73,14 +73,11 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         """
         api = f"/orgs/{organization}/repos"
         params = {"type": repository_type.value, "per_page": "100"}
-        repos = []
 
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
-
-            repos.extend(response.json())
-
-        return repos
+            for repo in response.json():
+                yield repo
 
     async def members(
         self,
@@ -88,7 +85,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         *,
         member_filter: MemberFilter = MemberFilter.ALL,
         role: MemberRole = MemberRole.ALL,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Get information about organization members
 
@@ -107,14 +104,11 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             "per_page": "100",
             "role": role.value,
         }
-        members = []
-
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            members.extend(response.json())
-
-        return members
+            for member in response.json():
+                yield member
 
     async def invite(
         self,
@@ -194,7 +188,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         organization: str,
         *,
         member_filter: MemberFilter = MemberFilter.ALL,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Get information about outside collaborators of an organization
 
@@ -212,14 +206,11 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             "filter": member_filter.value,
             "per_page": "100",
         }
-        members = []
-
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            members.extend(response.json())
-
-        return members
+            for member in response.json():
+                yield member
 
     async def remove_outside_collaborator(
         self,

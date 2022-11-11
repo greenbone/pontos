@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, redefined-builtin
 
 import unittest
 from pathlib import Path
@@ -31,7 +31,7 @@ from pontos.github.api.organizations import (
     MemberFilter,
     MemberRole,
 )
-from tests import AsyncIteratorMock
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
@@ -70,10 +70,16 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        repos = await self.api.get_repositories("foo")
+        async_it = aiter(self.api.get_repositories("foo"))
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 1)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 2)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 3)
 
-        self.assertEqual(len(repos), 3)
-        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/repos",
@@ -90,12 +96,20 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        repos = await self.api.get_repositories(
-            "foo", repository_type=RepositoryType.PRIVATE
+        async_it = aiter(
+            self.api.get_repositories(
+                "foo", repository_type=RepositoryType.PRIVATE
+            )
         )
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 1)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 2)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 3)
 
-        self.assertEqual(len(repos), 3)
-        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/repos",
@@ -112,10 +126,16 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.members("foo")
+        async_it = aiter(self.api.members("foo"))
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(members), 3)
-        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/members",
@@ -132,10 +152,16 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.members("foo", role=MemberRole.ADMIN)
+        async_it = aiter(self.api.members("foo", role=MemberRole.ADMIN))
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(members), 3)
-        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/members",
@@ -152,12 +178,18 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.members(
-            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        async_it = aiter(
+            self.api.members("foo", member_filter=MemberFilter.TWO_FA_DISABLED)
         )
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(members), 3)
-        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/members",
@@ -263,10 +295,16 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.outside_collaborators("foo")
+        async_it = aiter(self.api.outside_collaborators("foo"))
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(members), 3)
-        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/outside_collaborators",
@@ -283,19 +321,27 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        members = await self.api.outside_collaborators(
-            "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+        async_it = aiter(
+            self.api.outside_collaborators(
+                "foo", member_filter=MemberFilter.TWO_FA_DISABLED
+            )
         )
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(members), 3)
-        self.assertEqual(members, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/outside_collaborators",
             params={"per_page": "100", "filter": "2fa_disabled"},
         )
 
-    async def test_outside_collaborator(self):
+    async def test_remove_outside_collaborator(self):
         response = create_response(is_success=False)
         self.client.delete.return_value = response
 

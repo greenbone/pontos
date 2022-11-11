@@ -17,7 +17,7 @@
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, Optional
+from typing import AsyncIterator, Dict, Iterable, Iterator, Optional
 
 import httpx
 
@@ -40,7 +40,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
     async def commits(
         self, repo: str, pull_request: int
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Get all commit information of a pull request
 
@@ -57,12 +57,10 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/commits"
-        commits = []
 
         async for response in self._client.get_all(api, params=params):
-            commits.extend(response.json())
-
-        return commits
+            for commit in response.json():
+                yield commit
 
     async def create(
         self,

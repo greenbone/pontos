@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from typing import Iterable, Optional
+from typing import AsyncIterator, Iterable, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -33,7 +33,7 @@ class TeamRole(Enum):
 
 
 class GitHubAsyncRESTTeams(GitHubAsyncREST):
-    async def get_all(self, organization: str) -> Iterable[JSON_OBJECT]:
+    async def get_all(self, organization: str) -> AsyncIterator[JSON_OBJECT]:
         """
         Get information about teams of an organization.
 
@@ -46,7 +46,6 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams"
-        teams = []
         params = {
             "per_page": "100",
         }
@@ -54,9 +53,8 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            teams.extend(response.json())
-
-        return teams
+            for team in response.json():
+                yield team
 
     async def create(
         self,
@@ -214,7 +212,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         self,
         organization: str,
         team: str,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Get all members of a team. Team members will include the members of
         child teams.
@@ -229,7 +227,6 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams/{team}/members"
-        members = []
         params = {
             "per_page": "100",
         }
@@ -237,9 +234,8 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            members.extend(response.json())
-
-        return members
+            for member in response.json():
+                yield member
 
     async def update_member(
         self,
@@ -299,7 +295,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         self,
         organization: str,
         team: str,
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Lists a team's repositories visible to the authenticated user.
 
@@ -313,7 +309,6 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams/{team}/repos"
-        repos = []
         params = {
             "per_page": "100",
         }
@@ -321,6 +316,5 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            repos.extend(response.json())
-
-        return repos
+            for repo in response.json():
+                yield repo

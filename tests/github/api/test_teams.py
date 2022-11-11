@@ -14,12 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# pylint: disable=redefined-builtin
+
 from unittest.mock import MagicMock
 
 import httpx
 
 from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy, TeamRole
-from tests import AsyncIteratorMock
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 
@@ -36,10 +39,16 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        repos = await self.api.get_all("foo")
+        async_it = aiter(self.api.get_all("foo"))
+        team = await anext(async_it)
+        self.assertEqual(team["id"], 1)
+        team = await anext(async_it)
+        self.assertEqual(team["id"], 2)
+        team = await anext(async_it)
+        self.assertEqual(team["id"], 3)
 
-        self.assertEqual(len(repos), 3)
-        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams",
@@ -206,10 +215,16 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        repos = await self.api.members("foo", "bar")
+        async_it = aiter(self.api.members("foo", "bar"))
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 1)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 2)
+        member = await anext(async_it)
+        self.assertEqual(member["id"], 3)
 
-        self.assertEqual(len(repos), 3)
-        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams/bar/members",
@@ -284,10 +299,16 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        repos = await self.api.repositories("foo", "bar")
+        async_it = aiter(self.api.repositories("foo", "bar"))
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 1)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 2)
+        repo = await anext(async_it)
+        self.assertEqual(repo["id"], 3)
 
-        self.assertEqual(len(repos), 3)
-        self.assertEqual(repos, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams/bar/repos",
