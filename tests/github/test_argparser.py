@@ -22,14 +22,14 @@ import unittest
 from argparse import Namespace
 from contextlib import redirect_stderr
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from pontos.github.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
-    create_tag,
-    create_release,
     create_pull_request,
+    create_release,
+    create_tag,
     file_status,
     update_pull_request,
 )
@@ -48,8 +48,8 @@ class TestArgparsing(unittest.TestCase):
             "main",
             "baz in main",
         ]
-
-        parsed_args = parse_args(argv)
+        with patch.dict("os.environ", {}, clear=True):
+            parsed_args = parse_args(argv)
 
         template = Path().cwd() / "pontos/github/pr_template.md"
 
@@ -84,7 +84,8 @@ class TestArgparsing(unittest.TestCase):
             "baz in main",
         ]
 
-        parsed_args = parse_args(argv)
+        with patch.dict("os.environ", {}, clear=True):
+            parsed_args = parse_args(argv)
 
         self.assertEqual(parsed_args.command, "pr")
         self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
@@ -112,7 +113,9 @@ class TestArgparsing(unittest.TestCase):
             "some.file",
         ]
 
-        parsed_args = parse_args(argv)
+        with patch.dict("os.environ", {}, clear=True):
+            parsed_args = parse_args(argv)
+
         output = io.open(Path("some.file"), mode="w", encoding="utf-8")
 
         expected_args = Namespace(
@@ -147,7 +150,8 @@ class TestArgparsing(unittest.TestCase):
             "foo",
         ]
 
-        parsed_args = parse_args(argv)
+        with patch.dict("os.environ", {}, clear=True):
+            parsed_args = parse_args(argv)
 
         self.assertEqual(parsed_args.command, "re")
         self.assertEqual(parsed_args.token, "GITHUB_TOKEN")
