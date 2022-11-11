@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-builtin
+
 import json
 import unittest
 from pathlib import Path
@@ -25,7 +27,7 @@ from httpx import HTTPStatusError
 from pontos.github.api import GitHubRESTApi
 from pontos.github.api.helper import FileStatus
 from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
-from tests import AsyncIteratorMock
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
@@ -64,10 +66,16 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        commits = await self.api.commits("foo/bar", 123)
+        async_it = aiter(self.api.commits("foo/bar", 123))
+        commit = await anext(async_it)
+        self.assertEqual(commit["id"], 1)
+        commit = await anext(async_it)
+        self.assertEqual(commit["id"], 2)
+        commit = await anext(async_it)
+        self.assertEqual(commit["id"], 3)
 
-        self.assertEqual(len(commits), 3)
-        self.assertEqual(commits, [{"id": 1}, {"id": 2}, {"id": 3}])
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/pulls/123/commits",

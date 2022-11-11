@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-builtin
+
 from unittest.mock import MagicMock
 
 import httpx
 
 from pontos.github.api.labels import GitHubAsyncRESTLabels
-from tests import AsyncIteratorMock
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 
@@ -40,9 +42,16 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        workflows = await self.api.get_all("foo/bar", 123)
+        async_it = aiter(self.api.get_all("foo/bar", 123))
+        label = await anext(async_it)
+        self.assertEqual(label, "a")
+        label = await anext(async_it)
+        self.assertEqual(label, "b")
+        label = await anext(async_it)
+        self.assertEqual(label, "c")
 
-        self.assertEqual(len(workflows), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/issues/123/labels",

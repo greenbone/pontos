@@ -72,9 +72,16 @@ class GitHubAsyncRESTArtifactsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        workflows = await self.api.get_all("foo/bar")
+        async_it = aiter(self.api.get_all("foo/bar"))
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 1)
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 2)
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 3)
 
-        self.assertEqual(len(workflows), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/actions/artifacts",
@@ -91,9 +98,16 @@ class GitHubAsyncRESTArtifactsTestCase(GitHubAsyncRESTTestCase):
             [response1, response2]
         )
 
-        workflows = await self.api.get_workflow_run_artifacts("foo/bar", "123")
+        async_it = aiter(self.api.get_workflow_run_artifacts("foo/bar", "123"))
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 1)
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 2)
+        artifact = await anext(async_it)
+        self.assertEqual(artifact["id"], 3)
 
-        self.assertEqual(len(workflows), 3)
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
 
         self.client.get_all.assert_called_once_with(
             "/repos/foo/bar/actions/runs/123/artifacts",

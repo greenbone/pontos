@@ -18,15 +18,7 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import (
-    Any,
-    AsyncContextManager,
-    AsyncIterator,
-    Dict,
-    Iterable,
-    Optional,
-    Type,
-)
+from typing import Any, AsyncContextManager, AsyncIterator, Dict, Optional, Type
 
 import httpx
 
@@ -275,7 +267,7 @@ class GitHubAsyncREST:
 
     async def _get_paged_items(
         self, api: str, name: str, *, params: Optional[Params] = None
-    ) -> Iterable[JSON_OBJECT]:
+    ) -> AsyncIterator[JSON_OBJECT]:
         """
         Internal method to get the paged items information from different REST
         URLs.
@@ -285,11 +277,8 @@ class GitHubAsyncREST:
 
         params["per_page"] = "100"  # max number
 
-        items = []
-
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
             data: JSON_OBJECT = response.json()
-            items.extend(data.get(name, []))
-
-        return items
+            for item in data.get(name, []):
+                yield item
