@@ -201,7 +201,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             status_checks["strict"] = require_branches_to_be_up_to_date
             data["required_status_checks"] = status_checks
 
-        if required_status_checks:
+        if required_status_checks is not None:
             status_checks = data.get("required_status_checks") or {}
             checks = []
 
