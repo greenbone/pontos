@@ -22,7 +22,7 @@ jobs:
       - name: Install and check with black, pylint and pontos.version
         uses: greenbone/actions/lint-python@v2
         with:
-          packages: pontos tests
+          packages: pontos tests scripts
           version: ${{ matrix.python-version }}
 
   test:
