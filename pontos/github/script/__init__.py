@@ -47,6 +47,7 @@ Example:
         return 0
 """
 
+import json
 import sys
 from argparse import ArgumentParser
 
@@ -82,7 +83,17 @@ def main():
         sys.exit(retval)
     except KeyboardInterrupt:
         sys.exit(1)
-    except (PontosError, httpx.HTTPStatusError) as e:
+    except httpx.HTTPStatusError as e:
+        try:
+            error = e.response.json()
+            message = error.get("message")
+            print("Error:", message, file=sys.stderr)
+        except json.JSONDecodeError:
+            # not a json response
+            print(e, file=sys.stderr)
+
+        sys.exit(1)
+    except PontosError as e:
         print(e, file=sys.stderr)
         sys.exit(1)
 
