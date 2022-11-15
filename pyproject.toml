@@ -29,6 +29,7 @@ packages = [
   { include = "tests", format = "sdist" },
   { include = "poetry.lock", format = "sdist" },
   { include = "poetry.toml", format = "sdist" },
+  { include = "scripts/", format = "sdist" },
 ]
 include = [
   "pontos/updateheader/templates/",
