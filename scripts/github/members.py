@@ -15,18 +15,59 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This script prints out all members existing in the space of the given
+organization
+"""
+
 from argparse import ArgumentParser, Namespace
 
 from pontos.github.api import GitHubAsyncRESTApi
+from pontos.github.api.organizations import MemberFilter, MemberRole
 from pontos.github.models.base import User
+
+
+def member_filter_type(value: str | MemberFilter) -> MemberFilter:
+    if isinstance(value, MemberFilter):
+        return value
+    return MemberFilter[value.upper()]
+
+
+def member_role_type(value: str | MemberRole) -> MemberRole:
+    if isinstance(value, MemberRole):
+        return value
+    return MemberRole[value.upper()]
 
 
 def add_script_arguments(parser: ArgumentParser) -> None:
     parser.add_argument("organization")
 
+    parser.add_argument(
+        "-f",
+        "--filter",
+        type=member_filter_type,
+        help=f"Filter members. Choices: "
+        f"{', '.join([f.name for f in MemberFilter])}. Default: %(default)s",
+        default=MemberFilter.ALL.name,
+    )
+
+    parser.add_argument(
+        "-r",
+        "--role",
+        type=member_role_type,
+        help=f"Show only members in specific role. Choices: "
+        f"{', '.join([f.name for f in MemberRole])}. Default: %(default)s",
+        default=MemberRole.ALL.name,
+    )
+
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
-    async for member in api.organizations.members(args.organization):
-        print(User.from_dict(member))
+    member_count = 0
+    async for member in api.organizations.members(
+        args.organization, member_filter=args.filter, role=args.role
+    ):
+        print(User.from_dict(member), "\n")
+        member_count += 1
 
+    print(f"{member_count} members.")
     return 0
