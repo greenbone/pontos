@@ -21,13 +21,14 @@ organization
 """
 
 from argparse import ArgumentParser, Namespace
+from typing import Union
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.helper import RepositoryType
 from pontos.github.models.organization import Repository
 
 
-def repository_type(value: str | RepositoryType) -> RepositoryType:
+def repository_type(value: Union[str, RepositoryType]) -> RepositoryType:
     if isinstance(value, RepositoryType):
         return value
     return RepositoryType[value.upper()]

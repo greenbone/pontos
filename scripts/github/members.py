@@ -21,19 +21,20 @@ organization
 """
 
 from argparse import ArgumentParser, Namespace
+from typing import Union
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.organizations import MemberFilter, MemberRole
 from pontos.github.models.base import User
 
 
-def member_filter_type(value: str | MemberFilter) -> MemberFilter:
+def member_filter_type(value: Union[str, MemberFilter]) -> MemberFilter:
     if isinstance(value, MemberFilter):
         return value
     return MemberFilter[value.upper()]
 
 
-def member_role_type(value: str | MemberRole) -> MemberRole:
+def member_role_type(value: Union[str, MemberRole]) -> MemberRole:
     if isinstance(value, MemberRole):
         return value
     return MemberRole[value.upper()]
