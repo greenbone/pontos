@@ -19,7 +19,6 @@ from argparse import ArgumentParser, Namespace
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.branch import update_from_applied_settings
-from pontos.github.models.branch import BranchProtection
 
 
 def add_script_arguments(parser: ArgumentParser) -> None:
@@ -29,8 +28,9 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     # draft script for updating the branch protections
-    data = await api.branches.protection_rules(args.repo, args.branch)
-    branch_protection = BranchProtection.from_dict(data)
+    branch_protection = await api.branches.protection_rules(
+        args.repo, args.branch
+    )
     # switch required signatures enabled/disabled
     kwargs = update_from_applied_settings(
         branch_protection,

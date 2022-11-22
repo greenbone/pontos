@@ -25,7 +25,6 @@ from typing import Union
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.organizations import MemberFilter, MemberRole
-from pontos.github.models.base import User
 
 
 def member_filter_type(value: Union[str, MemberFilter]) -> MemberFilter:
@@ -67,7 +66,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     async for member in api.organizations.members(
         args.organization, member_filter=args.filter, role=args.role
     ):
-        print(User.from_dict(member), "\n")
+        print(member, "\n")
         member_count += 1
 
     print(f"{member_count} members.")
