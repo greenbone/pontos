@@ -29,6 +29,7 @@ from pontos.github.api.helper import (
     JSON_OBJECT,
     _get_next_url,
 )
+from pontos.github.models.base import GitHubModel
 
 Headers = Dict[str, str]
 Params = Dict[str, str]
@@ -266,8 +267,13 @@ class GitHubAsyncREST:
         self._client = client
 
     async def _get_paged_items(
-        self, api: str, name: str, *, params: Optional[Params] = None
-    ) -> AsyncIterator[JSON_OBJECT]:
+        self,
+        api: str,
+        name: str,
+        model_cls: Type[GitHubModel],
+        *,
+        params: Optional[Params] = None,
+    ) -> AsyncIterator[GitHubModel]:
         """
         Internal method to get the paged items information from different REST
         URLs.
@@ -281,4 +287,4 @@ class GitHubAsyncREST:
             response.raise_for_status()
             data: JSON_OBJECT = response.json()
             for item in data.get(name, []):
-                yield item
+                yield model_cls.from_dict(item)

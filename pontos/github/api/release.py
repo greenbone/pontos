@@ -32,6 +32,7 @@ import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.models.release import Release
 from pontos.helper import (
     AsyncDownloadProgressIterable,
     DownloadProgressIterable,
@@ -52,9 +53,11 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         target_commitish: Optional[str] = None,
         draft: Optional[bool] = False,
         prerelease: Optional[bool] = False,
-    ) -> None:
+    ) -> Release:
         """
         Create a new GitHub release
+
+        https://docs.github.com/en/rest/releases/releases#create-a-release
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -83,6 +86,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         api = f"/repos/{repo}/releases"
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return Release.from_dict(response.json())
 
     async def exists(self, repo: str, tag: str) -> bool:
         """
@@ -99,9 +103,11 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         response = await self._client.get(api)
         return response.is_success
 
-    async def get(self, repo: str, tag: str) -> JSON_OBJECT:
+    async def get(self, repo: str, tag: str) -> Release:
         """
         Get data of a GitHub release by tag
+
+        https://docs.github.com/en/rest/releases/releases#get-a-release-by-tag-name
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -113,7 +119,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return Release.from_dict(response.json())
 
     def download_release_tarball(
         self, repo: str, tag: str
@@ -193,8 +199,8 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             await asyncio.gather(*tasks)
 
         """
-        release_json = await self.get(repo, tag)
-        assets_url = release_json.get("assets_url")
+        release = await self.get(repo, tag)
+        assets_url = release.assets_url
         if not assets_url:
             raise RuntimeError("assets URL not found")
 
@@ -250,8 +256,8 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             ):
                print(f"Uploaded: {uploaded_file}")
         """
-        github_json = await self.get(repo, tag)
-        asset_url = github_json["upload_url"].replace("{?name,label}", "")
+        release = await self.get(repo, tag)
+        asset_url = release.upload_url.replace("{?name,label}", "")
 
         async def upload_file(
             file_path, content_type

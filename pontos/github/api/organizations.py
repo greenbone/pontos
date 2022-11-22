@@ -22,7 +22,9 @@ import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.errors import GitHubApiError
-from pontos.github.api.helper import JSON, JSON_OBJECT, RepositoryType
+from pontos.github.api.helper import JSON, RepositoryType
+from pontos.github.models.base import User
+from pontos.github.models.organization import Repository
 
 
 class MemberFilter(Enum):
@@ -59,7 +61,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         organization: str,
         *,
         repository_type: RepositoryType = RepositoryType.ALL,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[Repository]:
         """
         Get information about organization repositories
 
@@ -77,7 +79,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
             for repo in response.json():
-                yield repo
+                yield Repository.from_dict(repo)
 
     async def members(
         self,
@@ -85,7 +87,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         *,
         member_filter: MemberFilter = MemberFilter.ALL,
         role: MemberRole = MemberRole.ALL,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[User]:
         """
         Get information about organization members
 
@@ -108,7 +110,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             response.raise_for_status()
 
             for member in response.json():
-                yield member
+                yield User.from_dict(member)
 
     async def invite(
         self,
@@ -188,7 +190,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         organization: str,
         *,
         member_filter: MemberFilter = MemberFilter.ALL,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[User]:
         """
         Get information about outside collaborators of an organization
 
@@ -210,7 +212,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             response.raise_for_status()
 
             for member in response.json():
-                yield member
+                yield User.from_dict(member)
 
     async def remove_outside_collaborator(
         self,

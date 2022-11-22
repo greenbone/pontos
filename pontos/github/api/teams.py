@@ -18,12 +18,12 @@
 from typing import AsyncIterator, Iterable, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.helper import JSON_OBJECT
-from pontos.github.models.base import TeamPrivacy, TeamRole
+from pontos.github.models.base import Team, TeamPrivacy, TeamRole, User
+from pontos.github.models.organization import Repository
 
 
 class GitHubAsyncRESTTeams(GitHubAsyncREST):
-    async def get_all(self, organization: str) -> AsyncIterator[JSON_OBJECT]:
+    async def get_all(self, organization: str) -> AsyncIterator[Team]:
         """
         Get information about teams of an organization.
 
@@ -44,7 +44,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             response.raise_for_status()
 
             for team in response.json():
-                yield team
+                yield Team.from_dict(team)
 
     async def create(
         self,
@@ -56,7 +56,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         repo_names: Optional[Iterable[str]] = None,
         privacy: Optional[TeamPrivacy] = None,
         parent_team_id: Optional[str] = None,
-    ) -> JSON_OBJECT:
+    ) -> Team:
         """
         Create a new team in an organization
 
@@ -101,13 +101,13 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
-        return response.json()
+        return Team.from_dict(response.json())
 
     async def get(
         self,
         organization: str,
         team: str,
-    ) -> JSON_OBJECT:
+    ) -> Team:
         """
         Gets a team using the team's slug. GitHub generates the slug from the
         team name.
@@ -124,7 +124,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         api = f"/orgs/{organization}/teams/{team}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return Team.from_dict(response.json())
 
     async def update(
         self,
@@ -135,7 +135,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         description: Optional[str] = None,
         privacy: Optional[TeamPrivacy] = None,
         parent_team_id: Optional[str] = None,
-    ) -> JSON_OBJECT:
+    ) -> Team:
         """
         Update team information in an organization
 
@@ -175,7 +175,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
-        return response.json()
+        return Team.from_dict(response.json())
 
     async def delete(
         self,
@@ -202,7 +202,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         self,
         organization: str,
         team: str,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[User]:
         """
         Get all members of a team. Team members will include the members of
         child teams.
@@ -225,7 +225,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             response.raise_for_status()
 
             for member in response.json():
-                yield member
+                yield User.from_dict(member)
 
     async def update_member(
         self,
@@ -285,7 +285,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         self,
         organization: str,
         team: str,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[Repository]:
         """
         Lists a team's repositories visible to the authenticated user.
 
@@ -307,4 +307,4 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             response.raise_for_status()
 
             for repo in response.json():
-                yield repo
+                yield Repository.from_dict(repo)

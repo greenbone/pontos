@@ -21,12 +21,15 @@ import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.models.workflow import Workflow, WorkflowRun
 
 
 class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
-    def get_all(self, repo: str) -> AsyncIterator[JSON_OBJECT]:
+    def get_all(self, repo: str) -> AsyncIterator[Workflow]:
         """
         List all workflows of a repository
+
+        https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -39,11 +42,13 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             Information about the workflows as an iterable of dicts
         """
         api = f"/repos/{repo}/actions/workflows"
-        return self._get_paged_items(api, "workflows")
+        return self._get_paged_items(api, "workflows", Workflow)
 
-    async def get(self, repo: str, workflow: str) -> JSON_OBJECT:
+    async def get(self, repo: str, workflow: str) -> Workflow:
         """
         Get the information for the given workflow
+
+        https://docs.github.com/en/rest/actions/workflows#get-a-workflow
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -60,7 +65,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/workflows/{workflow}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return Workflow.from_dict(response.json())
 
     async def create_workflow_dispatch(
         self,
@@ -73,6 +78,8 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
         workflow run.
+
+        https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -115,10 +122,13 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         status: Optional[str] = None,
         created: Optional[str] = None,
         exclude_pull_requests: Optional[bool] = None,
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[WorkflowRun]:
         # pylint: disable=line-too-long
         """
         List all workflow runs of a repository or of a specific workflow.
+
+        https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
+        https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -168,11 +178,15 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         if exclude_pull_requests is not None:
             params["exclude_pull_requests"] = exclude_pull_requests
 
-        return self._get_paged_items(api, "workflow_runs", params=params)
+        return self._get_paged_items(
+            api, "workflow_runs", WorkflowRun, params=params
+        )
 
-    async def get_workflow_run(self, repo: str, run: str) -> JSON_OBJECT:
+    async def get_workflow_run(self, repo: str, run: str) -> WorkflowRun:
         """
         Get information about a single workflow run
+
+        https://docs.github.com/en/rest/actions/workflow-runs#get-a-workflow-run
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -188,7 +202,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/runs/{run}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return WorkflowRun.from_dict(response.json())
 
 
 class GitHubRESTWorkflowsMixin:

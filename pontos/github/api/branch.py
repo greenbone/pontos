@@ -20,7 +20,6 @@ from typing import Any, Dict, Iterable, Optional, Tuple
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.helper import JSON
 from pontos.github.models.branch import BranchProtection
 
 GITHUB_ACTIONS_APP_ID = 15368
@@ -306,7 +305,9 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         response = await self._client.delete(api)
         response.raise_for_status()
 
-    async def protection_rules(self, repo: str, branch: str) -> JSON:
+    async def protection_rules(
+        self, repo: str, branch: str
+    ) -> BranchProtection:
         """
         Get branch protection rules for a specific repository
         branch
@@ -323,7 +324,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         api = f"/repos/{repo}/branches/{branch}/protection"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return BranchProtection.from_dict(response.json())
 
     async def update_protection_rules(
         self,
@@ -354,7 +355,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         lock_branch: Optional[bool] = None,
         allow_fork_syncing: Optional[bool] = None,
         required_signatures: Optional[bool] = None,
-    ) -> None:
+    ) -> BranchProtection:
         """
         Update or create branch protection rules for a specific repository
         branch.
@@ -616,6 +617,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
 
         response = await self._client.put(api, data=data)
         response.raise_for_status()
+        return BranchProtection.from_dict(response.json())
 
     async def delete_protection_rules(self, repo: str, branch: str) -> None:
         """

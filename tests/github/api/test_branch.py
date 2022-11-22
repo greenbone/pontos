@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=line-too-long
+
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -75,9 +77,15 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_protection_rules(self):
         rules = {
-            "required_status_checks": {},
-            "enforce_admins": {},
-            "required_pull_request_reviews": {},
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+            "required_signatures": {
+                "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection/required_signatures",
+                "enabled": False,
+            },
+            "enforce_admins": {
+                "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection/enforce_admins",
+                "enabled": False,
+            },
         }
         response = create_response()
         response.json.return_value = rules
@@ -89,7 +97,10 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/branches/baz/protection"
         )
-        self.assertEqual(data, rules)
+        self.assertEqual(
+            data.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
 
     async def test_protection_rules_failure(self):
         response = create_response()
@@ -131,9 +142,12 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_protection_rules_defaults(self):
         response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
         self.client.put.return_value = response
 
-        await self.api.update_protection_rules(
+        rules = await self.api.update_protection_rules(
             "foo/bar",
             "baz",
         )
@@ -147,11 +161,19 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
     async def test_update_protection_rules(self):
         response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
         self.client.put.return_value = response
 
-        await self.api.update_protection_rules(
+        rules = await self.api.update_protection_rules(
             "foo/bar",
             "baz",
             required_status_checks=[("foo", "123"), ("bar", None)],
@@ -219,6 +241,11 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
                 "lock_branch": True,
                 "allow_fork_syncing": True,
             },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
         )
 
     async def test_update_protection_rules_failure(self):
