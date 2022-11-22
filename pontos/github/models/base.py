@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
+from enum import Enum
 from inspect import isclass
 from typing import Any, Dict, List, Optional, Type, Union, get_type_hints
-
-from pontos.github.api.teams import TeamPrivacy
 
 try:
     from typing import get_args, get_origin
@@ -161,6 +160,16 @@ class User(GitHubModel):
     received_events_url: str
     type: str
     site_admin: bool
+
+
+class TeamPrivacy(Enum):
+    SECRET = "secret"
+    CLOSED = "closed"
+
+
+class TeamRole(Enum):
+    MEMBER = "member"
+    MAINTAINER = "maintainer"
 
 
 @dataclass

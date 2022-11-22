@@ -15,21 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
 from typing import AsyncIterator, Iterable, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
-
-
-class TeamPrivacy(Enum):
-    SECRET = "secret"
-    CLOSED = "closed"
-
-
-class TeamRole(Enum):
-    MEMBER = "member"
-    MAINTAINER = "maintainer"
+from pontos.github.models.base import TeamPrivacy, TeamRole
 
 
 class GitHubAsyncRESTTeams(GitHubAsyncREST):
