@@ -156,6 +156,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         allow_merge_commit: Optional[bool] = True,
         allow_rebase_merge: Optional[bool] = True,
         allow_auto_merge: Optional[bool] = False,
+        allow_update_branch: Optional[bool] = False,
         delete_branch_on_merge: Optional[bool] = False,
         squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None,
         squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
@@ -206,6 +207,10 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 requests, or False to prevent rebase-merging. Default: True.
             allow_auto_merge: Either True to allow auto-merge on pull requests,
                 or False to disallow auto-merge. Default: False.
+            allow_update_branch: Either True to always allow a pull request head
+                branch that is behind its base branch to be updated even if it
+                is not required to be up to date before merging, or False
+                otherwise. Default: False.
             delete_branch_on_merge: Either True to allow automatically deleting
                 head branches when pull requests are merged, or False to prevent
                 automatic deletion. Default: False.
@@ -284,6 +289,8 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             data["allow_rebase_merge"] = allow_rebase_merge
         if allow_auto_merge is not None:
             data["allow_auto_merge"] = allow_auto_merge
+        if allow_update_branch is not None:
+            data["allow_update_branch"] = allow_update_branch
         if delete_branch_on_merge is not None:
             data["delete_branch_on_merge"] = delete_branch_on_merge
         if squash_merge_commit_title:
