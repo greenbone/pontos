@@ -572,6 +572,7 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
                 "allow_merge_commit": True,
                 "allow_rebase_merge": True,
                 "allow_auto_merge": False,
+                "allow_update_branch": False,
                 "delete_branch_on_merge": False,
             },
         )
@@ -600,6 +601,7 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
             allow_merge_commit=False,
             allow_rebase_merge=False,
             allow_auto_merge=True,
+            allow_update_branch=True,
             delete_branch_on_merge=True,
             squash_merge_commit_title=SquashMergeCommitTitle.COMMIT_OR_PR_TITLE,
             squash_merge_commit_message=SquashMergeCommitMessage.PR_BODY,
@@ -625,6 +627,7 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
                 "allow_merge_commit": False,
                 "allow_rebase_merge": False,
                 "allow_auto_merge": True,
+                "allow_update_branch": True,
                 "delete_branch_on_merge": True,
                 "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
                 "squash_merge_commit_message": "PR_BODY",
