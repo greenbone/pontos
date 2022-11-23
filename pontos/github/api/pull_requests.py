@@ -23,6 +23,7 @@ import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON, JSON_OBJECT, FileStatus
+from pontos.github.models.pull_request import PullRequest, PullRequestCommit
 
 
 class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
@@ -40,9 +41,11 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
     async def commits(
         self, repo: str, pull_request: int
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[PullRequestCommit]:
         """
         Get all commit information of a pull request
+
+        https://docs.github.com/en/rest/pulls/pulls#list-commits-on-a-pull-request
 
         Hint: At maximum GitHub allows to receive 250 commits of a pull request.
 
@@ -60,7 +63,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
         async for response in self._client.get_all(api, params=params):
             for commit in response.json():
-                yield commit
+                yield PullRequestCommit.from_dict(commit)
 
     async def create(
         self,
@@ -70,9 +73,11 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         base_branch: str,
         title: str,
         body: str,
-    ) -> None:
+    ) -> PullRequest:
         """
         Create a new Pull Request on GitHub
+
+        https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -93,6 +98,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         }
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return PullRequest.from_dict(response.json())
 
     async def update(
         self,
@@ -102,9 +108,11 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         base_branch: Optional[str] = None,
         title: Optional[str] = None,
         body: Optional[str] = None,
-    ) -> None:
+    ) -> PullRequest:
         """
         Update a Pull Request on GitHub
+
+        https://docs.github.com/en/rest/pulls/pulls#update-a-pull-request
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -130,6 +138,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return PullRequest.from_dict(response.json())
 
     async def add_comment(
         self, repo: str, pull_request: int, comment: str
@@ -159,6 +168,8 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
     ) -> Dict[FileStatus, Iterable[Path]]:
         """
         Get files of a pull request
+
+        https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files
 
         Hint: At maximum GitHub allows to receive 3000 files of a commit.
 

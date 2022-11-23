@@ -37,6 +37,13 @@ class License(GitHubModel):
 
 
 @dataclass
+class RepositoryPermissions(GitHubModel):
+    admin: bool
+    push: bool
+    pull: bool
+
+
+@dataclass
 class Repository(GitHubModel):
     id: int
     node_id: str
@@ -84,36 +91,35 @@ class Repository(GitHubModel):
     labels_url: str
     releases_url: str
     deployments_url: str
-    created_at: str
-    updated_at: str
-    pushed_at: str
-    git_url: str
-    ssh_url: str
-    clone_url: str
-    svn_url: str
-    homepage: str
-    stargazers_count: int
-    watchers_count: int
-    language: str
-    has_issues: bool
-    has_projects: bool
-    has_downloads: bool
-    has_wiki: bool
-    has_pages: bool
-    has_discussions: bool
-    forks_count: int
-    mirror_url: str
-    archived: bool
-    disabled: bool
-    open_issues_count: int
-    license: License
-    is_template: bool
-    topics: List[str]
-    visibility: str
-    forks: int
-    open_issues: int
-    watchers: int
-    default_branch: str
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    pushed_at: Optional[str] = None
+    git_url: Optional[str] = None
+    ssh_url: Optional[str] = None
+    clone_url: Optional[str] = None
+    svn_url: Optional[str] = None
+    homepage: Optional[str] = None
+    stargazers_count: Optional[int] = None
+    watchers_count: Optional[int] = None
+    language: Optional[str] = None
+    has_issues: Optional[bool] = None
+    has_projects: Optional[bool] = None
+    has_downloads: Optional[bool] = None
+    has_wiki: Optional[bool] = None
+    has_pages: Optional[bool] = None
+    has_discussions: Optional[bool] = None
+    forks_count: Optional[int] = None
+    mirror_url: Optional[str] = None
+    archived: Optional[bool] = None
+    disabled: Optional[bool] = None
+    open_issues_count: Optional[int] = None
+    is_template: Optional[bool] = None
+    topics: Optional[List[str]] = None
+    visibility: Optional[str] = None
+    forks: Optional[int] = None
+    open_issues: Optional[int] = None
+    watchers: Optional[int] = None
+    default_branch: Optional[str] = None
     allow_forking: Optional[bool] = None
     allow_rebase_merge: Optional[bool] = None
     allow_squash_merge: Optional[bool] = None
@@ -124,3 +130,5 @@ class Repository(GitHubModel):
     subscribers_count: Optional[int] = None
     network_count: Optional[int] = None
     size: Optional[int] = None
+    license: Optional[License] = None
+    permissions: Optional[RepositoryPermissions] = None

@@ -19,7 +19,7 @@ from enum import Enum
 from typing import Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.models.organization import Repository
 
 
 class GitIgnoreTemplate(Enum):
@@ -99,9 +99,11 @@ class LicenseType(Enum):
 
 
 class GitHubAsyncRESTRepositories(GitHubAsyncREST):
-    async def get(self, repo: str) -> JSON_OBJECT:
+    async def get(self, repo: str) -> Repository:
         """
         Get a repository
+
+        https://docs.github.com/en/rest/repos/repos#get-a-repository
 
         Args:
             repo: GitHub repository (owner/name) to request
@@ -116,7 +118,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         api = f"/repos/{repo}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return Repository.from_dict(response.json())
 
     async def delete(self, repo: str) -> None:
         """
@@ -159,7 +161,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
         merge_commit_title: Optional[MergeCommitTitle] = None,
         merge_commit_message: Optional[MergeCommitMessage] = None,
-    ) -> None:
+    ) -> Repository:
         """
         Create a new repository at GitHub
 
@@ -297,6 +299,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return Repository.from_dict(response.json())
 
     async def archive(self, repo: str) -> None:
         """
@@ -342,7 +345,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         merge_commit_message: Optional[MergeCommitMessage] = None,
         allow_forking: Optional[bool] = False,
         web_commit_signoff_required: Optional[bool] = False,
-    ) -> None:
+    ) -> Repository:
         """
         Create a new repository at GitHub
 
@@ -473,3 +476,4 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return Repository.from_dict(response.json())

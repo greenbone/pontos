@@ -29,6 +29,7 @@ import httpx
 
 from pontos.github.api.client import GitHubAsyncREST, Params
 from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.models.artifact import Artifact
 from pontos.helper import (
     AsyncDownloadProgressIterable,
     DownloadProgressIterable,
@@ -40,12 +41,14 @@ from pontos.helper import (
 class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     def _get_paged_artifacts(
         self, api, *, params: Optional[Params] = None
-    ) -> AsyncIterator[JSON_OBJECT]:
-        return self._get_paged_items(api, "artifacts", params=params)
+    ) -> AsyncIterator[Artifact]:
+        return self._get_paged_items(api, "artifacts", Artifact, params=params)
 
-    def get_all(self, repo: str) -> AsyncIterator[JSON_OBJECT]:
+    def get_all(self, repo: str) -> AsyncIterator[Artifact]:
         """
         List all artifacts of a repository
+
+        https://docs.github.com/en/rest/actions/artifacts#list-artifacts-for-a-repository
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -60,9 +63,11 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def get(self, repo: str, artifact: str) -> JSON_OBJECT:
+    async def get(self, repo: str, artifact: str) -> Artifact:
         """
         Get a single artifact of a repository
+
+        https://docs.github.com/en/rest/actions/artifacts#get-an-artifact
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -78,13 +83,15 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = await self._client.get(api)
         response.raise_for_status()
-        return response.json()
+        return Artifact.from_dict(response.json())
 
     def get_workflow_run_artifacts(
         self, repo: str, run: str
-    ) -> AsyncIterator[JSON_OBJECT]:
+    ) -> AsyncIterator[Artifact]:
         """
         List all artifacts for a workflow run
+
+        https://docs.github.com/en/rest/actions/artifacts#list-workflow-run-artifacts
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -104,6 +111,8 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         """
         Delete an artifact of a repository
 
+        https://docs.github.com/en/rest/actions/artifacts#delete-an-artifact
+
         Args:
             repo: GitHub repository (owner/name) to use
             artifact: ID of the artifact
@@ -121,6 +130,8 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a repository artifact zip file
+
+        https://docs.github.com/en/rest/actions/artifacts#download-an-artifact
 
         Args:
             repo: GitHub repository (owner/name) to use

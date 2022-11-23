@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=line-too-long
+
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -22,7 +24,11 @@ from unittest.mock import MagicMock, patch
 from httpx import HTTPStatusError
 
 from pontos.github.api import GitHubRESTApi
-from pontos.github.api.branch import GitHubAsyncRESTBranches
+from pontos.github.api.branch import (
+    GitHubAsyncRESTBranches,
+    update_from_applied_settings,
+)
+from pontos.github.models.branch import BranchProtection
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
     create_response,
@@ -30,6 +36,65 @@ from tests.github.api import (
 )
 
 here = Path(__file__).parent
+
+
+class UpdateFromAppliedSettingsTestCase(unittest.TestCase):
+    def test_update_from_applied_settings(self):
+        branch_protection = BranchProtection.from_dict(
+            {
+                "url": "https://api.github.com/repos/foo/bar/branches/branch_protection/protection/restrictions",
+                "users_url": "https://api.github.com/repos/foo/bar/branches/branch_protection/protection/restrictions/users",
+                "teams_url": "https://api.github.com/repos/foo/bar/branches/branch_protection/protection/restrictions/teams",
+                "apps_url": "https://api.github.com/repos/foo/bar/branches/branch_protection/protection/restrictions/apps",
+                "users": [
+                    {
+                        "login": "greenbonebot",
+                        "id": 123,
+                        "node_id": "MDQ6VXNlcjg1MjU0NjY2",
+                        "avatar_url": "https://avatars.githubusercontent.com/u/85254666?v=4",
+                        "gravatar_id": "",
+                        "url": "https://api.github.com/users/greenbonebot",
+                        "html_url": "https://github.com/greenbonebot",
+                        "followers_url": "https://api.github.com/users/greenbonebot/followers",
+                        "following_url": "https://api.github.com/users/greenbonebot/following{/other_user}",
+                        "gists_url": "https://api.github.com/users/greenbonebot/gists{/gist_id}",
+                        "starred_url": "https://api.github.com/users/greenbonebot/starred{/owner}{/repo}",
+                        "subscriptions_url": "https://api.github.com/users/greenbonebot/subscriptions",
+                        "organizations_url": "https://api.github.com/users/greenbonebot/orgs",
+                        "repos_url": "https://api.github.com/users/greenbonebot/repos",
+                        "events_url": "https://api.github.com/users/greenbonebot/events{/privacy}",
+                        "received_events_url": "https://api.github.com/users/greenbonebot/received_events",
+                        "type": "User",
+                        "site_admin": False,
+                    }
+                ],
+                "teams": [],
+                "apps": [],
+                "lock_branch": {"enabled": False},
+                "allow_fork_syncing": {"enabled": False},
+                "required_signatures": {"enabled": False},
+            }
+        )
+
+        kwargs = update_from_applied_settings(
+            branch_protection=branch_protection,
+            lock_branch=True,
+            allow_fork_syncing=True,
+            allow_deletions=True,
+            allow_force_pushes=True,
+        )
+
+        self.assertTrue(kwargs["lock_branch"])
+        self.assertTrue(kwargs["allow_fork_syncing"])
+        self.assertTrue(kwargs["allow_deletions"])
+        self.assertTrue(kwargs["allow_force_pushes"])
+
+        self.assertFalse(kwargs["required_signatures"])
+
+        self.assertIsNone(kwargs["required_linear_history"])
+        self.assertIsNone(kwargs["block_creations"])
+        self.assertIsNone(kwargs["required_conversation_resolution"])
+        self.assertIsNone(kwargs["enforce_admins"])
 
 
 class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
@@ -75,9 +140,15 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_protection_rules(self):
         rules = {
-            "required_status_checks": {},
-            "enforce_admins": {},
-            "required_pull_request_reviews": {},
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+            "required_signatures": {
+                "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection/required_signatures",
+                "enabled": False,
+            },
+            "enforce_admins": {
+                "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection/enforce_admins",
+                "enabled": False,
+            },
         }
         response = create_response()
         response.json.return_value = rules
@@ -89,7 +160,10 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/branches/baz/protection"
         )
-        self.assertEqual(data, rules)
+        self.assertEqual(
+            data.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
 
     async def test_protection_rules_failure(self):
         response = create_response()
@@ -131,9 +205,12 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_protection_rules_defaults(self):
         response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
         self.client.put.return_value = response
 
-        await self.api.update_protection_rules(
+        rules = await self.api.update_protection_rules(
             "foo/bar",
             "baz",
         )
@@ -147,11 +224,19 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
     async def test_update_protection_rules(self):
         response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
         self.client.put.return_value = response
 
-        await self.api.update_protection_rules(
+        rules = await self.api.update_protection_rules(
             "foo/bar",
             "baz",
             required_status_checks=[("foo", "123"), ("bar", None)],
@@ -219,6 +304,11 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
                 "lock_branch": True,
                 "allow_fork_syncing": True,
             },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
         )
 
     async def test_update_protection_rules_failure(self):

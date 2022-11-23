@@ -25,7 +25,6 @@ from typing import Union
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.helper import RepositoryType
-from pontos.github.models.organization import Repository
 
 
 def repository_type(value: Union[str, RepositoryType]) -> RepositoryType:
@@ -52,7 +51,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     async for repo in api.organizations.get_repositories(
         args.organization, repository_type=args.type
     ):
-        print(Repository.from_dict(repo), "\n")
+        print(repo, "\n")
         repo_count += 1
 
     print(f"{repo_count} repositories.")
