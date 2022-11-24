@@ -210,6 +210,7 @@ class Git:
         remote: Optional[str] = None,
         branch: Optional[str] = None,
         follow_tags: bool = False,
+        force: Optional[bool] = None,
     ):
         """
         Push changes to remote repository
@@ -220,10 +221,13 @@ class Git:
                     a remote.
             follow_tags: Push all tags pointing to a commit included in the to
                          be pushed branch.
+            force: Force push changes.
         """
         args = ["push"]
         if follow_tags:
             args.append("--follow-tags")
+        if force:
+            args.append("--force")
         if remote:
             args.append(remote)
             if branch:

@@ -177,6 +177,20 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("push", cwd=None)
 
     @patch("pontos.git.git.exec_git")
+    def test_push_with_force(self, exec_git_mock):
+        git = Git()
+        git.push(force=True)
+
+        exec_git_mock.assert_called_once_with("push", "--force", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_push_with_force_false(self, exec_git_mock):
+        git = Git()
+        git.push(force=False)
+
+        exec_git_mock.assert_called_once_with("push", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
     def test_config(self, exec_git_mock):
         git = Git()
         git.config("foo", "bar")
