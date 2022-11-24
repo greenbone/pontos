@@ -15,8 +15,6 @@ classifiers=[
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",  # pylint: disable=line-too-long
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -58,7 +56,7 @@ furo = "^2022.9.29"
 
 [tool.black]
 line-length = 80
-target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+target-version = ['py39', 'py310', 'py311']
 exclude = '''
 /(
     \.git

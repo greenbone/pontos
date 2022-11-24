@@ -19,10 +19,9 @@
 
 import builtins
 import sys
-import unittest
 from typing import Any, AsyncIterator, Awaitable, Iterable
-from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest import IsolatedAsyncioTestCase
+from unittest.mock import AsyncMock
 
 if sys.version_info.minor < 10:
     # aiter and anext have been added in Python 3.10
@@ -41,46 +40,6 @@ else:
         return builtins.anext(obj)
 
 
-if sys.version_info.minor > 7:
-    from unittest import IsolatedAsyncioTestCase
-    from unittest.mock import AsyncMock
-else:
-
-    @unittest.skip("Async Tests not available for Python 3.7")
-    class IsolatedAsyncioTestCase(TestCase):
-        pass
-
-    class AsyncMock(MagicMock):
-        # implement all necessary methods to keep Pylint happy
-
-        def __init__(self, *args: Any, **kw: Any) -> None:
-            super().__init__(*args, **kw)
-
-            self.__aenter__ = self
-            self.__aexit__ = self
-
-        def assert_awaited(self):
-            pass
-
-        def assert_awaited_once(self):
-            pass
-
-        def assert_awaited_with(self, *args, **kwargs):
-            pass
-
-        def assert_awaited_once_with(self, *args, **kwargs):
-            pass
-
-        def assert_any_await(self, *args, **kwargs):
-            pass
-
-        def assert_has_awaits(self, calls, any_order=False):
-            pass
-
-        def assert_not_awaited(self):
-            pass
-
-
 class AsyncIteratorMock(AsyncIterator):
     def __init__(self, iterable: Iterable[Any]) -> None:
         self.iterator = iter(iterable)
@@ -92,4 +51,10 @@ class AsyncIteratorMock(AsyncIterator):
             raise StopAsyncIteration() from None
 
 
-__all__ = ["IsolatedAsyncioTestCase", "AsyncMock"]
+__all__ = (
+    "IsolatedAsyncioTestCase",
+    "AsyncMock",
+    "AsyncIteratorMock",
+    "aiter",
+    "anext",
+)
