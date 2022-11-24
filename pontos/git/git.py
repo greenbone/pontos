@@ -311,7 +311,7 @@ class Git:
         Create a Tag
 
         Args:
-            Tag: Tag name to create
+            tag: Tag name to create
         """
         args = ["tag"]
 
