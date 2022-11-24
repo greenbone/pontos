@@ -314,3 +314,17 @@ class Git:
         args.append(tag)
 
         exec_git(*args, cwd=self._cwd)
+
+    def fetch(self, remote: Optional[str] = None) -> None:
+        """
+        Fetch from changes from remote
+
+        Args:
+            remote: Remote to fetch changes from
+        """
+        args = ["fetch"]
+
+        if remote:
+            args.append(remote)
+
+        exec_git(*args, cwd=self._cwd)

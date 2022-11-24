@@ -259,3 +259,17 @@ class GitTestCase(unittest.TestCase):
         git.tag(tag="test")
 
         exec_git_mock.assert_called_once_with("tag", "test", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_fetch(self, exec_git_mock):
+        git = Git()
+        git.fetch()
+
+        exec_git_mock.assert_called_once_with("fetch", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_fetch_with_remote(self, exec_git_mock):
+        git = Git()
+        git.fetch("foo")
+
+        exec_git_mock.assert_called_once_with("fetch", "foo", cwd=None)
