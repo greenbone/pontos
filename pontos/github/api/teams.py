@@ -18,7 +18,13 @@
 from typing import AsyncIterator, Iterable, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.models.base import Team, TeamPrivacy, TeamRole, User
+from pontos.github.models.base import (
+    Permission,
+    Team,
+    TeamPrivacy,
+    TeamRole,
+    User,
+)
 from pontos.github.models.organization import Repository
 
 
@@ -308,3 +314,33 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
 
             for repo in response.json():
                 yield Repository.from_dict(repo)
+
+    async def update_permission(
+        self,
+        organization: str,
+        team: str,
+        repository: str,
+        permission: Permission,
+    ) -> None:
+        """
+        Add or update team repository permissions
+
+        Args:
+            organization: GitHub organization to use
+            team: The slug of the team name.
+            repository: GitHub repository (only name) to add or change
+                permissions on.
+            permission: The permission to grant the team on the repository.
+
+        Raises:
+            `httpx.HTTPStatusError` if there was an error in the request
+        """
+        api = (
+            f"/orgs/{organization}/teams/{team}/repos/{organization}/"
+            f"{repository}"
+        )
+        data = {"permission": permission.value}
+        response = await self._client.put(api, data=data)
+        response.raise_for_status()
+
+    add_permission = update_permission

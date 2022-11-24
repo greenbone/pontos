@@ -22,6 +22,7 @@ from unittest.mock import MagicMock
 import httpx
 
 from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy, TeamRole
+from pontos.github.models.base import Permission
 from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
@@ -754,4 +755,39 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
         self.client.get_all.assert_called_once_with(
             "/orgs/foo/teams/bar/repos",
             params={"per_page": "100"},
+        )
+
+    async def test_update_permissions(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.update_permission("foo", "bar", "baz", Permission.TRIAGE)
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/repos/foo/baz", data={"permission": "triage"}
+        )
+
+    async def test_add_permissions(self):
+        response = create_response()
+        self.client.put.return_value = response
+
+        await self.api.add_permission("foo", "bar", "baz", Permission.ADMIN)
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/repos/foo/baz", data={"permission": "admin"}
+        )
+
+    async def test_update_permissions_failure(self):
+        response = create_response()
+        self.client.put.side_effect = httpx.HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.update_permission(
+                "foo", "bar", "baz", Permission.TRIAGE
+            )
+
+        self.client.put.assert_awaited_once_with(
+            "/orgs/foo/teams/bar/repos/foo/baz", data={"permission": "triage"}
         )
