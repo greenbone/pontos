@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
 from typing import List, Optional, Union
@@ -67,6 +68,16 @@ def exec_git(
         if ignore_errors:
             return ""
         raise GitError(e.returncode, e.cmd, e.output, e.stderr) from None
+
+
+class MergeStrategy(Enum):
+    ORT = "ort"
+    ORT_OURS = "ort-ours"
+    RECURSIVE = "recursive"
+    RESOLVE = "resolve"
+    OCTOPUS = "octopus"
+    OURS = "ours"
+    SUBTREE = "subtree"
 
 
 class Git:
@@ -131,17 +142,25 @@ class Git:
         *,
         head: Optional[str] = None,
         onto: Optional[str] = None,
+        strategy: Optional[MergeStrategy] = None,
     ):
         """
         Rebase a branch
 
         Args:
-            base: Apply changes of this branch
+            base: Apply changes of this branch.
             head: Apply changes on this branch. If not set the current branch is
                   used.
-            onto: Apply changes on top of this branch
+            onto: Apply changes on top of this branch.
+            strategy: Merge strategy to use.
         """
         args = ["rebase"]
+
+        if strategy:
+            if strategy == MergeStrategy.ORT_OURS:
+                args.extend(["--strategy", "ort", "-X", "ours"])
+            else:
+                args.extend(["--strategy", strategy.value])
 
         if onto:
             args.extend(["--onto", onto])

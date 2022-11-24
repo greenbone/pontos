@@ -20,6 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
+from pontos.git.git import MergeStrategy
 
 
 class GitTestCase(unittest.TestCase):
@@ -120,6 +121,24 @@ class GitTestCase(unittest.TestCase):
 
         exec_git_mock.assert_called_once_with(
             "rebase", "--onto", "staging", "foo", "bar", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_rebase_with_octopus_strategy(self, exec_git_mock):
+        git = Git()
+        git.rebase("foo", strategy=MergeStrategy.OCTOPUS)
+
+        exec_git_mock.assert_called_once_with(
+            "rebase", "--strategy", "octopus", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_rebase_with_ort_ours_strategy(self, exec_git_mock):
+        git = Git()
+        git.rebase("foo", strategy=MergeStrategy.ORT_OURS)
+
+        exec_git_mock.assert_called_once_with(
+            "rebase", "--strategy", "ort", "-X", "ours", "foo", cwd=None
         )
 
     @patch("pontos.git.git.exec_git")
