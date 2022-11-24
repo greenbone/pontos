@@ -303,3 +303,19 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with(
             "remote", "add", "foo", "https://foo.bar/foo.git", cwd=None
         )
+
+    @patch("pontos.git.git.exec_git")
+    def test_checkout(self, exec_git_mock):
+        git = Git()
+        git.checkout("foo")
+
+        exec_git_mock.assert_called_once_with("checkout", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_checkout_with_start_point(self, exec_git_mock):
+        git = Git()
+        git.checkout("foo", start_point="bar")
+
+        exec_git_mock.assert_called_once_with(
+            "checkout", "-b", "foo", "bar", cwd=None
+        )

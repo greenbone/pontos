@@ -345,3 +345,22 @@ class Git:
         args = ["remote", "add", remote, url]
 
         exec_git(*args, cwd=self._cwd)
+
+    def checkout(
+        self, branch: str, *, start_point: Optional[str] = None
+    ) -> None:
+        """
+        Checkout a branch
+
+        Args:
+            branch: Branch to checkout or new branch name if starting_point is
+                given.
+            start_point: Create a new branch from this git ref.
+        """
+
+        if start_point:
+            args = ["checkout", "-b", branch, start_point]
+        else:
+            args = ["checkout", branch]
+
+        exec_git(*args, cwd=self._cwd)
