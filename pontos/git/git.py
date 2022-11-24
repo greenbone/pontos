@@ -332,3 +332,16 @@ class Git:
             args.append(remote)
 
         exec_git(*args, cwd=self._cwd)
+
+    def add_remote(self, remote: str, url: str) -> None:
+        """
+        Add a new git remote
+
+        Args:
+            remote: Name of the new remote
+            url: Git URL of the remote repository
+        """
+
+        args = ["remote", "add", remote, url]
+
+        exec_git(*args, cwd=self._cwd)

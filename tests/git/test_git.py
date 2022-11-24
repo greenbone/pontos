@@ -294,3 +294,12 @@ class GitTestCase(unittest.TestCase):
         git.fetch("foo")
 
         exec_git_mock.assert_called_once_with("fetch", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_add_remote(self, exec_git_mock):
+        git = Git()
+        git.add_remote("foo", "https://foo.bar/foo.git")
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "add", "foo", "https://foo.bar/foo.git", cwd=None
+        )
