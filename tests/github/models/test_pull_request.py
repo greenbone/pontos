@@ -19,7 +19,7 @@
 
 import unittest
 
-from pontos.github.models.base import TeamPrivacy
+from pontos.github.models.base import Permission, TeamPrivacy
 from pontos.github.models.pull_request import PullRequest
 
 
@@ -959,7 +959,7 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertEqual(team.slug, "justice-league")
         self.assertEqual(team.description, "A great team.")
         self.assertEqual(team.privacy, TeamPrivacy.CLOSED)
-        self.assertEqual(team.permission, "admin")
+        self.assertEqual(team.permission, Permission.ADMIN)
         self.assertEqual(
             team.members_url, "https://api.github.com/teams/1/members{/member}"
         )

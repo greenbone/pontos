@@ -20,6 +20,7 @@
 import unittest
 
 from pontos.github.api.teams import TeamPrivacy
+from pontos.github.models.base import Permission
 from pontos.github.models.branch import (
     BranchProtection,
     RequiredPullRequestReviews,
@@ -291,7 +292,7 @@ class RequiredPullRequestReviewsTestCase(unittest.TestCase):
         self.assertEqual(team.node_id, "T_kwDOAegUqc4AUtL1")
         self.assertEqual(team.slug, "devops")
         self.assertEqual(team.description, "Team responsible for DevOps")
-        self.assertEqual(team.permission, "pull")
+        self.assertEqual(team.permission, Permission.PULL)
         self.assertEqual(team.privacy, TeamPrivacy.CLOSED)
         self.assertEqual(
             team.url, "https://api.github.com/organizations/321/team/123"
@@ -584,7 +585,7 @@ class BranchProtectionTestCase(unittest.TestCase):
         self.assertEqual(team.node_id, "T_kwDOAegUqc4AUtL1")
         self.assertEqual(team.slug, "devops")
         self.assertEqual(team.description, "Team responsible for DevOps")
-        self.assertEqual(team.permission, "pull")
+        self.assertEqual(team.permission, Permission.PULL)
         self.assertEqual(team.privacy, TeamPrivacy.CLOSED)
         self.assertEqual(
             team.url, "https://api.github.com/organizations/321/team/123"

@@ -25,6 +25,7 @@ from pontos.github.models.base import (
     App,
     GitHubModel,
     GitHubModelAttribute,
+    Permission,
     Team,
     User,
     dotted_attributes,
@@ -186,7 +187,7 @@ class TeamTestCase(unittest.TestCase):
             team.repositories_url,
             "https://api.github.com/organizations/31986857/team/3764115/repos",
         )
-        self.assertEqual(team.permission, "pull")
+        self.assertEqual(team.permission, Permission.PULL)
         self.assertIsNone(team.parent)
 
 
