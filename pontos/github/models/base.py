@@ -172,6 +172,14 @@ class TeamRole(Enum):
     MAINTAINER = "maintainer"
 
 
+class Permission(Enum):
+    PULL = "pull"
+    PUSH = "push"
+    TRIAGE = "triage"
+    MAINTAIN = "maintain"
+    ADMIN = "admin"
+
+
 @dataclass
 class Team(GitHubModel):
     id: int
@@ -182,7 +190,7 @@ class Team(GitHubModel):
     slug: str
     description: str
     privacy: TeamPrivacy
-    permission: str
+    permission: Permission
     members_url: str
     repositories_url: str
     parent: Optional["Team"] = None
