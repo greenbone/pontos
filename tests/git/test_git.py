@@ -20,6 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
+from pontos.git.git import MergeStrategy
 
 
 class GitTestCase(unittest.TestCase):
@@ -123,6 +124,24 @@ class GitTestCase(unittest.TestCase):
         )
 
     @patch("pontos.git.git.exec_git")
+    def test_rebase_with_octopus_strategy(self, exec_git_mock):
+        git = Git()
+        git.rebase("foo", strategy=MergeStrategy.OCTOPUS)
+
+        exec_git_mock.assert_called_once_with(
+            "rebase", "--strategy", "octopus", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_rebase_with_ort_ours_strategy(self, exec_git_mock):
+        git = Git()
+        git.rebase("foo", strategy=MergeStrategy.ORT_OURS)
+
+        exec_git_mock.assert_called_once_with(
+            "rebase", "--strategy", "ort", "-X", "ours", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
     def test_push(self, exec_git_mock):
         git = Git()
         git.push()
@@ -149,6 +168,27 @@ class GitTestCase(unittest.TestCase):
         git.push(follow_tags=True)
 
         exec_git_mock.assert_called_once_with("push", "--follow-tags", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_push_with_follow_tags_false(self, exec_git_mock):
+        git = Git()
+        git.push(follow_tags=False)
+
+        exec_git_mock.assert_called_once_with("push", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_push_with_force(self, exec_git_mock):
+        git = Git()
+        git.push(force=True)
+
+        exec_git_mock.assert_called_once_with("push", "--force", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_push_with_force_false(self, exec_git_mock):
+        git = Git()
+        git.push(force=False)
+
+        exec_git_mock.assert_called_once_with("push", cwd=None)
 
     @patch("pontos.git.git.exec_git")
     def test_config(self, exec_git_mock):
@@ -240,3 +280,42 @@ class GitTestCase(unittest.TestCase):
         git.tag(tag="test")
 
         exec_git_mock.assert_called_once_with("tag", "test", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_fetch(self, exec_git_mock):
+        git = Git()
+        git.fetch()
+
+        exec_git_mock.assert_called_once_with("fetch", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_fetch_with_remote(self, exec_git_mock):
+        git = Git()
+        git.fetch("foo")
+
+        exec_git_mock.assert_called_once_with("fetch", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_add_remote(self, exec_git_mock):
+        git = Git()
+        git.add_remote("foo", "https://foo.bar/foo.git")
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "add", "foo", "https://foo.bar/foo.git", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_checkout(self, exec_git_mock):
+        git = Git()
+        git.checkout("foo")
+
+        exec_git_mock.assert_called_once_with("checkout", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_checkout_with_start_point(self, exec_git_mock):
+        git = Git()
+        git.checkout("foo", start_point="bar")
+
+        exec_git_mock.assert_called_once_with(
+            "checkout", "-b", "foo", "bar", cwd=None
+        )

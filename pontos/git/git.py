@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
+from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
 from typing import List, Optional, Union
@@ -67,6 +68,16 @@ def exec_git(
         if ignore_errors:
             return ""
         raise GitError(e.returncode, e.cmd, e.output, e.stderr) from None
+
+
+class MergeStrategy(Enum):
+    ORT = "ort"
+    ORT_OURS = "ort-ours"
+    RECURSIVE = "recursive"
+    RESOLVE = "resolve"
+    OCTOPUS = "octopus"
+    OURS = "ours"
+    SUBTREE = "subtree"
 
 
 class Git:
@@ -131,17 +142,25 @@ class Git:
         *,
         head: Optional[str] = None,
         onto: Optional[str] = None,
+        strategy: Optional[MergeStrategy] = None,
     ):
         """
         Rebase a branch
 
         Args:
-            base: Apply changes of this branch
+            base: Apply changes of this branch.
             head: Apply changes on this branch. If not set the current branch is
                   used.
-            onto: Apply changes on top of this branch
+            onto: Apply changes on top of this branch.
+            strategy: Merge strategy to use.
         """
         args = ["rebase"]
+
+        if strategy:
+            if strategy == MergeStrategy.ORT_OURS:
+                args.extend(["--strategy", "ort", "-X", "ours"])
+            else:
+                args.extend(["--strategy", strategy.value])
 
         if onto:
             args.extend(["--onto", onto])
@@ -191,6 +210,7 @@ class Git:
         remote: Optional[str] = None,
         branch: Optional[str] = None,
         follow_tags: bool = False,
+        force: Optional[bool] = None,
     ):
         """
         Push changes to remote repository
@@ -201,10 +221,13 @@ class Git:
                     a remote.
             follow_tags: Push all tags pointing to a commit included in the to
                          be pushed branch.
+            force: Force push changes.
         """
         args = ["push"]
         if follow_tags:
             args.append("--follow-tags")
+        if force:
+            args.append("--force")
         if remote:
             args.append(remote)
             if branch:
@@ -288,10 +311,56 @@ class Git:
         Create a Tag
 
         Args:
-            Tag: Tag name to create
+            tag: Tag name to create
         """
         args = ["tag"]
 
         args.append(tag)
+
+        exec_git(*args, cwd=self._cwd)
+
+    def fetch(self, remote: Optional[str] = None) -> None:
+        """
+        Fetch from changes from remote
+
+        Args:
+            remote: Remote to fetch changes from
+        """
+        args = ["fetch"]
+
+        if remote:
+            args.append(remote)
+
+        exec_git(*args, cwd=self._cwd)
+
+    def add_remote(self, remote: str, url: str) -> None:
+        """
+        Add a new git remote
+
+        Args:
+            remote: Name of the new remote
+            url: Git URL of the remote repository
+        """
+
+        args = ["remote", "add", remote, url]
+
+        exec_git(*args, cwd=self._cwd)
+
+    def checkout(
+        self, branch: str, *, start_point: Optional[str] = None
+    ) -> None:
+        """
+        Checkout a branch
+
+        Args:
+            branch: Branch to checkout or new branch name if starting_point is
+                given.
+            start_point: Create a new branch from this git ref.
+        """
+
+        if start_point:
+            args = ["checkout", "-b", branch, start_point]
+        else:
+            args = ["checkout", branch]
 
         exec_git(*args, cwd=self._cwd)
