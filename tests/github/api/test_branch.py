@@ -311,6 +311,116 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
             "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
         )
 
+    async def test_update_protection_defaults(self):
+        response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
+        self.client.put.return_value = response
+
+        rules = await self.api.update_protection_rules(
+            "foo/bar",
+            "baz",
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "required_status_checks": None,
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
+    async def test_update_protection_rules_up_to_date_branch(self):
+        response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
+        self.client.put.return_value = response
+
+        rules = await self.api.update_protection_rules(
+            "foo/bar",
+            "baz",
+            require_branches_to_be_up_to_date=True,
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "required_status_checks": {
+                    "strict": True,
+                    "checks": [],
+                },
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "restrictions": None,
+            },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
+    async def test_update_protection_rules_restriction_users(self):
+        response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
+        self.client.put.return_value = response
+
+        rules = await self.api.update_protection_rules(
+            "foo/bar", "baz", restrictions_users=["foo", "bar"]
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "required_status_checks": None,
+                "restrictions": {"users": ["foo", "bar"], "teams": []},
+            },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
+    async def test_update_protection_rules_restriction_teams(self):
+        response = create_response()
+        response.json.return_value = {
+            "url": "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        }
+        self.client.put.return_value = response
+
+        rules = await self.api.update_protection_rules(
+            "foo/bar", "baz", restrictions_teams=["foo", "bar"]
+        )
+
+        self.client.put.assert_awaited_once_with(
+            "/repos/foo/bar/branches/baz/protection",
+            data={
+                "enforce_admins": None,
+                "required_pull_request_reviews": None,
+                "required_status_checks": None,
+                "restrictions": {"teams": ["foo", "bar"], "users": []},
+            },
+        )
+
+        self.assertEqual(
+            rules.url,
+            "https://api.github.com/repos/octocat/Hello-World/branches/main/protection",
+        )
+
     async def test_update_protection_rules_failure(self):
         response = create_response()
         error = HTTPStatusError("404", request=MagicMock(), response=response)

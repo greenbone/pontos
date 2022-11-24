@@ -452,6 +452,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
 
         if require_branches_to_be_up_to_date is not None:
             status_checks = data.get("required_status_checks") or {}
+            # checks must be set if strict is set
+            status_checks["checks"] = []
             status_checks["strict"] = require_branches_to_be_up_to_date
             data["required_status_checks"] = status_checks
 
@@ -471,10 +473,16 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
 
         if restrictions_users is not None:
             restrictions = data.get("restrictions") or {}
+            # teams must be set too if users are set
+            r_teams = restrictions.get("teams", [])
+            restrictions["teams"] = r_teams
             restrictions["users"] = list(restrictions_users)
             data["restrictions"] = restrictions
         if restrictions_teams is not None:
             restrictions = data.get("restrictions") or {}
+            # users must be set too if teams are set
+            r_users = restrictions.get("users", [])
+            restrictions["users"] = r_users
             restrictions["teams"] = list(restrictions_teams)
             data["restrictions"] = restrictions
         if restrictions_apps is not None:
