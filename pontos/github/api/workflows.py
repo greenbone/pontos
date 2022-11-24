@@ -136,7 +136,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 example `main.yml`.
             actor: Only return workflow runs of this user ID.
             branch: Only return workflow runs for a specific branch.
-            event: Only returns workflows runs triggered by the event specified.
+            event: Only return workflow runs triggered by the event specified.
                 For example, `push`, `pull_request` or `issue`.
                 For more information, see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows.
             status: Only return workflow runs with the check run status or
