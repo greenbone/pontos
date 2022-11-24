@@ -23,6 +23,9 @@ organization
 from argparse import ArgumentParser, Namespace
 from typing import Union
 
+from rich.console import Console
+from rich.table import Table
+
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.helper import RepositoryType
 
@@ -47,12 +50,24 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
+    table = Table()
+    table.add_column("Name")
+    table.add_column("Description")
+    table.add_column("URL")
+    table.add_column("Visibility")
+
     repo_count = 0
     async for repo in api.organizations.get_repositories(
         args.organization, repository_type=args.type
     ):
-        print(repo, "\n")
+        table.add_row(
+            repo.name, repo.description, repo.html_url, repo.visibility
+        )
+
         repo_count += 1
+
+    console = Console()
+    console.print(table)
 
     print(f"{repo_count} repositories.")
     return 0
