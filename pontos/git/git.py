@@ -87,6 +87,10 @@ class ConfigScope(Enum):
     WORKTREE = "worktree"
 
 
+class TagSort(Enum):
+    VERSION = "version:refname"
+
+
 class Git:
     """
     Run git commands as subprocesses
@@ -284,11 +288,14 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
-    def list_tags(self) -> List[str]:
+    def list_tags(self, *, sort: Optional[TagSort] = None) -> List[str]:
         """
         List all available tags
         """
-        return exec_git("tag", "-l", cwd=self._cwd).splitlines()
+        args = ["tag", "-l"]
+        if sort:
+            args.append(f"--sort={sort.value}")
+        return exec_git(*args, cwd=self._cwd).splitlines()
 
     def add(self, files: Union[PathLike, List[PathLike]]):
         """

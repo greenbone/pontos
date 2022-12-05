@@ -20,7 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
-from pontos.git.git import ConfigScope, MergeStrategy
+from pontos.git.git import ConfigScope, MergeStrategy, TagSort
 
 
 class GitTestCase(unittest.TestCase):
@@ -263,6 +263,21 @@ class GitTestCase(unittest.TestCase):
         tags = git.list_tags()
 
         exec_git_mock.assert_called_once_with("tag", "-l", cwd=None)
+
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "v1.0")
+        self.assertEqual(tags[1], "v2.0")
+        self.assertEqual(tags[2], "v2.1")
+
+    @patch("pontos.git.git.exec_git")
+    def test_list_tags_with_version_sort(self, exec_git_mock):
+        exec_git_mock.return_value = "v1.0\nv2.0\nv2.1\n"
+        git = Git()
+        tags = git.list_tags(sort=TagSort.VERSION)
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-l", "--sort=version:refname", cwd=None
+        )
 
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "v1.0")
