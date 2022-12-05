@@ -80,6 +80,17 @@ class MergeStrategy(Enum):
     SUBTREE = "subtree"
 
 
+class ConfigScope(Enum):
+    GLOBAL = "global"
+    LOCAL = "local"
+    SYSTEM = "system"
+    WORKTREE = "worktree"
+
+
+class TagSort(Enum):
+    VERSION = "version:refname"
+
+
 class Git:
     """
     Run git commands as subprocesses
@@ -235,11 +246,31 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
-    def config(self, key: str, value: str):
+    def config(
+        self,
+        key: str,
+        value: Optional[str] = None,
+        *,
+        scope: Optional[ConfigScope] = None,
+    ) -> str:
         """
-        Set a (local) git config
+        Get and set a git config
+
+        Args:
+            key: Key of the Git config setting. For example: core.filemode
+            value: Value to set for a Git setting.
+            scope: Scope of the setting.
         """
-        exec_git("config", key, value, cwd=self._cwd)
+        args = ["config"]
+        if scope:
+            args.append(f"--{scope.value}")
+
+        args.append(key)
+
+        if value is not None:
+            args.append(value)
+
+        return exec_git(*args, cwd=self._cwd)
 
     def cherry_pick(self, commits: Union[str, List[str]]):
         """
@@ -257,11 +288,14 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
-    def list_tags(self) -> List[str]:
+    def list_tags(self, *, sort: Optional[TagSort] = None) -> List[str]:
         """
         List all available tags
         """
-        return exec_git("tag", "-l", cwd=self._cwd).splitlines()
+        args = ["tag", "-l"]
+        if sort:
+            args.append(f"--sort={sort.value}")
+        return exec_git(*args, cwd=self._cwd).splitlines()
 
     def add(self, files: Union[PathLike, List[PathLike]]):
         """
@@ -306,14 +340,30 @@ class Git:
     def tag(
         self,
         tag: str,
+        *,
+        gpg_key_id: Optional[str] = None,
+        message: Optional[str] = None,
+        force: Optional[bool] = False,
     ):
         """
         Create a Tag
 
         Args:
-            tag: Tag name to create
+            tag: Tag name to create.
+            gpg_key_id: GPG Key to sign the tag.
+            message: Use message to annotate the given tag.
+            force: True to replace an existing tag.
         """
         args = ["tag"]
+
+        if gpg_key_id:
+            args.extend(["-u", gpg_key_id])
+
+        if message:
+            args.extend(["-m", message])
+
+        if force:
+            args.append("--force")
 
         args.append(tag)
 
@@ -346,6 +396,16 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
+    def remote_url(self, remote: str = "origin") -> str:
+        """
+        Get the url of a remote
+
+        Args:
+            remote: Name of the remote. Default: origin.
+        """
+        args = ["remote", "get-url", remote]
+        return exec_git(*args, cwd=self._cwd)
+
     def checkout(
         self, branch: str, *, start_point: Optional[str] = None
     ) -> None:
@@ -364,3 +424,17 @@ class Git:
             args = ["checkout", branch]
 
         exec_git(*args, cwd=self._cwd)
+
+    def log(self, *log_args: str, oneline: Optional[bool] = None) -> List[str]:
+        """
+        Get log of a git repository
+
+        Args:
+        """
+        args = ["log"]
+        if oneline:
+            args.append("--oneline")
+
+        args.extend(log_args)
+
+        return exec_git(*args, cwd=self._cwd).splitlines()

@@ -20,7 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
-from pontos.git.git import MergeStrategy
+from pontos.git.git import ConfigScope, MergeStrategy, TagSort
 
 
 class GitTestCase(unittest.TestCase):
@@ -191,11 +191,54 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("push", cwd=None)
 
     @patch("pontos.git.git.exec_git")
-    def test_config(self, exec_git_mock):
+    def test_config_get(self, exec_git_mock):
+        git = Git()
+        git.config("foo")
+
+        exec_git_mock.assert_called_once_with("config", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_set(self, exec_git_mock):
         git = Git()
         git.config("foo", "bar")
 
         exec_git_mock.assert_called_once_with("config", "foo", "bar", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_local_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.LOCAL)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--local", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_system_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.SYSTEM)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--system", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_global_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.GLOBAL)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--global", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_worktree_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.WORKTREE)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--worktree", "foo", cwd=None
+        )
 
     @patch("pontos.git.git.exec_git")
     def test_cherry_pick(self, exec_git_mock):
@@ -220,6 +263,21 @@ class GitTestCase(unittest.TestCase):
         tags = git.list_tags()
 
         exec_git_mock.assert_called_once_with("tag", "-l", cwd=None)
+
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "v1.0")
+        self.assertEqual(tags[1], "v2.0")
+        self.assertEqual(tags[2], "v2.1")
+
+    @patch("pontos.git.git.exec_git")
+    def test_list_tags_with_version_sort(self, exec_git_mock):
+        exec_git_mock.return_value = "v1.0\nv2.0\nv2.1\n"
+        git = Git()
+        tags = git.list_tags(sort=TagSort.VERSION)
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-l", "--sort=version:refname", cwd=None
+        )
 
         self.assertEqual(len(tags), 3)
         self.assertEqual(tags[0], "v1.0")
@@ -282,6 +340,33 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("tag", "test", cwd=None)
 
     @patch("pontos.git.git.exec_git")
+    def test_tag_with_gpg_key(self, exec_git_mock):
+        git = Git()
+        git.tag("test", gpg_key_id="0x123")
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-u", "0x123", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag_with_message(self, exec_git_mock):
+        git = Git()
+        git.tag("test", message="Tag for 123 release")
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-m", "Tag for 123 release", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag_with_force(self, exec_git_mock):
+        git = Git()
+        git.tag("test", force=True)
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "--force", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
     def test_fetch(self, exec_git_mock):
         git = Git()
         git.fetch()
@@ -319,3 +404,76 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with(
             "checkout", "-b", "foo", "bar", cwd=None
         )
+
+    @patch("pontos.git.git.exec_git")
+    def test_remote_url(self, exec_git_mock):
+        url = "git@github.com:foo/foo.git"
+        exec_git_mock.return_value = url
+
+        git = Git()
+        remote = git.remote_url("foo")
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "get-url", "foo", cwd=None
+        )
+
+        self.assertEqual(remote, url)
+
+    @patch("pontos.git.git.exec_git")
+    def test_remote_url_with_default(self, exec_git_mock):
+        url = "git@github.com:foo/foo.git"
+        exec_git_mock.return_value = url
+
+        git = Git()
+        remote = git.remote_url()
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "get-url", "origin", cwd=None
+        )
+
+        self.assertEqual(remote, url)
+
+    @patch("pontos.git.git.exec_git")
+    def test_log(self, exec_git_mock):
+        # pylint: disable=line-too-long
+        exec_git_mock.return_value = """commit 68c6c3785bbb049df63dc51f8b5b709eb19f8517
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Apr 8 15:16:05 2020 +0200
+
+    Add a draft for a README.md document
+
+commit 464f24d43d7293091b168c6b37ee37978a650958
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Apr 8 14:28:53 2020 +0200
+
+    Initial commit
+"""
+
+        git = Git()
+        logs = git.log()
+
+        exec_git_mock.assert_called_once_with("log", cwd=None)
+
+        self.assertEqual(
+            logs[0], "commit 68c6c3785bbb049df63dc51f8b5b709eb19f8517"
+        )
+        self.assertEqual(
+            logs[6], "commit 464f24d43d7293091b168c6b37ee37978a650958"
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_log_with_oneline(self, exec_git_mock):
+        exec_git_mock.return_value = """50f9963 Add CircleCI config for pontos
+9a8feaa Rename to pontos only
+047cfae Update README for installation and development
+e6ea80d Update README
+68c6c37 Add a draft for a README.md document
+464f24d Initial commit"""
+
+        git = Git()
+        logs = git.log(oneline=True)
+
+        exec_git_mock.assert_called_once_with("log", "--oneline", cwd=None)
+
+        self.assertEqual(logs[0], "50f9963 Add CircleCI config for pontos")
+        self.assertEqual(logs[5], "464f24d Initial commit")
