@@ -62,7 +62,21 @@ def main() -> None:
         term.print("usage:")
         with term.indent():
             term.print("pontos-github {pr} -h")
+
+        term.bold_info(
+            "pontos-github-script - CLI for running scripts on the GitHub API"
+        )
+        term.print("usage:")
+        with term.indent():
+            term.print("pontos-github-script {script} -h")
         term.print()
+
+        term.bold_info("pontos-github-actions - GitHub Actions API CLI")
+        term.print("usage:")
+        with term.indent():
+            term.print("pontos-github-actions -h")
+        term.print()
+
         term.info(
             "pontos also comes with a Terminal interface "
             "printing prettier outputs"

@@ -23,6 +23,9 @@ organization
 from argparse import ArgumentParser, Namespace
 from typing import Union
 
+from rich.console import Console
+from rich.table import Table
+
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.organizations import MemberFilter, MemberRole
 
@@ -62,12 +65,19 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
+    table = Table()
+    table.add_column("Name")
+    table.add_column("URL")
+
     member_count = 0
-    async for member in api.organizations.members(
+    async for user in api.organizations.members(
         args.organization, member_filter=args.filter, role=args.role
     ):
-        print(member, "\n")
+        table.add_row(user.login, user.html_url)
         member_count += 1
+
+    console = Console()
+    console.print(table)
 
     print(f"{member_count} members.")
     return 0
