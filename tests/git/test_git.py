@@ -432,3 +432,48 @@ class GitTestCase(unittest.TestCase):
         )
 
         self.assertEqual(remote, url)
+
+    @patch("pontos.git.git.exec_git")
+    def test_log(self, exec_git_mock):
+        # pylint: disable=line-too-long
+        exec_git_mock.return_value = """commit 68c6c3785bbb049df63dc51f8b5b709eb19f8517
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Apr 8 15:16:05 2020 +0200
+
+    Add a draft for a README.md document
+
+commit 464f24d43d7293091b168c6b37ee37978a650958
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Apr 8 14:28:53 2020 +0200
+
+    Initial commit
+"""
+
+        git = Git()
+        logs = git.log()
+
+        exec_git_mock.assert_called_once_with("log", cwd=None)
+
+        self.assertEqual(
+            logs[0], "commit 68c6c3785bbb049df63dc51f8b5b709eb19f8517"
+        )
+        self.assertEqual(
+            logs[6], "commit 464f24d43d7293091b168c6b37ee37978a650958"
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_log_with_oneline(self, exec_git_mock):
+        exec_git_mock.return_value = """50f9963 Add CircleCI config for pontos
+9a8feaa Rename to pontos only
+047cfae Update README for installation and development
+e6ea80d Update README
+68c6c37 Add a draft for a README.md document
+464f24d Initial commit"""
+
+        git = Git()
+        logs = git.log(oneline=True)
+
+        exec_git_mock.assert_called_once_with("log", "--oneline", cwd=None)
+
+        self.assertEqual(logs[0], "50f9963 Add CircleCI config for pontos")
+        self.assertEqual(logs[5], "464f24d Initial commit")

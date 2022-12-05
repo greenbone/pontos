@@ -424,3 +424,17 @@ class Git:
             args = ["checkout", branch]
 
         exec_git(*args, cwd=self._cwd)
+
+    def log(self, *log_args: str, oneline: Optional[bool] = None) -> List[str]:
+        """
+        Get log of a git repository
+
+        Args:
+        """
+        args = ["log"]
+        if oneline:
+            args.append("--oneline")
+
+        args.extend(log_args)
+
+        return exec_git(*args, cwd=self._cwd).splitlines()
