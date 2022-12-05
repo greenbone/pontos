@@ -96,7 +96,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         team = await api.teams.get(organization, args.team)
         team_id = team.id
 
-    with temp_directory(keep=True) as temp_dir:
+    with temp_directory() as temp_dir:
         git = Git()
 
         if args.template:
