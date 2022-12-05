@@ -20,7 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
-from pontos.git.git import MergeStrategy
+from pontos.git.git import ConfigScope, MergeStrategy
 
 
 class GitTestCase(unittest.TestCase):
@@ -191,11 +191,54 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("push", cwd=None)
 
     @patch("pontos.git.git.exec_git")
-    def test_config(self, exec_git_mock):
+    def test_config_get(self, exec_git_mock):
+        git = Git()
+        git.config("foo")
+
+        exec_git_mock.assert_called_once_with("config", "foo", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_set(self, exec_git_mock):
         git = Git()
         git.config("foo", "bar")
 
         exec_git_mock.assert_called_once_with("config", "foo", "bar", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_local_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.LOCAL)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--local", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_system_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.SYSTEM)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--system", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_global_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.GLOBAL)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--global", "foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_config_get_worktree_scope(self, exec_git_mock):
+        git = Git()
+        git.config("foo", scope=ConfigScope.WORKTREE)
+
+        exec_git_mock.assert_called_once_with(
+            "config", "--worktree", "foo", cwd=None
+        )
 
     @patch("pontos.git.git.exec_git")
     def test_cherry_pick(self, exec_git_mock):

@@ -80,6 +80,13 @@ class MergeStrategy(Enum):
     SUBTREE = "subtree"
 
 
+class ConfigScope(Enum):
+    GLOBAL = "global"
+    LOCAL = "local"
+    SYSTEM = "system"
+    WORKTREE = "worktree"
+
+
 class Git:
     """
     Run git commands as subprocesses
@@ -235,11 +242,31 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
-    def config(self, key: str, value: str):
+    def config(
+        self,
+        key: str,
+        value: Optional[str] = None,
+        *,
+        scope: Optional[ConfigScope] = None,
+    ) -> str:
         """
-        Set a (local) git config
+        Get and set a git config
+
+        Args:
+            key: Key of the Git config setting. For example: core.filemode
+            value: Value to set for a Git setting.
+            scope: Scope of the setting.
         """
-        exec_git("config", key, value, cwd=self._cwd)
+        args = ["config"]
+        if scope:
+            args.append(f"--{scope.value}")
+
+        args.append(key)
+
+        if value is not None:
+            args.append(value)
+
+        return exec_git(*args, cwd=self._cwd)
 
     def cherry_pick(self, commits: Union[str, List[str]]):
         """
