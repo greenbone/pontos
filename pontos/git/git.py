@@ -340,14 +340,30 @@ class Git:
     def tag(
         self,
         tag: str,
+        *,
+        gpg_key_id: Optional[str] = None,
+        message: Optional[str] = None,
+        force: Optional[bool] = False,
     ):
         """
         Create a Tag
 
         Args:
-            tag: Tag name to create
+            tag: Tag name to create.
+            gpg_key_id: GPG Key to sign the tag.
+            message: Use message to annotate the given tag.
+            force: True to replace an existing tag.
         """
         args = ["tag"]
+
+        if gpg_key_id:
+            args.extend(["-u", gpg_key_id])
+
+        if message:
+            args.extend(["-m", message])
+
+        if force:
+            args.append("--force")
 
         args.append(tag)
 

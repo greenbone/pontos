@@ -340,6 +340,33 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("tag", "test", cwd=None)
 
     @patch("pontos.git.git.exec_git")
+    def test_tag_with_gpg_key(self, exec_git_mock):
+        git = Git()
+        git.tag("test", gpg_key_id="0x123")
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-u", "0x123", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag_with_message(self, exec_git_mock):
+        git = Git()
+        git.tag("test", message="Tag for 123 release")
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "-m", "Tag for 123 release", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag_with_force(self, exec_git_mock):
+        git = Git()
+        git.tag("test", force=True)
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "--force", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
     def test_fetch(self, exec_git_mock):
         git = Git()
         git.fetch()
