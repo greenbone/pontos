@@ -15,6 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .git import Git, GitError, MergeStrategy
+from .git import ConfigScope, Git, GitError, MergeStrategy, TagSort
 
-__all__ = ("Git", "GitError", "MergeStrategy")
+__all__ = ("Git", "GitError", "MergeStrategy", "ConfigScope", "TagSort")
