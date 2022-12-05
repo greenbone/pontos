@@ -396,6 +396,16 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
+    def remote_url(self, remote: str = "origin") -> str:
+        """
+        Get the url of a remote
+
+        Args:
+            remote: Name of the remote. Default: origin.
+        """
+        args = ["remote", "get-url", remote]
+        return exec_git(*args, cwd=self._cwd)
+
     def checkout(
         self, branch: str, *, start_point: Optional[str] = None
     ) -> None:

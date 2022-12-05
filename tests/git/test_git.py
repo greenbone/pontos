@@ -404,3 +404,31 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with(
             "checkout", "-b", "foo", "bar", cwd=None
         )
+
+    @patch("pontos.git.git.exec_git")
+    def test_remote_url(self, exec_git_mock):
+        url = "git@github.com:foo/foo.git"
+        exec_git_mock.return_value = url
+
+        git = Git()
+        remote = git.remote_url("foo")
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "get-url", "foo", cwd=None
+        )
+
+        self.assertEqual(remote, url)
+
+    @patch("pontos.git.git.exec_git")
+    def test_remote_url_with_default(self, exec_git_mock):
+        url = "git@github.com:foo/foo.git"
+        exec_git_mock.return_value = url
+
+        git = Git()
+        remote = git.remote_url()
+
+        exec_git_mock.assert_called_once_with(
+            "remote", "get-url", "origin", cwd=None
+        )
+
+        self.assertEqual(remote, url)
