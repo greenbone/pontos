@@ -106,7 +106,7 @@ def calculate_calendar_version(terminal: Terminal) -> str:
         sys.exit(1)
 
 
-def get_current_version(terminal: Terminal) -> str:
+def get_current_version(terminal: Terminal) -> Optional[str]:
     """Get the current Version from a pyproject.toml or
     a CMakeLists.txt file"""
 
@@ -122,7 +122,7 @@ def get_current_version(terminal: Terminal) -> str:
             return current_version
 
     terminal.error("No project settings file found")
-    sys.exit(1)
+    return None
 
 
 def get_last_release_version() -> Optional[str]:
