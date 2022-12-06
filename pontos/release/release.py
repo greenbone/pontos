@@ -22,16 +22,16 @@ from pathlib import Path
 import httpx
 
 from pontos import changelog
+from pontos.git import Git
 from pontos.github.api import GitHubRESTApi
-from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
 from .helper import (
     commit_files,
     find_signing_key,
     get_current_version,
+    get_git_repository_name,
     get_next_dev_version,
-    get_project_name,
     update_version,
 )
 
@@ -53,15 +53,13 @@ def release(
         return False
 
     project: str = (
-        args.project
-        if args.project is not None
-        else get_project_name(shell_cmd_runner)
+        args.project if args.project is not None else get_git_repository_name()
     )
     space: str = args.space
     git_signing_key: str = (
         args.git_signing_key
         if args.git_signing_key is not None
-        else find_signing_key(terminal, shell_cmd_runner)
+        else find_signing_key(terminal)
     )
     git_remote_name: str = (
         args.git_remote_name if args.git_remote_name is not None else ""
@@ -72,6 +70,10 @@ def release(
         if args.release_version is not None
         else get_current_version(terminal)
     )
+    if not release_version:
+        terminal.error("No release version available.")
+        return False
+
     next_version: str = (
         args.next_version
         if args.next_version is not None
@@ -80,7 +82,8 @@ def release(
 
     terminal.info("Pushing changes")
 
-    shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
+    git = Git()
+    git.push(follow_tags=True, remote=git_remote_name)
 
     terminal.info(f"Creating release for v{release_version}")
     changelog_text: str = Path(RELEASE_TEXT_FILE).read_text(encoding="utf-8")
@@ -136,14 +139,14 @@ def release(
         return False
 
     commit_files(
+        git,
         filename=filename,
         commit_msg=commit_msg,
-        shell_cmd_runner=shell_cmd_runner,
         git_signing_key=git_signing_key,
         changelog=changelog_bool,
     )
 
     # pushing the new tag
-    shell_cmd_runner(f"git push --follow-tags {git_remote_name}")
+    git.push(follow_tags=True, remote=git_remote_name)
 
     return True
