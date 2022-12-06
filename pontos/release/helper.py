@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import subprocess
 import sys
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Optional, Tuple
 
 from packaging.version import InvalidVersion, Version
 
@@ -191,29 +190,25 @@ def get_git_repository_name(
     return ret.rsplit("/", maxsplit=1)[-1].replace(".git", "").strip()
 
 
-def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
+def find_signing_key(terminal: Terminal) -> str:
     """Find the signing key in the config
 
     Arguments:
-        shell_cmd_runner: The runner for shell commands
+        terminal: The terminal for console output
 
     Returns:
         git signing key or empty string
     """
 
     try:
-        proc = shell_cmd_runner("git config user.signingkey")
-    except subprocess.CalledProcessError as e:
+        return Git().config("user.signingkey").strip()
+    except GitError as e:
         # The command `git config user.signingkey` returns
         # return code 1 if no key is set.
         # So we will return empty string ...
         if e.returncode == 1:
             terminal.warning("No signing key found.")
         return ""
-    # stdout should return "\n" if no key is available
-    # and so git_signing_key should
-    # return '' if no key is available ...
-    return proc.stdout.strip()
 
 
 def update_version(
