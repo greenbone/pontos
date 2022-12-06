@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# pontos/release/release.py
 # Copyright (C) 2020-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -23,16 +21,15 @@ from pathlib import Path
 
 from pontos import changelog
 from pontos.git import Git
-from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
 from .helper import (
     calculate_calendar_version,
     commit_files,
     find_signing_key,
+    get_git_repository_name,
     get_last_release_version,
     get_next_patch_version,
-    get_project_name,
     update_version,
 )
 
@@ -48,12 +45,10 @@ def prepare(
     git_signing_key: str = (
         args.git_signing_key
         if args.git_signing_key is not None
-        else find_signing_key(terminal, shell_cmd_runner)
+        else find_signing_key(terminal)
     )
     project: str = (
-        args.project
-        if args.project is not None
-        else get_project_name(shell_cmd_runner)
+        args.project if args.project is not None else get_git_repository_name()
     )
     space: str = args.space
     calendar: bool = args.calendar
@@ -85,27 +80,24 @@ def prepare(
     changelog_bool = True
     if args.conventional_commits:
         last_release_version = get_last_release_version()
-        output = f"v{release_version}.md"
-        cargs = Namespace(
+        changelog_builder = changelog.ChangelogBuilder(
+            terminal=terminal,
             current_version=last_release_version,
             next_version=release_version,
-            output=output,
             space=space,
             project=project,
             config=args.cc_config,
         )
-        changelog_builder = changelog.ChangelogBuilder(
-            terminal=terminal,
-            args=cargs,
-        )
 
-        output_file = changelog_builder.create_changelog_file()
-        terminal.ok(f"Created changelog {output}")
+        output_file = changelog_builder.create_changelog_file(
+            f"v{release_version}.md"
+        )
+        terminal.ok(f"Created changelog {output_file}")
         commit_msg = f"Changelog created for release to {release_version}"
         commit_files(
+            git,
             output_file,
             commit_msg,
-            shell_cmd_runner,
             git_signing_key=git_signing_key,
         )
         changelog_bool = False
@@ -153,19 +145,14 @@ def prepare(
 
     commit_msg = f"Automatic release to {release_version}"
     commit_files(
+        git,
         filename,
         commit_msg,
-        shell_cmd_runner,
         git_signing_key=git_signing_key,
         changelog=changelog_bool,
     )
 
-    if git_signing_key:
-        shell_cmd_runner(
-            f"git tag -u {git_signing_key} {git_version} -m '{commit_msg}'"
-        )
-    else:
-        shell_cmd_runner(f"git tag {git_version} -m '{commit_msg}'")
+    git.tag(git_version, gpg_key_id=git_signing_key, message=commit_msg)
 
     release_text = Path(RELEASE_TEXT_FILE)
     release_text.write_text(changelog_text, encoding="utf-8")
