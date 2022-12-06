@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2021-2022 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -24,14 +23,14 @@ from pathlib import Path
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
-from pontos.git.git import Git, exec_git
+from pontos.git.git import ConfigScope, Git, GitError, exec_git
 from pontos.release.helper import (
     calculate_calendar_version,
     find_signing_key,
+    get_git_repository_name,
     get_last_release_version,
     get_next_dev_version,
     get_next_patch_version,
-    get_project_name,
     update_version,
 )
 from pontos.testing import temp_directory, temp_git_repository
@@ -59,26 +58,23 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_get_project_name(self):
         with init_test_git_repo():
-            project = get_project_name(
-                shell_cmd_runner=self.shell_cmd_runner, remote="foo"
-            )
+            project = get_git_repository_name(remote="foo")
             self.assertEqual(project, "bla")
 
-            project = get_project_name(shell_cmd_runner=self.shell_cmd_runner)
+            project = get_git_repository_name()
             self.assertEqual(project, "testrepo")
 
     def test_find_signing_key(self):
         terminal = MagicMock()
 
         with temp_git_repository():
-            self.shell_cmd_runner(
-                "git config user.signingkey "
-                "1234567890ABCEDEF1234567890ABCEDEF123456"
+            git = Git()
+            git.config(
+                "user.signingkey",
+                "1234567890ABCEDEF1234567890ABCEDEF123456",
+                scope=ConfigScope.LOCAL,
             )
-
-            signing_key = find_signing_key(
-                terminal, shell_cmd_runner=self.shell_cmd_runner
-            )
+            signing_key = find_signing_key(terminal)
             self.assertEqual(
                 signing_key, "1234567890ABCEDEF1234567890ABCEDEF123456"
             )
@@ -87,36 +83,30 @@ class TestHelperFunctions(unittest.TestCase):
         terminal = MagicMock()
         saved_key = None
 
+        git = Git()
         try:
             # save possibly set git signing key from user temporarily
             try:
-                saved_key = self.shell_cmd_runner(
-                    "git config --global user.signingkey",
-                    cwd=Path.home(),
-                ).stdout.strip()
-            except subprocess.CalledProcessError:
+                saved_key = git.config(
+                    "user.signingkey", scope=ConfigScope.GLOBAL
+                )
+            except GitError:
                 saved_key = None
 
             try:
-                self.shell_cmd_runner(
-                    "git config --global --unset user.signingkey",
-                    cwd=Path.home(),
-                )
+                git.config("user.signingkey", "", scope=ConfigScope.GLOBAL)
             except subprocess.CalledProcessError as e:
                 self.assertEqual(e.returncode, 5)
 
             with temp_git_repository():
-                signing_key = find_signing_key(
-                    terminal, shell_cmd_runner=self.shell_cmd_runner
-                )
+                signing_key = find_signing_key(terminal)
                 self.assertEqual(signing_key, "")
 
         finally:
             # reset the previously saved signing key ...
             if saved_key is not None:
-                self.shell_cmd_runner(
-                    f'git config --global user.signingkey "{saved_key}"',
-                    cwd=Path.home(),
+                git.config(
+                    "user.signingkey", saved_key, scope=ConfigScope.GLOBAL
                 )
 
     def test_update_version_not_found(self):
