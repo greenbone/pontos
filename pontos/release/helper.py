@@ -24,7 +24,7 @@ from typing import Callable, Optional, Tuple
 from packaging.version import InvalidVersion, Version
 
 from pontos import version
-from pontos.git.git import Git
+from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.version import CMakeVersionCommand, PythonVersionCommand
 from pontos.version.helper import VersionError
@@ -34,39 +34,36 @@ DEFAULT_CHUNK_SIZE = 4096
 
 
 def commit_files(
+    git: Git,
     filename: str,
     commit_msg: str,
-    shell_cmd_runner: Callable,
     *,
     git_signing_key: str = "",
     changelog: bool = False,
 ):
     """Add files to staged and commit staged files.
 
-    filename: The filename of file to add and commit
-    commit_msg: The commit message for the commit
-    shell_cmd_runner: The runner for shell commands
-    git_signing_key: The signing key to sign this commit
+    Args:
+        git: A Git instance
+        filename: The filename of file to add and commit
+        commit_msg: The commit message for the commit
+        git_signing_key: The signing key to sign this commit
+        changelog: Add CHANGELOG.md file
 
-    Arguments:
-        to: The version (str) that will be set
-        develop: Wether to set version to develop or not (bool)
-
-    Returns:
-       executed: True if successfully executed, False else
-       filename: The filename of the project definition
     """
+    git.add(filename)
 
-    shell_cmd_runner(f"git add {filename}")
-    shell_cmd_runner("git add *__version__.py || echo 'ignoring __version__'")
+    try:
+        git.add("*__version__.py")
+    except GitError:
+        pass
+
     if changelog:
-        shell_cmd_runner("git add CHANGELOG.md")
+        git.add("CHANGELOG.md")
     if git_signing_key:
-        shell_cmd_runner(
-            f"git commit -S{git_signing_key} --no-verify -m '{commit_msg}'",
-        )
+        git.commit(commit_msg, verify=False, gpg_signing_key=git_signing_key)
     else:
-        shell_cmd_runner(f"git commit --no-verify -m '{commit_msg}'")
+        git.commit(commit_msg, verify=False)
 
 
 def calculate_calendar_version(terminal: Terminal) -> str:
