@@ -17,12 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .changelog import ChangelogError, add_skeleton, update
-from .conventional_commits import ChangelogBuilder, main
+from .conventional_commits import ChangelogBuilder, ChangelogBuilderError, main
 
 __all__ = [
     "add_skeleton",
     "update",
-    "ChangelogBuilder",
     "ChangelogError",
+    "ChangelogBuilder",
+    "ChangelogBuilderError",
     "main",
 ]

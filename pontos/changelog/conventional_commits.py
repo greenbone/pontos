@@ -19,16 +19,17 @@
 import re
 import subprocess
 import sys
-from argparse import ArgumentParser, FileType, Namespace
+from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Optional
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from pontos.helper import shell_cmd_runner
-from pontos.release.helper import get_project_name
+from pontos.errors import PontosError
+from pontos.git import Git, GitError, TagSort
+from pontos.release.helper import get_git_repository_name
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -36,37 +37,46 @@ from pontos.terminal.rich import RichTerminal
 ADDRESS = "https://github.com/"
 
 
+class ChangelogBuilderError(PontosError):
+    """
+    An error while building a changelog
+    """
+
+
 class ChangelogBuilder:
-    """Creates Changelog files from conventional commits
-    using the git log, from the latest tag"""
+    """
+    Creates Changelog files from conventional commits using the git log,
+    from the latest tag.
+    """
 
     def __init__(
         self,
+        *,
         terminal: Terminal,
-        args: Namespace,
+        config: Path,
+        current_version: str,
+        next_version: str,
+        space: str,
+        project: Optional[str] = None,
     ):
         self._terminal = terminal
         self.config: TOMLDocument = tomlkit.parse(
-            args.config.read_text(encoding="utf-8")
+            config.read_text(encoding="utf-8")
         )
-        self.project: str = (
-            args.project
-            if args.project is not None
-            else get_project_name(shell_cmd_runner)
+        self.project = (
+            project if project is not None else get_git_repository_name()
         )
-        self.space: str = args.space
-        changelog_dir: Path = Path.cwd() / self.config.get("changelog_dir")
-        changelog_dir.mkdir(parents=True, exist_ok=True)
-        self.output_file: Path = changelog_dir / args.output
-        self.current_version: str = args.current_version
-        self.next_version: str = args.next_version
+        self.space = space
 
-    def create_changelog_file(self) -> Union[Path, None]:
+        self.current_version = current_version
+        self.next_version = next_version
+
+    def create_changelog_file(self, output: str) -> Optional[Path]:
         commit_list = self._get_git_log()
         commit_dict = self._sort_commits(commit_list)
-        return self._build_changelog_file(commit_dict=commit_dict)
+        return self._build_changelog_file(commit_dict, output)
 
-    def _get_git_log(self) -> Union[List[str], None]:
+    def _get_git_log(self) -> List[str]:
         """Getting the git log for the current branch.
 
         If a last tag is found, the `git log` is searched up to the
@@ -75,30 +85,21 @@ class ChangelogBuilder:
           this is a initial release.
 
         Returns:
-            A list of `git log` entries or None
+            A list of `git log` entries
         """
-        # https://stackoverflow.com/a/12083016/6725620
-        # uses only latest tag for this branch
-        # catch this CalledProcessError on
-        # "No names found, cannot describe anything."
-        cmd: str = "git log HEAD --oneline"
+        git = Git()
+        latest_tag = None
         try:
-            # https://gist.github.com/rponte/fdc0724dd984088606b0
-            proc: subprocess.CompletedProcess = shell_cmd_runner(
-                "git tag | sort -V | tail -1"
-            )
-        except subprocess.CalledProcessError:
+            latest_tag = git.list_tags(sort=TagSort.VERSION)[-1]
+        except (GitError, IndexError):
             self._terminal.warning("No tag found.")
 
-        if proc.stdout and proc.stdout != "":
-            cmd: str = f'git log "{proc.stdout.strip()}..HEAD" --oneline'
+        if latest_tag:
+            return git.log(f"{latest_tag}..HEAD", oneline=True)
 
-        proc = shell_cmd_runner(cmd)
-        if proc.stdout and proc.stdout != "":
-            return proc.stdout.strip().split("\n")
-        return None
+        return git.log(oneline=True)
 
-    def _sort_commits(self, commits: List[str]):
+    def _sort_commits(self, commits: List[str]) -> Dict[str, List[str]]:
         """Sort the commits by commit type and group them
         in a dict
         ```
@@ -143,19 +144,25 @@ class ChangelogBuilder:
                             f"({commit_link}{commit[0]})"
                         )
                         self._terminal.info(f"{commit[0]}: {cleaned_msg}")
+
         if not commit_dict:
-            self._terminal.warning("No conventional commits found.")
-            sys.exit(1)
+            raise ChangelogBuilderError("No conventional commits found.")
+
         return commit_dict
 
-    def _build_changelog_file(self, commit_dict: Dict) -> Union[str, None]:
-        """Building the changelog file with the passed dict.
+    def _build_changelog_file(
+        self, commit_dict: Dict[str, List[str]], output: str
+    ) -> Optional[Path]:
+        """
+        Building the changelog file with the passed dict.
 
-        Arguments:
-            commit_dict     dict containing sorted commits
+        Args:
+            commit_dict: dict containing sorted commits
+            output: File name to write changelog into
 
         Returns:
-            The path to the changelog file or None"""
+            The path to the changelog file or None
+        """
 
         # changelog header
         changelog = (
@@ -191,10 +198,15 @@ class ChangelogBuilder:
 
         changelog += f"{pre}{compare_link}{diff}"
 
-        if changelog:
-            self.output_file.write_text(changelog, encoding="utf-8")
-            return self.output_file
-        return None
+        if not changelog:
+            return None
+
+        changelog_dir: Path = Path.cwd() / self.config.get("changelog_dir")
+        changelog_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = changelog_dir / output
+        output_path.write_text(changelog, encoding="utf-8")
+        return output_path
 
 
 def parse_args(args: Iterable[str] = None) -> ArgumentParser:
@@ -206,8 +218,8 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--config",
         "-C",
-        default=Path("changelog.toml"),
-        type=FileType("r"),
+        default="changelog.toml",
+        type=Path,
         help="Conventional commits config file (toml), including conventions.",
     )
 
@@ -236,8 +248,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--output",
         "-o",
-        default=Path("unreleased.md"),
-        type=FileType("r"),
+        default="unreleased.md",
         help="The path to the output file (.md)",
     )
 
@@ -260,8 +271,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
 
 def main(
     args=None,
-):
-
+) -> None:
     parsed_args = parse_args(args)
 
     if parsed_args.quiet:
@@ -275,12 +285,19 @@ def main(
         try:
             changelog_builder = ChangelogBuilder(
                 terminal=term,
-                args=parsed_args,
+                config=parsed_args.config,
+                project=args.project,
+                space=args.space,
+                current_version=args.current_version,
+                next_version=args.next_version,
             )
-            changelog_builder.create_changelog_file()
+            changelog_builder.create_changelog_file(args.output)
+        except ChangelogBuilderError as e:
+            term.error(str(e))
+            sys.exit(1)
         except subprocess.CalledProcessError as e:
             term.error(f'Could not run command "{e.cmd}".')
             term.out(f"Error was: {e.stderr}")
             sys.exit(1)
 
-    return sys.exit(0)
+    sys.exit(0)
