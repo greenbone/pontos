@@ -25,7 +25,7 @@ from pontos.github.api import GitHubRESTApi
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
 
-from .helper import get_current_version, get_project_name
+from .helper import get_current_version, get_git_repository_name
 
 
 def sign(
@@ -45,9 +45,7 @@ def sign(
         return False
 
     project: str = (
-        args.project
-        if args.project is not None
-        else get_project_name(shell_cmd_runner)
+        args.project if args.project is not None else get_git_repository_name()
     )
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
@@ -56,6 +54,9 @@ def sign(
         if args.release_version is not None
         else get_current_version(terminal)
     )
+    if not release_version:
+        return False
+
     signing_key: str = args.signing_key
 
     git_version: str = f"{git_tag_prefix}{release_version}"
