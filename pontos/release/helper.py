@@ -175,22 +175,20 @@ def get_next_dev_version(release_version: str) -> str:
         raise (VersionError(e)) from None
 
 
-def get_project_name(
-    shell_cmd_runner: Callable,
-    *,
+def get_git_repository_name(
     remote: str = "origin",
 ) -> str:
     """Get the git repository name
 
     Arguments:
-        shell_cmd_runner: The runner for shell commands
         remote: the remote to look up the name (str) default: origin
 
     Returns:
         project name
     """
-    ret = shell_cmd_runner(f"git remote get-url {remote}")
-    return ret.stdout.split("/")[-1].replace(".git", "").strip()
+
+    ret = Git().remote_url(remote)
+    return ret.rsplit("/", maxsplit=1)[-1].replace(".git", "").strip()
 
 
 def find_signing_key(terminal: Terminal, shell_cmd_runner: Callable) -> str:
