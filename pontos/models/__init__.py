@@ -82,12 +82,23 @@ class Model:
             # This could be done the following:
             # if not value.tzinfo:
             #     value = value.replace(tzinfo=timezone.utc)
-        elif (
-            get_origin(model_field_cls) == Union
-            or get_origin(model_field_cls) == list
-        ):
-            # it should be an Optional field
+        elif get_origin(model_field_cls) == list:
             model_field_cls = get_args(model_field_cls)[0]
+            value = Model._get_value_from_model_field_cls(
+                model_field_cls, value
+            )
+        elif get_origin(model_field_cls) == Union:
+            possible_types = get_args(model_field_cls)
+            current_type = type(value)
+            if current_type in possible_types:
+                model_field_cls = current_type
+            else:
+                # currently Unions should not contain Models. this would require
+                # to iterate over the possible type, check if it is a Model
+                # class and try to create an instance of this class until it
+                # fits. For now just fallback to first type
+                model_field_cls = possible_types[0]
+
             value = Model._get_value_from_model_field_cls(
                 model_field_cls, value
             )
