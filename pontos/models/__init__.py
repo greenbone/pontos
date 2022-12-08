@@ -73,6 +73,15 @@ class Model:
     ) -> Any:
         if isclass(model_field_cls) and issubclass(model_field_cls, Model):
             value = model_field_cls.from_dict(value)
+        elif isclass(model_field_cls) and issubclass(model_field_cls, datetime):
+            value = datetime.fromisoformat(value)
+            # the iso format may not contain UTC data or a UTC offset
+            # this means it is considered local time (Python calls this "naive"
+            # datetime) and can't really be compared to other times. maybe we
+            # should always assume UTC for these formats.
+            # This could be done the following:
+            # if not value.tzinfo:
+            #     value = value.replace(tzinfo=timezone.utc)
         elif (
             get_origin(model_field_cls) == Union
             or get_origin(model_field_cls) == list
