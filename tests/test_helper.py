@@ -32,6 +32,7 @@ from pontos.helper import (
     download,
     download_async,
     ensure_unload_module,
+    snake_case,
     unload_module,
 )
 from pontos.testing import temp_file, temp_python_module
@@ -540,3 +541,11 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
             import mymodule
+
+
+class SnakeCaseTestCase(unittest.TestCase):
+    def test_snake_case(self):
+        self.assertEqual(snake_case("CamelCase"), "camel_case")
+        self.assertEqual(snake_case("camelCase"), "camel_case")
+        self.assertEqual(snake_case("snakecase"), "snakecase")
+        self.assertEqual(snake_case("snake_case"), "snake_case")

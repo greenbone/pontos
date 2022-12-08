@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import subprocess
 import sys
 import warnings
@@ -432,3 +433,14 @@ def ensure_unload_module(
         yield
     finally:
         unload_module(module)
+
+
+def snake_case(value: str) -> str:
+    """
+    Convert a string to snake case/underscore naming scheme
+
+    Example:
+        snake_case("CamelCase") will return "camel_case"
+    """
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", value)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
