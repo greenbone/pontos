@@ -18,6 +18,9 @@
 # pylint: disable=no-member, disallowed-name
 
 import unittest
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import List, Optional, Union
 
 from pontos.models import Model, ModelAttribute, dotted_attributes
 
@@ -39,6 +42,101 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(model.hello, "World")
         self.assertEqual(model.baz, [1, 2, 3])
         self.assertEqual(model.bar.a, "b")
+
+
+class ExampleModelTestCase(unittest.TestCase):
+    def test_optional(self):
+        @dataclass
+        class OtherModel(Model):
+            something: str
+
+        @dataclass
+        class ExampleModel(Model):
+            foo: str
+            bar: Optional[OtherModel] = None
+
+        model = ExampleModel.from_dict({"foo": "abc"})
+
+        self.assertIsNone(model.bar)
+
+    def test_list(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: List[str]
+
+        model = ExampleModel.from_dict({"foo": ["a", "b", "c"]})
+        self.assertEqual(model.foo, ["a", "b", "c"])
+
+    def test_list_with_default(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: List[str] = field(default_factory=list)
+
+        model = ExampleModel.from_dict({})
+        self.assertEqual(model.foo, [])
+
+    def test_datetime(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: datetime
+
+        model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00.000"})
+
+        self.assertEqual(model.foo, datetime(1988, 10, 1, 4))
+
+    def test_union(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: Union[str, int]
+
+        model = ExampleModel.from_dict({"foo": "123"})
+
+        self.assertEqual(model.foo, "123")
+
+        model = ExampleModel.from_dict({"foo": 123})
+        self.assertEqual(model.foo, 123)
+
+    def test_other_model(self):
+        @dataclass
+        class OtherModel(Model):
+            bar: str
+
+        @dataclass
+        class ExampleModel(Model):
+            foo: Optional[OtherModel] = None
+
+        model = ExampleModel.from_dict({"foo": {"bar": "baz"}})
+        self.assertEqual(model.foo.bar, "baz")
+
+    def test_all(self):
+        @dataclass
+        class OtherModel(Model):
+            something: str
+
+        @dataclass
+        class ExampleModel(Model):
+            foo: str
+            bar: datetime
+            id: Union[str, int]
+            baz: List[str] = field(default_factory=list)
+            ipsum: Optional[OtherModel] = None
+
+        model = ExampleModel.from_dict(
+            {
+                "foo": "abc",
+                "bar": "1988-10-01T04:00:00.000",
+                "id": 123,
+                "baz": ["a", "b", "c"],
+                "ipsum": {"something": "def"},
+            }
+        )
+
+        self.assertEqual(model.foo, "abc")
+        self.assertEqual(model.bar, datetime(1988, 10, 1, 4))
+        self.assertEqual(model.id, 123)
+        self.assertEqual(model.baz, ["a", "b", "c"])
+        self.assertIsNotNone(model.ipsum)
+        self.assertEqual(model.ipsum.something, "def")
 
 
 class DottedAttributesTestCase(unittest.TestCase):
