@@ -15,65 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=no-member, disallowed-name, line-too-long
+# pylint: disable=line-too-long
 
 
 import unittest
 
 from pontos.github.api.teams import TeamPrivacy
-from pontos.github.models.base import (
-    App,
-    GitHubModel,
-    GitHubModelAttribute,
-    Permission,
-    Team,
-    User,
-    dotted_attributes,
-)
-
-
-class DottedAttributesTestCase(unittest.TestCase):
-    def test_with_new_class(self):
-        class Foo:
-            pass
-
-        foo = Foo()
-        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
-
-        foo = dotted_attributes(foo, attrs)
-
-        self.assertEqual(foo.bar, 123)
-        self.assertEqual(foo.baz, [1, 2, 3])
-        self.assertEqual(foo.hello, "World")
-
-    def test_with_github_model_attribute(self):
-        foo = GitHubModelAttribute()
-        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
-
-        foo = dotted_attributes(foo, attrs)
-
-        self.assertEqual(foo.bar, 123)
-        self.assertEqual(foo.baz, [1, 2, 3])
-        self.assertEqual(foo.hello, "World")
-
-
-class GitHubModelTestCase(unittest.TestCase):
-    def test_from_dict(self):
-        model = GitHubModel.from_dict(
-            {
-                "x": 1,
-                "y": 2,
-                "hello": "World",
-                "baz": [1, 2, 3],
-                "bar": {"a": "b"},
-            }
-        )
-
-        self.assertEqual(model.x, 1)
-        self.assertEqual(model.y, 2)
-        self.assertEqual(model.hello, "World")
-        self.assertEqual(model.baz, [1, 2, 3])
-        self.assertEqual(model.bar.a, "b")
+from pontos.github.models.base import App, Permission, Team, User
 
 
 class UserTestCase(unittest.TestCase):
