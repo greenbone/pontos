@@ -19,44 +19,10 @@
 
 import unittest
 from datetime import date, datetime
-from typing import Any, Dict, Optional
 
 from pontos.nvd.models import cvss_v2, cvss_v3
 from pontos.nvd.models.cve import CVE, CVSSType, Operator
-
-
-def get_cve_data(data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    cve = {
-        "id": "CVE-2022-45536",
-        "source_identifier": "cve@mitre.org",
-        "published": "2022-11-22T21:15:11.103",
-        "last_modified": "2022-11-23T16:02:07.367",
-        "vuln_status": "Analyzed",
-        "descriptions": [
-            {
-                "lang": "en",
-                "value": "AeroCMS v0.0.1 was discovered to contain a SQL "
-                "Injection vulnerability via the id parameter at "
-                "\\admin\\post_comments.php. This vulnerability allows "
-                "attackers to access database information.",
-            }
-        ],
-        "references": [
-            {
-                "url": "https://github.com/rdyx0/CVE/blob/master/AeroCMS/AeroCMS-v0.0.1-SQLi/post_comments_sql_injection/post_comments_sql_injection.md",
-                "source": "cve@mitre.org",
-                "tags": ["Exploit", "Third Party Advisory"],
-            },
-            {
-                "url": "https://rdyx0.github.io/2018/09/07/AeroCMS-v0.0.1-SQLi%20post_comments_sql_injection/",
-                "source": "cve@mitre.org",
-                "tags": ["Exploit", "Third Party Advisory"],
-            },
-        ],
-    }
-    if data:
-        cve.update(data)
-    return cve
+from tests.nvd import get_cve_data
 
 
 class CVETestCase(unittest.TestCase):
