@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -136,7 +136,7 @@ class CVE(Model):
     evaluator_comment: Optional[str] = None
     evaluator_solution: Optional[str] = None
     evaluator_impact: Optional[str] = None
-    cisa_exploit_add: Optional[str] = None
-    cisa_action_due: Optional[str] = None
+    cisa_exploit_add: Optional[date] = None
+    cisa_action_due: Optional[date] = None
     cisa_required_action: Optional[str] = None
     cisa_vulnerability_name: Optional[str] = None
