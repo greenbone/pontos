@@ -18,34 +18,38 @@
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
 from datetime import datetime
-from typing import List
+from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
-from pontos.nvd.cve.api import CVEApi, now
+from pontos.nvd.cve.api import CVEApi, now, sleep
 from pontos.nvd.models import cvss_v2, cvss_v3
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_data
 
 
-def create_cves_responses() -> List[MagicMock]:
-    data1 = {
-        "vulnerabilities": [{"cve": get_cve_data({"id": "CVE-1"})}],
+def create_cve_response(
+    cve_id: str, update: Optional[Dict[str, Any]] = None
+) -> MagicMock:
+    data = {
+        "vulnerabilities": [{"cve": get_cve_data({"id": cve_id})}],
         "results_per_page": 1,
-        "total_results": 2,
     }
-    data2 = {
-        "vulnerabilities": [{"cve": get_cve_data({"id": "CVE-2"})}],
-        "results_per_page": 1,
-        "total_results": 2,
-    }
-    response1 = MagicMock(spec=Response)
-    response1.json.return_value = data1
-    response2 = MagicMock(spec=Response)
-    response2.json.return_value = data2
-    return [response1, response2]
+    if update:
+        data.update(update)
+
+    response = MagicMock(spec=Response)
+    response.json.return_value = data
+    return response
+
+
+def create_cves_responses(count: int = 2) -> List[MagicMock]:
+    return [
+        create_cve_response(f"CVE-{i}", {"total_results": count})
+        for i in range(1, count + 1)
+    ]
 
 
 class CVEApiTestCase(IsolatedAsyncioTestCase):
@@ -521,6 +525,40 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             cve = await anext(it)
 
+    async def test_cves_keyword(self):
+        self.http_client.get.side_effect = create_cves_responses()
+
+        it = aiter(self.api.cves(keywords="Windows"))
+        cve = await anext(it)
+
+        self.assertEqual(cve.id, "CVE-1")
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cves/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "keywordSearch": "Windows",
+            },
+        )
+
+        self.http_client.get.reset_mock()
+
+        cve = await anext(it)
+
+        self.assertEqual(cve.id, "CVE-2")
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cves/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 1,
+                "resultsPerPage": 1,
+                "keywordSearch": "Windows",
+            },
+        )
+
+        with self.assertRaises(StopAsyncIteration):
+            cve = await anext(it)
+
     async def test_cves_cwe(self):
         self.http_client.get.side_effect = create_cves_responses()
 
@@ -739,3 +777,25 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         with self.assertRaises(StopAsyncIteration):
             cve = await anext(it)
+
+    async def test_context_manager(self):
+        async with self.api:
+            pass
+
+        self.http_client.__aenter__.assert_awaited_once()
+        self.http_client.__aexit__.assert_awaited_once()
+
+    @patch("pontos.nvd.cve.api.sleep", spec=sleep)
+    async def test_rate_limit(self, sleep_mock: MagicMock):
+        self.http_client.get.side_effect = create_cves_responses(6)
+        self.api._rate_limit = 5  # pylint: disable=protected-access
+
+        it = aiter(self.api.cves())
+        await anext(it)
+        await anext(it)
+        await anext(it)
+        await anext(it)
+        await anext(it)
+        await anext(it)
+
+        sleep_mock.assert_called_once_with()

@@ -58,6 +58,10 @@ def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
     return converted
 
 
+async def sleep() -> None:
+    await asyncio.sleep(SLEEP_TIMEOUT)
+
+
 class CVEApi:
     """
     API for querying the NIST NVD CVE information.
@@ -123,7 +127,7 @@ class CVEApi:
 
         self._request_count += 1
         if self._request_count > self._rate_limit:
-            await asyncio.sleep(SLEEP_TIMEOUT)
+            await sleep()
             self._request_count = 0
 
     async def _get(
