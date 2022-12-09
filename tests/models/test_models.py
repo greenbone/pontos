@@ -19,7 +19,7 @@
 
 import unittest
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional, Union
 
 from pontos.models import Model, ModelAttribute, dotted_attributes
@@ -83,6 +83,15 @@ class ExampleModelTestCase(unittest.TestCase):
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00.000"})
 
         self.assertEqual(model.foo, datetime(1988, 10, 1, 4))
+
+    def test_date(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: date
+
+        model = ExampleModel.from_dict({"foo": "1988-10-01"})
+
+        self.assertEqual(model.foo, date(1988, 10, 1))
 
     def test_union(self):
         @dataclass
