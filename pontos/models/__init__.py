@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from inspect import isclass
 from typing import Any, Dict, Type, Union, get_type_hints
 
@@ -82,6 +82,8 @@ class Model:
             # This could be done the following:
             # if not value.tzinfo:
             #     value = value.replace(tzinfo=timezone.utc)
+        elif isclass(model_field_cls) and issubclass(model_field_cls, date):
+            value = date.fromisoformat(value)
         elif get_origin(model_field_cls) == list:
             model_field_cls = get_args(model_field_cls)[0]
             value = Model._get_value_from_model_field_cls(
