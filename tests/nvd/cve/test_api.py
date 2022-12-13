@@ -24,7 +24,8 @@ from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
-from pontos.nvd.cve.api import CVEApi, now, sleep
+from pontos.nvd.api import now, sleep
+from pontos.nvd.cve.api import CVEApi
 from pontos.nvd.models import cvss_v2, cvss_v3
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_data
@@ -53,7 +54,7 @@ def create_cves_responses(count: int = 2) -> List[MagicMock]:
 
 
 class CVEApiTestCase(IsolatedAsyncioTestCase):
-    @patch("pontos.nvd.cve.api.AsyncClient", spec=AsyncClient)
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
     def setUp(self, async_client: MagicMock) -> None:
         self.http_client = AsyncMock()
         async_client.return_value = self.http_client
@@ -785,7 +786,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.__aenter__.assert_awaited_once()
         self.http_client.__aexit__.assert_awaited_once()
 
-    @patch("pontos.nvd.cve.api.sleep", spec=sleep)
+    @patch("pontos.nvd.api.sleep", spec=sleep)
     async def test_rate_limit(self, sleep_mock: MagicMock):
         self.http_client.get.side_effect = create_cves_responses(6)
         self.api._rate_limit = 5  # pylint: disable=protected-access
@@ -796,6 +797,9 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         await anext(it)
         await anext(it)
         await anext(it)
+
+        sleep_mock.assert_not_called()
+
         await anext(it)
 
         sleep_mock.assert_called_once_with()
