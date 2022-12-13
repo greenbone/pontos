@@ -17,12 +17,34 @@
 
 # pylint: disable=protected-access
 
+import unittest
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from httpx import AsyncClient
 
-from pontos.nvd.api import NVDApi, sleep
+from pontos.nvd.api import NVDApi, convert_camel_case, format_date, sleep
 from tests import IsolatedAsyncioTestCase
+
+
+class ConvertCamelCaseTestCase(unittest.TestCase):
+    def test_convert(self):
+        data = {
+            "someValue": 123,
+            "otherValue": "bar",
+        }
+
+        converted = convert_camel_case(data)
+        self.assertEqual(converted["some_value"], 123)
+        self.assertEqual(converted["other_value"], "bar")
+
+
+class FormatDateTestCase(unittest.TestCase):
+    def test_format_date(self):
+        dt = datetime(2022, 12, 10, 10, 0, 12, 123)
+        fd = format_date(dt)
+
+        self.assertEqual(fd, "2022-12-10T10:00:12")
 
 
 class NVDApiTestCase(IsolatedAsyncioTestCase):
