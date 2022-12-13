@@ -64,6 +64,18 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(PontosError):
             await self.api.cve(None)
 
+    async def test_no_cve(self):
+        data = {
+            "vulnerabilities": [],
+            "results_per_page": 1,
+        }
+        response = MagicMock(spec=Response)
+        response.json.return_value = data
+        self.http_client.get.return_value = response
+
+        with self.assertRaises(PontosError):
+            await self.api.cve("CVE-1")
+
     async def test_cve(self):
         data = {"vulnerabilities": [{"cve": get_cve_data()}]}
         response = MagicMock(spec=Response)
