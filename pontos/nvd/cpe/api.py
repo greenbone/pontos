@@ -75,7 +75,7 @@ class CPEApi(NVDApi):
             rate_limit=rate_limit,
         )
 
-    async def cpe(self, cpe_name_id: str) -> str:
+    async def cpe(self, cpe_name_id: str) -> CPE:
         """
         Returns a single CPE matching the CPE ID.
 

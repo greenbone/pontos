@@ -63,6 +63,44 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(PontosError):
             await self.api.cpe(None)
 
+    async def test_no_cpe(self):
+        data = {
+            "products": [],
+            "results_per_page": 1,
+        }
+        response = MagicMock(spec=Response)
+        response.json.return_value = data
+        self.http_client.get.return_value = response
+
+        with self.assertRaises(PontosError):
+            await self.api.cpe("CPE-1")
+
+    async def test_cpe(self):
+        self.http_client.get.return_value = create_cpe_response("CPE-1")
+
+        cpe = await self.api.cpe("CPE-1")
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cpes/2.0",
+            headers={},
+            params={"cpeNameId": "CPE-1"},
+        )
+
+        self.assertEqual(
+            cpe.cpe_name,
+            "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:arm64:*",
+        )
+        self.assertEqual(cpe.cpe_name_id, "CPE-1")
+        self.assertFalse(cpe.deprecated)
+        self.assertEqual(
+            cpe.last_modified, datetime(2022, 12, 9, 18, 15, 16, 973000)
+        )
+        self.assertEqual(cpe.created, datetime(2022, 12, 9, 16, 20, 6, 943000))
+
+        self.assertEqual(cpe.refs, [])
+        self.assertEqual(cpe.titles, [])
+        self.assertEqual(cpe.deprecated_by, [])
+
     @patch("pontos.nvd.api.sleep", spec=sleep)
     async def test_rate_limit(self, sleep_mock: MagicMock):
         self.http_client.get.side_effect = create_cpes_responses(6)
