@@ -52,3 +52,17 @@ def get_cve_data(data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     if data:
         cve.update(data)
     return cve
+
+
+def get_cpe_data(update: Dict[str, Any] = None) -> Dict[str, Any]:
+    data = {
+        "deprecated": False,
+        "cpe_name": "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:arm64:*",
+        "cpe_name_id": "9BAECDB2-614D-4E9C-9936-190C30246F03",
+        "last_modified": "2022-12-09T18:15:16.973",
+        "created": "2022-12-09T16:20:06.943",
+    }
+
+    if update:
+        data.update(update)
+    return data
