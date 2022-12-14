@@ -174,12 +174,11 @@ def _update_file(
                     )
                 return 1
             # replace found header and write it to file
-            if (
-                copyright_match
-                and (not copyright_match["modification_year"]
+            if copyright_match and (
+                not copyright_match["modification_year"]
                 and copyright_match["creation_year"] < parsed_args.year
                 or copyright_match["modification_year"]
-                and copyright_match["modification_year"] < parsed_args.year)
+                and copyright_match["modification_year"] < parsed_args.year
             ):
                 copyright_term = (
                     f'Copyright (C) {copyright_match["creation_year"]}'
@@ -342,7 +341,7 @@ def main() -> None:
     exclude_list = []
 
     if parsed_args.quiet:
-        term: Union[NullTerminal,RichTerminal] = NullTerminal()
+        term: Union[NullTerminal, RichTerminal] = NullTerminal()
     else:
         term = RichTerminal()
 
