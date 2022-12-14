@@ -117,7 +117,7 @@ def _update_file(
     regex: re.Pattern,
     parsed_args: Namespace,
     term: Terminal,
-) -> None:
+) -> int:
     """Function to update the given file.
     Checks if header exists. If not it adds an
     header to that file, else it checks if year
@@ -175,10 +175,11 @@ def _update_file(
                 return 1
             # replace found header and write it to file
             if (
-                not copyright_match["modification_year"]
+                copyright_match
+                and (not copyright_match["modification_year"]
                 and copyright_match["creation_year"] < parsed_args.year
                 or copyright_match["modification_year"]
-                and copyright_match["modification_year"] < parsed_args.year
+                and copyright_match["modification_year"] < parsed_args.year)
             ):
                 copyright_term = (
                     f'Copyright (C) {copyright_match["creation_year"]}'
@@ -341,7 +342,7 @@ def main() -> None:
     exclude_list = []
 
     if parsed_args.quiet:
-        term = NullTerminal()
+        term: Union[NullTerminal,RichTerminal] = NullTerminal()
     else:
         term = RichTerminal()
 
@@ -389,8 +390,6 @@ def main() -> None:
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
-
-    return 0
 
 
 if __name__ == "__main__":
