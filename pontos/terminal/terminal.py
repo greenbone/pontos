@@ -20,9 +20,9 @@ from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
 from shutil import get_terminal_size
-from typing import Any, Callable, Generator, Optional, List
+from typing import Any, Callable, Generator, Optional
 
-import colorful as cf # type: ignore
+import colorful as cf  # type: ignore
 
 from pontos.helper import DownloadProgressIterable
 
