@@ -20,9 +20,9 @@ from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
 from shutil import get_terminal_size
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, Optional, List
 
-import colorful as cf
+import colorful as cf # type: ignore
 
 from pontos.helper import DownloadProgressIterable
 
@@ -174,7 +174,7 @@ class ConsoleTerminal(Terminal):
 
     # Keep arguments for backwards compatibility but ignore them
     # pylint: disable=unused-argument
-    def __init__(self, *, verbose: int = 1, log_file: Path = None):
+    def __init__(self, *, verbose: int = 1, log_file: Optional[Path] = None):
         super().__init__()
 
     @staticmethod
@@ -201,15 +201,15 @@ class ConsoleTerminal(Terminal):
         # deal with existing newlines, to avoid breaking the formatting
         # done by the terminal
         message = "".join(messages)
-        messages = message.split("\n")
+        processed_messages = message.split("\n")
         output = self._format_message(
-            message=messages[0],
+            message=processed_messages[0],
             usable_width=usable_width,
             offset=offset,
             first=True,
         )
-        if len(messages) > 0:
-            for msg in messages[1:]:
+        if len(processed_messages) > 0:
+            for msg in processed_messages[1:]:
                 output += "\n"
                 output += self._format_message(
                     message=msg,
@@ -285,7 +285,7 @@ class ConsoleTerminal(Terminal):
         spinner = ["-", "\\", "|", "/"]
         if progress.length:
             for percent in progress:
-                done = int(50 * percent)
+                done = int(50 * percent) if percent else 0
                 self.out(
                     f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
                 )
