@@ -15,15 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
-from datetime import datetime, timezone
-from types import TracebackType
-from typing import Any, AsyncIterator, Dict, List, Optional, Type, Union
+from datetime import datetime
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from httpx import AsyncClient, Response, Timeout
+from httpx import Timeout
 
 from pontos.errors import PontosError
-from pontos.helper import snake_case
+from pontos.nvd.api import (
+    DEFAULT_TIMEOUT_CONFIG,
+    NVDApi,
+    convert_camel_case,
+    format_date,
+    now,
+)
 from pontos.nvd.models.cve import CVE
 from pontos.nvd.models.cvss_v2 import Severity as CVSSv2Severity
 from pontos.nvd.models.cvss_v3 import Severity as CVSSv3Severity
@@ -31,38 +35,9 @@ from pontos.nvd.models.cvss_v3 import Severity as CVSSv3Severity
 __all__ = ("CVEApi",)
 
 DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-DEFAULT_TIMEOUT = 180.0  # three minutes
-DEFAULT_TIMEOUT_CONFIG = Timeout(DEFAULT_TIMEOUT)  # three minutes
-
-SLEEP_TIMEOUT = 30.0  # in seconds
-
-Headers = Dict[str, str]
-Params = Dict[str, str]
 
 
-def now() -> datetime:
-    return datetime.now(tz=timezone.utc)
-
-
-def format_date(date: datetime) -> str:
-    return date.isoformat(timespec="seconds")
-
-
-def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Convert camel case keys into snake case keys
-    """
-    converted = {}
-    for key, value in dct.items():
-        converted[snake_case(key)] = value
-    return converted
-
-
-async def sleep() -> None:
-    await asyncio.sleep(SLEEP_TIMEOUT)
-
-
-class CVEApi:
+class CVEApi(NVDApi):
     """
     API for querying the NIST NVD CVE information.
 
@@ -96,53 +71,12 @@ class CVEApi:
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
         """
-        self._token = token
-        self._url = DEFAULT_NIST_NVD_CVES_URL
-        self._client = AsyncClient(http2=True, timeout=timeout)
-
-        if rate_limit:
-            self._rate_limit = 50 if token else 5
-        else:
-            self._rate_limit = None
-
-        self._request_count = 0
-
-    def _request_headers(self) -> Headers:
-        """
-        Get the default request headers
-        """
-        headers = {}
-
-        if self._token:
-            headers["apiKey"] = self._token
-
-        return headers
-
-    async def _consider_rate_limit(self) -> None:
-        """
-        Apply rate limit if necessary
-        """
-        if not self._rate_limit:
-            return
-
-        self._request_count += 1
-        if self._request_count > self._rate_limit:
-            await sleep()
-            self._request_count = 0
-
-    async def _get(
-        self,
-        *,
-        params: Optional[Params] = None,
-    ) -> Response:
-        """
-        A request against the NIST NVD CVE REST API.
-        """
-        headers = self._request_headers()
-
-        await self._consider_rate_limit()
-
-        return await self._client.get(self._url, headers=headers, params=params)
+        super().__init__(
+            DEFAULT_NIST_NVD_CVES_URL,
+            token=token,
+            timeout=timeout,
+            rate_limit=rate_limit,
+        )
 
     async def cves(
         self,
@@ -325,19 +259,8 @@ class CVEApi:
         response.raise_for_status()
         data = response.json(object_hook=convert_camel_case)
         vulnerabilities = data["vulnerabilities"]
+        if not vulnerabilities:
+            raise PontosError(f"No CVE with CVE ID '{cve_id}' found.")
+
         vulnerability = vulnerabilities[0]
         return CVE.from_dict(vulnerability["cve"])
-
-    async def __aenter__(self) -> "CVEApi":
-        # reset rate limit counter
-        self._request_count = 0
-        await self._client.__aenter__()
-        return self
-
-    async def __aexit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
-        return await self._client.__aexit__(exc_type, exc_value, traceback)
