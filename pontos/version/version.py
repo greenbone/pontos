@@ -50,7 +50,7 @@ class VersionCommand:
     def get_current_version(self) -> str:
         """Get the current version of this project"""
         # implementme.
-        return ""
+        raise NotImplementedError() ""
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
