@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from .helper import VersionError, initialize_default_parser
 
@@ -28,7 +28,10 @@ class VersionCommand:
     __quiet = False
 
     def __init__(
-        self, *, version_file_path: Path = None, project_file_path: Path = None
+        self,
+        *,
+        version_file_path: Optional[Path] = None,
+        project_file_path: Optional[Path] = None,
     ):
         # use this for a version file, e.g. used by
         # Greenbone in javascript or python
@@ -47,6 +50,7 @@ class VersionCommand:
     def get_current_version(self) -> str:
         """Get the current version of this project"""
         # implementme.
+        raise NotImplementedError()
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
@@ -70,7 +74,7 @@ class VersionCommand:
 
         self.__quiet = args.quiet
 
-        if not self.project_file_path.exists():
+        if self.project_file_path and not self.project_file_path.exists():
             raise VersionError(
                 f"Could not find {str(self.project_file_path)} file."
             )
