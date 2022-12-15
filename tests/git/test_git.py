@@ -57,7 +57,7 @@ class GitTestCase(unittest.TestCase):
         git.clone("http://foo/foo.git", Path("/bar"), depth=1)
 
         exec_git_mock.assert_called_once_with(
-            "clone", "--depth", 1, "http://foo/foo.git", "/bar", cwd=None
+            "clone", "--depth", "1", "http://foo/foo.git", "/bar", cwd=None
         )
 
     @patch("pontos.git.git.exec_git")
