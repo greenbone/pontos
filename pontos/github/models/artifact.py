@@ -16,8 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional
 
 from pontos.github.models.base import GitHubModel
+
+__all__ = ("Artifact",)
 
 
 @dataclass
@@ -38,7 +42,7 @@ class Artifact(GitHubModel):
     url: str
     archive_download_url: str
     expired: bool
-    created_at: str
-    expires_at: str
-    updated_at: str
-    workflow_run: ArtifactWorkflowRun
+    created_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    workflow_run: Optional[ArtifactWorkflowRun] = None

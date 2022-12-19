@@ -15,33 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
 from typing import AsyncIterator, Iterable, Optional
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.errors import GitHubApiError
-from pontos.github.api.helper import JSON, RepositoryType
+from pontos.github.api.helper import JSON
 from pontos.github.models.base import User
-from pontos.github.models.organization import Repository
-
-
-class MemberFilter(Enum):
-    TWO_FA_DISABLED = "2fa_disabled"
-    ALL = "all"
-
-
-class MemberRole(Enum):
-    ALL = "all"
-    ADMIN = "admin"
-    MEMBER = "member"
-
-
-class InvitationRole(Enum):
-    ADMIN = "admin"
-    DIRECT_MEMBER = "direct_member"
-    BILLING_MANAGER = "billing_manager"
+from pontos.github.models.organization import (
+    InvitationRole,
+    MemberFilter,
+    MemberRole,
+    Repository,
+    RepositoryType,
+)
 
 
 class GitHubAsyncRESTOrganizations(GitHubAsyncREST):

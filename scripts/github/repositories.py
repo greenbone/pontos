@@ -27,7 +27,7 @@ from rich.console import Console
 from rich.table import Table
 
 from pontos.github.api import GitHubAsyncRESTApi
-from pontos.github.api.helper import RepositoryType
+from pontos.github.models.organization import RepositoryType
 
 
 def repository_type(value: Union[str, RepositoryType]) -> RepositoryType:

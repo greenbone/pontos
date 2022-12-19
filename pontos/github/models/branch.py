@@ -20,16 +20,7 @@ from typing import List, Optional
 
 from pontos.github.models.base import App, GitHubModel, Team, User
 
-__all__ = (
-    "BranchProtection",
-    "BranchProtectionFeature",
-    "BypassPullRequestAllowances",
-    "DismissalRestrictions",
-    "RequiredPullRequestReviews",
-    "RequiredStatusChecks",
-    "Restrictions",
-    "StatusCheck",
-)
+__all__ = ("BranchProtection",)
 
 
 @dataclass

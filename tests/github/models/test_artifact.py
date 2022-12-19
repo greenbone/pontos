@@ -18,6 +18,7 @@
 # pylint: disable=line-too-long
 
 import unittest
+from datetime import datetime, timezone
 
 from pontos.github.models.artifact import Artifact
 
@@ -59,9 +60,18 @@ class ArtifactTestCase(unittest.TestCase):
             "https://api.github.com/repos/octo-org/octo-docs/actions/artifacts/11/zip",
         )
         self.assertFalse(artifact.expired)
-        self.assertEqual(artifact.created_at, "2020-01-10T14:59:22Z")
-        self.assertEqual(artifact.expires_at, "2020-03-21T14:59:22Z")
-        self.assertEqual(artifact.updated_at, "2020-02-21T14:59:22Z")
+        self.assertEqual(
+            artifact.created_at,
+            datetime(2020, 1, 10, 14, 59, 22, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            artifact.expires_at,
+            datetime(2020, 3, 21, 14, 59, 22, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            artifact.updated_at,
+            datetime(2020, 2, 21, 14, 59, 22, tzinfo=timezone.utc),
+        )
 
         workflow_run = artifact.workflow_run
         self.assertEqual(workflow_run.id, 1)

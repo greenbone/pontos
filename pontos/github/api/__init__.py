@@ -22,8 +22,6 @@ from pontos.github.api.helper import (
     JSON,
     JSON_OBJECT,
     FileStatus,
-    RepositoryType,
-    WorkflowRunStatus,
 )
 
 __all__ = [
@@ -34,6 +32,4 @@ __all__ = [
     "GitHubAsyncRESTApi",
     "DEFAULT_TIMEOUT_CONFIG",
     "DEFAULT_GITHUB_API_URL",
-    "RepositoryType",
-    "WorkflowRunStatus",
 ]

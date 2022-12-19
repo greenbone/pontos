@@ -15,20 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, Team, User
 from pontos.github.models.organization import Repository
 
-__all__ = ("PullRequest",)
+__all__ = (
+    "AuthorAssociation",
+    "FileStatus",
+    "MilestoneState",
+    "PullRequest",
+    "PullRequestCommit",
+    "PullRequestState",
+)
 
 
 @dataclass
 class CommitUser(GitHubModel):
     name: str
     email: str
-    date: str
+    date: datetime
 
 
 @dataclass
@@ -47,19 +56,52 @@ class CommitVerification(GitHubModel):
 
 @dataclass
 class Commit(GitHubModel):
-    url: str
-    author: CommitUser
-    committer: CommitUser
+    comment_count: int
     message: str
     tree: Tree
-    comment_count: str
+    url: str
     verification: CommitVerification
+    author: Optional[CommitUser] = None
+    committer: Optional[CommitUser] = None
 
 
 @dataclass
 class CommitParent(GitHubModel):
     url: str
     sha: str
+    html_url: Optional[str] = None
+
+
+@dataclass
+class Stats(GitHubModel):
+    additions: int
+    deletions: int
+    total: int
+
+
+class FileStatus(Enum):
+    ADDED = "added"
+    REMOVED = "removed"
+    MODIFIED = "modified"
+    RENAMED = "renamed"
+    COPIED = "copied"
+    CHANGED = "changed"
+    UNCHANGED = "unchanged"
+
+
+@dataclass
+class DiffEntry(GitHubModel):
+    additions: int
+    blob_url: str
+    changes: int
+    contents_url: str
+    deletions: int
+    filename: str
+    raw_url: str
+    sha: str
+    status: FileStatus
+    patch: Optional[str] = None
+    previous_filename: Optional[str] = None
 
 
 @dataclass
@@ -71,8 +113,10 @@ class PullRequestCommit(GitHubModel):
     comments_url: str
     commit: Commit
     author: User
-    committer: User
-    parents: List[CommitParent]
+    stats: Optional[Stats] = None
+    files: List[DiffEntry] = field(default_factory=list)
+    committer: Optional[User] = None
+    parents: List[CommitParent] = field(default_factory=list)
 
 
 @dataclass
@@ -81,29 +125,34 @@ class Label(GitHubModel):
     node_id: str
     url: str
     name: str
-    description: str
     color: str
     default: bool
+    description: Optional[str] = None
+
+
+class MilestoneState(Enum):
+    OPEN = "open"
+    CLOSED = "closed"
 
 
 @dataclass
 class Milestone(GitHubModel):
-    url: str
+    closed_issues: int
+    created_at: datetime
     html_url: str
-    labels_url: str
     id: int
+    labels_url: str
     node_id: str
     number: int
-    state: str
-    title: str
-    description: str
-    creator: User
     open_issues: int
-    closed_issues: int
-    created_at: str
-    updated_at: str
-    closed_at: str
-    due_on: str
+    state: MilestoneState
+    title: str
+    updated_at: datetime
+    url: str
+    closed_at: Optional[datetime] = None
+    creator: Optional[User] = None
+    description: Optional[str] = None
+    due_on: Optional[datetime] = None
 
 
 @dataclass
@@ -115,52 +164,68 @@ class PullRequestRef(GitHubModel):
     repo: Repository
 
 
+class PullRequestState(Enum):
+    OPEN = "open"
+    CLOSED = "closed"
+
+
+class AuthorAssociation(Enum):
+    COLLABORATOR = "COLLABORATOR"
+    CONTRIBUTOR = "CONTRIBUTOR"
+    FIRST_TIMER = "FIRST_TIMER"
+    FIRST_TIME_CONTRIBUTOR = "FIRST_TIME_CONTRIBUTOR"
+    MANNEQUIN = "MANNEQUIN"
+    MEMBER = "MEMBER"
+    NONE = "NONE"
+    OWNER = "OWNER"
+
+
 @dataclass
 class PullRequest(GitHubModel):
-    url: str
-    id: int
-    node_id: str
-    html_url: str
-    diff_url: str
-    patch_url: str
-    issue_url: str
-    commits_url: str
-    review_comments_url: str
-    review_comment_url: str
-    comments_url: str
-    statuses_url: str
-    number: int
-    state: str
-    locked: bool
-    title: str
-    user: User
-    body: str
-    labels: List[Label]
-    milestone: Milestone
-    active_lock_reason: str
-    created_at: str
-    updated_at: str
-    closed_at: str
-    merged_at: str
-    merge_commit_sha: str
-    assignee: User
-    assignees: List[User]
-    requested_reviewers: List[User]
-    requested_teams: List[Team]
-    head: PullRequestRef
-    base: PullRequestRef
-    author_association: str
-    draft: bool
-    merged: bool
-    mergeable: bool
-    rebaseable: bool
-    mergeable_state: str
-    merged_by: User
-    comments: int
-    review_comments: int
-    maintainer_can_modify: bool
-    commits: int
     additions: int
-    deletions: int
+    author_association: AuthorAssociation
+    base: PullRequestRef
     changed_files: int
+    comments_url: str
+    comments: int
+    commits_url: str
+    commits: int
+    created_at: datetime
+    deletions: int
+    diff_url: str
+    head: PullRequestRef
+    html_url: str
+    id: int
+    issue_url: str
+    locked: bool
+    maintainer_can_modify: bool
+    mergeable_state: str
+    merged: bool
+    node_id: str
+    number: int
+    patch_url: str
+    review_comment_url: str
+    review_comments_url: str
+    review_comments: int
+    state: PullRequestState
+    statuses_url: str
+    title: str
+    updated_at: datetime
+    url: str
+    user: User
+    active_lock_reason: Optional[str] = None
+    assignee: Optional[User] = None
+    assignees: List[User] = field(default_factory=list)
     auto_merge: Optional[bool] = None
+    body: Optional[str] = None
+    closed_at: Optional[datetime] = None
+    draft: Optional[bool] = None
+    labels: List[Label] = field(default_factory=list)
+    merge_commit_sha: Optional[str] = None
+    mergeable: Optional[bool] = None
+    merged_at: Optional[datetime] = None
+    merged_by: Optional[User] = None
+    milestone: Optional[Milestone] = None
+    rebaseable: Optional[bool] = None
+    requested_reviewers: List[User] = field(default_factory=list)
+    requested_teams: List[Team] = field(default_factory=list)

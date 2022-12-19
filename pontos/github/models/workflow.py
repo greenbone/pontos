@@ -15,12 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
 from typing import Dict, List, Optional
 
-from pontos.github.models.base import GitHubModel, User
+from pontos.github.models.base import Event, GitHubModel, User
 
-__all__ = ("Workflow", "WorkflowRun")
+__all__ = (
+    "Workflow",
+    "WorkflowState",
+    "WorkflowRun",
+    "WorkflowRunStatus",
+)
 
 
 @dataclass
@@ -34,9 +41,17 @@ class WorkflowRunCommit(GitHubModel):
     id: str
     tree_id: str
     message: str
-    timestamp: str
-    author: CommitUser
-    committer: CommitUser
+    timestamp: datetime
+    author: Optional[CommitUser] = None
+    committer: Optional[CommitUser] = None
+
+
+class WorkflowState(Enum):
+    ACTIVE = "active"
+    DELETED = "deleted"
+    DISABLED_FORK = "disabled_fork"
+    DISABLED_INACTIVITY = "disabled_inactivity"
+    DISABLED_MANUALLY = "disabled_manually"
 
 
 @dataclass
@@ -45,12 +60,13 @@ class Workflow(GitHubModel):
     node_id: str
     name: str
     path: str
-    state: str
-    created_at: str
-    updated_at: str
+    state: WorkflowState
+    created_at: datetime
+    updated_at: datetime
     url: str
     html_url: str
     badge_url: str
+    deleted_at: Optional[datetime] = None
 
 
 @dataclass
@@ -105,36 +121,66 @@ class WorkflowRunRepository(GitHubModel):
     hooks_url: Optional[str] = None
 
 
+class WorkflowRunStatus(Enum):
+    ACTION_REQUIRED = "action_required"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    FAILURE = "failure"
+    IN_PROGRESS = "in_progress"
+    NEUTRAL = "neutral"
+    QUEUED = "queued"
+    REQUESTED = "requested"
+    SKIPPED = "skipped"
+    STALE = "stale"
+    SUCCESS = "success"
+    TIMED_OUT = "timed_out"
+    WAITING = "waiting"
+
+
+@dataclass
+class WorkflowRunWorkflow(GitHubModel):
+    path: str
+    sha: str
+    ref: Optional[str] = None
+
+
 @dataclass
 class WorkflowRun(GitHubModel):
-    id: int
-    name: str
-    node_id: str
-    check_suite_id: int
-    check_suite_node_id: str
-    head_branch: str
-    head_sha: str
-    run_number: int
-    event: str
-    status: str
-    conclusion: Optional[str]
-    workflow_id: int
-    url: str
-    html_url: str
-    pull_requests: List[Dict]
-    created_at: str
-    updated_at: str
-    actor: User
-    run_attempt: int
-    run_started_at: str
-    triggering_actor: User
-    jobs_url: str
-    logs_url: str
-    check_suite_url: str
     artifacts_url: str
     cancel_url: str
-    rerun_url: str
-    workflow_url: str
-    head_commit: WorkflowRunCommit
-    repository: WorkflowRunRepository
+    check_suite_url: str
+    created_at: datetime
+    event: Event
     head_repository: WorkflowRunRepository
+    head_sha: str
+    html_url: str
+    id: int
+    jobs_url: str
+    logs_url: str
+    node_id: str
+    repository: WorkflowRunRepository
+    rerun_url: str
+    run_number: int
+    updated_at: datetime
+    url: str
+    workflow_id: int
+    workflow_url: str
+    actor: Optional[User] = None
+    check_suite_id: Optional[int] = None
+    check_suite_node_id: Optional[str] = None
+    conclusion: Optional[str] = None
+    display_title: Optional[str] = None
+    head_branch: Optional[str] = None
+    head_commit: Optional[WorkflowRunCommit] = None
+    head_repository_id: Optional[int] = None
+    name: Optional[str] = None
+    path: Optional[str] = None
+    previous_attempt_url: Optional[str] = None
+    pull_requests: List[Dict] = field(default_factory=list)
+    referenced_workflows: List[WorkflowRunWorkflow] = field(
+        default_factory=list
+    )
+    run_attempt: Optional[int] = None
+    run_started_at: Optional[datetime] = None
+    status: Optional[WorkflowRunStatus] = None
+    triggering_actor: Optional[User] = None
