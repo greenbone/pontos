@@ -18,6 +18,7 @@
 # pylint: disable=redefined-builtin,disallowed-name
 
 import unittest
+from enum import Enum
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
@@ -32,6 +33,7 @@ from pontos.helper import (
     download,
     download_async,
     ensure_unload_module,
+    enum_or_value,
     snake_case,
     unload_module,
 )
@@ -549,3 +551,18 @@ class SnakeCaseTestCase(unittest.TestCase):
         self.assertEqual(snake_case("camelCase"), "camel_case")
         self.assertEqual(snake_case("snakecase"), "snakecase")
         self.assertEqual(snake_case("snake_case"), "snake_case")
+
+
+class EnumOrValueTestCase(unittest.TestCase):
+    def test_value(self):
+        self.assertEqual(enum_or_value(None), None)
+        self.assertEqual(enum_or_value("foo"), "foo")
+        self.assertEqual(enum_or_value(123), 123)
+
+    def test_enum(self):
+        class Foo(Enum):
+            BAR = "bar"
+            BAZ = "baz"
+
+        self.assertEqual(enum_or_value(Foo.BAR), "bar")
+        self.assertEqual(enum_or_value(Foo.BAZ), "baz")
