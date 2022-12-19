@@ -50,7 +50,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/workflows"
         return self._get_paged_items(api, "workflows", Workflow)
 
-    async def get(self, repo: str, workflow: str) -> Workflow:
+    async def get(self, repo: str, workflow: Union[str, int]) -> Workflow:
         """
         Get the information for the given workflow
 
@@ -76,7 +76,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
     async def create_workflow_dispatch(
         self,
         repo: str,
-        workflow: str,
+        workflow: Union[str, int],
         *,
         ref: str,
         inputs: Dict[str, str] = None,
@@ -120,7 +120,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
     def get_workflow_runs(
         self,
         repo: str,
-        workflow: Optional[str] = None,
+        workflow: Optional[Union[str, int]] = None,
         *,
         actor: Optional[str] = None,
         branch: Optional[str] = None,
@@ -188,7 +188,9 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             api, "workflow_runs", WorkflowRun, params=params
         )
 
-    async def get_workflow_run(self, repo: str, run: str) -> WorkflowRun:
+    async def get_workflow_run(
+        self, repo: str, run: Union[str, int]
+    ) -> WorkflowRun:
         """
         Get information about a single workflow run
 
