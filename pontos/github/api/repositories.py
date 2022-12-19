@@ -27,6 +27,7 @@ from pontos.github.models.organization import (
     SquashMergeCommitMessage,
     SquashMergeCommitTitle,
 )
+from pontos.helper import enum_or_value
 
 
 class GitHubAsyncRESTRepositories(GitHubAsyncREST):
@@ -81,18 +82,22 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         is_template: Optional[bool] = False,
         team_id: Optional[str] = None,
         auto_init: Optional[str] = False,
-        gitignore_template: Optional[Union[str, GitIgnoreTemplate]] = None,
-        license_template: Optional[LicenseType] = None,
+        gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
+        license_template: Optional[Union[LicenseType, str]] = None,
         allow_squash_merge: Optional[bool] = True,
         allow_merge_commit: Optional[bool] = True,
         allow_rebase_merge: Optional[bool] = True,
         allow_auto_merge: Optional[bool] = False,
         allow_update_branch: Optional[bool] = False,
         delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None,
-        squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
-        merge_commit_title: Optional[MergeCommitTitle] = None,
-        merge_commit_message: Optional[MergeCommitMessage] = None,
+        squash_merge_commit_title: Optional[
+            Union[SquashMergeCommitTitle, str]
+        ] = None,
+        squash_merge_commit_message: Optional[
+            Union[SquashMergeCommitMessage, str]
+        ] = None,
+        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
+        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
     ) -> Repository:
         """
         Create a new repository at GitHub
@@ -211,7 +216,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 else gitignore_template
             )
         if license_template:
-            data["license_template"] = license_template.value
+            data["license_template"] = enum_or_value(license_template)
         if allow_squash_merge is not None:
             data["allow_squash_merge"] = allow_squash_merge
         if allow_merge_commit is not None:
@@ -225,15 +230,17 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if delete_branch_on_merge is not None:
             data["delete_branch_on_merge"] = delete_branch_on_merge
         if squash_merge_commit_title:
-            data["squash_merge_commit_title"] = squash_merge_commit_title.value
+            data["squash_merge_commit_title"] = enum_or_value(
+                squash_merge_commit_title
+            )
         if squash_merge_commit_message:
-            data[
-                "squash_merge_commit_message"
-            ] = squash_merge_commit_message.value
+            data["squash_merge_commit_message"] = enum_or_value(
+                squash_merge_commit_message
+            )
         if merge_commit_title:
-            data["merge_commit_title"] = merge_commit_title.value
+            data["merge_commit_title"] = enum_or_value(merge_commit_title)
         if merge_commit_message:
-            data["merge_commit_message"] = merge_commit_message.value
+            data["merge_commit_message"] = enum_or_value(merge_commit_message)
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
@@ -277,10 +284,14 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         allow_auto_merge: Optional[bool] = False,
         allow_update_branch: Optional[bool] = False,
         delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None,
-        squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
-        merge_commit_title: Optional[MergeCommitTitle] = None,
-        merge_commit_message: Optional[MergeCommitMessage] = None,
+        squash_merge_commit_title: Optional[
+            Union[SquashMergeCommitTitle, str]
+        ] = None,
+        squash_merge_commit_message: Optional[
+            Union[SquashMergeCommitMessage, str]
+        ] = None,
+        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
+        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
         allow_forking: Optional[bool] = False,
         web_commit_signoff_required: Optional[bool] = False,
     ) -> Repository:
@@ -398,15 +409,17 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if delete_branch_on_merge is not None:
             data["delete_branch_on_merge"] = delete_branch_on_merge
         if squash_merge_commit_title:
-            data["squash_merge_commit_title"] = squash_merge_commit_title.value
+            data["squash_merge_commit_title"] = enum_or_value(
+                squash_merge_commit_title
+            )
         if squash_merge_commit_message:
-            data[
-                "squash_merge_commit_message"
-            ] = squash_merge_commit_message.value
+            data["squash_merge_commit_message"] = enum_or_value(
+                squash_merge_commit_message
+            )
         if merge_commit_title:
-            data["merge_commit_title"] = merge_commit_title.value
+            data["merge_commit_title"] = enum_or_value(merge_commit_title)
         if merge_commit_message:
-            data["merge_commit_message"] = merge_commit_message.value
+            data["merge_commit_message"] = enum_or_value(merge_commit_message)
         if allow_forking is not None:
             data["allow_forking"] = allow_forking
         if web_commit_signoff_required is not None:

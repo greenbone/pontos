@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncIterator, Iterable, Optional
+from typing import AsyncIterator, Iterable, Optional, Union
 
 import httpx
 
@@ -30,6 +30,7 @@ from pontos.github.models.organization import (
     Repository,
     RepositoryType,
 )
+from pontos.helper import enum_or_value
 
 
 class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
@@ -48,7 +49,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        repository_type: RepositoryType = RepositoryType.ALL,
+        repository_type: Union[RepositoryType, str] = RepositoryType.ALL,
     ) -> AsyncIterator[Repository]:
         """
         Get information about organization repositories
@@ -57,12 +58,13 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
 
         Args:
             organization: GitHub organization to use
+            repository_type: Only list repositories of this type.
 
         Raises:
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/repos"
-        params = {"type": repository_type.value, "per_page": "100"}
+        params = {"type": enum_or_value(repository_type), "per_page": "100"}
 
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
@@ -73,8 +75,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        member_filter: MemberFilter = MemberFilter.ALL,
-        role: MemberRole = MemberRole.ALL,
+        member_filter: Union[MemberFilter, str] = MemberFilter.ALL,
+        role: Union[MemberRole, str] = MemberRole.ALL,
     ) -> AsyncIterator[User]:
         """
         Get information about organization members
@@ -83,16 +85,17 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
 
         Args:
             organization: GitHub organization to use
-            member_filter:
+            member_filter: Include only members of this kind.
+            role: Filter members by their role.
 
         Raises:
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/members"
         params = {
-            "filter": member_filter.value,
+            "filter": enum_or_value(member_filter),
+            "role": enum_or_value(role),
             "per_page": "100",
-            "role": role.value,
         }
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
@@ -106,7 +109,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         *,
         email: Optional[str] = None,
         invitee_id: Optional[str] = None,
-        role: InvitationRole = InvitationRole.DIRECT_MEMBER,
+        role: Union[InvitationRole, str] = InvitationRole.DIRECT_MEMBER,
         team_ids: Iterable[str] = None,
     ) -> None:
         """
@@ -139,7 +142,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             raise GitHubApiError("Either email or invitee_id must be provided")
 
         api = f"/orgs/{organization}/invitations"
-        data = {"role": role.value}
+        data = {"role": enum_or_value(role)}
         if team_ids:
             data["team_ids"] = list(team_ids)
 
@@ -177,7 +180,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        member_filter: MemberFilter = MemberFilter.ALL,
+        member_filter: Union[MemberFilter, str] = MemberFilter.ALL,
     ) -> AsyncIterator[User]:
         """
         Get information about outside collaborators of an organization
@@ -193,7 +196,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         """
         api = f"/orgs/{organization}/outside_collaborators"
         params = {
-            "filter": member_filter.value,
+            "filter": enum_or_value(member_filter),
             "per_page": "100",
         }
         async for response in self._client.get_all(api, params=params):

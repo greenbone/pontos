@@ -15,13 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncIterator, Dict, Iterable, Optional
+from typing import AsyncIterator, Dict, Iterable, Optional, Union
 
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
-from pontos.github.models.workflow import Workflow, WorkflowRun
+from pontos.github.models.base import Event
+from pontos.github.models.workflow import (
+    Workflow,
+    WorkflowRun,
+    WorkflowRunStatus,
+)
+from pontos.helper import enum_or_value
 
 
 class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
@@ -118,8 +124,8 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         *,
         actor: Optional[str] = None,
         branch: Optional[str] = None,
-        event: Optional[str] = None,
-        status: Optional[str] = None,
+        event: Optional[Union[Event, str]] = None,
+        status: Optional[Union[WorkflowRunStatus, str]] = None,
         created: Optional[str] = None,
         exclude_pull_requests: Optional[bool] = None,
     ) -> AsyncIterator[WorkflowRun]:
@@ -170,9 +176,9 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         if branch:
             params["branch"] = branch
         if event:
-            params["event"] = event
+            params["event"] = enum_or_value(event)
         if status:
-            params["status"] = status
+            params["status"] = enum_or_value(status)
         if created:
             params["created"] = created
         if exclude_pull_requests is not None:
