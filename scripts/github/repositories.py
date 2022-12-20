@@ -61,7 +61,10 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         args.organization, repository_type=args.type
     ):
         table.add_row(
-            repo.name, repo.description, repo.html_url, repo.visibility
+            repo.name,
+            repo.description,
+            f"[link={repo.html_url}]{repo.html_url}[/link]",
+            repo.visibility,
         )
 
         repo_count += 1
