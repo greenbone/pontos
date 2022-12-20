@@ -58,6 +58,7 @@ from pontos.github.api.release import (
     GitHubRESTReleaseMixin,
 )
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
+from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.workflows import (
     GitHubAsyncRESTWorkflows,
@@ -161,6 +162,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Teams related API
         """
         return GitHubAsyncRESTTeams(self._client)
+
+    @property
+    def tags(self) -> GitHubAsyncRESTTags:
+        """
+        Tags related API
+        """
+        return GitHubAsyncRESTTags(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
