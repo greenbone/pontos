@@ -73,7 +73,10 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     async for user in api.organizations.members(
         args.organization, member_filter=args.filter, role=args.role
     ):
-        table.add_row(user.login, user.html_url)
+        table.add_row(
+            user.login,
+            f"[link={user.html_url}]{user.html_url}[/link]",
+        )
         member_count += 1
 
     console = Console()

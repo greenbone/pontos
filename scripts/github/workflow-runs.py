@@ -76,7 +76,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         table.add_row(
             run.name,
             str(run.id),
-            run.html_url,
+            f"[link={run.html_url}]{run.html_url}[/link]",
             run.head_branch,
             run.event.value,
             run.conclusion,
