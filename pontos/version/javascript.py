@@ -18,6 +18,7 @@
 import json
 import re
 from pathlib import Path
+from typing import Optional
 
 from pontos.version.helper import (
     VersionError,
@@ -33,7 +34,7 @@ GREENBONE_JS_VERSION_FILE = Path("src/version.js")
 
 # This class is used for JavaScript Version command(s)
 class JavaScriptVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
+    def __init__(self, *, project_file_path: Optional[Path] = None) -> None:
         if not project_file_path:
             project_file_path = Path.cwd() / "package.json"
 
@@ -50,6 +51,7 @@ class JavaScriptVersionCommand(VersionCommand):
         super().__init__(
             project_file_path=project_file_path,
         )
+        self.project_file_path: Path
 
     def get_current_version(self) -> str:
         """Get the current version of this project
