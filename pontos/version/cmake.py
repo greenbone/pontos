@@ -18,7 +18,7 @@
 
 import re
 from pathlib import Path
-from typing import Generator, Tuple
+from typing import Generator, Optional, Tuple
 
 from packaging.version import Version
 
@@ -33,9 +33,7 @@ from .version import VersionCommand
 
 
 class CMakeVersionCommand(VersionCommand):
-    project_file_path = None
-
-    def __init__(self, *, project_file_path: Path = None):
+    def __init__(self, *, project_file_path: Optional[Path] = None):
         if not project_file_path:
             project_file_path = Path.cwd() / "CMakeLists.txt"
         if not project_file_path.exists():
@@ -44,6 +42,7 @@ class CMakeVersionCommand(VersionCommand):
         super().__init__(
             project_file_path=project_file_path,
         )
+        self.project_file_path: Path
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
@@ -89,7 +88,7 @@ class CMakeVersionParser:
         self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
-    __cmake_scanner = re.Scanner(
+    __cmake_scanner = re.Scanner(  # type: ignore
         [
             (r"#.*", lambda _, token: ("comment", token)),
             (r'"[^"]*"', lambda _, token: ("string", token)),
@@ -142,18 +141,20 @@ class CMakeVersionParser:
 
         return "\n".join(self._cmake_content_lines)
 
-    def _find_version_in_cmake(self, content: str) -> Tuple[int, str]:
+    def _find_version_in_cmake(
+        self, content: str
+    ) -> Tuple[int, str, Optional[int], Optional[str]]:
         in_project = False
         in_version = False
 
-        version_line_no: int = None
-        version: str = None
+        version_line_no: Optional[int] = None
+        version: Optional[str] = None
 
         in_set = False
         in_project_dev_version = False
 
-        project_dev_version_line_no: int = None
-        project_dev_version: int = None
+        project_dev_version_line_no: Optional[int] = None
+        project_dev_version: Optional[str] = None
 
         for lineno, token_type, value in self._tokenize(content):
             if token_type == "word" and value == "project":
@@ -218,3 +219,5 @@ class CMakeVersionParser:
         for tok_type, tok_contents in toks:
             line_num += tok_contents.count("\n")
             yield line_num, tok_type, tok_contents.strip()
+
+        assert False, "unreachable"

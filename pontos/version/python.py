@@ -17,6 +17,7 @@
 
 import importlib
 from pathlib import Path
+from typing import Optional
 
 import tomlkit
 
@@ -39,7 +40,7 @@ __version__ = "{}"\n"""
 
 # This class is used for Python Version command(s)
 class PythonVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
+    def __init__(self, *, project_file_path: Optional[Path] = None) -> None:
         if not project_file_path:
             project_file_path = Path.cwd() / "pyproject.toml"
 
@@ -52,21 +53,21 @@ class PythonVersionCommand(VersionCommand):
 
         if (
             "tool" not in self.pyproject_toml
-            or "pontos" not in self.pyproject_toml["tool"]
-            or "version" not in self.pyproject_toml["tool"]["pontos"]
+            or "pontos" not in self.pyproject_toml["tool"]  # type: ignore
+            or "version" not in self.pyproject_toml["tool"]["pontos"]  # type: ignore # pylint: disable=line-too-long
         ):
             raise VersionError(
                 "[tool.pontos.version] section missing "
                 f"in {str(project_file_path)}."
             )
 
-        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][
-            "version"
-        ]
+        pontos_version_settings: tomlkit.items.Table = (  # fmt: skip
+            self.pyproject_toml["tool"]["pontos"]["version"]  # type: ignore
+        )
 
         try:
             version_file_path = Path(
-                pontos_version_settings["version-module-file"]
+                pontos_version_settings["version-module-file"].as_string()
             )
         except tomlkit.exceptions.NonExistentKey:
             raise VersionError(
@@ -78,6 +79,8 @@ class PythonVersionCommand(VersionCommand):
             version_file_path=version_file_path,
             project_file_path=project_file_path,
         )
+        self.version_file_path: Path
+        self.project_file_path: Path
 
     def _get_version_from_pyproject_toml(self) -> str:
         """
@@ -87,10 +90,10 @@ class PythonVersionCommand(VersionCommand):
 
         if (
             "tool" in self.pyproject_toml
-            and "poetry" in self.pyproject_toml["tool"]
-            and "version" in self.pyproject_toml["tool"]["poetry"]
+            and "poetry" in self.pyproject_toml["tool"]  # type: ignore
+            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long
         ):
-            return self.pyproject_toml["tool"]["poetry"]["version"]
+            return self.pyproject_toml["tool"]["poetry"]["version"]  # type: ignore # pylint: disable=line-too-long
 
         raise VersionError(
             "Version information not found in "
@@ -120,15 +123,14 @@ class PythonVersionCommand(VersionCommand):
             tool_table = tomlkit.table()
             pyproject_toml["tool"] = tool_table
 
-        if "poetry" not in pyproject_toml["tool"]:
+        if "poetry" not in pyproject_toml["tool"]:  # type: ignore
             poetry_table = tomlkit.table()
             # pylint: disable=line-too-long
             # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member)
             # pylint: disable=no-member
-            pyproject_toml["tool"].add("poetry", poetry_table)
+            pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
 
-        pyproject_toml["tool"]["poetry"]["version"] = new_version
-
+        pyproject_toml["tool"]["poetry"]["version"] = new_version  # type: ignore # pylint: disable=line-too-long
         self.project_file_path.write_text(
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
         )
