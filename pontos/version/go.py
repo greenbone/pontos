@@ -18,6 +18,7 @@
 import subprocess
 from pathlib import Path
 from subprocess import CalledProcessError
+from typing import Optional
 
 from .helper import (
     VersionError,
@@ -30,7 +31,7 @@ from .version import VersionCommand
 
 # This class is used for Python Version command(s)
 class GoVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
+    def __init__(self, *, project_file_path: Optional[Path] = None) -> None:
         if not project_file_path:
             project_file_path = Path.cwd() / "go.mod"
 
