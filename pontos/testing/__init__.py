@@ -139,9 +139,9 @@ def temp_git_repository(
 
 @contextmanager
 def temp_file(
-    content: str,
+    content: Optional[str] = None,
     *,
-    name: Optional[str] = "test.toml",
+    name: str = "test.toml",
     change_into: bool = False,
 ) -> Generator[Path, None, None]:
     """
@@ -166,7 +166,11 @@ def temp_file(
     """
     with temp_directory(change_into=change_into) as tmp_dir:
         test_file = tmp_dir / name
-        test_file.write_text(content, encoding="utf8")
+        if content:
+            test_file.write_text(content, encoding="utf8")
+        else:
+            test_file.touch()
+
         yield test_file
 
 
