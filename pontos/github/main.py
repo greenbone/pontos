@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import sys
 
 from pontos.github.argparser import parse_args
@@ -37,7 +38,7 @@ def main(args=None):
             term.error("A Github User Token is required.")
             sys.exit(1)
 
-        parsed_args.func(term, parsed_args)
+        asyncio.run(parsed_args.func(term, parsed_args))
 
 
 if __name__ == "__main__":
