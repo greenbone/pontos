@@ -203,7 +203,7 @@ class CMakeVersionParser:
             else False
         )
 
-    def _tokenize(
+    def _tokenize(  # type: ignore
         self, content: str
     ) -> Generator[
         Tuple[int, str, str],
@@ -219,5 +219,3 @@ class CMakeVersionParser:
         for tok_type, tok_contents in toks:
             line_num += tok_contents.count("\n")
             yield line_num, tok_type, tok_contents.strip()
-
-        assert False, "unreachable"
