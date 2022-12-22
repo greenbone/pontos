@@ -121,6 +121,14 @@ class TempFileTestCase(unittest.TestCase):
 
         self.assertFalse(test_file.exists())
 
+    def test_temp_file_without_content(self):
+        with temp_file(name="foo.bar") as test_file:
+            self.assertTrue(test_file.exists())
+            self.assertTrue(test_file.is_file())
+            self.assertEqual("", test_file.read_text(encoding="utf8"))
+
+        self.assertFalse(test_file.exists())
+
     def test_temp_file_exception(self):
         try:
             with temp_file("my content") as test_file:
