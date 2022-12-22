@@ -229,7 +229,7 @@ def parse_args(
     label_parser.set_defaults(func=labels)
 
     label_parser.add_argument(
-        "repo", help=("GitHub repository (owner/name) to use")
+        "repo", help="GitHub repository (owner/name) to use"
     )
 
     label_parser.add_argument(
@@ -286,7 +286,7 @@ def parse_args(
     repos_parser.add_argument(
         "-p",
         "--path",
-        help="Define the Path to save the Repository Information JSON",
+        help="Define the Path to save the Repository Information",
     )
 
     # create a release from command line
