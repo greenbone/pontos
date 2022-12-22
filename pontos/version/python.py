@@ -67,7 +67,7 @@ class PythonVersionCommand(VersionCommand):
 
         try:
             version_file_path = Path(
-                pontos_version_settings["version-module-file"].as_string()
+                pontos_version_settings["version-module-file"]  # type:ignore
             )
         except tomlkit.exceptions.NonExistentKey:
             raise VersionError(
