@@ -18,6 +18,7 @@
 # pylint: disable=line-too-long, redefined-builtin
 
 import unittest
+from datetime import datetime, timezone
 
 from pontos.github.models.organization import License, Repository
 
@@ -378,9 +379,18 @@ class RepositoryTestCase(unittest.TestCase):
             repo.deployments_url,
             "https://api.github.com/repos/greenbone/gvm-tools/deployments",
         )
-        self.assertEqual(repo.created_at, "2017-09-15T10:54:42Z")
-        self.assertEqual(repo.updated_at, "2022-11-01T07:45:33Z")
-        self.assertEqual(repo.pushed_at, "2022-11-07T09:21:30Z")
+        self.assertEqual(
+            repo.created_at,
+            datetime(2017, 9, 15, 10, 54, 42, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.updated_at,
+            datetime(2022, 11, 1, 7, 45, 33, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.pushed_at,
+            datetime(2022, 11, 7, 9, 21, 30, tzinfo=timezone.utc),
+        )
         self.assertEqual(
             repo.git_url, "git://github.com/greenbone/gvm-tools.git"
         )

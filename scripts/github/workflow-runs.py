@@ -78,9 +78,9 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             str(run.id),
             run.html_url,
             run.head_branch,
-            run.event,
+            run.event.value,
             run.conclusion,
-            run.updated_at,
+            str(run.updated_at),
             run.actor.login,
         )
         count += 1

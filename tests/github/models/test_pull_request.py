@@ -18,9 +18,15 @@
 # pylint: disable=line-too-long, too-many-lines
 
 import unittest
+from datetime import datetime, timezone
 
 from pontos.github.models.base import Permission, TeamPrivacy
-from pontos.github.models.pull_request import PullRequest
+from pontos.github.models.pull_request import (
+    AuthorAssociation,
+    MilestoneState,
+    PullRequest,
+    PullRequestState,
+)
 
 
 class PullRequestTestCase(unittest.TestCase):
@@ -594,19 +600,27 @@ class PullRequestTestCase(unittest.TestCase):
             "https://api.github.com/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e",
         )
         self.assertEqual(pr.number, 1347)
-        self.assertEqual(pr.state, "open")
+        self.assertEqual(pr.state, PullRequestState.OPEN)
         self.assertTrue(pr.locked)
         self.assertEqual(pr.title, "Amazing new feature")
         self.assertEqual(pr.body, "Please pull these awesome changes in!")
         self.assertEqual(pr.active_lock_reason, "too heated")
-        self.assertEqual(pr.created_at, "2011-01-26T19:01:12Z")
-        self.assertEqual(pr.updated_at, "2011-01-26T19:01:12Z")
-        self.assertEqual(pr.closed_at, "2011-01-26T19:01:12Z")
-        self.assertEqual(pr.merged_at, "2011-01-26T19:01:12Z")
+        self.assertEqual(
+            pr.created_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+        )
+        self.assertEqual(
+            pr.updated_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+        )
+        self.assertEqual(
+            pr.closed_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+        )
+        self.assertEqual(
+            pr.merged_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+        )
         self.assertEqual(
             pr.merge_commit_sha, "e5bd3914e2e596debea16f433f57875b5b90bcd6"
         )
-        self.assertEqual(pr.author_association, "OWNER")
+        self.assertEqual(pr.author_association, AuthorAssociation.OWNER)
         self.assertEqual(pr.auto_merge, None)
         self.assertEqual(pr.draft, False)
         self.assertEqual(pr.merged, False)
@@ -696,17 +710,29 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertEqual(milestone.id, 1002604)
         self.assertEqual(milestone.node_id, "MDk6TWlsZXN0b25lMTAwMjYwNA==")
         self.assertEqual(milestone.number, 1)
-        self.assertEqual(milestone.state, "open")
+        self.assertEqual(milestone.state, MilestoneState.OPEN)
         self.assertEqual(milestone.title, "v1.0")
         self.assertEqual(
             milestone.description, "Tracking milestone for version 1.0"
         )
         self.assertEqual(milestone.open_issues, 4)
         self.assertEqual(milestone.closed_issues, 8)
-        self.assertEqual(milestone.created_at, "2011-04-10T20:09:31Z")
-        self.assertEqual(milestone.updated_at, "2014-03-03T18:58:10Z")
-        self.assertEqual(milestone.closed_at, "2013-02-12T13:22:01Z")
-        self.assertEqual(milestone.due_on, "2012-10-09T23:39:01Z")
+        self.assertEqual(
+            milestone.created_at,
+            datetime(2011, 4, 10, 20, 9, 31, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            milestone.updated_at,
+            datetime(2014, 3, 3, 18, 58, 10, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            milestone.closed_at,
+            datetime(2013, 2, 12, 13, 22, 1, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            milestone.due_on,
+            datetime(2012, 10, 9, 23, 39, 1, tzinfo=timezone.utc),
+        )
 
         creator = milestone.creator
         self.assertEqual(creator.login, "octocat")
@@ -1204,9 +1230,18 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertFalse(repo.has_discussions)
         self.assertFalse(repo.archived)
         self.assertFalse(repo.disabled)
-        self.assertEqual(repo.pushed_at, "2011-01-26T19:06:43Z")
-        self.assertEqual(repo.created_at, "2011-01-26T19:01:12Z")
-        self.assertEqual(repo.updated_at, "2011-01-26T19:14:43Z")
+        self.assertEqual(
+            repo.pushed_at,
+            datetime(2011, 1, 26, 19, 6, 43, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.created_at,
+            datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.updated_at,
+            datetime(2011, 1, 26, 19, 14, 43, tzinfo=timezone.utc),
+        )
         self.assertTrue(repo.allow_rebase_merge)
         self.assertTrue(repo.allow_squash_merge)
         self.assertTrue(repo.allow_merge_commit)
@@ -1509,9 +1544,18 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertFalse(repo.has_discussions)
         self.assertFalse(repo.archived)
         self.assertFalse(repo.disabled)
-        self.assertEqual(repo.pushed_at, "2011-01-26T19:06:43Z")
-        self.assertEqual(repo.created_at, "2011-01-26T19:01:12Z")
-        self.assertEqual(repo.updated_at, "2011-01-26T19:14:43Z")
+        self.assertEqual(
+            repo.pushed_at,
+            datetime(2011, 1, 26, 19, 6, 43, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.created_at,
+            datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            repo.updated_at,
+            datetime(2011, 1, 26, 19, 14, 43, tzinfo=timezone.utc),
+        )
         self.assertTrue(repo.allow_rebase_merge)
         self.assertTrue(repo.allow_squash_merge)
         self.assertTrue(repo.allow_merge_commit)

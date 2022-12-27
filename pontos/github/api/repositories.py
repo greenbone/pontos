@@ -15,87 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
 from typing import Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.models.organization import Repository
-
-
-class GitIgnoreTemplate(Enum):
-    """
-    Just a small part of the available gitignore templates at
-    https://github.com/github/gitignore
-    """
-
-    C = "C"
-    CPP = "C++"
-    CMAKE = "CMake"
-    GO = "Go"
-    JAVA = "Java"
-    MAVEN = "Maven"
-    NODE = "Node"
-    PYTHON = "Python"
-    RUST = "Rust"
-
-
-class SquashMergeCommitTitle(Enum):
-    PR_TITLE = "PR_TITLE"
-    COMMIT_OR_PR_TITLE = "COMMIT_OR_PR_TITLE"
-
-
-class SquashMergeCommitMessage(Enum):
-    PR_BODY = "PR_BODY"
-    COMMIT_MESSAGES = "COMMIT_MESSAGES"
-    BLANK = "BLANK"
-
-
-class MergeCommitTitle(Enum):
-    PR_TITLE = "PR_TITLE"
-    MERGE_MESSAGE = "MERGE_MESSAGE"
-
-
-class MergeCommitMessage(Enum):
-    PR_BODY = "PR_BODY"
-    PR_TITLE = "PR_TITLE"
-    BLANK = "BLANK"
-
-
-class LicenseType(Enum):
-    ACADEMIC_FREE_LICENSE_3_0 = "afl-3.0"
-    APACHE_LICENSE_2_0 = "apache-2.0"
-    ARTISTIC_LICENSE_2_0 = "artistic-2.0"
-    BOOST_SOFTWARE_LICENSE_1_0 = "bsl-1.0"
-    BSD_2_CLAUSE_SIMPLIFIED_LICENSE = "bsd-2-clause"
-    BSD_3_CLAUSE_NEW_OR_REVISED_LICENSE = "bsd-3-clause"
-    BSD_3_CLAUSE_CLEAR_LICENSE = "bsd-3-clause-clear"
-    CREATIVE_COMMONS_LICENSE_FAMILY = "cc"
-    CREATIVE_COMMONS_ZERO_1_0_UNIVERSAL = "cc0-1.0"
-    CREATIVE_COMMONS_ATTRIBUTION_4_0 = "cc-by-4.0"
-    CREATIVE_COMMONS_ATTRIBUTION_SHARE_ALIKE_4_0 = "cc-by-sa-4.0"
-    DO_WHAT_THE_F_CK_YOU_WANT_TO_PUBLIC_LICENSE = "wtfpl"
-    EDUCATIONAL_COMMUNITY_LICENSE_2_0 = "ecl-2.0"
-    ECLIPSE_PUBLIC_LICENSE_1_0 = "epl-1.0"
-    ECLIPSE_PUBLIC_LICENSE_2_0 = "epl-2.0"
-    EUROPEAN_UNION_PUBLIC_LICENSE_1_1 = "eupl-1.1"
-    GNU_AFFERO_GENERAL_PUBLIC_LICENSE_3_0 = "agpl-3.0"
-    GNU_GENERAL_PUBLIC_LICENSE_FAMILY = "gpl"
-    GNU_GENERAL_PUBLIC_LICENSE_2_0 = "gpl-2.0"
-    GNU_GENERAL_PUBLIC_LICENSE_3_0 = "gpl-3.0"
-    GNU_LESSER_GENERAL_PUBLIC_LICENSE_FAMILY = "lgpl"
-    GNU_LESSER_GENERAL_PUBLIC_LICENSE_2_1 = "lgpl-2.1"
-    GNU_LESSER_GENERAL_PUBLIC_LICENSE_3_0 = "lgpl-3.0"
-    ISC = "isc"
-    LATEX_PROJECT_PUBLIC_LICENSE_1_3C_L = "ppl-1.3c"
-    MICROSOFT_PUBLIC_LICENSE = "ms-pl"
-    MIT = "mit"
-    MOZILLA_PUBLIC_LICENSE_2_0 = "mpl-2.0"
-    OPEN_SOFTWARE_LICENSE_3_0 = "osl-3.0"
-    POSTGRESQL_LICENSE = "postgresql"
-    SIL_OPEN_FONT_LICENSE_1_1 = "ofl-1.1"
-    UNIVERSITY_OF_ILLINOIS_NCSA_OPEN_SOURCE_LICENSE = "ncsa"
-    THE_UNLICENSE = "unlicense"
-    ZLIB_LICENSE = "zlib"
+from pontos.github.models.organization import (
+    GitIgnoreTemplate,
+    LicenseType,
+    MergeCommitMessage,
+    MergeCommitTitle,
+    Repository,
+    SquashMergeCommitMessage,
+    SquashMergeCommitTitle,
+)
+from pontos.helper import enum_or_value
 
 
 class GitHubAsyncRESTRepositories(GitHubAsyncREST):
@@ -150,18 +82,22 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         is_template: Optional[bool] = False,
         team_id: Optional[str] = None,
         auto_init: Optional[str] = False,
-        gitignore_template: Optional[Union[str, GitIgnoreTemplate]] = None,
-        license_template: Optional[LicenseType] = None,
+        gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
+        license_template: Optional[Union[LicenseType, str]] = None,
         allow_squash_merge: Optional[bool] = True,
         allow_merge_commit: Optional[bool] = True,
         allow_rebase_merge: Optional[bool] = True,
         allow_auto_merge: Optional[bool] = False,
         allow_update_branch: Optional[bool] = False,
         delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None,
-        squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
-        merge_commit_title: Optional[MergeCommitTitle] = None,
-        merge_commit_message: Optional[MergeCommitMessage] = None,
+        squash_merge_commit_title: Optional[
+            Union[SquashMergeCommitTitle, str]
+        ] = None,
+        squash_merge_commit_message: Optional[
+            Union[SquashMergeCommitMessage, str]
+        ] = None,
+        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
+        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
     ) -> Repository:
         """
         Create a new repository at GitHub
@@ -280,7 +216,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 else gitignore_template
             )
         if license_template:
-            data["license_template"] = license_template.value
+            data["license_template"] = enum_or_value(license_template)
         if allow_squash_merge is not None:
             data["allow_squash_merge"] = allow_squash_merge
         if allow_merge_commit is not None:
@@ -294,15 +230,17 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if delete_branch_on_merge is not None:
             data["delete_branch_on_merge"] = delete_branch_on_merge
         if squash_merge_commit_title:
-            data["squash_merge_commit_title"] = squash_merge_commit_title.value
+            data["squash_merge_commit_title"] = enum_or_value(
+                squash_merge_commit_title
+            )
         if squash_merge_commit_message:
-            data[
-                "squash_merge_commit_message"
-            ] = squash_merge_commit_message.value
+            data["squash_merge_commit_message"] = enum_or_value(
+                squash_merge_commit_message
+            )
         if merge_commit_title:
-            data["merge_commit_title"] = merge_commit_title.value
+            data["merge_commit_title"] = enum_or_value(merge_commit_title)
         if merge_commit_message:
-            data["merge_commit_message"] = merge_commit_message.value
+            data["merge_commit_message"] = enum_or_value(merge_commit_message)
 
         response = await self._client.post(api, data=data)
         response.raise_for_status()
@@ -346,10 +284,14 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         allow_auto_merge: Optional[bool] = False,
         allow_update_branch: Optional[bool] = False,
         delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None,
-        squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None,
-        merge_commit_title: Optional[MergeCommitTitle] = None,
-        merge_commit_message: Optional[MergeCommitMessage] = None,
+        squash_merge_commit_title: Optional[
+            Union[SquashMergeCommitTitle, str]
+        ] = None,
+        squash_merge_commit_message: Optional[
+            Union[SquashMergeCommitMessage, str]
+        ] = None,
+        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
+        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
         allow_forking: Optional[bool] = False,
         web_commit_signoff_required: Optional[bool] = False,
     ) -> Repository:
@@ -467,15 +409,17 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if delete_branch_on_merge is not None:
             data["delete_branch_on_merge"] = delete_branch_on_merge
         if squash_merge_commit_title:
-            data["squash_merge_commit_title"] = squash_merge_commit_title.value
+            data["squash_merge_commit_title"] = enum_or_value(
+                squash_merge_commit_title
+            )
         if squash_merge_commit_message:
-            data[
-                "squash_merge_commit_message"
-            ] = squash_merge_commit_message.value
+            data["squash_merge_commit_message"] = enum_or_value(
+                squash_merge_commit_message
+            )
         if merge_commit_title:
-            data["merge_commit_title"] = merge_commit_title.value
+            data["merge_commit_title"] = enum_or_value(merge_commit_title)
         if merge_commit_message:
-            data["merge_commit_message"] = merge_commit_message.value
+            data["merge_commit_message"] = enum_or_value(merge_commit_message)
         if allow_forking is not None:
             data["allow_forking"] = allow_forking
         if web_commit_signoff_required is not None:

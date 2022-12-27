@@ -20,6 +20,8 @@ from datetime import date, datetime
 from inspect import isclass
 from typing import Any, Dict, Type, Union, get_type_hints
 
+from dateutil import parser as dateparser
+
 try:
     from typing import get_args, get_origin
 except ImportError:
@@ -74,7 +76,9 @@ class Model:
         if isclass(model_field_cls) and issubclass(model_field_cls, Model):
             value = model_field_cls.from_dict(value)
         elif isclass(model_field_cls) and issubclass(model_field_cls, datetime):
-            value = datetime.fromisoformat(value)
+            # Only Python 3.11 supports sufficient formats in
+            # datetime.fromisoformat. Therefore we have to use dateutil here.
+            value = dateparser.isoparse(value)
             # the iso format may not contain UTC data or a UTC offset
             # this means it is considered local time (Python calls this "naive"
             # datetime) and can't really be compared to other times. maybe we

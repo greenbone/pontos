@@ -19,7 +19,7 @@
 
 import unittest
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional, Union
 
 from pontos.models import Model, ModelAttribute, dotted_attributes
@@ -81,8 +81,26 @@ class ExampleModelTestCase(unittest.TestCase):
             foo: datetime
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00.000"})
-
         self.assertEqual(model.foo, datetime(1988, 10, 1, 4))
+
+        model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00Z"})
+        self.assertEqual(
+            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
+        )
+
+        model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00+00:00"})
+        self.assertEqual(
+            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
+        )
+
+        model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00+01:00"})
+        self.assertEqual(
+            model.foo,
+            datetime(1988, 10, 1, 4, tzinfo=timezone(timedelta(hours=1))),
+        )
+
+        model = ExampleModel.from_dict({"foo": "2021-06-06T11:15:10.213"})
+        self.assertEqual(model.foo, datetime(2021, 6, 6, 11, 15, 10, 213000))
 
     def test_date(self):
         @dataclass

@@ -15,15 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
 
 __add__ = (
     "Release",
     "ReleaseAsset",
+    "ReleaseAssetState",
 )
+
+
+class ReleaseAssetState(Enum):
+    UPLOADED = "uploaded"
+    OPEN = "open"
 
 
 @dataclass
@@ -33,34 +41,50 @@ class ReleaseAsset(GitHubModel):
     id: int
     node_id: str
     name: str
-    label: str
-    state: str
+    state: ReleaseAssetState
     content_type: str
     size: int
     download_count: int
-    created_at: str
-    updated_at: str
-    uploader: User
+    created_at: datetime
+    updated_at: datetime
+    label: Optional[str] = None
+    uploader: Optional[User] = None
+
+
+@dataclass
+class Reactions(GitHubModel):
+    url: str
+    total_count: int
+    laugh: int
+    confused: int
+    heart: int
+    hooray: int
+    eyes: int
+    rocket: int
 
 
 @dataclass
 class Release(GitHubModel):
-    url: str
-    html_url: str
     assets_url: str
-    upload_url: str
-    tarball_url: str
-    zipball_url: str
-    discussion_url: str
+    created_at: datetime
+    draft: bool
+    html_url: str
     id: int
     node_id: str
+    prerelease: bool
     tag_name: str
     target_commitish: str
-    name: str
-    body: str
-    draft: bool
-    prerelease: bool
-    created_at: str
-    published_at: str
-    author: User
-    assets: List[ReleaseAsset]
+    upload_url: str
+    url: str
+    assets: List[ReleaseAsset] = field(default_factory=list)
+    author: Optional[User] = None
+    body_html: Optional[str] = None
+    body_text: Optional[str] = None
+    body: Optional[str] = None
+    discussion_url: Optional[str] = None
+    mentions_count: Optional[int] = None
+    name: Optional[str] = None
+    published_at: Optional[datetime] = None
+    reactions: Optional[Reactions] = None
+    tarball_url: Optional[str] = None
+    zipball_url: Optional[str] = None
