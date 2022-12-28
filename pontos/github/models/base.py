@@ -23,9 +23,13 @@ from pontos.models import Model
 
 __all__ = (
     "App",
+    "Event",
     "GitHubModel",
-    "User",
+    "Permission",
     "Team",
+    "TeamPrivacy",
+    "TeamRole",
+    "User",
 )
 
 

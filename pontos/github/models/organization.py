@@ -33,6 +33,7 @@ __all__ = (
     "Organization",
     "Repository",
     "RepositoryType",
+    "SecurityAndAnalysisStatus",
     "SquashMergeCommitMessage",
     "SquashMergeCommitTitle",
 )
