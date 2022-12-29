@@ -24,6 +24,7 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 
+from pontos.errors import PontosError
 from pontos.helper import (
     DEFAULT_TIMEOUT,
     AsyncDownloadProgressIterable,
@@ -34,6 +35,7 @@ from pontos.helper import (
     download_async,
     ensure_unload_module,
     enum_or_value,
+    parse_timedelta,
     snake_case,
     unload_module,
 )
@@ -566,3 +568,48 @@ class EnumOrValueTestCase(unittest.TestCase):
 
         self.assertEqual(enum_or_value(Foo.BAR), "bar")
         self.assertEqual(enum_or_value(Foo.BAZ), "baz")
+
+
+class ParseTimedeltaTestCase(unittest.TestCase):
+    def test_parse_complex(self):
+        delta = parse_timedelta("1w2d4h5m6s")
+
+        self.assertEqual(delta.days, 9)
+        self.assertEqual(delta.seconds, 14706)
+
+    def test_parse_weeks(self):
+        delta = parse_timedelta("1w")
+        self.assertEqual(delta.days, 7)
+        self.assertEqual(delta.seconds, 0)
+
+        delta = parse_timedelta("1.5w")
+        self.assertEqual(delta.days, 10)
+        self.assertEqual(delta.seconds, 43200)
+
+    def test_parse_days(self):
+        delta = parse_timedelta("1d")
+        self.assertEqual(delta.days, 1)
+        self.assertEqual(delta.seconds, 0)
+
+        delta = parse_timedelta("1.5d")
+        self.assertEqual(delta.days, 1)
+        self.assertEqual(delta.seconds, 43200)
+
+    def test_parse_hours(self):
+        delta = parse_timedelta("1h")
+        self.assertEqual(delta.days, 0)
+        self.assertEqual(delta.seconds, 3600)
+
+        delta = parse_timedelta("1.5h")
+        self.assertEqual(delta.days, 0)
+        self.assertEqual(delta.seconds, 5400)
+
+    def test_parse_error(self):
+        with self.assertRaises(PontosError):
+            parse_timedelta("foo")
+
+        with self.assertRaises(PontosError):
+            parse_timedelta("1d2x")
+
+        with self.assertRaises(PontosError):
+            parse_timedelta("1,2d")
