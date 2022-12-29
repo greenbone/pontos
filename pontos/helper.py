@@ -22,6 +22,7 @@ import subprocess
 import sys
 import warnings
 from contextlib import asynccontextmanager, contextmanager
+from datetime import timedelta
 from enum import Enum
 from functools import wraps
 from pathlib import Path
@@ -44,6 +45,8 @@ from typing import (
 )
 
 import httpx
+
+from pontos.errors import PontosError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -455,3 +458,32 @@ def enum_or_value(value: Union[Enum, Any]) -> Any:
         return value.value
 
     return value
+
+
+regex = re.compile(
+    r"^((?P<weeks>[\.\d]+?)w)?((?P<days>[\.\d]+?)d)?((?P<hours>[\.\d]+?)h)?"
+    r"((?P<minutes>[\.\d]+?)m)?((?P<seconds>[\.\d]+?)s)?$"
+)
+
+
+def parse_timedelta(time_str: str) -> timedelta:
+    """
+    Parse a timedelta from a string
+
+    Examples:
+        .. code-block:: python
+
+        parse_timedelta("1.5h")
+        parse_timedelta("1w2d4h5m6s")
+    """
+    parts = regex.match(time_str)
+    if not parts:
+        raise PontosError(f"Invalid timedelta format '{time_str}'.")
+
+    parts = parts.groupdict()
+    time_params = {}
+    for name, param in parts.items():
+        if param:
+            time_params[name] = float(param)
+
+    return timedelta(**time_params)
