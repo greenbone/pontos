@@ -27,7 +27,7 @@ from rich.console import Console
 from rich.table import Table
 
 from pontos.github.api import GitHubAsyncRESTApi
-from pontos.github.api.helper import RepositoryType
+from pontos.github.models.organization import RepositoryType
 
 
 def repository_type(value: Union[str, RepositoryType]) -> RepositoryType:
@@ -61,7 +61,10 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         args.organization, repository_type=args.type
     ):
         table.add_row(
-            repo.name, repo.description, repo.html_url, repo.visibility
+            repo.name,
+            repo.description,
+            f"[link={repo.html_url}]{repo.html_url}[/link]",
+            repo.visibility,
         )
 
         repo_count += 1

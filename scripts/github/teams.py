@@ -44,7 +44,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         table.add_row(
             team.name,
             team.description,
-            team.html_url,
+            f"[link={team.html_url}]{team.html_url}[/link]",
             team.privacy.value,
         )
         count += 1

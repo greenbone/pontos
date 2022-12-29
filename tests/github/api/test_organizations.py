@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 
-from pontos.github.api import GitHubRESTApi, RepositoryType
+from pontos.github.api import GitHubRESTApi
 from pontos.github.api.errors import GitHubApiError
 from pontos.github.api.organizations import (
     GitHubAsyncRESTOrganizations,
@@ -31,6 +31,7 @@ from pontos.github.api.organizations import (
     MemberFilter,
     MemberRole,
 )
+from pontos.github.models.organization import RepositoryType
 from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import (
     GitHubAsyncRESTTestCase,

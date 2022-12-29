@@ -106,7 +106,7 @@ class Git:
         self._cwd = cwd.absolute() if cwd else None
 
     @property
-    def cwd(self) -> Path:
+    def cwd(self) -> Optional[Path]:
         """
         Get the current working directory as Path
         """
@@ -207,7 +207,7 @@ class Git:
         if branch:
             args.extend(["-b", branch])
         if depth:
-            args.extend(["--depth", depth])
+            args.extend(["--depth", str(depth)])
         args.extend([repo_url, str(destination.absolute())])
 
         exec_git(

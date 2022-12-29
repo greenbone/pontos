@@ -457,10 +457,10 @@ class UpdateHeaderTestCase(TestCase):
         argparser_mock.return_value = self.args
 
         with redirect_stdout(StringIO()):
-            code = main()
+            code = True if not main() else False
 
         # I have no idea how or why test main ...
-        self.assertEqual(code, 0)
+        self.assertTrue(code)
 
     @patch("sys.stdout", new_callable=StringIO)
     @patch("pontos.updateheader.updateheader._parse_args")

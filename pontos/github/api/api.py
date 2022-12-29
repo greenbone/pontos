@@ -58,6 +58,7 @@ from pontos.github.api.release import (
     GitHubRESTReleaseMixin,
 )
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
+from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.workflows import (
     GitHubAsyncRESTWorkflows,
@@ -86,21 +87,21 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         self._client = GitHubAsyncRESTClient(token, url, timeout=timeout)
 
     @property
-    def organizations(self):
+    def organizations(self) -> GitHubAsyncRESTOrganizations:
         """
         Organizations related API
         """
         return GitHubAsyncRESTOrganizations(self._client)
 
     @property
-    def artifacts(self):
+    def artifacts(self) -> GitHubAsyncRESTArtifacts:
         """
         Artifacts related API
         """
         return GitHubAsyncRESTArtifacts(self._client)
 
     @property
-    def branches(self):
+    def branches(self) -> GitHubAsyncRESTBranches:
         """
         Branches related API
 
@@ -108,7 +109,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTBranches(self._client)
 
     @property
-    def contents(self):
+    def contents(self) -> GitHubAsyncRESTContent:
         """
         Contents related API
 
@@ -116,7 +117,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTContent(self._client)
 
     @property
-    def labels(self):
+    def labels(self) -> GitHubAsyncRESTLabels:
         """
         Labels related API
 
@@ -124,7 +125,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTLabels(self._client)
 
     @property
-    def pulls(self):
+    def pulls(self) -> GitHubAsyncRESTPullRequests:
         """
         Pull Requests related API
 
@@ -132,7 +133,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTPullRequests(self._client)
 
     @property
-    def releases(self):
+    def releases(self) -> GitHubAsyncRESTReleases:
         """
         Releases related API
 
@@ -140,7 +141,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTReleases(self._client)
 
     @property
-    def workflows(self):
+    def workflows(self) -> GitHubAsyncRESTWorkflows:
         """
         Workflows related API
 
@@ -148,7 +149,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTWorkflows(self._client)
 
     @property
-    def repositories(self):
+    def repositories(self) -> GitHubAsyncRESTRepositories:
         """
         Repositories related API
 
@@ -156,11 +157,18 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTRepositories(self._client)
 
     @property
-    def teams(self):
+    def teams(self) -> GitHubAsyncRESTTeams:
         """
         Teams related API
         """
         return GitHubAsyncRESTTeams(self._client)
+
+    @property
+    def tags(self) -> GitHubAsyncRESTTags:
+        """
+        Tags related API
+        """
+        return GitHubAsyncRESTTags(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()

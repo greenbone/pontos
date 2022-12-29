@@ -22,19 +22,20 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List
 
-from pontos.github.api import FileStatus, RepositoryType
+from pontos.github.api import FileStatus
 from pontos.github.cmds import (
-    tag,
-    create_tag,
-    release,
-    create_release,
     create_pull_request,
+    create_release,
+    create_tag,
     file_status,
     labels,
     pull_request,
+    release,
     repos,
+    tag,
     update_pull_request,
 )
+from pontos.github.models.organization import RepositoryType
 
 body_template = Path(__file__).parent / "pr_template.md"
 

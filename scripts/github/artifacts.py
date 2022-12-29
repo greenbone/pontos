@@ -45,8 +45,9 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         table.add_row(
             artifact.name,
             str(artifact.id),
-            artifact.archive_download_url,
-            artifact.updated_at,
+            f"[link={artifact.archive_download_url}]"
+            f"{artifact.archive_download_url}[/link]",
+            str(artifact.updated_at),
             str(artifact.expired),
             f"{artifact.size_in_bytes / 1024:.2f}",
         )

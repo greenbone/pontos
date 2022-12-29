@@ -18,8 +18,15 @@
 # pylint: disable=line-too-long
 
 import unittest
+from datetime import datetime, timedelta, timezone
 
-from pontos.github.models.workflow import Workflow, WorkflowRun
+from pontos.github.models.base import Event
+from pontos.github.models.workflow import (
+    Workflow,
+    WorkflowRun,
+    WorkflowRunStatus,
+    WorkflowState,
+)
 
 
 class WorkflowTestCase(unittest.TestCase):
@@ -43,9 +50,19 @@ class WorkflowTestCase(unittest.TestCase):
         self.assertEqual(workflow.node_id, "MDg6V29ya2Zsb3cxNjEzMzU=")
         self.assertEqual(workflow.name, "CI")
         self.assertEqual(workflow.path, ".github/workflows/blank.yaml")
-        self.assertEqual(workflow.state, "active")
-        self.assertEqual(workflow.created_at, "2020-01-08T23:48:37.000-08:00")
-        self.assertEqual(workflow.updated_at, "2020-01-08T23:50:21.000-08:00")
+        self.assertEqual(workflow.state, WorkflowState.ACTIVE)
+        self.assertEqual(
+            workflow.created_at,
+            datetime(
+                2020, 1, 8, 23, 48, 37, tzinfo=timezone(timedelta(hours=-8))
+            ),
+        )
+        self.assertEqual(
+            workflow.updated_at,
+            datetime(
+                2020, 1, 8, 23, 50, 21, tzinfo=timezone(timedelta(hours=-8))
+            ),
+        )
         self.assertEqual(
             workflow.url,
             "https://api.github.com/repos/octo-org/octo-repo/actions/workflows/161335",
@@ -293,8 +310,8 @@ class WorkflowRunTestCase(unittest.TestCase):
             run.head_sha, "acb5820ced9479c074f688cc328bf03f341a511d"
         )
         self.assertEqual(run.run_number, 562)
-        self.assertEqual(run.event, "push")
-        self.assertEqual(run.status, "queued")
+        self.assertEqual(run.event, Event.PUSH)
+        self.assertEqual(run.status, WorkflowRunStatus.QUEUED)
         self.assertEqual(run.conclusion, None)
         self.assertEqual(run.workflow_id, 159038)
         self.assertEqual(
@@ -306,10 +323,19 @@ class WorkflowRunTestCase(unittest.TestCase):
             "https://github.com/octo-org/octo-repo/actions/runs/30433642",
         )
         self.assertEqual(run.pull_requests, [])
-        self.assertEqual(run.created_at, "2020-01-22T19:33:08Z")
-        self.assertEqual(run.updated_at, "2020-01-22T19:33:08Z")
+        self.assertEqual(
+            run.created_at,
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            run.updated_at,
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+        )
         self.assertEqual(run.run_attempt, 1)
-        self.assertEqual(run.run_started_at, "2020-01-22T19:33:08Z")
+        self.assertEqual(
+            run.run_started_at,
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+        )
         self.assertEqual(
             run.jobs_url,
             "https://api.github.com/repos/octo-org/octo-repo/actions/runs/30433642/jobs",
@@ -344,7 +370,10 @@ class WorkflowRunTestCase(unittest.TestCase):
             commit.tree_id, "d23f6eedb1e1b9610bbc754ddb5197bfe7271223"
         )
         self.assertEqual(commit.message, "Create linter.yaml")
-        self.assertEqual(commit.timestamp, "2020-01-22T19:33:05Z")
+        self.assertEqual(
+            commit.timestamp,
+            datetime(2020, 1, 22, 19, 33, 5, tzinfo=timezone.utc),
+        )
         self.assertEqual(commit.author.name, "Octo Cat")
         self.assertEqual(commit.author.email, "octocat@github.com")
         self.assertEqual(commit.committer.name, "GitHub")

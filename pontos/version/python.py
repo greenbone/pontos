@@ -80,6 +80,8 @@ class PythonVersionCommand(VersionCommand):
             version_file_path=version_file_path,
             project_file_path=project_file_path,
         )
+        self.version_file_path: Path
+        self.project_file_path: Path
 
     def _get_version_from_pyproject_toml(self) -> str:
         """

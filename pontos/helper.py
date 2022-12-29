@@ -22,6 +22,7 @@ import subprocess
 import sys
 import warnings
 from contextlib import asynccontextmanager, contextmanager
+from enum import Enum
 from functools import wraps
 from pathlib import Path
 from types import ModuleType
@@ -444,3 +445,13 @@ def snake_case(value: str) -> str:
     """
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", value)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def enum_or_value(value: Union[Enum, Any]) -> Any:
+    """
+    Return the value of an Enum or the value if it isn't an Enum
+    """
+    if isinstance(value, Enum):
+        return value.value
+
+    return value

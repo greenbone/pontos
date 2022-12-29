@@ -63,7 +63,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def get(self, repo: str, artifact: str) -> Artifact:
+    async def get(self, repo: str, artifact: Union[str, int]) -> Artifact:
         """
         Get a single artifact of a repository
 
@@ -86,7 +86,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         return Artifact.from_dict(response.json())
 
     def get_workflow_run_artifacts(
-        self, repo: str, run: str
+        self, repo: str, run: Union[str, int]
     ) -> AsyncIterator[Artifact]:
         """
         List all artifacts for a workflow run
@@ -107,7 +107,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def delete(self, repo: str, artifact: str):
+    async def delete(self, repo: str, artifact: Union[str, int]):
         """
         Delete an artifact of a repository
 
@@ -126,7 +126,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         response.raise_for_status()
 
     def download(
-        self, repo: str, artifact: str
+        self, repo: str, artifact: Union[str, int]
     ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a repository artifact zip file

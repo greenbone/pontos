@@ -18,8 +18,9 @@
 # pylint: disable=line-too-long
 
 import unittest
+from datetime import datetime, timezone
 
-from pontos.github.models.release import Release
+from pontos.github.models.release import Release, ReleaseAssetState
 
 
 class ReleaseTestCase(unittest.TestCase):
@@ -138,8 +139,14 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(release.body, "Description of the release")
         self.assertFalse(release.draft)
         self.assertFalse(release.prerelease)
-        self.assertEqual(release.created_at, "2013-02-27T19:35:32Z")
-        self.assertEqual(release.published_at, "2013-02-27T19:35:32Z")
+        self.assertEqual(
+            release.created_at,
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            release.published_at,
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+        )
 
         user = release.author
         self.assertEqual(user.login, "octocat")
@@ -201,12 +208,18 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(asset.node_id, "MDEyOlJlbGVhc2VBc3NldDE=")
         self.assertEqual(asset.name, "example.zip")
         self.assertEqual(asset.label, "short description")
-        self.assertEqual(asset.state, "uploaded")
+        self.assertEqual(asset.state, ReleaseAssetState.UPLOADED)
         self.assertEqual(asset.content_type, "application/zip")
         self.assertEqual(asset.size, 1024)
         self.assertEqual(asset.download_count, 42)
-        self.assertEqual(asset.created_at, "2013-02-27T19:35:32Z")
-        self.assertEqual(asset.updated_at, "2013-02-27T19:35:32Z")
+        self.assertEqual(
+            asset.created_at,
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            asset.updated_at,
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+        )
 
         user = asset.uploader
         self.assertEqual(user.login, "octocat")
