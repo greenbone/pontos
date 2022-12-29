@@ -31,7 +31,7 @@ class VersionCommand:
         self,
         *,
         version_file_path: Optional[Path] = None,
-        project_file_path: Optional[Path] = None,
+        project_file_path: Path,
     ):
         # use this for a version file, e.g. used by
         # Greenbone in javascript or python
@@ -39,6 +39,8 @@ class VersionCommand:
 
         # this file should determine the type of
         # programming language used in the repository
+        if not project_file_path:
+            raise VersionError(f"{str(project_file_path)} file not found.")
         self.project_file_path = project_file_path
 
         self.parser = initialize_default_parser()

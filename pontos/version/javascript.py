@@ -51,7 +51,6 @@ class JavaScriptVersionCommand(VersionCommand):
         super().__init__(
             project_file_path=project_file_path,
         )
-        self.project_file_path: Path
 
     def get_current_version(self) -> str:
         """Get the current version of this project

@@ -42,7 +42,6 @@ class CMakeVersionCommand(VersionCommand):
         super().__init__(
             project_file_path=project_file_path,
         )
-        self.project_file_path: Path
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
