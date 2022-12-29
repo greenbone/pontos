@@ -93,6 +93,11 @@ class Model:
             value = Model._get_value_from_model_field_cls(
                 model_field_cls, value
             )
+        elif get_origin(model_field_cls) == dict:
+            model_field_cls = dict
+            value = Model._get_value_from_model_field_cls(
+                model_field_cls, value
+            )
         elif get_origin(model_field_cls) == Union:
             possible_types = get_args(model_field_cls)
             current_type = type(value)

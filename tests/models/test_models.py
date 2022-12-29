@@ -20,7 +20,7 @@
 import unittest
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pontos.models import Model, ModelAttribute, dotted_attributes
 
@@ -189,3 +189,11 @@ class DottedAttributesTestCase(unittest.TestCase):
         self.assertEqual(foo.bar, 123)
         self.assertEqual(foo.baz, [1, 2, 3])
         self.assertEqual(foo.hello, "World")
+
+    def test_list_with_dict(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: List[Dict]
+
+        model = ExampleModel.from_dict({"foo": [{"a": 1}, {"b": 2}, {"c": 3}]})
+        self.assertEqual(model.foo, [{"a": 1}, {"b": 2}, {"c": 3}])
