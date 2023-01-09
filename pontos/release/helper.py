@@ -25,7 +25,11 @@ from packaging.version import InvalidVersion, Version
 from pontos import version
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
-from pontos.version import CMakeVersionCommand, PythonVersionCommand
+from pontos.version import (
+    CMakeVersionCommand,
+    JavaScriptVersionCommand,
+    PythonVersionCommand,
+)
 from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
@@ -112,6 +116,7 @@ def get_current_version(terminal: Terminal) -> Optional[str]:
     available_cmds = [
         ("CMakeLists.txt", CMakeVersionCommand),
         ("pyproject.toml", PythonVersionCommand),
+        ("package.json", JavaScriptVersionCommand),
     ]
     for file_name, cmd in available_cmds:
         project_definition_path = Path.cwd() / file_name
