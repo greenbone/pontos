@@ -61,6 +61,9 @@ def prepare(
     else:
         release_version: str = args.release_version
 
+    if not release_version:
+        sys.exit(1)
+
     terminal.info(f"Preparing the release {release_version}")
 
     # guardian
