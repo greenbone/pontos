@@ -17,6 +17,7 @@
 #
 
 from argparse import Namespace
+from enum import IntEnum
 from pathlib import Path
 
 import httpx
@@ -38,19 +39,27 @@ from .helper import (
 RELEASE_TEXT_FILE = ".release.md"
 
 
+class ReleaseReturnValue(IntEnum):
+    SUCCESS = 0
+    TOKEN_MISSING = 1
+    NO_RELEASE_VERSION = 2
+    CREATE_RELEASE_ERROR = 3
+    UPDATE_VERSION_ERROR = 4
+
+
 def release(
     terminal: Terminal,
     args: Namespace,
     *,
     token: str,
     **_kwargs,
-) -> bool:
+) -> IntEnum:
     if not token:
         terminal.error(
             "Token is missing. The GitHub token is required to create a "
             "release."
         )
-        return False
+        return ReleaseReturnValue.TOKEN_MISSING
 
     project: str = (
         args.project if args.project is not None else get_git_repository_name()
@@ -72,7 +81,7 @@ def release(
     )
     if not release_version:
         terminal.error("No release version available.")
-        return False
+        return ReleaseReturnValue.NO_RELEASE_VERSION
 
     next_version: str = (
         args.next_version
@@ -102,7 +111,7 @@ def release(
         )
     except httpx.HTTPError as e:
         terminal.error(str(e))
-        return False
+        return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
     Path(RELEASE_TEXT_FILE).unlink()
 
@@ -136,7 +145,7 @@ def release(
 
     executed, filename = update_version(terminal, next_version, develop=True)
     if not executed:
-        return False
+        return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
     commit_files(
         git,
@@ -149,4 +158,4 @@ def release(
     # pushing the new tag
     git.push(follow_tags=True, remote=git_remote_name)
 
-    return True
+    return ReleaseReturnValue.SUCCESS

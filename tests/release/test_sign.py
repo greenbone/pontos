@@ -18,15 +18,17 @@
 
 import os
 import unittest
-from contextlib import redirect_stdout
-from io import StringIO
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import httpx
 
-from pontos import changelog, release
-from pontos.release.helper import version
+from pontos.release.main import parse_args
+from pontos.release.sign import SignReturnValue, sign
+from pontos.terminal.terminal import Terminal
+
+
+def mock_terminal() -> MagicMock:
+    return MagicMock(spec=Terminal)
 
 
 class SignTestCase(unittest.TestCase):
@@ -37,53 +39,45 @@ class SignTestCase(unittest.TestCase):
             ' "tar", "upload_url":"upload"}'
         )
 
-    @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.helper.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx")
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.sign.shell_cmd_runner", autospec=True)
+    @patch("pontos.release.sign.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
     def test_fail_sign_on_invalid_get_response(
         self,
-        changelog_mock,
-        version_mock,
         requests_mock,
         _path_mock,
         _shell_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
-        changelog_mock.update.return_value = ("updated", "changelog")
-
         fake_get = MagicMock()
         fake_get.status_code = 404
         fake_get.text = self.valid_gh_release_response
         requests_mock.get.return_value = fake_get
 
-        args = [
-            "sign",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-        ]
+        _, token, args = parse_args(
+            [
+                "sign",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
 
-        with redirect_stdout(StringIO()), self.assertRaises(httpx.HTTPError):
-            release.main(
-                leave=False,
+        with self.assertRaises(httpx.HTTPError):
+            sign(
+                terminal=mock_terminal(),
                 args=args,
+                token=token,
             )
 
-    @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.sign.Path", spec=Path)
-    @patch("pontos.helper.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx")
-    @patch("pontos.github.api.release.httpx")
-    @patch("pontos.helper.httpx.stream")
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.sign.shell_cmd_runner", autospec=True)
+    @patch("pontos.release.sign.Path", autospec=True)
+    @patch("pontos.helper.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.helper.httpx.stream", autospec=True)
     def test_fail_sign_on_upload_fail(
         self,
-        changelog_mock,
-        version_mock,
         stream_mock,
         request_mock,
         request2_mock,
@@ -91,9 +85,6 @@ class SignTestCase(unittest.TestCase):
         _path2_mock,
         _shell_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
-        changelog_mock.update.return_value = ("updated", "changelog")
-
         fake_get = MagicMock()
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
@@ -118,33 +109,27 @@ class SignTestCase(unittest.TestCase):
         response_stream.__enter__.return_value = response
         stream_mock.return_value = response_stream
 
-        args = [
-            "sign",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-        ]
-        with redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
-                args=args,
-            )
+        _, token, args = parse_args(
+            [
+                "sign",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        released = sign(terminal=mock_terminal(), args=args, token=token)
 
-        self.assertFalse(released)
+        self.assertEqual(released, SignReturnValue.UPLOAD_ASSET_ERROR)
 
-    @patch("pontos.release.sign.shell_cmd_runner")
-    @patch("pontos.release.sign.Path", spec=Path)
-    @patch("pontos.helper.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx")
-    @patch("pontos.github.api.release.httpx")
-    @patch("pontos.helper.httpx.stream")
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.changelog", spec=changelog)
+    @patch("pontos.release.sign.shell_cmd_runner", autospec=True)
+    @patch("pontos.release.sign.Path", autospec=True)
+    @patch("pontos.helper.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.helper.httpx.stream", autospec=True)
     def test_successfully_sign(
         self,
-        changelog_mock,
-        version_mock,
         stream_mock,
         request_mock,
         request_mock2,
@@ -152,9 +137,6 @@ class SignTestCase(unittest.TestCase):
         _path2_mock,
         _shell_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
-        changelog_mock.update.return_value = ("updated", "changelog")
-
         fake_get = MagicMock()
         fake_get.status_code = 200
         fake_get.text = self.valid_gh_release_response
@@ -175,16 +157,14 @@ class SignTestCase(unittest.TestCase):
         response_stream.__enter__.return_value = response
         stream_mock.return_value = response_stream
 
-        args = [
-            "sign",
-            "--project",
-            "bar",
-            "--release-version",
-            "0.0.1",
-        ]
-        with redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
-                args=args,
-            )
-        self.assertTrue(released)
+        _, token, args = parse_args(
+            args=[
+                "sign",
+                "--project",
+                "bar",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        released = sign(terminal=mock_terminal(), args=args, token=token)
+        self.assertEqual(released, SignReturnValue.SUCCESS)

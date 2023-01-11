@@ -43,6 +43,7 @@ def main() -> NoReturn:
         command: VersionCommand = cmd()
         if command.project_found():
             found = True
+            break
 
     if not found:
         print("No project found.", file=sys.stderr)

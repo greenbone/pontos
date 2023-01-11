@@ -17,19 +17,13 @@
 
 import datetime
 import sys
-from pathlib import Path
 from typing import Optional, Tuple
 
 from packaging.version import InvalidVersion, Version
 
-from pontos import version
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
-from pontos.version import (
-    CMakeVersionCommand,
-    JavaScriptVersionCommand,
-    PythonVersionCommand,
-)
+from pontos.version import COMMANDS
 from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
@@ -43,7 +37,7 @@ def commit_files(
     *,
     git_signing_key: str = "",
     changelog: bool = False,
-):
+) -> None:
     """Add files to staged and commit staged files.
 
     Args:
@@ -113,17 +107,11 @@ def get_current_version(terminal: Terminal) -> Optional[str]:
     """Get the current Version from a pyproject.toml or
     a CMakeLists.txt file"""
 
-    available_cmds = [
-        ("CMakeLists.txt", CMakeVersionCommand),
-        ("pyproject.toml", PythonVersionCommand),
-        ("package.json", JavaScriptVersionCommand),
-    ]
-    for file_name, cmd in available_cmds:
-        project_definition_path = Path.cwd() / file_name
-        if project_definition_path.exists():
-            terminal.ok(f"Found {file_name} project definition file.")
-            current_version: str = cmd().get_current_version()
-            return current_version
+    for cmd in COMMANDS:
+        command = cmd()
+        if command.project_found():
+            terminal.ok("Found project definition file.")
+            return command.get_current_version()
 
     terminal.error("No project settings file found")
     return None
@@ -218,7 +206,7 @@ def find_signing_key(terminal: Terminal) -> str:
 
 def update_version(
     terminal: Terminal, to: str, *, develop: bool = False
-) -> Tuple[bool, str]:
+) -> Tuple[bool, Optional[str]]:
     """Use pontos-version to update the version.
 
     Arguments:
@@ -229,17 +217,20 @@ def update_version(
        executed: True if successfully executed, False else
        filename: The filename of the project definition
     """
-    args = ["--quiet"]
-    args.append("update")
-    args.append(to)
-    if develop:
-        args.append("--develop")
-    executed, filename = version.main(leave=False, args=args)
+    project_file = None
+    for cmd in COMMANDS:
+        command = cmd()
+        project_file = command.project_file_found()
+        if project_file:
+            break
 
-    if not executed:
-        if filename == "":
-            terminal.error("No project definition found.")
-        else:
-            terminal.error(f"Unable to update version {to} in {filename}")
+    if not project_file:
+        terminal.error("No project definition found.")
+        return False, None
 
-    return executed, filename
+    try:
+        command.update_version(new_version=to, develop=develop)
+        return True, project_file.name
+    except VersionError:
+        terminal.error(f"Unable to update version {to} in {project_file}")
+        return False, None

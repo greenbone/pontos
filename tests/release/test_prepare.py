@@ -18,15 +18,18 @@
 
 import os
 import unittest
-from contextlib import redirect_stdout
-from io import StringIO
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from pontos import changelog, release
-from pontos.git import Git
-from pontos.release.helper import get_current_version, version
+from pontos.release.helper import get_current_version
+from pontos.release.main import parse_args
+from pontos.release.prepare import PrepareReturnValue, prepare
+from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
+
+
+def mock_terminal() -> MagicMock:
+    return MagicMock(spec=Terminal)
 
 
 class PrepareTestCase(unittest.TestCase):
@@ -34,95 +37,102 @@ class PrepareTestCase(unittest.TestCase):
         os.environ["GITHUB_TOKEN"] = "foo"
         os.environ["GITHUB_USER"] = "bar"
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_prepare_successfully(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         _git_mock,
     ):
         changelog_mock.update.return_value = ("updated", "changelog")
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
 
-        args = [
-            "prepare",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-        ]
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
-        self.assertTrue(released)
+        self.assertEqual(released, PrepareReturnValue.SUCCESS)
 
     @patch(
         "pontos.release.helper.get_current_version", spec=get_current_version
     )
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_prepare_calendar_successfully(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         _git_mock,
         get_current_version_mock,
     ):
         get_current_version_mock.return_value = "21.6.0"
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
-        args = [
-            "prepare",
-            "--project",
-            "foo",
-            "--calendar",
-        ]
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--project",
+                "foo",
+                "--calendar",
+            ]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
-        self.assertTrue(released)
+        self.assertEqual(released, PrepareReturnValue.SUCCESS)
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_use_git_signing_key_on_prepare(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         git_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
-        args = [
-            "prepare",
-            "--project",
-            "foo",
-            "--git-signing-key",
-            "0815",
-            "--release-version",
-            "0.0.1",
-        ]
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--project",
+                "foo",
+                "--git-signing-key",
+                "0815",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
 
-        self.assertTrue(released)
+        self.assertEqual(released, PrepareReturnValue.SUCCESS)
+
         git_mock.return_value.tag.assert_called_with(
             "v0.0.1", gpg_key_id="0815", message="Automatic release to 0.0.1"
         )
@@ -130,129 +140,137 @@ class PrepareTestCase(unittest.TestCase):
             "Automatic release to 0.0.1", verify=False, gpg_signing_key="0815"
         )
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_fail_if_tag_is_already_taken(
         self,
         _changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         git_mock,
     ):
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
 
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
 
-        args = [
-            "prepare",
-            "--release-version",
-            "0.0.1",
-            "--project",
-            "bla",
-            "--git-signing-key",
-            "1337",
-        ]
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--release-version",
+                "0.0.1",
+                "--project",
+                "bla",
+                "--git-signing-key",
+                "1337",
+            ]
+        )
 
-        with temp_git_repository(), self.assertRaises(
-            SystemExit
-        ), redirect_stdout(StringIO()):
-            release.main(
-                leave=False,
+        with temp_git_repository():
+            release = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
+
+            self.assertEqual(release, PrepareReturnValue.ALREADY_TAKEN)
 
         git_mock.return_value.list_tags.assert_called_once()
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_not_release_when_no_project_found(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         _git_mock,
     ):
-        version_mock.main.return_value = (False, "")
+        update_version_mock.return_value = (False, None)
         changelog_mock.update.return_value = ("updated", "changelog")
 
-        args = [
-            "prepare",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-        ]
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
-        self.assertFalse(released)
+        self.assertEqual(released, PrepareReturnValue.UPDATE_VERSION_ERROR)
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.Path", spec=Path)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.Path", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
     def test_not_release_when_updating_version_fails(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         _path_mock,
         _git_mock,
     ):
-        version_mock.main.return_value = (False, "MyProject.conf")
+        update_version_mock.return_value = (False, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
-        args = [
-            "prepare",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-        ]
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
-        self.assertFalse(released)
+        self.assertEqual(released, PrepareReturnValue.UPDATE_VERSION_ERROR)
 
-    @patch("pontos.release.prepare.Git", spec=Git)
-    @patch("pontos.release.prepare.changelog", spec=changelog)
-    @patch("pontos.release.helper.version", spec=version)
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.changelog", autospec=True)
+    @patch("pontos.release.prepare.update_version", autospec=True)
     def test_prepare_conventional_commits(
         self,
-        version_mock,
+        update_version_mock,
         changelog_mock,
         _git_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
 
         own_path = Path(__file__).absolute().parent
-        with temp_git_repository() as temp_dir, redirect_stdout(StringIO()):
+        with temp_git_repository() as temp_dir:
             release_file = temp_dir / ".release.md"
 
             builder = changelog_mock.ChangelogBuilder.return_value
             builder.create_changelog_file.return_value = own_path / "v1.2.3.md"
 
-            args = [
-                "prepare",
-                "--project",
-                "foo",
-                "--release-version",
-                "1.2.3",
-                "-CC",
-            ]
-            released = release.main(
-                leave=False,
+            _, _, args = parse_args(
+                [
+                    "prepare",
+                    "--project",
+                    "foo",
+                    "--release-version",
+                    "1.2.3",
+                    "-CC",
+                ]
+            )
+            released = prepare(
+                terminal=mock_terminal(),
                 args=args,
             )
 
-            self.assertTrue(released)
+            self.assertEqual(released, PrepareReturnValue.SUCCESS)
 
             expected_release_content = """## [21.8.1] - 2021-08-23
 

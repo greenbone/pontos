@@ -17,6 +17,7 @@
 #
 
 from argparse import Namespace
+from enum import IntEnum
 from pathlib import Path
 
 import httpx
@@ -28,13 +29,21 @@ from pontos.terminal import Terminal
 from .helper import get_current_version, get_git_repository_name
 
 
+class SignReturnValue(IntEnum):
+    SUCCESS = 0
+    TOKEN_MISSING = 1
+    NO_RELEASE_VERSION = 2
+    NO_RELEASE = 3
+    UPLOAD_ASSET_ERROR = 4
+
+
 def sign(
     terminal: Terminal,
     args: Namespace,
     *,
     token: str,
     **_kwargs,
-) -> bool:
+) -> IntEnum:
     if not token and not args.dry_run:
         # dry run doesn't upload assets. therefore a token MAY NOT be required
         # for public repositories.
@@ -42,7 +51,7 @@ def sign(
             "Token is missing. The GitHub token is required to upload "
             "signature files."
         )
-        return False
+        return SignReturnValue.TOKEN_MISSING
 
     project: str = (
         args.project if args.project is not None else get_git_repository_name()
@@ -55,7 +64,7 @@ def sign(
         else get_current_version(terminal)
     )
     if not release_version:
-        return False
+        return SignReturnValue.NO_RELEASE_VERSION
 
     signing_key: str = args.signing_key
 
@@ -66,7 +75,7 @@ def sign(
 
     if not github.release_exists(repo, git_version):
         terminal.error(f"Release version {git_version} does not exist.")
-        return False
+        return SignReturnValue.NO_RELEASE
 
     zip_destination = Path(f"{project}-{release_version}.zip")
     with github.download_release_zip(
@@ -104,7 +113,7 @@ def sign(
         process.check_returncode()
 
     if args.dry_run:
-        return True
+        return SignReturnValue.SUCCESS
 
     upload_files = [
         (Path(f"{str(p)}.asc"), "application/pgp-signature") for p in file_paths
@@ -118,6 +127,6 @@ def sign(
             terminal.ok(f"Uploaded: {uploaded_file}")
     except httpx.HTTPError as e:
         terminal.error(f"Failed uploading asset {e}")
-        return False
+        return SignReturnValue.UPLOAD_ASSET_ERROR
 
-    return True
+    return SignReturnValue.SUCCESS
