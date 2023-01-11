@@ -51,9 +51,9 @@ class TestCmds(IsolatedAsyncioTestCase):
             ],
         }
 
-        with temp_file(name="some.file") as test_file:
-            output = test_file.open("w", encoding="utf-8")
-
+        with temp_file(name="some.file") as test_file, test_file.open(
+            "w", encoding="utf8"
+        ) as output:
             args = Namespace(
                 repo="foo/bar",
                 pull_request=8,
