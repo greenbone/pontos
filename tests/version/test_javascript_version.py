@@ -16,64 +16,145 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import contextlib
-import io
 import json
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from pontos.testing import temp_directory, temp_file
 from pontos.version.helper import VersionError
 from pontos.version.javascript import JavaScriptVersionCommand
-from tests.version import use_cwd
 
 
-class JavaScriptVersionCommandTestCase(unittest.TestCase):
-    def test_missing_pyproject_toml_file(self):
-        with use_cwd(Path(__file__).parent), self.assertRaisesRegex(
-            VersionError, r"^.* not found\.$"
-        ):
-            JavaScriptVersionCommand()
+class GetCurrentJavaScriptVersionCommandTestCase(unittest.TestCase):
+    def test_get_current_version(self):
+        content = '{"name": "foo", "version": "1.2.3"}'
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            version = cmd.get_current_version()
 
-    @patch("pontos.version.javascript.json", spec=json)
-    def test_missing_tool_pontos_version_section(self, json_mock):
-        project_file_path = MagicMock(spec=Path).return_value
-        project_file_path.exists.return_value = True
-        json_mock.load.return_value = json.loads('{"name":"foo", "bar":"bar"}')
+            self.assertEqual(version, "1.2.3")
 
+    def test_no_project_file(self):
+        cmd = JavaScriptVersionCommand(project_file_path=Path("foo/bar/baz"))
         with self.assertRaisesRegex(
-            VersionError, r"Version field missing in .*\.$"
+            VersionError, "foo/bar/baz file not found."
         ):
-            JavaScriptVersionCommand(project_file_path=project_file_path)
+            cmd.get_current_version()
 
-    @patch("pontos.version.javascript.json", spec=json)
-    def test_get_version(self, json_mock):
-        project_file_path = MagicMock(spec=Path).return_value
-        project_file_path.exists.return_value = True
-        json_mock.load.return_value = json.loads(
-            '{"name":"foo", "version":"1.2.3"}'
-        )
+    def test_no_package_version(self):
+        content = '{"name": "foo"}'
+        with temp_file(
+            content, name="package.json", change_into=True
+        ) as temp, self.assertRaisesRegex(
+            VersionError, "Version field missing in"
+        ):
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd.get_current_version()
 
-        cmd = JavaScriptVersionCommand(project_file_path=project_file_path)
-        # pylint: disable=protected-access
-        version = cmd.get_current_version()
+    def test_no_valid_json_in_package_version(self):
+        content = "{"
+        with temp_file(
+            content, name="package.json", change_into=True
+        ) as temp, self.assertRaisesRegex(VersionError, "No valid JSON found."):
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd.get_current_version()
 
-        self.assertEqual(version, "1.2.3")
 
-
-class UpdateJavaScriptVersionTestCase(unittest.TestCase):
+class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
     def test_update_version_file(self):
-        package_file = Path(__file__).parent / "fake_package.json"
-        package_file.write_text(
-            '{"name":"foo", "version":"1.2.3"}', encoding="utf-8"
-        )
-        with contextlib.redirect_stdout(io.StringIO()):
-            cmd = JavaScriptVersionCommand(project_file_path=package_file)
-            cmd.update_version("22.4.0.dev1")
+        content = '{"name":"foo", "version":"1.2.3"}'
 
-        with package_file.open(mode="r", encoding="utf-8") as fp:
-            fake_package = json.load(fp)
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd.get_current_version()
+            updated = cmd.update_version("22.4.0")
 
-        self.assertEqual(fake_package["version"], "22.4.0.dev1")
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.new, "22.4.0")
 
-        package_file.unlink()
+            with temp.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0")
+
+    def test_update_version_check_develop(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            updated = cmd.update_version("22.4.0.dev1", develop=True)
+
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.new, "22.4.0.dev1")
+
+            with temp.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0.dev1")
+
+    def test_update_version_develop(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            updated = cmd.update_version("22.4.0", develop=True)
+
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.new, "22.4.0.dev1")
+
+            with temp.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0.dev1")
+
+
+class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
+    def test_current_version_not_pep440_compliant(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="01.02.003"),
+        ), self.assertRaisesRegex(
+            VersionError, "The version .* is not PEP 440 compliant."
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("22.4")
+
+    def test_versions_not_equal(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="1.2.3"),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "Provided version .* does not match the current version .*",
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("22.4")
+
+    def test_verify_success(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="22.4"),
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("22.4")
+
+
+class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):
+    def test_project_file_not_found(self):
+        with temp_directory() as temp:
+            package_json = temp / "package.json"
+            cmd = JavaScriptVersionCommand(project_file_path=package_json)
+
+            self.assertIsNone(cmd.project_file_found())
+            self.assertFalse(cmd.project_found())
+
+    def test_project_file_found(self):
+        with temp_file(name="package.json") as package_json:
+            cmd = JavaScriptVersionCommand(project_file_path=package_json)
+
+            self.assertEqual(cmd.project_file_found(), package_json)
+            self.assertTrue(cmd.project_found())

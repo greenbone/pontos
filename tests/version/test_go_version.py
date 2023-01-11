@@ -16,17 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=W0212
-
-
-import contextlib
-import io
 import subprocess
 import unittest
 from dataclasses import dataclass
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from pontos.testing import temp_directory, temp_file
 from pontos.version.go import GoVersionCommand
 from pontos.version.helper import VersionError
 
@@ -36,95 +31,101 @@ class StdOutput:
     stdout: bytes
 
 
-class CMakeVersionCommandTestCase(unittest.TestCase):
-    def test_raise_exception_file_not_exists(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = "go.mod"
-        fake_path.exists.return_value = False
-        with self.assertRaises(VersionError):
-            GoVersionCommand(project_file_path=fake_path)
+class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
+    @patch("pontos.version.go.subprocess", autospec=True)
+    def test_getting_last_git_tag(self, subprocess_mock):
+        subprocess_mock.run.return_value = StdOutput("21.22")
 
-    def test_raise_exception_file_not_found(self):
-        with self.assertRaises(VersionError, msg="go.mod file not found"):
-            GoVersionCommand()
+        with temp_file(
+            "",
+            name="go.mod",
+            change_into=True,
+        ):
+            cmd = GoVersionCommand()
+            version = cmd.get_current_version()
 
-    def test_should_call_print_current_version_without_raising_exception(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = "go.mod"
-        fake_path.exists.return_value = True
-
-        called = []
-
-        # fake runner
-        def runner(cmd):
-            called.append(cmd)
-            return StdOutput("21.22")
-
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            cmd = GoVersionCommand(project_file_path=fake_path)
-            cmd.shell_cmd_runner = runner
-
-            cmd.run(args=["show"])
-
-            self.assertIn(
+            self.assertEqual(
+                subprocess_mock.run.call_args.args[0],
                 "git describe --tags `git rev-list --tags --max-count=1`",
-                called,
             )
-            self.assertEqual(buf.getvalue(), "21.22\n")
+            self.assertEqual(version, "21.22")
 
     @patch("pontos.version.go.subprocess", autospec=True)
-    def test_should_raising_exception(self, mock_subprocess):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = "go.mod"
-        fake_path.exists.return_value = True
-
-        mock_subprocess.run.side_effect = subprocess.CalledProcessError(
+    def test_no_git_tag(self, subprocess_mock):
+        subprocess_mock.run.side_effect = subprocess.CalledProcessError(
             returncode=2,
             cmd=["'git describe --tags `git rev-list --tags --max-count=1`'"],
         )
 
-        with self.assertRaises(
-            subprocess.CalledProcessError
-        ), contextlib.redirect_stdout(io.StringIO()):
-            GoVersionCommand(project_file_path=fake_path).run(args=["show"])
+        with temp_file(
+            "",
+            name="go.mod",
+            change_into=True,
+        ), self.assertRaisesRegex(
+            VersionError,
+            "No version tag found. Maybe this "
+            "module has not been released at all.",
+        ):
+            cmd = GoVersionCommand()
+            cmd.get_current_version()
 
-    def test_verify_branch(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = "go.mod"
-        fake_path.exists.return_value = True
 
-        GoVersionCommand.get_current_version = MagicMock(return_value="21.0.1")
-        print_mock = MagicMock()
-        GoVersionCommand._print = print_mock
-
-        GoVersionCommand(project_file_path=fake_path).run(
-            args=["verify", "21.0.1"]
-        )
-
-        print_mock.assert_called_with("OK")
+class VerifyGoVersionCommandTestCase(unittest.TestCase):
+    def test_verify_version(self):
+        with temp_file("", name="go.mod", change_into=True,), patch.object(
+            GoVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="21.0.1"),
+        ):
+            cmd = GoVersionCommand()
+            cmd.verify_version("21.0.1")
 
     def test_verify_branch_not_pep(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path.__str__.return_value = "go.mod"
-        fake_path.exists.return_value = True
+        with temp_file("", name="go.mod", change_into=True,), patch.object(
+            GoVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="021.02a"),
+        ), self.assertRaisesRegex(
+            VersionError, "The version 021.02a is not PEP 440 compliant."
+        ):
+            cmd = GoVersionCommand()
+            cmd.verify_version("21.0.1")
 
-        GoVersionCommand.get_current_version = MagicMock(return_value="021.02a")
+    def test_verify_branch_not_equal(self):
+        with temp_file("", name="go.mod", change_into=True,), patch.object(
+            GoVersionCommand,
+            "get_current_version",
+            MagicMock(return_value="21.0.1"),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "Provided version 21.2 does not match the current version 21.0.1.",
+        ):
+            cmd = GoVersionCommand()
+            cmd.verify_version("21.2")
 
-        # with self.assertRaises(
-        #     VersionError,
-        # ):
-        result = GoVersionCommand(project_file_path=fake_path).run(
-            args=["verify", "021.02a"]
-        )
 
-        self.assertTrue(
-            isinstance(result, str), "expected result to be an error string"
-        )
-        self.assertEqual(
-            result, "The version 021.02a is not PEP 440 compliant."
-        )
+class UpdateGoVersionCommandTestCase(unittest.TestCase):
+    def test_no_update_version(self):
+        cmd = GoVersionCommand()
+
+        with self.assertRaisesRegex(
+            VersionError, "Updating the version of a go module is not possible."
+        ):
+            cmd.update_version("22.2.2")
+
+
+class ProjectFileGoVersionCommandTestCase(unittest.TestCase):
+    def test_project_file_not_found(self):
+        with temp_directory() as temp:
+            go_mod = temp / "go.mod"
+            cmd = GoVersionCommand(project_file_path=go_mod)
+
+            self.assertIsNone(cmd.project_file_found())
+            self.assertFalse(cmd.project_found())
+
+    def test_project_file_found(self):
+        with temp_file(name="go.mod") as go_mod:
+            cmd = GoVersionCommand(project_file_path=go_mod)
+
+            self.assertEqual(cmd.project_file_found(), go_mod)
+            self.assertTrue(cmd.project_found())

@@ -28,7 +28,7 @@ from .helper import (
     strip_version,
     versions_equal,
 )
-from .version import VersionCommand
+from .version import UpdatedVersion, VersionCommand
 
 TEMPLATE = """# pylint: disable=invalid-name
 
@@ -39,45 +39,9 @@ __version__ = "{}"\n"""
 
 # This class is used for Python Version command(s)
 class PythonVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
-        if not project_file_path:
-            project_file_path = Path.cwd() / "pyproject.toml"
-
-        if not project_file_path.exists():
-            raise VersionError(f"{str(project_file_path)} file not found.")
-
-        self.pyproject_toml = tomlkit.parse(
-            project_file_path.read_text(encoding="utf-8")
-        )
-
-        if (
-            "tool" not in self.pyproject_toml
-            or "pontos" not in self.pyproject_toml["tool"]
-            or "version" not in self.pyproject_toml["tool"]["pontos"]
-        ):
-            raise VersionError(
-                "[tool.pontos.version] section missing "
-                f"in {str(project_file_path)}."
-            )
-
-        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][
-            "version"
-        ]
-
-        try:
-            version_file_path = Path(
-                pontos_version_settings["version-module-file"]
-            )
-        except tomlkit.exceptions.NonExistentKey:
-            raise VersionError(
-                "version-module-file key not set in [tool.pontos.version] "
-                f"section of {str(project_file_path)}."
-            ) from None
-
-        super().__init__(
-            version_file_path=version_file_path,
-            project_file_path=project_file_path,
-        )
+    project_file_name = "pyproject.toml"
+    _version_file_path = None
+    _pyproject_toml = None
 
     def _get_version_from_pyproject_toml(self) -> str:
         """
@@ -94,7 +58,7 @@ class PythonVersionCommand(VersionCommand):
 
         raise VersionError(
             "Version information not found in "
-            f"{str(self.project_file_path)} file."
+            f"{self.project_file_path} file."
         )
 
     def _update_version_file(self, new_version: str) -> None:
@@ -133,6 +97,50 @@ class PythonVersionCommand(VersionCommand):
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
         )
 
+    @property
+    def pyproject_toml(self) -> tomlkit.TOMLDocument:
+        if self._pyproject_toml:
+            return self._pyproject_toml
+
+        if not self.project_file_path.exists():
+            raise VersionError("pyproject.toml file not found.")
+
+        self._pyproject_toml = tomlkit.parse(
+            self.project_file_path.read_text(encoding="utf-8")
+        )
+
+        return self._pyproject_toml
+
+    @property
+    def version_file_path(self) -> None:
+        if self._version_file_path:
+            return self._version_file_path
+
+        if (
+            "tool" not in self.pyproject_toml
+            or "pontos" not in self.pyproject_toml["tool"]
+            or "version" not in self.pyproject_toml["tool"]["pontos"]
+        ):
+            raise VersionError(
+                "[tool.pontos.version] section missing "
+                f"in {self.project_file_path}."
+            )
+
+        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][
+            "version"
+        ]
+
+        try:
+            self._version_file_path = Path(
+                pontos_version_settings["version-module-file"]
+            )
+            return self._version_file_path
+        except tomlkit.exceptions.NonExistentKey:
+            raise VersionError(
+                "version-module-file key not set in [tool.pontos.version] "
+                f"section of {str(self.project_file_path)}."
+            ) from None
+
     def get_current_version(self) -> str:
         version_module_name = self.version_file_path.stem
         module_parts = list(self.version_file_path.parts[:-1]) + [
@@ -143,7 +151,7 @@ class PythonVersionCommand(VersionCommand):
             version_module = importlib.import_module(module_name)
         except ModuleNotFoundError:
             raise VersionError(
-                f"Could not load version from {module_name}. Import failed."
+                f"Could not load version from '{module_name}'. Import failed."
             ) from None
 
         return version_module.__version__
@@ -173,32 +181,27 @@ class PythonVersionCommand(VersionCommand):
                     f"current version {current_version}."
                 )
 
-        self._print("OK")
-
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> None:
-
+    ) -> UpdatedVersion:
         new_version = safe_version(new_version)
-        if check_develop(new_version) and develop:
-            develop = False
-        if develop:
+        if not check_develop(new_version) and develop:
             new_version = f"{new_version}.dev1"
 
-        pyproject_version = self._get_version_from_pyproject_toml()
+        try:
+            current_version = self.get_current_version()
+        except VersionError:
+            # maybe no version module exists yet. fallback to version from
+            # pyproject.toml
+            current_version = self._get_version_from_pyproject_toml()
 
         if not self.version_file_path.exists():
             self.version_file_path.touch()
-        elif not force and versions_equal(
-            new_version, self.get_current_version()
-        ):
-            self._print("Version is already up-to-date.")
-            return
+        elif not force and versions_equal(new_version, current_version):
+            return UpdatedVersion(previous=current_version, new=new_version)
 
         self._update_pyproject_version(new_version=new_version)
 
         self._update_version_file(new_version=new_version)
 
-        self._print(
-            f"Updated version from {pyproject_version} to {new_version}"
-        )
+        return UpdatedVersion(previous=current_version, new=new_version)

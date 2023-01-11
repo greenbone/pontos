@@ -16,8 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from pathlib import Path
-from typing import Tuple
+from typing import NoReturn
+
+from pontos.version.helper import VersionError, initialize_default_parser
+from pontos.version.version import VersionCommand
 
 from .__version__ import __version__
 from .cmake import CMakeVersionCommand
@@ -25,21 +27,52 @@ from .go import GoVersionCommand
 from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
 
+COMMANDS = (
+    CMakeVersionCommand,
+    PythonVersionCommand,
+    JavaScriptVersionCommand,
+    GoVersionCommand,
+)
 
-def main(leave=True, args=None) -> Tuple[bool, str]:
-    available_cmds = [
-        ("CMakeLists.txt", CMakeVersionCommand),
-        ("pyproject.toml", PythonVersionCommand),
-        ("package.json", JavaScriptVersionCommand),
-        ("go.mod", GoVersionCommand),
-    ]
-    for file_name, cmd in available_cmds:
-        project_definition_path = Path.cwd() / file_name
-        if project_definition_path.exists():
-            result = cmd().run(args)
-            if leave:
-                sys.exit(result)
-            return result == 0, file_name
-    if leave:
-        sys.exit("No command found")
-    return False, ""
+
+def main() -> NoReturn:
+    parser = initialize_default_parser()
+
+    found = False
+    for cmd in COMMANDS:
+        command: VersionCommand = cmd()
+        if command.project_found():
+            found = True
+
+    if not found:
+        print("No project found.", file=sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    if not getattr(args, "command", None):
+        parser.print_usage()
+        sys.exit(1)
+
+    command: VersionCommand
+
+    try:
+        if args.command == "update":
+            updated = command.update_version(
+                args.version, force=args.force, develop=args.develop
+            )
+            if updated:
+                print(
+                    f"Updated version from {updated.previous} to {updated.new}."
+                )
+            else:
+                print("Version is already up-to-date.")
+        elif args.command == "show":
+            print(command.current_version())
+        elif args.command == "verify":
+            command.verify_version(args.version)
+    except VersionError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+
+    sys.exit(0)

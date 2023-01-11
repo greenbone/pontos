@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
-from pathlib import Path
 from subprocess import CalledProcessError
 
 from .helper import (
@@ -25,47 +24,33 @@ from .helper import (
     strip_version,
     versions_equal,
 )
-from .version import VersionCommand
+from .version import UpdatedVersion, VersionCommand
 
 
 # This class is used for Python Version command(s)
 class GoVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
-        if not project_file_path:
-            project_file_path = Path.cwd() / "go.mod"
-
-        if not project_file_path.exists():
-            raise VersionError(f"{str(project_file_path)} file not found.")
-
-        self.shell_cmd_runner = lambda x: subprocess.run(
-            x,
-            shell=True,
-            check=True,
-            errors="utf-8",  # use utf-8 encoding for error output
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        super().__init__(
-            project_file_path=project_file_path,
-        )
+    project_file_name = "go.mod"
 
     def get_current_version(self) -> str:
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
         try:
-            proc = self.shell_cmd_runner(
-                "git describe --tags `git rev-list --tags --max-count=1`"
+            proc = subprocess.run(
+                "git describe --tags `git rev-list --tags --max-count=1`",
+                shell=True,
+                check=True,
+                errors="ignore",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             version = strip_version(proc.stdout)
-            return version if version is not None else ""
+            return version.strip() if version is not None else ""
         except CalledProcessError as e:
-            self._print(
+            raise VersionError(
                 "No version tag found. Maybe this "
                 "module has not been released at all."
-            )
-            raise e
+            ) from e
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
@@ -75,12 +60,16 @@ class GoVersionCommand(VersionCommand):
                 f"The version {current_version} is not PEP 440 compliant."
             )
 
-        if versions_equal(self.get_current_version(), version):
-            self._print("OK")
+        if not versions_equal(current_version, version):
+            raise VersionError(
+                f"Provided version {version} does not match the "
+                f"current version {current_version}."
+            )
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> None:
+    ) -> UpdatedVersion:
         """Update the current version of this project"""
-        _ = (new_version, develop, force)
-        self._print("Updating the version of a go module is not possible.")
+        raise VersionError(
+            "Updating the version of a go module is not possible."
+        )
