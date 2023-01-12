@@ -19,7 +19,7 @@
 
 from unittest.mock import MagicMock, call, patch
 
-from pontos.github.api.client import GitHubAsyncRESTClient
+from pontos.github.api.client import GITHUB_API_VERSION, GitHubAsyncRESTClient
 from pontos.github.api.helper import DEFAULT_GITHUB_API_URL
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 
@@ -37,8 +37,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             params=None,
             follow_redirects=True,
@@ -50,8 +51,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             params=None,
             follow_redirects=True,
@@ -79,8 +81,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
                 call(
                     f"{DEFAULT_GITHUB_API_URL}/foo/bar",
                     headers={
-                        "Accept": "application/vnd.github.v3+json",
+                        "Accept": "application/vnd.github+json",
                         "Authorization": "token token",
+                        "X-GitHub-Api-Version": GITHUB_API_VERSION,
                     },
                     params=None,
                     follow_redirects=True,
@@ -88,8 +91,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
                 call(
                     f"{url}",
                     headers={
-                        "Accept": "application/vnd.github.v3+json",
+                        "Accept": "application/vnd.github+json",
                         "Authorization": "token token",
+                        "X-GitHub-Api-Version": GITHUB_API_VERSION,
                     },
                     params=None,
                     follow_redirects=True,
@@ -103,8 +107,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.delete.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             params=None,
         )
@@ -115,8 +120,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.delete.assert_awaited_once_with(
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             params=None,
         )
@@ -127,8 +133,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.post.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -143,8 +150,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.post.assert_awaited_once_with(
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -157,8 +165,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.put.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -171,8 +180,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.put.assert_awaited_once_with(
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -185,8 +195,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.patch.assert_awaited_once_with(
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -201,8 +212,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
         self.http_client.patch.assert_awaited_once_with(
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             json={"foo": "bar"},
             params=None,
@@ -222,8 +234,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             "GET",
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             follow_redirects=True,
         )
@@ -241,8 +254,9 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             "GET",
             "https://github.com/foo/bar",
             headers={
-                "Accept": "application/vnd.github.v3+json",
+                "Accept": "application/vnd.github+json",
                 "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
             follow_redirects=True,
         )

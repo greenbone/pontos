@@ -34,6 +34,10 @@ from pontos.github.models.base import GitHubModel
 Headers = Dict[str, str]
 Params = Dict[str, str]
 
+# supported GitHub API version
+# https://docs.github.com/en/rest/overview/api-versions
+GITHUB_API_VERSION = "2022-11-28"
+
 
 class GitHubAsyncRESTClient(AbstractAsyncContextManager):
     """
@@ -67,7 +71,8 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         Get the default request headers
         """
         headers = {
-            "Accept": "application/vnd.github.v3+json",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": GITHUB_API_VERSION,
         }
         if self.token:
             headers["Authorization"] = f"token {self.token}"
