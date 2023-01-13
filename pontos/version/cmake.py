@@ -17,8 +17,7 @@
 
 
 import re
-from pathlib import Path
-from typing import Generator, Tuple
+from typing import Generator, Optional, Tuple
 
 from packaging.version import Version
 
@@ -29,53 +28,36 @@ from .helper import (
     safe_version,
     versions_equal,
 )
-from .version import VersionCommand
+from .version import UpdatedVersion, VersionCommand
 
 
 class CMakeVersionCommand(VersionCommand):
-    project_file_path = None
-
-    def __init__(self, *, project_file_path: Path = None):
-        if not project_file_path:
-            project_file_path = Path.cwd() / "CMakeLists.txt"
-        if not project_file_path.exists():
-            raise VersionError(f"{str(project_file_path)} file not found.")
-
-        super().__init__(
-            project_file_path=project_file_path,
-        )
+    project_file_name = "CMakeLists.txt"
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ):
+    ) -> Optional[UpdatedVersion]:
         content = self.project_file_path.read_text(encoding="utf-8")
         cmvp = CMakeVersionParser(content)
         previous_version = self.get_current_version()
 
         if not force and versions_equal(new_version, previous_version):
-            self._print("Version is already up-to-date.")
-            return
+            return UpdatedVersion(previous=previous_version, new=new_version)
 
         new_content = cmvp.update_version(new_version, develop=develop)
         self.project_file_path.write_text(new_content, encoding="utf-8")
-        self._print(f"Updated version from {previous_version} to {new_version}")
-
-    def print_current_version(self):
-        self._print(self.get_current_version())
+        return UpdatedVersion(previous=previous_version, new=new_version)
 
     def get_current_version(self) -> str:
         content = self.project_file_path.read_text(encoding="utf-8")
         return CMakeVersionParser(content).get_current_version()
 
-    def verify_version(self, version: str):
+    def verify_version(self, version: str) -> None:
         current_version = self.get_current_version()
         if not is_version_pep440_compliant(current_version):
             raise VersionError(
                 f"The version {current_version} is not PEP 440 compliant."
             )
-
-        if versions_equal(self.get_current_version(), version):
-            self._print("OK")
 
 
 class CMakeVersionParser:

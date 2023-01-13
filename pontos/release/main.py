@@ -23,7 +23,7 @@ import subprocess
 import sys
 from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
-from typing import Tuple
+from typing import NoReturn, Tuple
 
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -34,6 +34,9 @@ from .sign import sign
 
 
 def parse_args(args) -> Tuple[str, str, Namespace]:
+    """
+    Return user, token, parsed arguments
+    """
     parser = ArgumentParser(
         description="Release handling utility.",
         prog="pontos-release",
@@ -224,9 +227,8 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
 
 
 def main(
-    leave: bool = True,
     args=None,
-):
+) -> NoReturn:
     username, token, parsed_args = parse_args(args)
     if parsed_args.quiet:
         term = NullTerminal()
@@ -237,13 +239,15 @@ def main(
 
     with term.indent():
         try:
-            if not parsed_args.func(
+            retval = parsed_args.func(
                 term,
                 parsed_args,
                 username=username,
                 token=token,
-            ):
-                return sys.exit(1) if leave else False
+            )
+            sys.exit(int(retval))
+        except KeyboardInterrupt:
+            sys.exit(1)
         except subprocess.CalledProcessError as e:
             if not "--passphrase" in e.cmd:
                 term.error(f'Could not run command "{e.cmd}".')
@@ -252,8 +256,6 @@ def main(
 
             term.print(f"Error was: {e.stderr}")
             sys.exit(1)
-
-    return sys.exit(0) if leave else True
 
 
 if __name__ == "__main__":

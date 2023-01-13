@@ -118,7 +118,7 @@ class TestHelperFunctions(unittest.TestCase):
             )
 
         self.assertFalse(executed)
-        self.assertEqual(filename, "")
+        self.assertIsNone(filename)
 
     def test_update_version_no_version_file(self):
         terminal = MagicMock()
@@ -148,8 +148,8 @@ class TestHelperFunctions(unittest.TestCase):
 
             toml_text = toml.read_text(encoding="utf-8")
 
-            self.assertEqual(filename, "pyproject.toml")
             self.assertTrue(executed)
+            self.assertEqual(filename, "pyproject.toml")
             self.assertEqual(
                 toml_text,
                 "[tool.poetry]\n"
@@ -185,11 +185,6 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
         terminal = MagicMock()
         today = datetime.datetime.today()
 
-        filenames = ["pyproject.toml", "CMakeLists.txt"]
-        mocks = [
-            "pontos.release.helper.PythonVersionCommand",
-            "pontos.release.helper.CMakeVersionCommand",
-        ]
         current_versions = [
             "21.4.1.dev3",
             f"19.{str(today.month)}.1.dev3",
@@ -203,23 +198,14 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             f"{str(today.year % 100)}.{str(today.month)}.2",
         ]
 
-        with temp_directory(change_into=True) as tmp_path:
-            for filename, mock in zip(filenames, mocks):
-                for current_version, assert_version in zip(
-                    current_versions, assert_versions
-                ):
-                    proj_file = tmp_path / filename
-                    proj_file.touch()
-                    with patch(mock) as cmd_mock:
-                        # pylint: disable=line-too-long
-                        cmd_mock.return_value.get_current_version.return_value = (
-                            current_version
-                        )
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            with patch("pontos.release.helper.get_current_version") as mock:
+                mock.return_value = current_version
 
-                        release_version = calculate_calendar_version(terminal)
-                        self.assertEqual(release_version, assert_version)
-
-                    proj_file.unlink()
+                release_version = calculate_calendar_version(terminal)
+                self.assertEqual(release_version, assert_version)
 
     def test_get_next_dev_version(self):
         current_versions = [
@@ -248,11 +234,6 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
         terminal = MagicMock()
         today = datetime.datetime.today()
 
-        filenames = ["pyproject.toml", "CMakeLists.txt"]
-        mocks = [
-            "pontos.release.helper.PythonVersionCommand",
-            "pontos.release.helper.CMakeVersionCommand",
-        ]
         current_versions = [
             "20.4.1.dev3",
             f"{str(today.year % 100)}.4.1.dev3",
@@ -268,21 +249,13 @@ class CalculateHelperVersionTestCase(unittest.TestCase):
             "20.6.2",
         ]
 
-        with temp_directory(change_into=True) as tmp_path:
-            for filename, mock in zip(filenames, mocks):
-                for current_version, assert_version in zip(
-                    current_versions, assert_versions
-                ):
-                    proj_file = tmp_path / filename
-                    proj_file.touch()
-                    with patch(mock) as cmd_mock:
-                        # pylint: disable=line-too-long
-                        cmd_mock.return_value.get_current_version.return_value = (
-                            current_version
-                        )
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            with patch("pontos.release.helper.get_current_version") as mock:
+                mock.return_value = current_version
+                # pylint: disable=line-too-long
 
-                        release_version = get_next_patch_version(terminal)
+                release_version = get_next_patch_version(terminal)
 
-                        self.assertEqual(release_version, assert_version)
-
-                    proj_file.unlink()
+                self.assertEqual(release_version, assert_version)

@@ -176,7 +176,7 @@ def temp_file(
 
 @contextmanager
 def temp_python_module(
-    content: str, *, name: str = "foo"
+    content: str, *, name: str = "foo", change_into: bool = False
 ) -> Generator[Path, None, None]:
     """
     A Context Manager to create a new Python module in a temporary directory.
@@ -187,6 +187,8 @@ def temp_python_module(
     Args:
         content: Python code to write into the temporary module.
         name: Name of the new Python module. By default: "foo".
+        change_into: Adjust the current working directory to the temporary
+            directory.
 
     Returns:
         A path to the created temporary Python module file
@@ -203,7 +205,7 @@ def temp_python_module(
 
     """
     with temp_directory(
-        add_to_sys_path=True,
+        add_to_sys_path=True, change_into=change_into
     ) as tmp_dir, ensure_unload_module(name):
         test_file = tmp_dir / f"{name}.py"
         test_file.write_text(content, encoding="utf8")

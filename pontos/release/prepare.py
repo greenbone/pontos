@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 from argparse import Namespace
+from enum import IntEnum
 from pathlib import Path
 
 from pontos import changelog
@@ -36,11 +36,19 @@ from .helper import (
 RELEASE_TEXT_FILE = ".release.md"
 
 
+class PrepareReturnValue(IntEnum):
+    SUCCESS = 0
+    NO_RELEASE_VERSION = 1
+    ALREADY_TAKEN = 2
+    UPDATE_VERSION_ERROR = 3
+    NO_UNRELEASED_CHANGELOG = 4
+
+
 def prepare(
     terminal: Terminal,
     args: Namespace,
     **_kwargs,
-) -> bool:
+) -> IntEnum:
     git_tag_prefix: str = args.git_tag_prefix
     git_signing_key: str = (
         args.git_signing_key
@@ -62,7 +70,7 @@ def prepare(
         release_version: str = args.release_version
 
     if not release_version:
-        sys.exit(1)
+        return PrepareReturnValue.NO_RELEASE_VERSION
 
     terminal.info(f"Preparing the release {release_version}")
 
@@ -72,11 +80,11 @@ def prepare(
     git_version = f"{git_tag_prefix}{release_version}"
     if git_version in git_tags:
         terminal.error(f"git tag {git_version} is already taken.")
-        sys.exit(1)
+        return PrepareReturnValue.ALREADY_TAKEN
 
     executed, filename = update_version(terminal, release_version)
     if not executed:
-        return False
+        return PrepareReturnValue.UPDATE_VERSION_ERROR
 
     terminal.ok(f"updated version  in {filename} to {release_version}")
 
@@ -138,7 +146,7 @@ def prepare(
 
         if not updated:
             terminal.error("No unreleased text found in CHANGELOG.md")
-            sys.exit(1)
+            return PrepareReturnValue.NO_UNRELEASED_CHANGELOG
 
         change_log_path.write_text(updated, encoding="utf-8")
 
@@ -166,4 +174,4 @@ def prepare(
     )
     terminal.print("Afterwards please execute release")
 
-    return True
+    return PrepareReturnValue.SUCCESS

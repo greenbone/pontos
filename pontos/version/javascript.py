@@ -18,6 +18,7 @@
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 from pontos.version.helper import (
     VersionError,
@@ -27,45 +28,49 @@ from pontos.version.helper import (
     versions_equal,
 )
 
-from .version import VersionCommand
+from .version import UpdatedVersion, VersionCommand
 
-GREENBONE_JS_VERSION_FILE = Path("src/version.js")
+GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
 
 # This class is used for JavaScript Version command(s)
 class JavaScriptVersionCommand(VersionCommand):
-    def __init__(self, *, project_file_path: Path = None) -> None:
-        if not project_file_path:
-            project_file_path = Path.cwd() / "package.json"
+    project_file_name = "package.json"
+    _package = None
 
-        if not project_file_path.exists():
-            raise VersionError(f"{str(project_file_path)} file not found.")
+    @property
+    def package(self) -> Any:
+        if self._package:
+            return self._package
 
-        with project_file_path.open(mode="r", encoding="utf-8") as fp:
-            self.package = json.load(fp)
-        if not self.package.get("version", None):
+        if not self.project_file_path.exists():
+            raise VersionError(f"{self.project_file_path} file not found.")
+
+        try:
+            with self.project_file_path.open(mode="r", encoding="utf-8") as fp:
+                self._package = json.load(fp)
+        except OSError as e:
             raise VersionError(
-                f"Version field missing in {str(project_file_path)}."
+                "No version tag found. Maybe this "
+                "module has not been released at all."
+            ) from e
+        except json.JSONDecodeError as e:
+            raise VersionError(
+                "No valid JSON found. Maybe this "
+                "module has not been released at all."
+            ) from e
+
+        if not self._package.get("version", None):
+            raise VersionError(
+                f"Version field missing in {self.project_file_path}."
             )
 
-        super().__init__(
-            project_file_path=project_file_path,
-        )
+        return self._package
 
     def get_current_version(self) -> str:
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
-        try:
-            return self.package["version"]
-        except EnvironmentError as e:
-            self._print(
-                "No version tag found. Maybe this "
-                "module has not been released at all."
-            )
-            raise e
-        except json.JSONDecodeError as e:
-            self._print("Couldn't load JSON")
-            raise e
+        return self.package["version"]
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
@@ -75,8 +80,11 @@ class JavaScriptVersionCommand(VersionCommand):
                 f"The version {current_version} is not PEP 440 compliant."
             )
 
-        if versions_equal(self.get_current_version(), version):
-            self._print("OK")
+        if not versions_equal(current_version, version):
+            raise VersionError(
+                f"Provided version {version} does not match the "
+                f"current version {current_version}."
+            )
 
     def _update_package_json(self, new_version: str) -> None:
         """
@@ -84,17 +92,17 @@ class JavaScriptVersionCommand(VersionCommand):
         """
         try:
             self.package["version"] = new_version
+
             with self.project_file_path.open(mode="w") as fp:
                 json.dump(obj=self.package, fp=fp, indent=2)
+
         except EnvironmentError as e:
-            self._print(
+            raise VersionError(
                 "No version tag found. Maybe this "
                 "module has not been released at all."
-            )
-            raise e
+            ) from e
         except json.JSONDecodeError as e:
-            self._print("Couldn't load JSON")
-            raise e
+            raise VersionError("Couldn't load JSON") from e
 
     def _update_version_file(self, new_version: str) -> None:
         """
@@ -114,21 +122,17 @@ class JavaScriptVersionCommand(VersionCommand):
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> None:
-
+    ) -> UpdatedVersion:
         new_version = safe_version(new_version)
-        if check_develop(new_version) and develop:
-            develop = False
-        if develop:
+        if not check_develop(new_version) and develop:
             new_version = f"{new_version}.dev1"
 
         package_version = self.get_current_version()
         if not force and versions_equal(new_version, package_version):
-            self._print("Version is already up-to-date.")
-            return
+            return UpdatedVersion(previous=package_version, new=new_version)
 
         self._update_package_json(new_version=new_version)
 
         self._update_version_file(new_version=new_version)
 
-        self._print(f"Updated version from {package_version} to {new_version}")
+        return UpdatedVersion(previous=package_version, new=new_version)

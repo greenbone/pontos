@@ -18,17 +18,19 @@
 
 import os
 import unittest
-from contextlib import redirect_stdout
-from io import StringIO
-from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 import httpx
 
-from pontos import changelog, release
 from pontos.git import Git
-from pontos.release.helper import version
+from pontos.release.main import parse_args
+from pontos.release.release import ReleaseReturnValue, release
+from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
+
+
+def mock_terminal() -> MagicMock:
+    return MagicMock(spec=Terminal)
 
 
 class ReleaseTestCase(unittest.TestCase):
@@ -40,22 +42,22 @@ class ReleaseTestCase(unittest.TestCase):
             ' "tar", "upload_url":"upload"}'
         )
 
-    @patch("pontos.release.release.Git", spec=Git)
-    @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx", spec=httpx)
-    @patch("pontos.github.api.release.httpx", spec=httpx)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.release.changelog", spec=changelog)
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.release.release.update_version", autospec=True)
+    @patch("pontos.release.release.changelog", autospec=True)
     def test_release_successfully(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         requests_mock,
         requests2_mock,
         _path_mock,
         _git_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=httpx.Response).return_value
@@ -64,41 +66,45 @@ class ReleaseTestCase(unittest.TestCase):
         requests_mock.post.return_value = fake_post
         requests2_mock.post.return_value = fake_post
 
-        args = [
-            "release",
-            "--project",
-            "foo",
-            "--git-signing-key",
-            "123",
-            "--release-version",
-            "0.0.1",
-            "--next-version",
-            "0.0.2dev",
-        ]
+        _, token, args = parse_args(
+            [
+                "release",
+                "--project",
+                "foo",
+                "--git-signing-key",
+                "123",
+                "--release-version",
+                "0.0.1",
+                "--next-version",
+                "0.0.2dev",
+            ]
+        )
 
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        with temp_git_repository():
+            released = release(
+                terminal=mock_terminal(),
                 args=args,
+                token=token,
             )
-        self.assertTrue(released)
 
-    @patch("pontos.release.release.Git", spec=Git)
-    @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx", spec=httpx)
-    @patch("pontos.github.api.release.httpx", spec=httpx)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.release.changelog", spec=changelog)
+        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.release.release.update_version", autospec=True)
+    @patch("pontos.release.release.changelog", autospec=True)
     def test_release_conventional_commits_successfully(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         requests_mock,
         requests2_mock,
         _path_mock,
         _git_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=httpx.Response).return_value
@@ -107,45 +113,50 @@ class ReleaseTestCase(unittest.TestCase):
         requests_mock.post.return_value = fake_post
         requests2_mock.post.return_value = fake_post
 
-        args = [
-            "release",
-            "--project",
-            "foo",
-            "--git-signing-key",
-            "123",
-            "--release-version",
-            "1.2.3",
-            "-CC",
-        ]
+        _, token, args = parse_args(
+            [
+                "release",
+                "--project",
+                "foo",
+                "--git-signing-key",
+                "123",
+                "--release-version",
+                "1.2.3",
+                "-CC",
+            ]
+        )
+        terminal = mock_terminal()
 
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        with temp_git_repository():
+            released = release(
+                terminal=terminal,
                 args=args,
+                token=token,
             )
 
-        version_mock.main.assert_called_with(
-            leave=False, args=["--quiet", "update", "1.2.4", "--develop"]
+        update_version_mock.assert_called_with(
+            terminal,
+            "1.2.4",
+            develop=True,
         )
-        self.assertTrue(released)
+        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", spec=Git)
-    @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx", spec=httpx)
-    @patch("pontos.github.api.release.httpx", spec=httpx)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.release.changelog", spec=changelog)
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.release.release.update_version", autospec=True)
+    @patch("pontos.release.release.changelog", autospec=True)
     def test_not_release_successfully_when_github_create_release_fails(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         requests_mock,
         requests2_mock,
         _path_mock,
         _git_mock,
     ):
-
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=httpx.Response).return_value
@@ -159,38 +170,41 @@ class ReleaseTestCase(unittest.TestCase):
         requests_mock.post.return_value = fake_post
         requests2_mock.post.return_value = fake_post
 
-        args = [
-            "release",
-            "--release-version",
-            "0.0.1",
-        ]
+        _, token, args = parse_args(
+            [
+                "release",
+                "--release-version",
+                "0.0.1",
+            ]
+        )
 
-        with temp_git_repository(), redirect_stdout(StringIO()):
+        with temp_git_repository():
             git = Git()
             git.add_remote("origin", "https://foo.com/bar.git")
 
-            released = release.main(
-                leave=False,
+            released = release(
+                terminal=mock_terminal(),
                 args=args,
+                token=token,
             )
-        self.assertFalse(released)
+        self.assertEqual(released, ReleaseReturnValue.CREATE_RELEASE_ERROR)
 
-    @patch("pontos.release.release.Git", spec=Git)
-    @patch("pontos.release.release.Path", spec=Path)
-    @patch("pontos.github.api.api.httpx", spec=httpx)
-    @patch("pontos.github.api.release.httpx", spec=httpx)
-    @patch("pontos.release.helper.version", spec=version)
-    @patch("pontos.release.release.changelog", spec=changelog)
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.Path", autospec=True)
+    @patch("pontos.github.api.api.httpx", autospec=True)
+    @patch("pontos.github.api.release.httpx", autospec=True)
+    @patch("pontos.release.release.update_version", autospec=True)
+    @patch("pontos.release.release.changelog", autospec=True)
     def test_release_to_specific_git_remote(
         self,
         changelog_mock,
-        version_mock,
+        update_version_mock,
         requests_mock,
         requests2_mock,
         _path_mock,
         git_mock,
     ):
-        version_mock.main.return_value = (True, "MyProject.conf")
+        update_version_mock.return_value = (True, "MyProject.conf")
         changelog_mock.update.return_value = ("updated", "changelog")
 
         fake_post = MagicMock(spec=httpx.Response).return_value
@@ -199,26 +213,29 @@ class ReleaseTestCase(unittest.TestCase):
         requests_mock.post.return_value = fake_post
         requests2_mock.post.return_value = fake_post
 
-        args = [
-            "release",
-            "--project",
-            "foo",
-            "--release-version",
-            "0.0.1",
-            "--next-version",
-            "0.0.2.dev1",
-            "--git-remote-name",
-            "upstream",
-            "--git-signing-key",
-            "1234",
-        ]
+        _, token, args = parse_args(
+            [
+                "release",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1",
+                "--next-version",
+                "0.0.2.dev1",
+                "--git-remote-name",
+                "upstream",
+                "--git-signing-key",
+                "1234",
+            ]
+        )
 
-        with temp_git_repository(), redirect_stdout(StringIO()):
-            released = release.main(
-                leave=False,
+        with temp_git_repository():
+            released = release(
+                terminal=mock_terminal(),
                 args=args,
+                token=token,
             )
-        self.assertTrue(released)
+        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
         git_mock.return_value.push.assert_called_with(
             follow_tags=True, remote="upstream"
