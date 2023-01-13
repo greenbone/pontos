@@ -33,33 +33,25 @@ The documentation for pontos can be found at https://greenbone.github.io/pontos/
 
 ### Requirements
 
-Python 3.7 and later is supported.
+Python 3.9 and later is supported.
 
 ### Install using pip
-
-pip 19.0 or later is required.
-
-> **Note**: All commands listed here use the general tool names. If some of
-> these tools are provided by your distribution, you may need to explicitly use
-> the Python 3 version of the tool, e.g. **`pip3`**.
 
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pip]
 
-    pip install --user pontos
+    python3 -m pip install --user pontos
 
 ### Install using poetry
 
 Because **pontos** is a Python library you most likely need a tool to
 handle Python package dependencies and Python environments. Therefore we
-strongly recommend using [pipenv] or [poetry].
+strongly recommend using [poetry].
 
 You can install the latest stable release of **pontos** and add it as
 a dependency for your current project using [poetry]
 
     poetry add pontos
-
-For installation via pipenv please take a look at their [documentation][pipenv].
 
 ## Development
 
@@ -68,7 +60,7 @@ process.
 
 First install poetry via pip
 
-    pip install --user poetry
+    python3 -m pip install --user poetry
 
 Afterwards run
 
@@ -101,12 +93,11 @@ first.
 
 ## License
 
-Copyright (C) 2020-2022 [Greenbone Networks GmbH][Greenbone Networks]
+Copyright (C) 2020-2023 [Greenbone Networks GmbH][Greenbone Networks]
 
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
 [Greenbone Networks]: https://www.greenbone.net/
 [poetry]: https://python-poetry.org/
 [pip]: https://pip.pypa.io/
-[pipenv]: https://pipenv.pypa.io/
 [autohooks]: https://github.com/greenbone/autohooks
