@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Greenbone Networks GmbH
+# Copyright (C) 2022 - 2023 Greenbone Networks GmbH
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -58,6 +58,7 @@ from pontos.github.api.release import (
     GitHubRESTReleaseMixin,
 )
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
+from pontos.github.api.search import GitHubAsyncRESTSearch
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.workflows import (
@@ -169,6 +170,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Tags related API
         """
         return GitHubAsyncRESTTags(self._client)
+
+    @property
+    def search(self) -> GitHubAsyncRESTSearch:
+        """
+        Search related API
+        """
+        return GitHubAsyncRESTSearch(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
