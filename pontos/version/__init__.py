@@ -69,7 +69,7 @@ def main() -> NoReturn:
             else:
                 print("Version is already up-to-date.")
         elif args.command == "show":
-            print(command.current_version())
+            print(command.get_current_version())
         elif args.command == "verify":
             command.verify_version(args.version)
     except VersionError as e:
