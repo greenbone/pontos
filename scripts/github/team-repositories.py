@@ -25,21 +25,9 @@ from io import TextIOWrapper
 from typing import List, Set, Union
 
 from httpx import HTTPStatusError
-from rich.console import Console
-from rich.table import Table
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.models.base import Permission
-
-
-def match_team(team: str, desired_team: str) -> bool:
-    if desired_team.startswith("*") and desired_team.endswith("*"):
-        return desired_team[1:-1] in team
-    if desired_team.endswith("*"):
-        return team.startswith(desired_team[:-1])
-    if desired_team.startswith("*"):
-        return team.endswith(desired_team[1:])
-    return team == desired_team
 
 
 def permission_type(value: Union[str, Permission]) -> Permission:
@@ -48,20 +36,12 @@ def permission_type(value: Union[str, Permission]) -> Permission:
 
 def add_script_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
-        "team",
-        help="Team(s) to give access to the repositories. Supports '*' "
-        "for team name. For example: '*-service-*'.",
+        "--teams", nargs="+", help="Team(s) to give access to the repositories."
     )
     parser.add_argument(
         "--organization",
         default="greenbone",
         help="GitHub Organization to use. Default: %(default)s.",
-    )
-    parser.add_argument(
-        "--yes",
-        "-y",
-        action="store_true",
-        help="Assume 'yes' as answer to all prompts and run non-interactively.",
     )
     parser.add_argument(
         "--fail-fast",
@@ -88,40 +68,12 @@ def add_script_arguments(parser: ArgumentParser) -> None:
         "--repositories-file",
         dest="file",
         help="File to read a list of repositories from. The file needs to "
-        "contain one repository per line.",
+        "contain one repository per line. '-' to read from stdin.",
         type=FileType("r"),
     )
 
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
-    table = Table(title="Found GitHub Teams")
-    table.add_column("Name")
-    table.add_column("Description")
-    table.add_column("URL")
-
-    teams = [
-        team
-        async for team in api.teams.get_all(args.organization)
-        if match_team(team.name, args.team)
-    ]
-
-    for team in teams:
-        table.add_row(
-            team.name,
-            team.description,
-            f"[link={team.html_url}]{team.html_url}[/link]",
-        )
-
-    console = Console()
-    console.print(table)
-
-    if not args.yes:
-        proceed = input("Do you want to proceed (Y/n)? ")
-        if proceed not in ["", "y"]:
-            return 0
-
-        print()
-
     if args.file:
         file: TextIOWrapper = args.file
         repositories = [line.strip() for line in file.readlines()]
@@ -129,12 +81,12 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         repositories: List[str] = args.repositories
 
     tasks = []
-    for team in teams:
+    for team in args.teams:
         for repo in repositories:
             tasks.append(
                 asyncio.create_task(
                     api.teams.add_permission(
-                        args.organization, team.slug, repo, args.permission
+                        args.organization, team, repo, args.permission
                     )
                 )
             )
