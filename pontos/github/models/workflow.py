@@ -135,6 +135,7 @@ class WorkflowRunStatus(Enum):
     SUCCESS = "success"
     TIMED_OUT = "timed_out"
     WAITING = "waiting"
+    PENDING = "pending"  # not listed in GitHub docs
 
 
 @dataclass
