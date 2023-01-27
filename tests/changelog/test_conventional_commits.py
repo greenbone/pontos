@@ -22,12 +22,11 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos import changelog
 from pontos.changelog.conventional_commits import (
+    ChangelogBuilder,
     ChangelogBuilderError,
     parse_args,
 )
-from pontos.git import Git
 from pontos.git.git import TagSort
 from pontos.testing import temp_directory
 
@@ -37,9 +36,9 @@ class StdOutput:
     stdout: bytes
 
 
-class ConventionalCommitsTestCase(unittest.TestCase):
-    @patch("pontos.changelog.conventional_commits.Git", spec=Git)
-    def test_changelog_builder(self, git_mock):
+class ChangelogBuilderTestCase(unittest.TestCase):
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder(self, git_mock: MagicMock):
         terminal = MagicMock()
 
         today = datetime.today().strftime("%Y-%m-%d")
@@ -63,7 +62,7 @@ class ConventionalCommitsTestCase(unittest.TestCase):
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        changelog_builder = changelog.ChangelogBuilder(
+        changelog_builder = ChangelogBuilder(
             terminal=terminal,
             current_version="0.0.1",
             next_version=release_version,
@@ -112,8 +111,8 @@ All notable changes to this project will be documented in this file.
             "v0.0.1..HEAD", oneline=True
         )
 
-    @patch("pontos.changelog.conventional_commits.Git")
-    def test_changelog_builder_no_commits(self, git_mock):
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder_no_commits(self, git_mock: MagicMock):
         terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
@@ -124,7 +123,7 @@ All notable changes to this project will be documented in this file.
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
         git_mock.return_value.log.return_value = []
 
-        changelog_builder = changelog.ChangelogBuilder(
+        changelog_builder = ChangelogBuilder(
             terminal=terminal,
             current_version="0.0.1",
             next_version=release_version,
@@ -142,8 +141,8 @@ All notable changes to this project will be documented in this file.
             "v0.0.1..HEAD", oneline=True
         )
 
-    @patch("pontos.changelog.conventional_commits.Git")
-    def test_changelog_builder_no_tag(self, git_mock):
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder_no_tag(self, git_mock: MagicMock):
         terminal = MagicMock()
 
         today = datetime.today().strftime("%Y-%m-%d")
@@ -166,7 +165,7 @@ All notable changes to this project will be documented in this file.
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        changelog_builder = changelog.ChangelogBuilder(
+        changelog_builder = ChangelogBuilder(
             terminal=terminal,
             current_version="0.0.1",
             next_version=release_version,
@@ -212,8 +211,10 @@ All notable changes to this project will be documented in this file.
         git_mock.return_value.list_tags.assert_called_with(sort=TagSort.VERSION)
         git_mock.return_value.log.assert_called_with(oneline=True)
 
-    @patch("pontos.changelog.conventional_commits.Git")
-    def test_changelog_builder_no_conventional_commits(self, git_mock):
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder_no_conventional_commits(
+        self, git_mock: MagicMock
+    ):
         terminal = MagicMock()
 
         own_path = Path(__file__).absolute().parent
@@ -225,7 +226,7 @@ All notable changes to this project will be documented in this file.
             "1234567 foo bar",
             "8abcdef bar baz",
         ]
-        changelog_builder = changelog.ChangelogBuilder(
+        changelog_builder = ChangelogBuilder(
             terminal=terminal,
             current_version="0.0.1",
             next_version=release_version,
