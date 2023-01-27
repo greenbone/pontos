@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 import tomlkit
-from tomlkit.toml_document import TOMLDocument
 
 from pontos.errors import PontosError
 from pontos.git import Git, GitError, TagSort
@@ -35,6 +34,16 @@ from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
 
 ADDRESS = "https://github.com/"
+
+DEFAULT_CHANGELOG_CONFIG = """commit_types = [
+    { message = "^add", group = "Added"},
+    { message = "^remove", group = "Removed"},
+    { message = "^change", group = "Changed"},
+    { message = "^fix", group = "Bug Fixes"},
+]
+
+changelog_dir = "changelog"
+"""
 
 
 class ChangelogBuilderError(PontosError):
@@ -53,16 +62,25 @@ class ChangelogBuilder:
         self,
         *,
         terminal: Terminal,
-        config: Path,
         current_version: str,
         next_version: str,
         space: str,
         project: Optional[str] = None,
+        config: Optional[Path] = None,
     ):
         self._terminal = terminal
-        self.config: TOMLDocument = tomlkit.parse(
-            config.read_text(encoding="utf-8")
-        )
+
+        if config:
+            if not config.exists():
+                raise ChangelogBuilderError(
+                    f"Changelog Config file '{config.absolute()}' does not "
+                    "exist."
+                )
+
+            self.config = tomlkit.parse(config.read_text(encoding="utf-8"))
+        else:
+            self.config = tomlkit.parse(DEFAULT_CHANGELOG_CONFIG)
+
         self.project = (
             project if project is not None else get_git_repository_name()
         )
