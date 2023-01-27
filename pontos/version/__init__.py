@@ -40,7 +40,7 @@ def main() -> NoReturn:
 
     found = False
     for cmd in COMMANDS:
-        command: VersionCommand = cmd()
+        command: VersionCommand = cmd()  # type: ignore
         if command.project_found():
             found = True
             break
@@ -54,8 +54,6 @@ def main() -> NoReturn:
     if not getattr(args, "command", None):
         parser.print_usage()
         sys.exit(1)
-
-    command: VersionCommand
 
     try:
         if args.command == "update":

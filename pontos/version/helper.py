@@ -41,7 +41,7 @@ def strip_version(version: str) -> str:
     return version
 
 
-def check_develop(version: str) -> str:
+def check_develop(version: str) -> bool:
     """
     Checks if the given Version is a develop version
 
