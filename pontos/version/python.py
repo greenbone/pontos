@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import importlib
+import importlib.util
 from pathlib import Path
 
 import tomlkit
@@ -146,7 +146,11 @@ class PythonVersionCommand(VersionCommand):
         ]
         module_name = ".".join(module_parts)
         try:
-            version_module = importlib.import_module(module_name)
+            spec = importlib.util.spec_from_file_location(
+                module_name, self.version_file_path
+            )
+            version_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(version_module)
         except ModuleNotFoundError:
             raise VersionError(
                 f"Could not load version from '{module_name}'. Import failed."
