@@ -131,6 +131,7 @@ class TestHelperFunctions(unittest.TestCase):
             init_file.touch()
 
             version_file = module_path / "__version__.py"
+            version_file.write_text('__version__ = "1.2.3"')
 
             toml = tmp_dir / "pyproject.toml"
             toml.write_text(

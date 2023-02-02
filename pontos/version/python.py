@@ -151,6 +151,11 @@ class PythonVersionCommand(VersionCommand):
             )
             version_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(version_module)
+        except FileNotFoundError:
+            raise VersionError(
+                f"Could not load version from '{module_name}'. "
+                f"{self.version_file_path} not found."
+            ) from None
         except ModuleNotFoundError:
             raise VersionError(
                 f"Could not load version from '{module_name}'. Import failed."
