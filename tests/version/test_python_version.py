@@ -90,7 +90,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
 
         with self.assertRaisesRegex(
-            VersionError, "Could not load version from 'foo'. Import failed."
+            VersionError, r"Could not load version from 'foo'\. .* not found."
         ):
             cmd = PythonVersionCommand(project_file_path=fake_path)
             cmd.get_current_version()
@@ -107,7 +107,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         fake_path.exists.return_value = True
 
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo"):
+        with temp_python_module(content, name="foo", change_into=True):
             cmd = PythonVersionCommand(project_file_path=fake_path)
             version = cmd.get_current_version()
 
