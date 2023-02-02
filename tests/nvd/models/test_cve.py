@@ -399,6 +399,89 @@ class CVETestCase(unittest.TestCase):
         self.assertIsNone(cvss_data.environmental_score)
         self.assertIsNone(cvss_data.environmental_severity)
 
+    def test_metrics_v31_severity_none(self):
+        cve = CVE.from_dict(
+            get_cve_data(
+                {
+                    "metrics": {
+                        "cvss_metric_v31": [
+                            {
+                                "source": "nvd@nist.gov",
+                                "type": "Secondary",
+                                "cvss_data": {
+                                    "version": "3.1",
+                                    "vector_string": "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:U/C:N/I:N/A:N",
+                                    "attack_vector": "NETWORK",
+                                    "attack_complexity": "LOW",
+                                    "privileges_required": "NONE",
+                                    "user_interaction": "REQUIRED",
+                                    "scope": "UNCHANGED",
+                                    "confidentiality_impact": "NONE",
+                                    "integrity_impact": "NONE",
+                                    "availability_impact": "NONE",
+                                    "base_score": 0.0,
+                                    "base_severity": "NONE",
+                                },
+                                "exploitability_score": 2.8,
+                                "impact_score": 0.0,
+                            }
+                        ]
+                    },
+                }
+            )
+        )
+
+        self.assertEqual(len(cve.metrics.cvss_metric_v2), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v30), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v31), 1)
+
+        cvss_metric = cve.metrics.cvss_metric_v31[0]
+        self.assertEqual(cvss_metric.source, "nvd@nist.gov")
+        self.assertEqual(cvss_metric.type, CVSSType.SECONDARY)
+        self.assertEqual(cvss_metric.exploitability_score, 2.8)
+        self.assertEqual(cvss_metric.impact_score, 0.0)
+
+        cvss_data = cvss_metric.cvss_data
+        self.assertEqual(cvss_data.version, "3.1")
+        self.assertEqual(
+            cvss_data.vector_string,
+            "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:U/C:N/I:N/A:N",
+        )
+        self.assertEqual(cvss_data.base_score, 0.0)
+        self.assertEqual(cvss_data.base_severity, cvss_v3.Severity.NONE)
+        self.assertEqual(cvss_data.attack_vector, cvss_v3.AttackVector.NETWORK)
+        self.assertEqual(
+            cvss_data.attack_complexity, cvss_v3.AttackComplexity.LOW
+        )
+        self.assertEqual(
+            cvss_data.privileges_required, cvss_v3.PrivilegesRequired.NONE
+        )
+        self.assertEqual(
+            cvss_data.user_interaction, cvss_v3.UserInteraction.REQUIRED
+        )
+        self.assertEqual(cvss_data.scope, cvss_v3.Scope.UNCHANGED)
+        self.assertEqual(cvss_data.confidentiality_impact, cvss_v3.Impact.NONE)
+        self.assertEqual(cvss_data.integrity_impact, cvss_v3.Impact.NONE)
+        self.assertEqual(cvss_data.availability_impact, cvss_v3.Impact.NONE)
+        self.assertIsNone(cvss_data.exploit_code_maturity)
+        self.assertIsNone(cvss_data.remediation_level)
+        self.assertIsNone(cvss_data.report_confidence)
+        self.assertIsNone(cvss_data.temporal_score)
+        self.assertIsNone(cvss_data.temporal_severity)
+        self.assertIsNone(cvss_data.confidentiality_requirement)
+        self.assertIsNone(cvss_data.integrity_requirement)
+        self.assertIsNone(cvss_data.availability_requirement)
+        self.assertIsNone(cvss_data.modified_attack_vector)
+        self.assertIsNone(cvss_data.modified_attack_complexity)
+        self.assertIsNone(cvss_data.modified_privileges_required)
+        self.assertIsNone(cvss_data.modified_user_interaction)
+        self.assertIsNone(cvss_data.modified_scope)
+        self.assertIsNone(cvss_data.modified_confidentiality_impact)
+        self.assertIsNone(cvss_data.modified_integrity_impact)
+        self.assertIsNone(cvss_data.modified_availability_impact)
+        self.assertIsNone(cvss_data.environmental_score)
+        self.assertIsNone(cvss_data.environmental_severity)
+
     def test_vendor_comments(self):
         cve = CVE.from_dict(
             get_cve_data(

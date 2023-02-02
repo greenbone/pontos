@@ -23,6 +23,7 @@ from pontos.models import Model
 
 
 class Severity(Enum):
+    NONE = "NONE"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
