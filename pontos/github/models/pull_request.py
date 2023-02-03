@@ -26,6 +26,7 @@ from pontos.github.models.organization import Repository
 __all__ = (
     "AuthorAssociation",
     "FileStatus",
+    "MergeMethod",
     "MilestoneState",
     "PullRequest",
     "PullRequestCommit",
@@ -180,6 +181,20 @@ class AuthorAssociation(Enum):
     OWNER = "OWNER"
 
 
+class MergeMethod(Enum):
+    MERGE = "merge"
+    SQUASH = "squash"
+    REBASE = "rebase"
+
+
+@dataclass
+class AutoMerge(GitHubModel):
+    enabled_by: User
+    merge_method: MergeMethod
+    commit_title: str
+    commit_message: str
+
+
 @dataclass
 class PullRequest(GitHubModel):
     additions: int
@@ -216,7 +231,7 @@ class PullRequest(GitHubModel):
     active_lock_reason: Optional[str] = None
     assignee: Optional[User] = None
     assignees: List[User] = field(default_factory=list)
-    auto_merge: Optional[bool] = None
+    auto_merge: Optional[AutoMerge] = None
     body: Optional[str] = None
     closed_at: Optional[datetime] = None
     draft: Optional[bool] = None
