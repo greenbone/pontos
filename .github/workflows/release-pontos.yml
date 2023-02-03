@@ -16,6 +16,7 @@ jobs:
         with:
           version: "3.10"
           conventional-commits: true
+          ref: ${{ github.ref_name }}
           github-user: ${{ secrets.GREENBONE_BOT }}
           github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
           github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
