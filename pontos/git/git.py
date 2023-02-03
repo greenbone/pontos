@@ -113,13 +113,13 @@ class Git:
         return self._cwd
 
     @cwd.setter
-    def cwd(self, cwd: Path):
+    def cwd(self, cwd: Path) -> None:
         """
         Set the current working directory for all following git commands
         """
         self._cwd = cwd.absolute()
 
-    def init(self, *, bare: Optional[bool] = False):
+    def init(self, *, bare: Optional[bool] = False) -> None:
         """
         Init a git repository
 
@@ -132,7 +132,9 @@ class Git:
             args.append("--bare")
         exec_git(*args, cwd=self._cwd)
 
-    def create_branch(self, branch: str, *, start_point: Optional[str] = None):
+    def create_branch(
+        self, branch: str, *, start_point: Optional[str] = None
+    ) -> None:
         """
         Create a new branch
 
@@ -154,7 +156,7 @@ class Git:
         head: Optional[str] = None,
         onto: Optional[str] = None,
         strategy: Optional[MergeStrategy] = None,
-    ):
+    ) -> None:
         """
         Rebase a branch
 
@@ -191,7 +193,7 @@ class Git:
         branch: Optional[str] = None,
         remote: Optional[str] = None,
         depth: Optional[int] = None,
-    ):
+    ) -> None:
         """
         Clone a repository
 
@@ -222,7 +224,7 @@ class Git:
         branch: Optional[str] = None,
         follow_tags: bool = False,
         force: Optional[bool] = None,
-    ):
+    ) -> None:
         """
         Push changes to remote repository
 
@@ -272,7 +274,7 @@ class Git:
 
         return exec_git(*args, cwd=self._cwd)
 
-    def cherry_pick(self, commits: Union[str, List[str]]):
+    def cherry_pick(self, commits: Union[str, List[str]]) -> None:
         """
         Apply changes of a commit(s) to the current branch
 
@@ -297,7 +299,7 @@ class Git:
             args.append(f"--sort={sort.value}")
         return exec_git(*args, cwd=self._cwd).splitlines()
 
-    def add(self, files: Union[PathLike, List[PathLike]]):
+    def add(self, files: Union[PathLike, List[PathLike]]) -> None:
         """
         Add files to the git staging area
 
@@ -318,7 +320,7 @@ class Git:
         *,
         verify: Optional[bool] = None,
         gpg_signing_key: Optional[str] = None,
-    ):
+    ) -> None:
         """
         Create a new commit
 
@@ -344,7 +346,7 @@ class Git:
         gpg_key_id: Optional[str] = None,
         message: Optional[str] = None,
         force: Optional[bool] = False,
-    ):
+    ) -> None:
         """
         Create a Tag
 
