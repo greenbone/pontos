@@ -22,12 +22,20 @@ from typing import Any, Dict, Type, Union, get_type_hints
 
 from dateutil import parser as dateparser
 
+from pontos.errors import PontosError
+
 try:
     from typing import get_args, get_origin
 except ImportError:
     from typing_extensions import get_args, get_origin
 
 __all__ = ("Model",)
+
+
+class ModelError(PontosError):
+    """
+    Errors raised for Models
+    """
 
 
 def dotted_attributes(obj: Any, data: Dict[str, Any]) -> Any:
@@ -147,12 +155,18 @@ class Model:
         additional_attrs = {}
         type_hints = get_type_hints(cls)
         for name, value in data.items():
-            if isinstance(value, list):
-                model_field_cls = type_hints.get(name)
-                value = [cls._get_value(model_field_cls, v) for v in value]
-            elif value is not None:
-                model_field_cls = type_hints.get(name)
-                value = cls._get_value(model_field_cls, value)
+            try:
+                if isinstance(value, list):
+                    model_field_cls = type_hints.get(name)
+                    value = [cls._get_value(model_field_cls, v) for v in value]
+                elif value is not None:
+                    model_field_cls = type_hints.get(name)
+                    value = cls._get_value(model_field_cls, value)
+            except TypeError as e:
+                raise ModelError(
+                    f"Error while creating {cls.__name__}. Could not set value "
+                    f"for '{name}' from '{value}'."
+                ) from e
 
             if name in type_hints:
                 kwargs[name] = value

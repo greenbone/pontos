@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 
-from pontos.models import Model, ModelAttribute, dotted_attributes
+from pontos.models import Model, ModelAttribute, ModelError, dotted_attributes
 
 
 class ModelTestCase(unittest.TestCase):
@@ -197,3 +197,15 @@ class DottedAttributesTestCase(unittest.TestCase):
 
         model = ExampleModel.from_dict({"foo": [{"a": 1}, {"b": 2}, {"c": 3}]})
         self.assertEqual(model.foo, [{"a": 1}, {"b": 2}, {"c": 3}])
+
+    def test_model_error(self):
+        @dataclass
+        class ExampleModel(Model):
+            foo: Optional[str] = None
+
+        with self.assertRaisesRegex(
+            ModelError,
+            "Error while creating ExampleModel. Could not set value for 'foo' "
+            "from '{'bar': 'baz'}'.",
+        ):
+            ExampleModel.from_dict({"foo": {"bar": "baz"}})
