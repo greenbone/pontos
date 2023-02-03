@@ -1049,6 +1049,35 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             params={"per_page": "100"},
         )
 
+    async def test_get(self):
+        response = create_response()
+        response.json.return_value = PULL_REQUEST_JSON
+        self.client.get.return_value = response
+
+        pr = await self.api.get(
+            "foo/bar",
+            1,
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/pulls/1",
+        )
+
+        self.assertEqual(pr.id, 1)
+
+    async def test_get_failure(self):
+        response = create_response()
+        self.client.get.side_effect = HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.get("foo/bar", 123)
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/pulls/123",
+        )
+
 
 class GitHubPullRequestsTestCase(unittest.TestCase):
     @patch("pontos.github.api.api.httpx.get")

@@ -39,6 +39,27 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         response = await self._client.get(api)
         return response.is_success
 
+    async def get(self, repo: str, pull_request: int) -> PullRequest:
+        """
+        Get information about a pull request
+
+        https://docs.github.com/en/rest/pulls/pulls#get-a-pull-request
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number
+
+        Returns:
+            Information about the pull request
+
+        Raises:
+            httpx.HTTPStatusError if the request was invalid
+        """
+        api = f"/repos/{repo}/pulls/{pull_request}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return PullRequest.from_dict(response.json())
+
     async def commits(
         self, repo: str, pull_request: int
     ) -> AsyncIterator[PullRequestCommit]:
@@ -54,7 +75,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             pull_request: Pull request number
 
         Returns:
-            Information about the commits in the pull request as a dict
+            Information about the commits in the pull request
         """
         # per default github only shows 35 commits and at max it is only
         # possible to receive 100
