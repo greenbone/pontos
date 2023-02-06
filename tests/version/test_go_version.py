@@ -72,7 +72,11 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
 
 class VerifyGoVersionCommandTestCase(unittest.TestCase):
     def test_verify_version(self):
-        with temp_file("", name="go.mod", change_into=True,), patch.object(
+        with temp_file(
+            "",
+            name="go.mod",
+            change_into=True,
+        ), patch.object(
             GoVersionCommand,
             "get_current_version",
             MagicMock(return_value="21.0.1"),
@@ -81,7 +85,11 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
             cmd.verify_version("21.0.1")
 
     def test_verify_branch_not_pep(self):
-        with temp_file("", name="go.mod", change_into=True,), patch.object(
+        with temp_file(
+            "",
+            name="go.mod",
+            change_into=True,
+        ), patch.object(
             GoVersionCommand,
             "get_current_version",
             MagicMock(return_value="021.02a"),
@@ -92,7 +100,11 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
             cmd.verify_version("21.0.1")
 
     def test_verify_branch_not_equal(self):
-        with temp_file("", name="go.mod", change_into=True,), patch.object(
+        with temp_file(
+            "",
+            name="go.mod",
+            change_into=True,
+        ), patch.object(
             GoVersionCommand,
             "get_current_version",
             MagicMock(return_value="21.0.1"),
