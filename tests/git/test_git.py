@@ -381,6 +381,22 @@ class GitTestCase(unittest.TestCase):
         exec_git_mock.assert_called_once_with("fetch", "foo", cwd=None)
 
     @patch("pontos.git.git.exec_git")
+    def test_fetch_with_remote_and_refspec(self, exec_git_mock):
+        git = Git()
+        git.fetch("foo", "my-branch")
+
+        exec_git_mock.assert_called_once_with(
+            "fetch", "foo", "my-branch", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_fetch_with_verbose(self, exec_git_mock):
+        git = Git()
+        git.fetch(verbose=True)
+
+        exec_git_mock.assert_called_once_with("fetch", "-v", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
     def test_add_remote(self, exec_git_mock):
         git = Git()
         git.add_remote("foo", "https://foo.bar/foo.git")
