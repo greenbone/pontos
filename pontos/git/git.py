@@ -371,17 +371,31 @@ class Git:
 
         exec_git(*args, cwd=self._cwd)
 
-    def fetch(self, remote: Optional[str] = None) -> None:
+    def fetch(
+        self,
+        remote: Optional[str] = None,
+        refspec: Optional[str] = None,
+        *,
+        verbose: bool = False,
+    ) -> None:
         """
         Fetch from changes from remote
 
         Args:
             remote: Remote to fetch changes from
+            refspec: Specifies which refs to fetch and which local refs to
+                update.
+            verbose: Print verbose output.
         """
         args = ["fetch"]
 
         if remote:
             args.append(remote)
+        if refspec:
+            args.append(refspec)
+
+        if verbose:
+            args.append("-v")
 
         exec_git(*args, cwd=self._cwd)
 
