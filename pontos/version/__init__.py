@@ -29,9 +29,9 @@ from .python import PythonVersionCommand
 
 COMMANDS = (
     CMakeVersionCommand,
-    PythonVersionCommand,
-    JavaScriptVersionCommand,
     GoVersionCommand,
+    JavaScriptVersionCommand,
+    PythonVersionCommand,
 )
 
 
