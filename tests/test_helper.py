@@ -261,7 +261,6 @@ class DownloadTestCase(unittest.TestCase):
         with download(
             "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz"  # pylint: disable=line-too-long
         ) as download_progress:
-
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
@@ -313,7 +312,6 @@ class DownloadTestCase(unittest.TestCase):
             "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long
             download_file,
         ) as download_progress:
-
             requests_mock.assert_called_once_with(
                 "GET",
                 "https://github.com/greenbone/pontos/archive/refs/tags/v21.11.0.tar.gz",  # pylint: disable=line-too-long

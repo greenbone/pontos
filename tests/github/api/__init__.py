@@ -44,7 +44,6 @@ def default_request(*args, **kwargs) -> Tuple[Tuple[Any], Dict[str, Any]]:
 
 
 class GitHubAsyncRESTTestCase(IsolatedAsyncioTestCase):
-
     api_cls = GitHubAsyncREST
 
     def setUp(self) -> None:

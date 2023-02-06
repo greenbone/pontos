@@ -32,6 +32,7 @@ from .version import UpdatedVersion, VersionCommand
 
 GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
 
+
 # This class is used for JavaScript Version command(s)
 class JavaScriptVersionCommand(VersionCommand):
     project_file_name = "package.json"

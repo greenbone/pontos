@@ -149,7 +149,6 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(header, expected_header)
 
     def test_add_header_wrong_file_suffix(self):
-
         with self.assertRaises(ValueError):
             add_header(
                 suffix=".prr",
@@ -159,7 +158,6 @@ class UpdateHeaderTestCase(TestCase):
             )
 
     def test_add_header_licence_not_found(self):
-
         with self.assertRaises(FileNotFoundError):
             add_header(
                 suffix=".py",
