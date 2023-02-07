@@ -86,7 +86,7 @@ def prepare(
     if not executed:
         return PrepareReturnValue.UPDATE_VERSION_ERROR
 
-    terminal.ok(f"updated version  in {filename} to {release_version}")
+    terminal.ok(f"updated version in {filename} to {release_version}")
 
     changelog_bool = True
     if args.conventional_commits:
