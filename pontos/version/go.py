@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import subprocess
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -54,22 +55,28 @@ class GoVersionCommand(VersionCommand):
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
-        try:
-            proc = subprocess.run(
-                "git describe --tags `git rev-list --tags --max-count=1`",
-                shell=True,
-                check=True,
-                errors="ignore",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            version = strip_version(proc.stdout)
-            return version.strip() if version is not None else ""
-        except CalledProcessError as e:
-            raise VersionError(
-                "No version tag found. Maybe this "
-                "module has not been released at all."
-            ) from e
+        version_file_text = self.version_file_path.read_text(encoding="utf-8")
+        match = re.search(r'var version = "([deprv0-9.]+)"', version_file_text)
+        if match:
+            print("Version " + match.group(1))
+            return match.group(1)
+        else:
+            try:
+                proc = subprocess.run(
+                    "git describe --tags `git rev-list --tags --max-count=1`",
+                    shell=True,
+                    check=True,
+                    errors="ignore",
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                version = strip_version(proc.stdout)
+                return version.strip() if version is not None else ""
+            except CalledProcessError as e:
+                raise VersionError(
+                    "No version tag found. Maybe this "
+                    "module has not been released at all."
+                ) from e
 
     def verify_version(self, version: str) -> None:
         """Verify the current version of this project"""
