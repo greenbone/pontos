@@ -19,7 +19,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable, Any, Optional
+from typing import Any, Dict, Iterable, Optional
 
 
 class PullRequestState(Enum):
@@ -68,16 +68,16 @@ class GitHubPullRequestEvent:
 
         self.draft = data.get("draft")
         self.number = data.get("number")
-        self.labels = [Label(label.get("name")) for label in data.get("labels")] #type: ignore
+        self.labels = [Label(label.get("name")) for label in data.get("labels")]  # type: ignore #pylint: disable=line-too-long
         self.title = data.get("title")
         self.merged = data.get("merged")
         self.state = PullRequestState(data.get("state"))
 
         base = data.get("base") or {}
-        self.base = Ref(base.get("ref"), base.get("sha")) #type: ignore
+        self.base = Ref(base.get("ref"), base.get("sha"))  # type: ignore
 
         head = data.get("head") or {}
-        self.head = Ref(head.get("ref"), head.get("sha")) #type: ignore
+        self.head = Ref(head.get("ref"), head.get("sha"))  # type: ignore
 
 
 @dataclass
@@ -97,7 +97,7 @@ class GitHubEvent:
         self._event_data = json.loads(content) if content else {}
         pull_request_data = self._event_data.get("pull_request")
         self.pull_request = (
-            GitHubPullRequestEvent(pull_request_data) #type: ignore
+            GitHubPullRequestEvent(pull_request_data)  # type: ignore
             if pull_request_data
             else None
         )
