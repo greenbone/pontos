@@ -231,5 +231,5 @@ class ActionIO:
             default: Use as default if the is no value for the variable
         """
         return os.environ.get(
-            f"INPUT_{name.replace(' ', '_').upper()}", default #type: ignore
+            f"INPUT_{name.replace(' ', '_').upper()}", default  # type: ignore
         )
