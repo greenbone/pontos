@@ -24,12 +24,12 @@ from pontos.github.actions.errors import GitHubActionsError
 
 
 def _to_options(
-    name: str = None,
-    line: str = None,
-    end_line: str = None,
-    column: str = None,
-    end_column: str = None,
-    title: str = None,
+    name: Optional[str] = None,
+    line: Optional[str] = None,
+    end_line: Optional[str] = None,
+    column: Optional[str] = None,
+    end_column: Optional[str] = None,
+    title: Optional[str] = None,
 ):
     options = []
     if name:
@@ -51,12 +51,12 @@ def _message(
     message_type: str,
     message: str,
     *,
-    name: str = None,
-    line: str = None,
-    end_line: str = None,
-    column: str = None,
-    end_column: str = None,
-    title: str = None,
+    name: Optional[str] = None,
+    line: Optional[str] = None,
+    end_line: Optional[str] = None,
+    column: Optional[str] = None,
+    end_column: Optional[str] = None,
+    title: Optional[str] = None,
 ):
     options = _to_options(name, line, end_line, column, end_column, title)
     print(f"::{message_type} {options}::{message}")
@@ -101,12 +101,12 @@ class Console:
     def warning(
         message: str,
         *,
-        name: str = None,
-        line: str = None,
-        end_line: str = None,
-        column: str = None,
-        end_column: str = None,
-        title: str = None,
+        name: Optional[str] = None,
+        line: Optional[str] = None,
+        end_line: Optional[str] = None,
+        column: Optional[str] = None,
+        end_column: Optional[str] = None,
+        title: Optional[str] = None,
     ):
         """
         Print a warning message
@@ -128,12 +128,12 @@ class Console:
     def error(
         message: str,
         *,
-        name: str = None,
-        line: str = None,
-        end_line: str = None,
-        column: str = None,
-        end_column: str = None,
-        title: str = None,
+        name: Optional[str] = None,
+        line: Optional[str] = None,
+        end_line: Optional[str] = None,
+        column: Optional[str] = None,
+        end_column: Optional[str] = None,
+        title: Optional[str] = None,
     ):
         """
         Print an error message
@@ -155,12 +155,12 @@ class Console:
     def notice(
         message: str,
         *,
-        name: str = None,
-        line: str = None,
-        end_line: str = None,
-        column: str = None,
-        end_column: str = None,
-        title: str = None,
+        name: Optional[str] = None,
+        line: Optional[str] = None,
+        end_line: Optional[str] = None,
+        column: Optional[str] = None,
+        end_column: Optional[str] = None,
+        title: Optional[str] = None,
     ):
         """
         Print a warning message
@@ -231,5 +231,5 @@ class ActionIO:
             default: Use as default if the is no value for the variable
         """
         return os.environ.get(
-            f"INPUT_{name.replace(' ', '_').upper()}", default
+            f"INPUT_{name.replace(' ', '_').upper()}", default  # type: ignore
         )
