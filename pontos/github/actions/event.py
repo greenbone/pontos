@@ -19,7 +19,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Any, Optional
 
 
 class PullRequestState(Enum):
@@ -54,30 +54,30 @@ class GitHubPullRequestEvent:
     https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
     """
 
-    draft: bool
-    number: int
-    labels: Iterable[str]
-    title: str
-    merged: bool
+    draft: Optional[bool]
+    number: Optional[int]
+    labels: Optional[Iterable[str]]
+    title: Optional[str]
+    merged: Optional[bool]
     state: PullRequestState
     base: Ref
     head: Ref
 
-    def __init__(self, pull_request_data: Dict[str, str]):
+    def __init__(self, pull_request_data: Dict[str, Any]):
         data = pull_request_data or {}
 
         self.draft = data.get("draft")
         self.number = data.get("number")
-        self.labels = [Label(label.get("name")) for label in data.get("labels")]
+        self.labels = [Label(label.get("name")) for label in data.get("labels")] #type: ignore
         self.title = data.get("title")
         self.merged = data.get("merged")
         self.state = PullRequestState(data.get("state"))
 
         base = data.get("base") or {}
-        self.base = Ref(base.get("ref"), base.get("sha"))
+        self.base = Ref(base.get("ref"), base.get("sha")) #type: ignore
 
         head = data.get("head") or {}
-        self.head = Ref(head.get("ref"), head.get("sha"))
+        self.head = Ref(head.get("ref"), head.get("sha")) #type: ignore
 
 
 @dataclass
@@ -97,7 +97,7 @@ class GitHubEvent:
         self._event_data = json.loads(content) if content else {}
         pull_request_data = self._event_data.get("pull_request")
         self.pull_request = (
-            GitHubPullRequestEvent(pull_request_data)
+            GitHubPullRequestEvent(pull_request_data) #type: ignore
             if pull_request_data
             else None
         )
