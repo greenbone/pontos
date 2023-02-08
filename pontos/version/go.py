@@ -46,9 +46,15 @@ class GoVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        self.version_file_path.write_text(
-            TEMPLATE.format(new_version), encoding="utf-8"
-        )
+        if self.version_file_path.exists():
+            self.version_file_path.write_text(
+                TEMPLATE.format(new_version), encoding="utf-8"
+            )
+        else:
+            raise VersionError(
+                f"No {self.version_file_path} file found. "
+                "This file is required for pontos"
+            )
 
     def get_current_version(self) -> str:
         """Get the current version of this project
