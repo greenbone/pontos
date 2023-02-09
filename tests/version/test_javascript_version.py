@@ -72,6 +72,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(updated.previous, "1.2.3")
             self.assertEqual(updated.new, "22.4.0")
+            self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)
@@ -87,6 +88,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(updated.previous, "1.2.3")
             self.assertEqual(updated.new, "22.4.0.dev1")
+            self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)
@@ -102,11 +104,44 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(updated.previous, "1.2.3")
             self.assertEqual(updated.new, "22.4.0.dev1")
+            self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)
 
             self.assertEqual(fake_package["version"], "22.4.0.dev1")
+
+    def test_no_update(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            updated = cmd.update_version("1.2.3")
+
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.changed_files, [])
+
+            with temp.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "1.2.3")
+
+    def test_forced_update(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+
+        with temp_file(content, name="package.json", change_into=True) as temp:
+            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            updated = cmd.update_version("1.2.3", force=True)
+
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.changed_files, [temp])
+
+            with temp.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "1.2.3")
 
 
 class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):

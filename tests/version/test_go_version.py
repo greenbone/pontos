@@ -142,10 +142,14 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 updated_version_obj = GoVersionCommand().update_version(version)
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
+
                 self.assertIn(version, content)
+
                 self.assertEqual(updated_version_obj.previous, "21.0.1")
                 self.assertEqual(updated_version_obj.new, version)
-                version_file_path.unlink()
+                self.assertEqual(
+                    updated_version_obj.changed_files, [version_file_path]
+                )
 
     def test_update_version(self):
         with temp_file(
@@ -158,11 +162,15 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             version_file_path.write_text(
                 TEMPLATE.format("0.0.1"), encoding="utf-8"
             )
-            cmd.update_version(version)
+            updated = cmd.update_version(version)
 
             content = version_file_path.read_text(encoding="utf-8")
             self.assertIn(version, content)
             version_file_path.unlink()
+
+            self.assertEqual(updated.new, version)
+            self.assertEqual(updated.previous, "0.0.1")
+            self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_create_file_update_version(self):
         with temp_file(
@@ -176,12 +184,57 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             ):
                 version = "22.2.2"
                 cmd = GoVersionCommand(project_file_path=temp)
-                cmd.update_version(version)
+                updated = cmd.update_version(version)
 
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
+
                 self.assertIn(version, content)
                 version_file_path.unlink()
+
+                self.assertEqual(updated.new, version)
+                self.assertEqual(updated.previous, "21.0.1")
+                self.assertEqual(updated.changed_files, [version_file_path])
+
+    def test_no_update(self):
+        with temp_file(
+            name="go.mod",
+            change_into=True,
+        ) as temp:
+            cmd = GoVersionCommand(project_file_path=temp)
+            version = "22.2.2"
+            version_file_path = Path(VERSION_FILE_PATH)
+            version_file_path.write_text(
+                TEMPLATE.format("22.2.2"), encoding="utf-8"
+            )
+            updated = cmd.update_version(version)
+
+            content = version_file_path.read_text(encoding="utf-8")
+            self.assertIn(version, content)
+
+            self.assertEqual(updated.new, version)
+            self.assertEqual(updated.previous, version)
+            self.assertEqual(updated.changed_files, [])
+
+    def test_forced_update(self):
+        with temp_file(
+            name="go.mod",
+            change_into=True,
+        ) as temp:
+            cmd = GoVersionCommand(project_file_path=temp)
+            version = "22.2.2"
+            version_file_path = Path(VERSION_FILE_PATH)
+            version_file_path.write_text(
+                TEMPLATE.format("22.2.2"), encoding="utf-8"
+            )
+            updated = cmd.update_version(version, force=True)
+
+            content = version_file_path.read_text(encoding="utf-8")
+            self.assertIn(version, content)
+
+            self.assertEqual(updated.new, version)
+            self.assertEqual(updated.previous, version)
+            self.assertEqual(updated.changed_files, [version_file_path])
 
 
 class ProjectFileGoVersionCommandTestCase(unittest.TestCase):
