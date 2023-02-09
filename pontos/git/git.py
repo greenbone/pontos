@@ -60,10 +60,13 @@ def exec_git(
     try:
         cmd_args = ["git"]
         cmd_args.extend(args)
-        output = subprocess.check_output(
-            cmd_args, cwd=fspath(cwd) if cwd else None
+        output = subprocess.run(
+            cmd_args,
+            cwd=fspath(cwd) if cwd else None,
+            check=True,
+            stdout=subprocess.PIPE,
         )
-        return output.decode()
+        return output.stdout.decode()
     except subprocess.CalledProcessError as e:
         if ignore_errors:
             return ""
@@ -329,7 +332,7 @@ class Git:
             verify: Set to False to skip git hooks
             gpg_signing_key: GPG Key ID to use to sign the commit
         """
-        args = ["commit"]
+        args = ["commit", "--verbose"]
         if verify is False:
             args.append("--no-verify")
         if gpg_signing_key:
