@@ -17,6 +17,7 @@
 
 import datetime
 import sys
+from pathlib import Path
 from typing import Optional, Tuple
 
 from packaging.version import InvalidVersion, Version
@@ -28,6 +29,9 @@ from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
+
+DEFAULT_PYTHON_VERSION_FILE = "*__version__.py"
+DEFAULT_GO_VERSION_FILE = Path("version.go")
 
 
 def commit_files(
@@ -51,11 +55,10 @@ def commit_files(
     git.add(filename)
 
     try:
-        git.add("*__version__.py")
-    except GitError:
-        pass
-    try:
-        git.add("version.go")
+        if list(Path.cwd().glob(DEFAULT_PYTHON_VERSION_FILE)):
+            git.add(DEFAULT_PYTHON_VERSION_FILE)
+        if DEFAULT_GO_VERSION_FILE.exists():
+            git.add(DEFAULT_GO_VERSION_FILE)
     except GitError:
         pass
 
