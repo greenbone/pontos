@@ -145,6 +145,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 self.assertIn(version, content)
                 self.assertEqual(updated_version_obj.previous, "21.0.1")
                 self.assertEqual(updated_version_obj.new, version)
+                version_file_path.unlink()
 
     def test_update_version(self):
         with temp_file(
@@ -161,6 +162,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
 
             content = version_file_path.read_text(encoding="utf-8")
             self.assertIn(version, content)
+            version_file_path.unlink()
 
     def test_create_file_update_version(self):
         with temp_file(
@@ -179,6 +181,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
                 self.assertIn(version, content)
+                version_file_path.unlink()
 
 
 class ProjectFileGoVersionCommandTestCase(unittest.TestCase):

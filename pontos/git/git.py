@@ -332,7 +332,7 @@ class Git:
             verify: Set to False to skip git hooks
             gpg_signing_key: GPG Key ID to use to sign the commit
         """
-        args = ["commit", "--verbose"]
+        args = ["commit"]
         if verify is False:
             args.append("--no-verify")
         if gpg_signing_key:
