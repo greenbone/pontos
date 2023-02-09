@@ -26,7 +26,7 @@ from pontos.version.cmake import CMakeVersionCommand, CMakeVersionParser
 from pontos.version.helper import VersionError
 
 
-class CMakeVersionCommandTestCase(unittest.TestCase):
+class VerifyCMakeVersionCommandTestCase(unittest.TestCase):
     def test_return_error_string_incorrect_version_on_verify(self):
         with temp_file(
             "project(VERSION so_much_version_so_much_wow)\n"
@@ -43,6 +43,8 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             ):
                 cmake.verify_version("so_much_version_so_much_wow")
 
+
+class GetCurrentCMakeVersionCommandTestCase(unittest.TestCase):
     @patch(
         "pontos.version.cmake.CMakeVersionCommand.get_current_version",
         MagicMock(return_value="21.4"),
@@ -65,7 +67,26 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             cmake = CMakeVersionCommand()
             self.assertEqual(cmake.get_current_version(), "21")
 
-    def test_raise_update_version(self):
+
+class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
+    def test_update_version(self):
+        with temp_file(
+            "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)",
+            name="CMakeLists.txt",
+            change_into=True,
+        ) as temp:
+            cmake = CMakeVersionCommand()
+            updated = cmake.update_version("22")
+
+            self.assertEqual(
+                "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
+                temp.read_text(encoding="utf8"),
+            )
+            self.assertEqual(updated.previous, "21")
+            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.changed_files, [temp])
+
+    def test_update_dev_version(self):
         with temp_file(
             "project(VERSION 21)\nset(PROJECT_DEV_VERSION 0)",
             name="CMakeLists.txt",
@@ -80,15 +101,16 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(updated.previous, "21")
             self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.changed_files, [temp])
 
-    def test_update_version_equal_not_force(self):
+    def test_no_update(self):
         with temp_file(
             "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
             name="CMakeLists.txt",
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22", develop=True)
+            updated = cmake.update_version("22")
 
             self.assertEqual(
                 "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
@@ -96,6 +118,41 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(updated.previous, "22")
             self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.changed_files, [])
+
+    def test_forced_update(self):
+        with temp_file(
+            "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
+            name="CMakeLists.txt",
+            change_into=True,
+        ) as temp:
+            cmake = CMakeVersionCommand()
+            updated = cmake.update_version("22", force=True)
+
+            self.assertEqual(
+                "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
+                temp.read_text(encoding="utf8"),
+            )
+            self.assertEqual(updated.previous, "22")
+            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.changed_files, [temp])
+
+
+class ProjectFileCMakeVersionCommandTestCase(unittest.TestCase):
+    def test_project_file_not_found(self):
+        with temp_directory() as temp:
+            cmake_lists_txt = temp / "CMakeLists.txt"
+            cmd = CMakeVersionCommand(project_file_path=cmake_lists_txt)
+
+            self.assertIsNone(cmd.project_file_found())
+            self.assertFalse(cmd.project_found())
+
+    def test_project_file_found(self):
+        with temp_file(name="CMakeLists.txt") as cmake_lists_txt:
+            cmd = CMakeVersionCommand(project_file_path=cmake_lists_txt)
+
+            self.assertEqual(cmd.project_file_found(), cmake_lists_txt)
+            self.assertTrue(cmd.project_found())
 
 
 class CMakeVersionParserTestCase(unittest.TestCase):
@@ -207,20 +264,3 @@ class CMakeVersionParserTestCase(unittest.TestCase):
         self.assertEqual(
             str(context.exception), "unable to find cmake version."
         )
-
-
-class ProjectFileCMakeVersionCommandTestCase(unittest.TestCase):
-    def test_project_file_not_found(self):
-        with temp_directory() as temp:
-            cmake_lists_txt = temp / "CMakeLists.txt"
-            cmd = CMakeVersionCommand(project_file_path=cmake_lists_txt)
-
-            self.assertIsNone(cmd.project_file_found())
-            self.assertFalse(cmd.project_found())
-
-    def test_project_file_found(self):
-        with temp_file(name="CMakeLists.txt") as cmake_lists_txt:
-            cmd = CMakeVersionCommand(project_file_path=cmake_lists_txt)
-
-            self.assertEqual(cmd.project_file_found(), cmake_lists_txt)
-            self.assertTrue(cmd.project_found())

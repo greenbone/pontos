@@ -131,6 +131,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "21.1")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
             text = temp.read_text(encoding="utf8")
 
@@ -172,6 +173,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "22.1")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -193,6 +195,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -216,6 +219,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -237,6 +241,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2.dev1")
             self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
         text = fake_path.write_text.call_args[0][0]
 
@@ -258,12 +263,53 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, "22.2.dev1")
             self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
 
         text = fake_path.write_text.call_args[0][0]
 
         toml = tomlkit.parse(text)
 
         self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
+
+    def test_no_update(self):
+        fake_path = mock_path(
+            """[tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
+        )
+
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True):
+            cmd = PythonVersionCommand(project_file_path=fake_path)
+            updated = cmd.update_version("1.2.3")
+
+            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [])
+
+        fake_path.write_text.assert_not_called()
+
+    def test_forced_updated(self):
+        fake_path = mock_path(
+            """[tool.poetry]\nversion = "1.2.3"
+        [tool.pontos.version]\nversion-module-file = "foo.py"
+        """
+        )
+
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True):
+            cmd = PythonVersionCommand(project_file_path=fake_path)
+            updated = cmd.update_version("1.2.3", force=True)
+
+            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.previous, "1.2.3")
+            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+
+        text = fake_path.write_text.call_args[0][0]
+
+        toml = tomlkit.parse(text)
+
+        self.assertEqual(toml["tool"]["poetry"]["version"], "1.2.3")
 
 
 class VerifyVersionTestCase(unittest.TestCase):
