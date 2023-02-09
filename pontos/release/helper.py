@@ -54,6 +54,10 @@ def commit_files(
         git.add("*__version__.py")
     except GitError:
         pass
+    try:
+        git.add("version.go")
+    except GitError:
+        pass
 
     if changelog:
         git.add("CHANGELOG.md")
