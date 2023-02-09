@@ -25,6 +25,7 @@ from packaging.version import InvalidVersion, Version
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.version import COMMANDS
+from pontos.version.go import GoVersionCommand
 from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
@@ -229,6 +230,8 @@ def update_version(
         command = cmd()
         project_file = command.project_file_found()
         if project_file:
+            if isinstance(command, GoVersionCommand):
+                project_file = Path.cwd() / "version.go"
             break
 
     if not project_file:
