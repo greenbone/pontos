@@ -202,9 +202,7 @@ class PythonVersionCommand(VersionCommand):
             # pyproject.toml
             current_version = self._get_version_from_pyproject_toml()
 
-        if not self.version_file_path.exists():
-            self.version_file_path.touch()
-        elif not force and versions_equal(new_version, current_version):
+        if not force and versions_equal(new_version, current_version):
             return UpdatedVersion(previous=current_version, new=new_version)
 
         self._update_pyproject_version(new_version=new_version)
