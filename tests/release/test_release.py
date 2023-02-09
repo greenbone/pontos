@@ -245,6 +245,7 @@ class ReleaseTestCase(unittest.TestCase):
             [
                 call("MyProject.conf"),
                 call("*__version__.py"),
+                call("version.go"),
                 call("CHANGELOG.md"),
             ]
         )
