@@ -209,4 +209,8 @@ class PythonVersionCommand(VersionCommand):
 
         self._update_version_file(new_version=new_version)
 
-        return VersionUpdate(previous=current_version, new=new_version)
+        return VersionUpdate(
+            previous=current_version,
+            new=new_version,
+            changed_files=[self.version_file_path, self.project_file_path],
+        )

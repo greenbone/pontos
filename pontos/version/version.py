@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -25,6 +25,7 @@ from typing import Optional
 class VersionUpdate:
     previous: str
     new: str
+    changed_files: list[Path] = field(default_factory=list)
 
 
 class VersionCommand(ABC):
