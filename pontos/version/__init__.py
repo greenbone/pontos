@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from typing import NoReturn
+from typing import NoReturn, Tuple, Type
 
 from pontos.version.helper import VersionError, initialize_default_parser
 from pontos.version.version import VersionCommand
@@ -27,7 +27,7 @@ from .go import GoVersionCommand
 from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
 
-COMMANDS = (
+COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
     GoVersionCommand,
     JavaScriptVersionCommand,
@@ -40,7 +40,7 @@ def main() -> NoReturn:
 
     found = False
     for cmd in COMMANDS:
-        command: VersionCommand = cmd()  # type: ignore
+        command = cmd()
         if command.project_found():
             found = True
             break
