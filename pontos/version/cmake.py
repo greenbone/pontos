@@ -46,7 +46,11 @@ class CMakeVersionCommand(VersionCommand):
 
         new_content = cmvp.update_version(new_version, develop=develop)
         self.project_file_path.write_text(new_content, encoding="utf-8")
-        return VersionUpdate(previous=previous_version, new=new_version)
+        return VersionUpdate(
+            previous=previous_version,
+            new=new_version,
+            changed_files=[self.project_file_path],
+        )
 
     def get_current_version(self) -> str:
         content = self.project_file_path.read_text(encoding="utf-8")

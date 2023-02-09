@@ -105,21 +105,24 @@ class JavaScriptVersionCommand(VersionCommand):
         except json.JSONDecodeError as e:
             raise VersionError("Couldn't load JSON") from e
 
-    def _update_version_file(self, new_version: str) -> None:
+    def _update_version_file(self, new_version: str) -> bool:
         """
         Update the version file with the new version
         """
-        if GREENBONE_JS_VERSION_FILE.exists():
-            content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
-            content = re.sub(
-                pattern=(
-                    r'VERSION = (?P<quote>[\'"])[\d+\.]{2,3}'
-                    r"{.dev[\d]}(?P=quote);"
-                ),
-                repl=f"VERSION = {new_version};",
-                string=content,
-            )
-            GREENBONE_JS_VERSION_FILE.write_text(content, encoding="utf-8")
+        if not GREENBONE_JS_VERSION_FILE.exists():
+            return False
+
+        content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
+        content = re.sub(
+            pattern=(
+                r'VERSION = (?P<quote>[\'"])[\d+\.]{2,3}'
+                r"{.dev[\d]}(?P=quote);"
+            ),
+            repl=f"VERSION = {new_version};",
+            string=content,
+        )
+        GREENBONE_JS_VERSION_FILE.write_text(content, encoding="utf-8")
+        return True
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
@@ -132,8 +135,15 @@ class JavaScriptVersionCommand(VersionCommand):
         if not force and versions_equal(new_version, package_version):
             return VersionUpdate(previous=package_version, new=new_version)
 
+        changed_files = [self.project_file_path]
         self._update_package_json(new_version=new_version)
 
-        self._update_version_file(new_version=new_version)
+        updated = self._update_version_file(new_version=new_version)
+        if updated:
+            changed_files.append(GREENBONE_JS_VERSION_FILE)
 
-        return VersionUpdate(previous=package_version, new=new_version)
+        return VersionUpdate(
+            previous=package_version,
+            new=new_version,
+            changed_files=changed_files,
+        )
