@@ -101,8 +101,8 @@ class GoVersionCommand(VersionCommand):
             git = Git()
             current_version = git.list_tags(sort=TagSort.VERSION)[-1]
 
-        if not self.version_file_path.exists():
-            self.version_file_path.touch()
+        if not force and versions_equal(new_version, current_version):
+            return UpdatedVersion(previous=current_version, new=new_version)
 
         self._update_version_file(new_version=new_version)
 
