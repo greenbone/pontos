@@ -28,7 +28,7 @@ from pontos.version.helper import (
     versions_equal,
 )
 
-from .version import UpdatedVersion, VersionCommand
+from .version import VersionCommand, VersionUpdate
 
 GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
 
@@ -123,17 +123,17 @@ class JavaScriptVersionCommand(VersionCommand):
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> UpdatedVersion:
+    ) -> VersionUpdate:
         new_version = safe_version(new_version)
         if not check_develop(new_version) and develop:
             new_version = f"{new_version}.dev1"
 
         package_version = self.get_current_version()
         if not force and versions_equal(new_version, package_version):
-            return UpdatedVersion(previous=package_version, new=new_version)
+            return VersionUpdate(previous=package_version, new=new_version)
 
         self._update_package_json(new_version=new_version)
 
         self._update_version_file(new_version=new_version)
 
-        return UpdatedVersion(previous=package_version, new=new_version)
+        return VersionUpdate(previous=package_version, new=new_version)
