@@ -27,7 +27,7 @@ from .helper import (
     safe_version,
     versions_equal,
 )
-from .version import UpdatedVersion, VersionCommand
+from .version import VersionCommand, VersionUpdate
 
 TEMPLATE = """package main
 
@@ -89,7 +89,7 @@ class GoVersionCommand(VersionCommand):
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> UpdatedVersion:
+    ) -> VersionUpdate:
         """Update the current version of this project"""
         new_version = safe_version(new_version)
         if not check_develop(new_version) and develop:
@@ -102,8 +102,8 @@ class GoVersionCommand(VersionCommand):
             current_version = git.list_tags(sort=TagSort.VERSION)[-1]
 
         if not force and versions_equal(new_version, current_version):
-            return UpdatedVersion(previous=current_version, new=new_version)
+            return VersionUpdate(previous=current_version, new=new_version)
 
         self._update_version_file(new_version=new_version)
 
-        return UpdatedVersion(previous=current_version, new=new_version)
+        return VersionUpdate(previous=current_version, new=new_version)

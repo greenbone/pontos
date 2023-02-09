@@ -28,7 +28,7 @@ from .helper import (
     safe_version,
     versions_equal,
 )
-from .version import UpdatedVersion, VersionCommand
+from .version import VersionCommand, VersionUpdate
 
 
 class CMakeVersionCommand(VersionCommand):
@@ -36,17 +36,17 @@ class CMakeVersionCommand(VersionCommand):
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> UpdatedVersion:
+    ) -> VersionUpdate:
         content = self.project_file_path.read_text(encoding="utf-8")
         cmvp = CMakeVersionParser(content)
         previous_version = self.get_current_version()
 
         if not force and versions_equal(new_version, previous_version):
-            return UpdatedVersion(previous=previous_version, new=new_version)
+            return VersionUpdate(previous=previous_version, new=new_version)
 
         new_content = cmvp.update_version(new_version, develop=develop)
         self.project_file_path.write_text(new_content, encoding="utf-8")
-        return UpdatedVersion(previous=previous_version, new=new_version)
+        return VersionUpdate(previous=previous_version, new=new_version)
 
     def get_current_version(self) -> str:
         content = self.project_file_path.read_text(encoding="utf-8")

@@ -22,7 +22,7 @@ from typing import Optional
 
 
 @dataclass
-class UpdatedVersion:
+class VersionUpdate:
     previous: str
     new: str
 
@@ -50,7 +50,7 @@ class VersionCommand(ABC):
     @abstractmethod
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> UpdatedVersion:
+    ) -> VersionUpdate:
         """Update the current version of this project"""
 
     def project_file_found(self) -> Optional[Path]:

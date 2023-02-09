@@ -28,7 +28,7 @@ from .helper import (
     strip_version,
     versions_equal,
 )
-from .version import UpdatedVersion, VersionCommand
+from .version import VersionCommand, VersionUpdate
 
 TEMPLATE = """# pylint: disable=invalid-name
 
@@ -190,7 +190,7 @@ class PythonVersionCommand(VersionCommand):
 
     def update_version(
         self, new_version: str, *, develop: bool = False, force: bool = False
-    ) -> UpdatedVersion:
+    ) -> VersionUpdate:
         new_version = safe_version(new_version)
         if not check_develop(new_version) and develop:
             new_version = f"{new_version}.dev1"
@@ -203,10 +203,10 @@ class PythonVersionCommand(VersionCommand):
             current_version = self._get_version_from_pyproject_toml()
 
         if not force and versions_equal(new_version, current_version):
-            return UpdatedVersion(previous=current_version, new=new_version)
+            return VersionUpdate(previous=current_version, new=new_version)
 
         self._update_pyproject_version(new_version=new_version)
 
         self._update_version_file(new_version=new_version)
 
-        return UpdatedVersion(previous=current_version, new=new_version)
+        return VersionUpdate(previous=current_version, new=new_version)
