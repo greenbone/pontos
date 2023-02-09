@@ -22,7 +22,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
-from pontos.version.go import GoVersionCommand
+from pontos.version.go import Git, GoVersionCommand
 from pontos.version.helper import VersionError
 
 
@@ -129,15 +129,22 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
 
 
 class UpdateGoVersionCommandTestCase(unittest.TestCase):
-    def test_no_file_update_version(self):
+    def test_no_file_but_tag_update_version(self):
         with temp_directory(change_into=True) as temp:
             go_mod = temp / "go.mod"
             go_mod.touch()
-            with self.assertRaisesRegex(
-                VersionError,
-                "No version.go file found. This file is required for pontos",
+            with patch.object(
+                Git,
+                "list_tags",
+                MagicMock(return_value=["21.0.1"]),
             ):
-                GoVersionCommand().update_version("22.2.2")
+                version = "22.2.2"
+                updated_version_obj = GoVersionCommand().update_version(version)
+                version_file_path = Path(VERSION_FILE_PATH)
+                content = version_file_path.read_text(encoding="utf-8")
+                self.assertIn(version, content)
+                self.assertEqual(updated_version_obj.previous, "21.0.1")
+                self.assertEqual(updated_version_obj.new, version)
 
     def test_update_version(self):
         with temp_file(
@@ -155,15 +162,12 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             content = version_file_path.read_text(encoding="utf-8")
             self.assertIn(version, content)
 
-    def test_no_file_update_version2(self):
+    def test_create_file_update_version(self):
         with temp_file(
             name="go.mod",
             change_into=True,
         ) as temp:
-            with self.assertRaisesRegex(
-                VersionError,
-                "No version.go file found. This file is required for pontos",
-            ), patch.object(
+            with patch.object(
                 GoVersionCommand,
                 "get_current_version",
                 MagicMock(return_value="21.0.1"),
@@ -171,6 +175,10 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 version = "22.2.2"
                 cmd = GoVersionCommand(project_file_path=temp)
                 cmd.update_version(version)
+
+                version_file_path = Path(VERSION_FILE_PATH)
+                content = version_file_path.read_text(encoding="utf-8")
+                self.assertIn(version, content)
 
 
 class ProjectFileGoVersionCommandTestCase(unittest.TestCase):

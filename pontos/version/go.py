@@ -18,6 +18,8 @@
 import re
 from pathlib import Path
 
+from pontos.git import Git, TagSort
+
 from .helper import (
     VersionError,
     check_develop,
@@ -44,15 +46,9 @@ class GoVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        if self.version_file_path.exists():
-            self.version_file_path.write_text(
-                TEMPLATE.format(new_version), encoding="utf-8"
-            )
-        else:
-            raise VersionError(
-                f"No {self.version_file_path} file found. "
-                "This file is required for pontos"
-            )
+        self.version_file_path.write_text(
+            TEMPLATE.format(new_version), encoding="utf-8"
+        )
 
     def get_current_version(self) -> str:
         """Get the current version of this project
@@ -101,8 +97,12 @@ class GoVersionCommand(VersionCommand):
 
         try:
             current_version = self.get_current_version()
-        except VersionError as e:
-            raise e
+        except VersionError:
+            git = Git()
+            current_version = git.list_tags(sort=TagSort.VERSION)[-1]
+
+        if not self.version_file_path.exists():
+            self.version_file_path.touch()
 
         self._update_version_file(new_version=new_version)
 
