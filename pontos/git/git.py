@@ -65,8 +65,10 @@ def exec_git(
             cwd=fspath(cwd) if cwd else None,
             check=True,
             stdout=subprocess.PIPE,
+            encoding="utf8",
+            errors="replace",
         )
-        return output.stdout.decode()
+        return output.stdout
     except subprocess.CalledProcessError as e:
         if ignore_errors:
             return ""
