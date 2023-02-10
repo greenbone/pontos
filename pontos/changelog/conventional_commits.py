@@ -28,7 +28,6 @@ import tomlkit
 
 from pontos.errors import PontosError
 from pontos.git import Git, GitError, TagSort
-from pontos.release.helper import get_git_repository_name
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -65,7 +64,7 @@ class ChangelogBuilder:
         current_version: str,
         next_version: str,
         space: str,
-        project: Optional[str] = None,
+        project: str,
         config: Optional[Path] = None,
     ):
         self._terminal = terminal
@@ -81,9 +80,7 @@ class ChangelogBuilder:
         else:
             self.config = tomlkit.parse(DEFAULT_CHANGELOG_CONFIG)
 
-        self.project = (
-            project if project is not None else get_git_repository_name()
-        )
+        self.project = project
         self.space = space
 
         self.current_version = current_version
@@ -243,6 +240,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
 
     parser.add_argument(
         "--project",
+        required=True,
         help="The github project",
     )
 
