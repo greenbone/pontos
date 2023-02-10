@@ -66,5 +66,5 @@ class GitHubRESTContentMixin:
         params = {}
         if branch:
             params["ref"] = branch
-        response: httpx.Response = self._request(api, params=params)
+        response: httpx.Response = self._request(api, params=params)  # type: ignore # pylint: disable=line-too-long
         return response.is_success

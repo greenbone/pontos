@@ -18,9 +18,11 @@
 import asyncio
 from pathlib import Path
 from typing import (
+    Any,
     AsyncContextManager,
     AsyncIterator,
     ContextManager,
+    Dict,
     Iterable,
     Iterator,
     Optional,
@@ -84,7 +86,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             data["target_commitish"] = target_commitish
 
         api = f"/repos/{repo}/releases"
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
         return Release.from_dict(response.json())
 
@@ -266,13 +268,13 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                 asset_url,
                 params={"name": file_path.name},
                 content_type=content_type,
-                content=upload(file_path),
+                content=upload(file_path),  # type: ignore
             )
             return response, file_path
 
         tasks = []
         for file_path in files:
-            if isinstance(file_path, Tuple):
+            if isinstance(file_path, tuple):
                 file_path, content_type = file_path
             else:
                 content_type = "application/octet-stream"
@@ -296,7 +298,7 @@ class GitHubRESTReleaseMixin:
         email: str,
         *,
         git_object_type: Optional[str] = None,
-        date: Optional[str] = None,
+        date: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Create a github tag
@@ -337,10 +339,10 @@ class GitHubRESTReleaseMixin:
         }
 
         if date:
-            data["tagger"]["date"] = date
+            data["tagger"]["date"] = date  # type: ignore
 
         api = f"/repos/{repo}/git/tags"
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -369,7 +371,7 @@ class GitHubRESTReleaseMixin:
         }
 
         api = f"/repos/{repo}/git/refs"
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -408,7 +410,7 @@ class GitHubRESTReleaseMixin:
             data["target_commitish"] = target_commitish
 
         api = f"/repos/{repo}/releases"
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -425,7 +427,7 @@ class GitHubRESTReleaseMixin:
             True if the release exists
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return response.is_success
 
     def release(self, repo: str, tag: str) -> JSON_OBJECT:
@@ -440,7 +442,7 @@ class GitHubRESTReleaseMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         response.raise_for_status()
         return response.json()
 
@@ -498,7 +500,7 @@ class GitHubRESTReleaseMixin:
         if not assets_url:
             return
 
-        response: httpx.Response = self._request_internal(assets_url)
+        response: httpx.Response = self._request_internal(assets_url)  # type: ignore # pylint: disable=line-too-long
         response.raise_for_status()
         assets_json = response.json()
         for asset_json in assets_json:
@@ -543,17 +545,17 @@ class GitHubRESTReleaseMixin:
             >>>    print(f"Uploaded: {uploaded_file}")
         """
         github_json = self.release(repo, tag)
-        asset_url = github_json["upload_url"].replace("{?name,label}", "")
+        asset_url = github_json["upload_url"].replace("{?name,label}", "")  # type: ignore
 
         for file_path in files:
-            if isinstance(file_path, Tuple):
+            if isinstance(file_path, tuple):
                 file_path, content_type = file_path
             else:
                 content_type = "application/octet-stream"
 
             to_upload = file_path.read_bytes()
 
-            response: httpx.Response = self._request_internal(
+            response: httpx.Response = self._request_internal(  # type: ignore
                 asset_url,
                 params={"name": file_path.name},
                 content=to_upload,

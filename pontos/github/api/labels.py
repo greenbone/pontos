@@ -48,7 +48,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             data: JSON = response.json()
 
             for label in data:
-                yield label["name"]
+                yield label["name"]  # type: ignore
 
     async def set_all(
         self, repo: str, issue: int, labels: Iterable[str]
@@ -64,7 +64,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
 
 
@@ -85,7 +85,7 @@ class GitHubRESTLabelsMixin:
             List of existing labels
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return [f["name"] for f in response.json()]
 
     def set_labels(self, repo: str, issue: int, labels: List[str]):
@@ -100,7 +100,7 @@ class GitHubRESTLabelsMixin:
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()

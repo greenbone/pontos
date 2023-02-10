@@ -110,7 +110,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         email: Optional[str] = None,
         invitee_id: Optional[Union[str, int]] = None,
         role: Union[InvitationRole, str] = InvitationRole.DIRECT_MEMBER,
-        team_ids: Iterable[Union[str, int]] = None,
+        team_ids: Optional[Iterable[Union[str, int]]] = None,
     ) -> None:
         """
         Invite a user to a GitHub Organization
@@ -237,7 +237,7 @@ class GitHubRESTOrganizationsMixin:
             repo: GitHub repository (owner/name) to use
         """
         api = f"/orgs/{orga}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return response.is_success
 
     def get_organization_repository_number(
@@ -251,7 +251,7 @@ class GitHubRESTOrganizationsMixin:
             pull_request: Pull request number to check
         """
         api = f"/orgs/{orga}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         response.raise_for_status()
         response_json = response.json()
 
@@ -288,7 +288,7 @@ class GitHubRESTOrganizationsMixin:
         while count - downloaded > 0:
             page += 1
             params["page"] = page
-            response: httpx.Response = self._request(api, params=params)
+            response: httpx.Response = self._request(api, params=params)  # type: ignore # pylint: disable=line-too-long
             response.raise_for_status()
 
             repos.extend(response.json())

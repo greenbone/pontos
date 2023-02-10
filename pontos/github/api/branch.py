@@ -56,7 +56,7 @@ def update_from_applied_settings(
     Return keyword arguments for update_protection_rules by merging existing
     settings with desired updated values.
     """
-    kwargs = {}
+    kwargs: Dict[str, Any] = {}
     if enforce_admins is not None:
         kwargs["enforce_admins"] = enforce_admins
     elif branch_protection.enforce_admins:
@@ -424,7 +424,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
-        data = {
+        data: Dict[str, Any] = {
             "enforce_admins": None,
             "required_status_checks": None,
             "required_pull_request_reviews": None,
@@ -716,7 +716,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         api = (
             f"/repos/{repo}/branches/{branch}/protection/required_status_checks"
         )
-        data = {}
+        data: Dict[str, Any] = {}
         if require_branches_to_be_up_to_date is not None:
             data["strict"] = require_branches_to_be_up_to_date
         if required_status_checks is not None:
@@ -764,7 +764,7 @@ class GitHubRESTBranchMixin:
             branch: Branch name to check
         """
         api = f"/repos/{repo}/branches/{branch}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return response.is_success
 
     def delete_branch(self, repo: str, branch: str):
@@ -779,7 +779,7 @@ class GitHubRESTBranchMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/git/refs/{branch}"
-        response: httpx.Response = self._request(api, request=httpx.delete)
+        response: httpx.Response = self._request(api, request=httpx.delete)  # type: ignore  # pylint: disable=line-too-long
         response.raise_for_status()
 
     def branch_protection_rules(self, repo: str, branch: str):
@@ -795,5 +795,5 @@ class GitHubRESTBranchMixin:
             HTTPError if the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return response.json()

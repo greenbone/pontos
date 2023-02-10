@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.organization import (
@@ -81,7 +81,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         has_downloads: Optional[bool] = True,
         is_template: Optional[bool] = False,
         team_id: Optional[str] = None,
-        auto_init: Optional[str] = False,
+        auto_init: Optional[bool] = False,
         gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
         license_template: Optional[Union[LicenseType, str]] = None,
         allow_squash_merge: Optional[bool] = True,
@@ -187,7 +187,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 failed.
         """
         api = f"/orgs/{organization}/repos"
-        data = {"name": name}
+        data: Dict[str, Union[bool, str]] = {"name": name}
 
         if description:
             data["description"] = description
@@ -242,7 +242,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if merge_commit_message:
             data["merge_commit_message"] = enum_or_value(merge_commit_message)
 
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
         return Repository.from_dict(response.json())
 
@@ -262,7 +262,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         api = f"/repos/{repo}"
 
         data = {"archived": True}
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
 
     async def update(
@@ -377,7 +377,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         """
         api = f"/repos/{repo}"
 
-        data = {}
+        data: Dict[str, Union[str, bool]] = {}
         if name:
             data["name"] = name
         if description:
@@ -425,6 +425,6 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if web_commit_signoff_required is not None:
             data["web_commit_signoff_required"] = web_commit_signoff_required
 
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
         return Repository.from_dict(response.json())

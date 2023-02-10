@@ -24,6 +24,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Generator, Union
 
+from httpx import Timeout
+
 from pontos.github.api.api import GitHubAsyncRESTApi, GitHubRESTApi
 from pontos.github.script.errors import GitHubScriptError
 from pontos.helper import add_sys_path, ensure_unload_module
@@ -80,7 +82,9 @@ def run_github_script_function(
     if asyncio.iscoroutinefunction(func):
         # it's async
         async def run_async() -> int:
-            async with GitHubAsyncRESTApi(token, timeout=timeout) as api:
+            async with GitHubAsyncRESTApi(
+                token, timeout=Timeout(timeout)
+            ) as api:
                 return await func(api, args)
 
         loop_owner = False
@@ -99,7 +103,7 @@ def run_github_script_function(
         return retval
 
     # it's sync
-    api = GitHubRESTApi(token, timeout=timeout)
+    api = GitHubRESTApi(token, timeout=Timeout(timeout))
     return func(api, args)
 
 

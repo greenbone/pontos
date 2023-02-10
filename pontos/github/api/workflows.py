@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncIterator, Dict, Iterable, Optional, Union
+from typing import Any, AsyncIterator, Dict, Iterable, Optional, Union
 
 import httpx
 
@@ -48,7 +48,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             Information about the workflows as an iterable of dicts
         """
         api = f"/repos/{repo}/actions/workflows"
-        return self._get_paged_items(api, "workflows", Workflow)
+        return self._get_paged_items(api, "workflows", Workflow)  # type: ignore
 
     async def get(self, repo: str, workflow: Union[str, int]) -> Workflow:
         """
@@ -79,7 +79,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         workflow: Union[str, int],
         *,
         ref: str,
-        inputs: Dict[str, str] = None,
+        inputs: Optional[Dict[str, str]] = None,
     ) -> None:
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
@@ -109,7 +109,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 )
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
-        data = {"ref": ref}
+        data: Dict[str, Any] = {"ref": ref}
 
         if inputs:
             data["inputs"] = inputs
@@ -170,7 +170,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             if workflow
             else f"/repos/{repo}/actions/runs"
         )
-        params = {}
+        params: Dict[str, Any] = {}
         if actor:
             params["actor"] = actor
         if branch:
@@ -184,7 +184,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         if exclude_pull_requests is not None:
             params["exclude_pull_requests"] = exclude_pull_requests
 
-        return self._get_paged_items(
+        return self._get_paged_items(  # type: ignore
             api, "workflow_runs", WorkflowRun, params=params
         )
 
@@ -229,7 +229,7 @@ class GitHubRESTWorkflowsMixin:
             Information about the workflows as an iterable of dicts
         """
         api = f"/repos/{repo}/actions/workflows"
-        return self._get_paged_items(api, "workflows")
+        return self._get_paged_items(api, "workflows")  # type: ignore
 
     def get_workflow(self, repo: str, workflow: str) -> JSON_OBJECT:
         """
@@ -248,7 +248,7 @@ class GitHubRESTWorkflowsMixin:
             Information about the workflows as a dict
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}"
-        response = self._request(api, request=httpx.get)
+        response = self._request(api, request=httpx.get)  # type: ignore
         response.raise_for_status()
         return response.json()
 
@@ -258,7 +258,7 @@ class GitHubRESTWorkflowsMixin:
         workflow: str,
         *,
         ref: str,
-        inputs: Dict[str, str] = None,
+        inputs: Optional[Dict[str, str]] = None,
     ):
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
@@ -284,12 +284,14 @@ class GitHubRESTWorkflowsMixin:
             api.create_workflow_dispatch("foo/bar", "ci.yml", ref="main")
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
-        data = {"ref": ref}
+        data: Dict[str, Any] = {"ref": ref}
 
         if inputs:
             data["inputs"] = inputs
 
-        response = self._request(api, data=data, request=httpx.post)
+        response = self._request(  # type: ignore
+            api, data=data, request=httpx.post
+        )
         response.raise_for_status()
 
     def get_workflow_runs(
@@ -342,7 +344,7 @@ class GitHubRESTWorkflowsMixin:
             if workflow
             else f"/repos/{repo}/actions/runs"
         )
-        params = {}
+        params: Dict[str, Union[str, bool]] = {}
         if actor:
             params["actor"] = actor
         if branch:
@@ -356,7 +358,7 @@ class GitHubRESTWorkflowsMixin:
         if exclude_pull_requests is not None:
             params["exclude_pull_requests"] = exclude_pull_requests
 
-        return self._get_paged_items(api, "workflow_runs", params=params)
+        return self._get_paged_items(api, "workflow_runs", params=params)  # type: ignore
 
     def get_workflow_run(self, repo: str, run: str) -> JSON_OBJECT:
         """
@@ -374,6 +376,6 @@ class GitHubRESTWorkflowsMixin:
             Information about the workflow runs as a dict
         """
         api = f"/repos/{repo}/actions/runs/{run}"
-        response = self._request(api, request=httpx.get)
+        response = self._request(api, request=httpx.get)  # type: ignore
         response.raise_for_status()
         return response.json()

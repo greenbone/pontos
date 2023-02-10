@@ -42,7 +42,9 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     def _get_paged_artifacts(
         self, api, *, params: Optional[Params] = None
     ) -> AsyncIterator[Artifact]:
-        return self._get_paged_items(api, "artifacts", Artifact, params=params)
+        return self._get_paged_items(
+            api, "artifacts", Artifact, params=params  # type: ignore
+        )
 
     def get_all(self, repo: str) -> AsyncIterator[Artifact]:
         """
@@ -173,7 +175,7 @@ class GitHubRESTArtifactsMixin:
             Information about the artifacts in the repository as a dict
         """
         api = f"/repos/{repo}/actions/artifacts"
-        return self._get_paged_items(api, "artifacts")
+        return self._get_paged_items(api, "artifacts")  # type: ignore
 
     def get_repository_artifact(self, repo: str, artifact: str) -> JSON_OBJECT:
         """
@@ -191,7 +193,7 @@ class GitHubRESTArtifactsMixin:
             Information about the artifact as a dict
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response: httpx.Response = self._request(api, request=httpx.get)
+        response: httpx.Response = self._request(api, request=httpx.get)  # type: ignore # pylint: disable=line-too-long
         response.raise_for_status()
         return response.json()
 
@@ -222,8 +224,10 @@ class GitHubRESTArtifactsMixin:
                 for progress in progress_iterator:
                     print(".", end="")
         """
-        api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
-        return download(api, destination, headers=self._request_headers())
+        api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"  # type: ignore # pylint: disable=line-too-long
+        return download(
+            api, destination, headers=self._request_headers()  # type: ignore
+        )
 
     def get_workflow_run_artifacts(
         self, repo: str, run: str
@@ -243,7 +247,7 @@ class GitHubRESTArtifactsMixin:
             Information about the artifacts in the workflow as a dict
         """
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
-        return self._get_paged_items(api, "artifacts")
+        return self._get_paged_items(api, "artifacts")  # type: ignore
 
     def delete_repository_artifact(self, repo: str, artifact: str):
         """
@@ -258,5 +262,5 @@ class GitHubRESTArtifactsMixin:
                 failed.
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response: httpx.Response = self._request(api, request=httpx.delete)
+        response: httpx.Response = self._request(api, request=httpx.delete)  # type: ignore # pylint: disable=line-too-long
         response.raise_for_status()

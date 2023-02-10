@@ -89,7 +89,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
                 file.write(content)
                 print(progress)
         """
-        self._content_iterator = content_iterator
+        self._content_iterator: AsyncIterator[T] = content_iterator
         self._url = url
         self._length = None if length is None else int(length)
 
@@ -165,7 +165,7 @@ async def download_async(
             content_length = response.headers.get("content-length")
 
         yield AsyncDownloadProgressIterable(
-            url=response.url,
+            url=response.url,  # type: ignore
             content_iterator=response.aiter_bytes(chunk_size=chunk_size),
             length=content_length,
         )
@@ -232,8 +232,8 @@ def download(
     url: str,
     destination: Optional[Union[Path, str]] = None,
     *,
-    headers: Dict[str, Any] = None,
-    params: Dict[str, Any] = None,
+    headers: Optional[Dict[str, Any]] = None,
+    params: Optional[Dict[str, Any]] = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> Generator[DownloadProgressIterable, None, None]:
@@ -288,7 +288,7 @@ def download(
 
 
 def shell_cmd_runner(args: Iterable[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(
+    return subprocess.run(  # type: ignore
         args,
         shell=True,
         check=True,
@@ -299,10 +299,10 @@ def shell_cmd_runner(args: Iterable[str]) -> subprocess.CompletedProcess:
 
 
 def deprecated(
-    _func_or_cls: Union[str, Callable, Type] = None,
+    _func_or_cls: Union[str, Callable, Type, None] = None,
     *,
-    since: str = None,
-    reason: str = None,
+    since: Optional[str] = None,
+    reason: Optional[str] = None,
 ):
     """
     A decorator to mark functions, classes and methods as deprecated
@@ -476,11 +476,11 @@ def parse_timedelta(time_str: str) -> timedelta:
         parse_timedelta("1.5h")
         parse_timedelta("1w2d4h5m6s")
     """
-    parts = regex.match(time_str)
-    if not parts:
+    time_match = regex.match(time_str)
+    if not time_match:
         raise PontosError(f"Invalid timedelta format '{time_str}'.")
 
-    parts = parts.groupdict()
+    parts: Dict[str, Any] = time_match.groupdict()
     time_params = {}
     for name, param in parts.items():
         if param:

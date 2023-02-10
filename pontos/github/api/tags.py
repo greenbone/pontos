@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.tag import GitObjectType, Tag
@@ -91,7 +91,7 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
             sha: The SHA1 value for this Github tag.
         """
 
-        data = {
+        data: Dict[str, Any] = {
             "ref": f"refs/tags/{tag}",
             "sha": sha,
         }

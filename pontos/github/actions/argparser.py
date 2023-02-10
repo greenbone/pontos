@@ -18,7 +18,7 @@
 """ Argument parser for pontos-github-actions """
 
 from argparse import ArgumentParser, Namespace
-from typing import List
+from typing import List, Optional
 
 from .cmds import actions_input, actions_output
 
@@ -30,7 +30,7 @@ def split_pairs(value: str):
 
 
 def parse_args(
-    args: List[str] = None,
+    args: Optional[List[str]] = None,
 ) -> Namespace:
     """
     Parsing args for Pontos GitHub Actions

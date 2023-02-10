@@ -254,7 +254,7 @@ class GitHubRESTApi(
             params=params,
             follow_redirects=True,
             timeout=self.timeout,
-            **kwargs,
+            **kwargs,  # type: ignore
         )
 
     def _request_api_url(self, api) -> str:
@@ -315,7 +315,7 @@ class GitHubRESTApi(
         params.update({"per_page": per_page, "page": page})
 
         response: httpx.Response = self._request(
-            api, request=httpx.get, params=params
+            api, request=httpx.get, params=params  # type: ignore
         )
         response.raise_for_status()
 
@@ -328,7 +328,9 @@ class GitHubRESTApi(
             page += 1
             params = {"per_page": per_page, "page": page}
 
-            response = self._request(api, request=httpx.get, params=params)
+            response = self._request(
+                api, request=httpx.get, params=params  # type: ignore
+            )
             response.raise_for_status()
 
             json = response.json()

@@ -111,13 +111,13 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             httpx.HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/pulls"
-        data = {
+        data: Dict[str, str] = {
             "head": head_branch,
             "base": base_branch,
             "title": title,
             "body": body.replace("\\n", "\n"),
         }
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
         return PullRequest.from_dict(response.json())
 
@@ -149,7 +149,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
 
-        data = {}
+        data: Dict[str, str] = {}
         if base_branch:
             data["base"] = base_branch
         if title:
@@ -157,7 +157,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         if body:
             data["body"] = body.replace("\\n", "\n")
 
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
         return PullRequest.from_dict(response.json())
 
@@ -177,7 +177,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data = {"body": comment}
-        response = await self._client.post(api, data=data)
+        response = await self._client.post(api, data=data)  # type: ignore
         response.raise_for_status()
 
     async def files(
@@ -220,7 +220,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
                 if not status_list or status in status_list:
                     file_dict[status].append(Path(f["filename"]))
 
-        return file_dict
+        return file_dict  # type: ignore
 
 
 class GitHubRESTPullRequestsMixin:
@@ -233,7 +233,7 @@ class GitHubRESTPullRequestsMixin:
             pull_request: Pull request number to check
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
-        response: httpx.Response = self._request(api)
+        response: httpx.Response = self._request(api)  # type: ignore
         return response.is_success
 
     def pull_request_commits(
@@ -255,7 +255,7 @@ class GitHubRESTPullRequestsMixin:
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/commits"
-        return list(self._request_all(api, params=params))
+        return list(self._request_all(api, params=params))  # type: ignore
 
     def create_pull_request(
         self,
@@ -286,7 +286,7 @@ class GitHubRESTPullRequestsMixin:
             "title": title,
             "body": body.replace("\\n", "\n"),
         }
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -323,7 +323,7 @@ class GitHubRESTPullRequestsMixin:
         if body:
             data["body"] = body.replace("\\n", "\n")
 
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -344,7 +344,7 @@ class GitHubRESTPullRequestsMixin:
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data = {"body": comment}
-        response: httpx.Response = self._request(
+        response: httpx.Response = self._request(  # type: ignore
             api, data=data, request=httpx.post
         )
         response.raise_for_status()
@@ -369,16 +369,16 @@ class GitHubRESTPullRequestsMixin:
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/files"
-        data: Iterator[JSON] = self._request_all(api, params=params)
+        data: Iterator[JSON] = self._request_all(api, params=params)  # type: ignore # pylint: disable=line-too-long
         file_dict = defaultdict(list)
         for f in data:
             try:
-                status = FileStatus(f["status"])
+                status = FileStatus(f["status"])  # type: ignore
             except ValueError:
                 # unknown status
                 continue
 
             if status in status_list:
-                file_dict[status].append(Path(f["filename"]))
+                file_dict[status].append(Path(f["filename"]))  # type: ignore
 
-        return file_dict
+        return file_dict  # type: ignore
