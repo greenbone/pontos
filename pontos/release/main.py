@@ -96,6 +96,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     prepare_parser.add_argument(
         "--changelog",
+        type=Path,
         help=(
             "The CHANGELOG file path, defaults "
             "to CHANGELOG.md in the repository root directory"
@@ -173,6 +174,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
             "The CHANGELOG file path, defaults "
             "to CHANGELOG.md in the repository root directory"
         ),
+        type=Path,
     )
     release_parser.add_argument(
         "--conventional-commits",
