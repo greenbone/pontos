@@ -230,7 +230,7 @@ def update_version(
         command = cmd()
         project_file = command.project_file_found()
         if project_file:
-            # we use version.go as version file, but go.mod as indicator 
+            # we use version.go as version file, but go.mod as indicator
             # for a go project to change the version, we hack in the correct
             # file to adjust the version in and commit
             if isinstance(command, GoVersionCommand):
