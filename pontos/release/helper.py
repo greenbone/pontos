@@ -17,6 +17,7 @@
 
 import datetime
 import sys
+from pathlib import Path
 from typing import Optional, Tuple
 
 from packaging.version import InvalidVersion, Version
@@ -24,10 +25,14 @@ from packaging.version import InvalidVersion, Version
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.version import COMMANDS
+from pontos.version.go import GoVersionCommand
 from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
+
+DEFAULT_PYTHON_VERSION_FILE = "*__version__.py"
+DEFAULT_GO_VERSION_FILE = Path("version.go")
 
 
 def commit_files(
@@ -51,7 +56,10 @@ def commit_files(
     git.add(filename)
 
     try:
-        git.add("*__version__.py")
+        if list(Path.cwd().glob(DEFAULT_PYTHON_VERSION_FILE)):
+            git.add(DEFAULT_PYTHON_VERSION_FILE)
+        if DEFAULT_GO_VERSION_FILE.exists():
+            git.add(DEFAULT_GO_VERSION_FILE)
     except GitError:
         pass
 
@@ -222,6 +230,11 @@ def update_version(
         command = cmd()
         project_file = command.project_file_found()
         if project_file:
+            # we use version.go as version file, but go.mod as indicator
+            # for a go project to change the version, we hack in the correct
+            # file to adjust the version in and commit
+            if isinstance(command, GoVersionCommand):
+                project_file = command.version_file_path
             break
 
     if not project_file:

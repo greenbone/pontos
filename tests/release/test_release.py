@@ -244,7 +244,6 @@ class ReleaseTestCase(unittest.TestCase):
         git_mock.return_value.add.assert_has_calls(
             [
                 call("MyProject.conf"),
-                call("*__version__.py"),
                 call("CHANGELOG.md"),
             ]
         )

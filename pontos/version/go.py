@@ -18,6 +18,8 @@
 import re
 from pathlib import Path
 
+from pontos.git import Git, TagSort
+
 from .helper import (
     VersionError,
     check_develop,
@@ -95,8 +97,12 @@ class GoVersionCommand(VersionCommand):
 
         try:
             current_version = self.get_current_version()
-        except VersionError as e:
-            raise e
+        except VersionError:
+            git = Git()
+            current_version = git.list_tags(sort=TagSort.VERSION)[-1]
+
+        if not force and versions_equal(new_version, current_version):
+            return UpdatedVersion(previous=current_version, new=new_version)
 
         self._update_version_file(new_version=new_version)
 

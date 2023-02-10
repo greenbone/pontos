@@ -112,7 +112,11 @@ class TestHelperFunctions(unittest.TestCase):
     def test_update_version_not_found(self):
         terminal = MagicMock()
 
-        with temp_directory(change_into=True):
+        with temp_directory(change_into=True), patch.object(
+            Git,
+            "list_tags",
+            MagicMock(return_value=["21.4.4"]),
+        ):
             executed, filename = update_version(
                 terminal, to="21.4.4", develop=True
             )
@@ -123,7 +127,13 @@ class TestHelperFunctions(unittest.TestCase):
     def test_update_version_no_version_file(self):
         terminal = MagicMock()
 
-        with temp_directory(change_into=True, add_to_sys_path=True) as tmp_dir:
+        with temp_directory(
+            change_into=True, add_to_sys_path=True
+        ) as tmp_dir, patch.object(
+            Git,
+            "list_tags",
+            MagicMock(return_value=["1.2.3"]),
+        ):
             module_path = tmp_dir / "testrepo"
             module_path.mkdir(parents=True, exist_ok=True)
 

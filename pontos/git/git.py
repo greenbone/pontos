@@ -60,10 +60,15 @@ def exec_git(
     try:
         cmd_args = ["git"]
         cmd_args.extend(args)
-        output = subprocess.check_output(
-            cmd_args, cwd=fspath(cwd) if cwd else None
+        output = subprocess.run(
+            cmd_args,
+            cwd=fspath(cwd) if cwd else None,
+            check=True,
+            stdout=subprocess.PIPE,
+            encoding="utf8",
+            errors="replace",
         )
-        return output.decode()
+        return output.stdout
     except subprocess.CalledProcessError as e:
         if ignore_errors:
             return ""
