@@ -234,7 +234,7 @@ def update_version(
             # for a go project to change the version, we hack in the correct
             # file to adjust the version in and commit
             if isinstance(command, GoVersionCommand):
-                project_file = Path.cwd() / "version.go"
+                project_file = command.version_file_path
             break
 
     if not project_file:
