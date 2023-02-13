@@ -37,7 +37,7 @@ var version = "{}"
 \n"""
 
 
-# This class is used for Python Version command(s)
+# This class is used for Go Version command(s)
 class GoVersionCommand(VersionCommand):
     project_file_name = Path("go.mod")
     version_file_path = Path("version.go")
