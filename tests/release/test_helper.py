@@ -27,7 +27,6 @@ from pontos.release.helper import (
     find_signing_key,
     get_git_repository_name,
     get_last_release_version,
-    get_next_dev_version,
 )
 from pontos.testing import temp_git_repository
 
@@ -109,28 +108,3 @@ class GetLastReleaseVersionTestCase(unittest.TestCase):
         git_interface = _git_interface_mock.return_value
         git_interface.list_tags.return_value = []
         self.assertIsNone(get_last_release_version())
-
-
-class GetNextDevVersionTestCase(unittest.TestCase):
-    def test_get_next_dev_version(self):
-        current_versions = [
-            "20.4.1",
-            "20.4.1",
-            "19.1.2",
-            "1.1.1",
-            "20.6.1",
-        ]
-        assert_versions = [
-            "20.4.2",
-            "20.4.2",
-            "19.1.3",
-            "1.1.2",
-            "20.6.2",
-        ]
-
-        for current_version, assert_version in zip(
-            current_versions, assert_versions
-        ):
-            next_version = get_next_dev_version(current_version)
-
-            self.assertEqual(assert_version, next_version)

@@ -133,3 +133,21 @@ def get_next_patch_version(current_version_str: str) -> str:
         )
 
     return str(release_version)
+
+
+def get_next_bugfix_version(release_version: str) -> str:
+    """
+    Get the next bugfix Version from a valid version
+
+    For example passing "1.2.3" will return "1.2.4".
+    """
+    try:
+        release_version_obj = Version(release_version)
+        next_version_obj = Version(
+            f"{str(release_version_obj.major)}."
+            f"{str(release_version_obj.minor)}."
+            f"{str(release_version_obj.micro + 1)}"
+        )
+        return str(next_version_obj)
+    except InvalidVersion as e:
+        raise VersionError(e) from None
