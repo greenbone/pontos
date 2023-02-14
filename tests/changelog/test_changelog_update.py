@@ -40,7 +40,9 @@ class ChangelogUpdateTestCase(unittest.TestCase):
         )
 
         test_md = Path(path).read_text(encoding="utf-8")
-        updated, release_notes = changelog.update(test_md, "1.2.3", "hidden")
+        updated, release_notes = changelog.update_changelog(
+            test_md, "1.2.3", "hidden"
+        )
         self.assertEqual(expeced_changelog, updated)
         self.assertEqual(expeced_release_notes, release_notes)
 
@@ -55,7 +57,9 @@ something, somehing
 - cool stuff 1
 - cool stuff 2
 """
-        updated, release_notes = changelog.update(test_md, "1.2.3", "hidden")
+        updated, release_notes = changelog.update_changelog(
+            test_md, "1.2.3", "hidden"
+        )
         self.assertIs("", updated)
         self.assertIs("", release_notes)
 
@@ -83,7 +87,7 @@ I don't recognize it anymore
 
         test_md = unreleased
         released_md = released
-        updated, release_notes = changelog.update(test_md, "1.2.3")
+        updated, release_notes = changelog.update_changelog(test_md, "1.2.3")
         self.assertEqual(released_md.strip(), updated.strip())
         self.assertEqual(released.strip(), release_notes.strip())
 
@@ -143,7 +147,7 @@ I don't recognize it anymore
 """
 
         test_md = unreleased
-        updated, release_notes = changelog.update(
+        updated, release_notes = changelog.update_changelog(
             test_md, "1.2.3", containing_version="1.2.3"
         )
         self.assertEqual(released_md.strip(), updated.strip())
@@ -182,7 +186,7 @@ something, somehing
 - cool stuff 2"""
         test_md = test_md_template.format(unreleased)
         released_md = test_md_template.format(released)
-        updated, release_notes = changelog.update(test_md, "1.2.3")
+        updated, release_notes = changelog.update_changelog(test_md, "1.2.3")
         self.assertEqual(released_md.strip(), updated.strip())
         self.assertEqual(released.strip(), release_notes.strip())
 
@@ -221,7 +225,7 @@ something, somehing
 - cool stuff 2"""
         test_md = test_md_template.format(unreleased)
         released_md = test_md_template.format(released)
-        updated, release_notes = changelog.update(test_md, "1.2.3")
+        updated, release_notes = changelog.update_changelog(test_md, "1.2.3")
         self.assertEqual(released_md.strip(), updated.strip())
         self.assertEqual(released.strip(), release_notes.strip())
 
