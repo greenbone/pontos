@@ -180,12 +180,10 @@ class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             cmd = JavaScriptVersionCommand()
 
-            self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(name="package.json", change_into=True) as package_json:
+        with temp_file(name="package.json", change_into=True):
             cmd = JavaScriptVersionCommand()
 
-            self.assertEqual(cmd.project_file_found(), package_json)
             self.assertTrue(cmd.project_found())

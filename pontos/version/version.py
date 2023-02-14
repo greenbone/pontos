@@ -18,7 +18,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -51,17 +50,8 @@ class VersionCommand(ABC):
     ) -> VersionUpdate:
         """Update the current version of this project"""
 
-    def project_file_found(self) -> Optional[Path]:
-        """
-        Returns a path to the project file if a command has detected a
-        corresponding project
-        """
-        return (
-            self.project_file_path if self.project_file_path.exists() else None
-        )
-
     def project_found(self) -> bool:
         """
         Returns True if a command has detected a corresponding project
         """
-        return bool(self.project_file_found())
+        return self.project_file_path.exists()

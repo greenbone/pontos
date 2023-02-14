@@ -66,8 +66,7 @@ def update_version(
     """
     for cmd in COMMANDS:
         command = cmd()
-        project_file = command.project_file_found()
-        if project_file:
+        if command.project_found():
             return command.update_version(
                 new_version=new_version, develop=develop
             )
