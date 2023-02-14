@@ -120,15 +120,15 @@ def get_next_patch_version(current_version_str: str) -> str:
 
     if current_version.dev is not None:
         release_version = Version(
-            f"{str(current_version.major)}."
-            f"{str(current_version.minor)}."
-            f"{str(current_version.micro)}"
+            f"{current_version.major}."
+            f"{current_version.minor}."
+            f"{current_version.micro}"
         )
     else:
         release_version = Version(
-            f"{str(current_version.major)}."
-            f"{str(current_version.minor)}."
-            f"{str(current_version.micro + 1)}"
+            f"{current_version.major}."
+            f"{current_version.minor}."
+            f"{current_version.micro + 1}"
         )
 
     return str(release_version)
@@ -143,9 +143,9 @@ def get_next_bugfix_version(release_version: str) -> str:
     try:
         release_version_obj = Version(release_version)
         next_version_obj = Version(
-            f"{str(release_version_obj.major)}."
-            f"{str(release_version_obj.minor)}."
-            f"{str(release_version_obj.micro + 1)}"
+            f"{release_version_obj.major}."
+            f"{release_version_obj.minor}."
+            f"{release_version_obj.micro + 1}"
         )
         return str(next_version_obj)
     except InvalidVersion as e:
