@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version.cmake import CMakeVersionCommand, CMakeVersionParser
-from pontos.version.helper import VersionError
+from pontos.version.errors import VersionError
 
 
 class VerifyCMakeVersionCommandTestCase(unittest.TestCase):

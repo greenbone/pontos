@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import tomlkit
 
 from pontos.testing import temp_directory, temp_file, temp_python_module
-from pontos.version.helper import VersionError
+from pontos.version.errors import VersionError
 from pontos.version.python import PythonVersionCommand
 
 

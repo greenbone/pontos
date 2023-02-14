@@ -21,13 +21,13 @@ from pathlib import Path
 from typing import Any
 
 from pontos.version.helper import (
-    VersionError,
     check_develop,
     is_version_pep440_compliant,
     safe_version,
     versions_equal,
 )
 
+from .errors import VersionError
 from .version import VersionCommand, VersionUpdate
 
 GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
