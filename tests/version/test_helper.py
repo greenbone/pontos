@@ -20,6 +20,7 @@ from datetime import datetime
 
 from pontos.version.helper import (
     calculate_calendar_version,
+    get_next_bugfix_version,
     get_next_patch_version,
     is_version_pep440_compliant,
     safe_version,
@@ -144,3 +145,28 @@ class GetNextPatchVersionTestCase(unittest.TestCase):
             release_version = get_next_patch_version(current_version)
 
             self.assertEqual(release_version, assert_version)
+
+
+class GetNextBugfixVersionTestCase(unittest.TestCase):
+    def test_get_next_bugfix_version(self):
+        current_versions = [
+            "20.4.1",
+            "20.4.1",
+            "19.1.2",
+            "1.1.1",
+            "20.6.1",
+        ]
+        assert_versions = [
+            "20.4.2",
+            "20.4.2",
+            "19.1.3",
+            "1.1.2",
+            "20.6.2",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            next_version = get_next_bugfix_version(current_version)
+
+            self.assertEqual(assert_version, next_version)

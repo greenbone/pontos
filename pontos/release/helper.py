@@ -17,11 +17,8 @@
 
 from typing import Optional
 
-from packaging.version import InvalidVersion, Version
-
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
-from pontos.version.errors import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -38,21 +35,6 @@ def get_last_release_version() -> Optional[str]:
     git_interface = Git()
     tag_list = git_interface.list_tags()
     return tag_list[-1] if tag_list else None
-
-
-def get_next_dev_version(release_version: str) -> str:
-    """Get the next dev Version from a valid version"""
-    # will be a dev1 version
-    try:
-        release_version_obj = Version(release_version)
-        next_version_obj = Version(
-            f"{str(release_version_obj.major)}."
-            f"{str(release_version_obj.minor)}."
-            f"{str(release_version_obj.micro + 1)}"
-        )
-        return str(next_version_obj)
-    except InvalidVersion as e:
-        raise VersionError(e) from None
 
 
 def get_git_repository_name(
