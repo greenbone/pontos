@@ -18,7 +18,6 @@
 import unittest
 from datetime import datetime
 
-from pontos.version.errors import VersionError
 from pontos.version.helper import (
     calculate_calendar_version,
     is_version_pep440_compliant,
@@ -93,16 +92,6 @@ class StripVersionTestCase(unittest.TestCase):
     def test_version_string_with_v(self):
         self.assertEqual(strip_version("v1.2.3"), "1.2.3")
         self.assertEqual(strip_version("v1.2.3dev"), "1.2.3dev")
-
-
-class VersionErrorTestCase(unittest.TestCase):
-    def test_should_print_message(self):
-        err = VersionError("foo bar")
-        self.assertEqual(str(err), "foo bar")
-
-    def test_should_raise(self):
-        with self.assertRaisesRegex(VersionError, "^foo bar$"):
-            raise VersionError("foo bar")
 
 
 class CalculateCalendarVersionTestCase(unittest.TestCase):
