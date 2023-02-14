@@ -26,7 +26,7 @@ from typing import Dict, Iterable, List, Optional
 
 import tomlkit
 
-from pontos.errors import PontosError
+from pontos.changelog.errors import ChangelogBuilderError
 from pontos.git import Git, GitError, TagSort
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
@@ -43,12 +43,6 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
 
 changelog_dir = "changelog"
 """
-
-
-class ChangelogBuilderError(PontosError):
-    """
-    An error while building a changelog
-    """
 
 
 class ChangelogBuilder:

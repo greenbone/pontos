@@ -20,8 +20,9 @@ from enum import Enum, IntEnum
 from pathlib import Path
 from typing import Optional
 
-from pontos.changelog.changelog import ChangelogError, update_changelog
+from pontos.changelog.changelog import update_changelog
 from pontos.changelog.conventional_commits import ChangelogBuilder
+from pontos.changelog.errors import ChangelogError
 from pontos.git import Git
 from pontos.terminal import Terminal
 from pontos.version.commands import get_current_version, update_version

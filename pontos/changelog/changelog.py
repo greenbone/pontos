@@ -20,12 +20,7 @@ import re
 from datetime import date
 from typing import List, Optional, Tuple
 
-
-class ChangelogError(Exception):
-    """
-    Some error has occurred during changelog handling
-    """
-
+from pontos.changelog.errors import ChangelogError
 
 __UNRELEASED_FOOTER_MATCHER = re.compile("unreleased", re.IGNORECASE)
 __UNRELEASED_HEADER_MATCHER = re.compile(
