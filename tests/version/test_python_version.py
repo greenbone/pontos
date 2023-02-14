@@ -19,7 +19,6 @@
 
 import unittest
 from pathlib import Path
-from typing import Optional
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import tomlkit
@@ -29,109 +28,92 @@ from pontos.version.errors import VersionError
 from pontos.version.python import PythonVersionCommand
 
 
-def mock_path(content: Optional[str] = None) -> Path:
-    path = MagicMock(spec=Path).return_value
-    path.exists.return_value = True
-    path.read_text.return_value = content
-    return path
-
-
 class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
     def test_missing_tool_pontos_version_section(self):
-        project_file_path = mock_path("[tool.pontos]")
-        project_file_path.exists.return_value = True
-
-        with self.assertRaisesRegex(
+        with temp_file(
+            "[tool.pontos]", name="pyproject.toml", change_into=True
+        ), self.assertRaisesRegex(
             VersionError, r"^\[tool\.pontos\.version\] section missing in .*\.$"
         ):
-            cmd = PythonVersionCommand(project_file_path=project_file_path)
+            cmd = PythonVersionCommand()
             cmd.get_current_version()
 
     def test_missing_version_module_file_key(self):
-        project_file_path = mock_path('[tool.pontos.version]\nname="foo"')
-        project_file_path.exists.return_value = True
-
-        with self.assertRaisesRegex(
+        with temp_file(
+            '[tool.pontos.version]\nname="foo"',
+            name="pyproject.toml",
+            change_into=True,
+        ), self.assertRaisesRegex(
             VersionError,
             r"^version-module-file key not set in \[tool\.pontos\.version\] "
             r"section .*\.$",
         ):
-            cmd = PythonVersionCommand(project_file_path=project_file_path)
+            cmd = PythonVersionCommand()
             cmd.get_current_version()
 
     def test_version_file_path(self):
-        project_file_path = mock_path(
-            '[tool.pontos.version]\nversion-module-file="foo/__version__.py"'
-        )
-        project_file_path.exists.return_value = True
+        with temp_file(
+            '[tool.pontos.version]\nversion-module-file="foo/__version__.py"',
+            name="pyproject.toml",
+            change_into=True,
+        ):
+            cmd = PythonVersionCommand()
 
-        cmd = PythonVersionCommand(project_file_path=project_file_path)
-
-        self.assertEqual(cmd.version_file_path, Path("foo") / "__version__.py")
+            self.assertEqual(
+                cmd.version_file_path, Path("foo") / "__version__.py"
+            )
 
     def test_pyproject_toml_file_not_exists(self):
-        fake_path = mock_path()
-        fake_path.__str__.return_value = "pyproject.toml"
-        fake_path.exists.return_value = False
-
-        with self.assertRaisesRegex(
+        with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError, "pyproject.toml file not found."
         ):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd = PythonVersionCommand()
             cmd.get_current_version()
-
-        fake_path.exists.assert_called_with()
 
     def test_no_version_module(self):
-        fake_path = mock_path(
-            '[tool.pontos.version]\nversion-module-file = "foo.py"'
-        )
-        fake_path.__str__.return_value = "pyproject.toml"
-        fake_path.exists.return_value = True
-
-        with self.assertRaisesRegex(
+        with temp_file(
+            '[tool.pontos.version]\nversion-module-file = "foo.py"',
+            name="pyproject.toml",
+            change_into=True,
+        ), self.assertRaisesRegex(
             VersionError, r"Could not load version from 'foo'\. .* not found."
         ):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd = PythonVersionCommand()
             cmd.get_current_version()
 
-        fake_path.exists.assert_called_with()
-        fake_path.read_text.assert_called_with(encoding="utf-8")
-
     def test_get_current_version(self):
-        fake_path = mock_path(
-            '[tool.poetry]\nversion = "1.2.3"\n'
-            '[tool.pontos.version]\nversion-module-file = "foo.py"'
-        )
-        fake_path.__str__.return_value = "pyproject.toml"
-        fake_path.exists.return_value = True
-
-        content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(
+            "__version__ = '1.2.3'", name="foo", change_into=True
+        ) as tmp_module:
+            tmp_file = tmp_module.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             version = cmd.get_current_version()
 
             self.assertEqual(version, "1.2.3")
 
-        fake_path.exists.assert_called_with()
-        fake_path.read_text.assert_called_with(encoding="utf-8")
-
 
 class UpdatePythonVersionTestCase(unittest.TestCase):
     def test_update_version_file(self):
-        fake_path = mock_path(
-            '[tool.poetry]\nversion = "1.2.3"\n'
-            '[tool.pontos.version]\nversion-module-file = "foo.py"'
-        )
-
         content = "__version__ = '21.1'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.2")
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "21.1")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = temp.read_text(encoding="utf8")
 
@@ -140,182 +122,177 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
         self.assertEqual(version_line, '__version__ = "22.2"')
 
     def test_empty_pyproject_toml(self):
-        fake_path = mock_path("")
-        fake_path.__str__.return_value = "meh.toml"
-
-        with self.assertRaisesRegex(
-            VersionError, r"Version information not found in meh\.toml file\."
+        with temp_file(
+            "", name="pyproject.toml", change_into=True
+        ), self.assertRaisesRegex(
+            VersionError,
+            r"Version information not found in .*pyproject\.toml file\.",
         ):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd = PythonVersionCommand()
             cmd.update_version("22.1.2")
 
     def test_empty_tool_section(self):
-        fake_path = mock_path("[tool]")
-        fake_path.__str__.return_value = "meh.toml"
-
-        with self.assertRaisesRegex(
-            VersionError, r"Version information not found in meh\.toml file\."
+        with temp_file(
+            "[tool]", name="pyproject.toml", change_into=True
+        ), self.assertRaisesRegex(
+            VersionError,
+            r"Version information not found in .*pyproject\.toml file\.",
         ):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+            cmd = PythonVersionCommand()
             cmd.update_version("22.1.2")
 
     def test_empty_tool_poetry_section(self):
-        fake_path = mock_path(
-            """[tool.poetry]
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '22.1'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                "[tool.poetry]\n"
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.2")
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "22.1")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
 
     def test_override_existing_version(self):
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.2")
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
 
     def test_sanitize_version(self):
-        fake_path_class = MagicMock(spec=Path)
-        fake_path = fake_path_class.return_value
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.02")
 
             self.assertEqual(updated.new, "22.2")
             self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
 
     def test_development_version(self):
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.2", develop=True)
 
             self.assertEqual(updated.new, "22.2.dev1")
             self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
 
     def test_not_override_development_version(self):
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("22.2.dev1", develop=True)
 
             self.assertEqual(updated.new, "22.2.dev1")
             self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
 
     def test_no_update(self):
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("1.2.3")
 
             self.assertEqual(updated.new, "1.2.3")
             self.assertEqual(updated.previous, "1.2.3")
             self.assertEqual(updated.changed_files, [])
 
-        fake_path.write_text.assert_not_called()
-
     def test_forced_updated(self):
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True):
-            cmd = PythonVersionCommand(project_file_path=fake_path)
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand()
             updated = cmd.update_version("1.2.3", force=True)
 
             self.assertEqual(updated.new, "1.2.3")
             self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), fake_path])
+            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
-        text = fake_path.write_text.call_args[0][0]
+            text = tmp_file.read_text(encoding="utf8")
 
-        toml = tomlkit.parse(text)
+            toml = tomlkit.parse(text)
 
-        self.assertEqual(toml["tool"]["poetry"]["version"], "1.2.3")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "1.2.3")
 
 
 class VerifyVersionTestCase(unittest.TestCase):
     def test_current_version_not_pep440_compliant(self):
         fake_version_py = Path("foo.py")
-        fake_pyproject = Path(__file__).parent.parent / "fake_pyproject.toml"
 
         with patch.object(
             PythonVersionCommand,
@@ -326,7 +303,7 @@ class VerifyVersionTestCase(unittest.TestCase):
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand(project_file_path=fake_pyproject)
+            cmd = PythonVersionCommand()
 
             with self.assertRaisesRegex(
                 VersionError,
@@ -336,12 +313,6 @@ class VerifyVersionTestCase(unittest.TestCase):
 
     def test_current_version_not_equal_pyproject_toml_version(self):
         fake_version_py = Path("foo.py")
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.1.1"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
-        )
-
         with patch.object(
             PythonVersionCommand,
             "get_current_version",
@@ -351,9 +322,7 @@ class VerifyVersionTestCase(unittest.TestCase):
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand(
-                project_file_path=fake_path,
-            )
+            cmd = PythonVersionCommand()
             with self.assertRaisesRegex(
                 VersionError,
                 "The version .* in .* doesn't match the current version .*.",
@@ -362,13 +331,14 @@ class VerifyVersionTestCase(unittest.TestCase):
 
     def test_current_version(self):
         fake_version_py = Path("foo.py")
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
+        content = (
+            '[tool.poetry]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with patch.object(
+        with temp_file(
+            content, name="pyproject.toml", change_into=True
+        ), patch.object(
             PythonVersionCommand,
             "get_current_version",
             MagicMock(return_value="1.2.3"),
@@ -377,20 +347,19 @@ class VerifyVersionTestCase(unittest.TestCase):
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand(
-                project_file_path=fake_path,
-            )
+            cmd = PythonVersionCommand()
             cmd.verify_version("current")
 
     def test_provided_version_missmatch(self):
         fake_version_py = Path("foo.py")
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
+        content = (
+            '[tool.poetry]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with patch.object(
+        with temp_file(
+            content, name="pyproject.toml", change_into=True
+        ), patch.object(
             PythonVersionCommand,
             "get_current_version",
             MagicMock(return_value="1.2.3"),
@@ -403,20 +372,19 @@ class VerifyVersionTestCase(unittest.TestCase):
                 VersionError,
                 "Provided version .* does not match the current version .*.",
             ):
-                cmd = PythonVersionCommand(
-                    project_file_path=fake_path,
-                )
+                cmd = PythonVersionCommand()
                 cmd.verify_version("1.2.4")
 
     def test_verify_success(self):
         fake_version_py = Path("foo.py")
-        fake_path = mock_path(
-            """[tool.poetry]\nversion = "1.2.3"
-        [tool.pontos.version]\nversion-module-file = "foo.py"
-        """
+        content = (
+            '[tool.poetry]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with patch.object(
+        with temp_file(
+            content, name="pyproject.toml", change_into=True
+        ), patch.object(
             PythonVersionCommand,
             "get_current_version",
             MagicMock(return_value="1.2.3"),
@@ -425,25 +393,24 @@ class VerifyVersionTestCase(unittest.TestCase):
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand(
-                project_file_path=fake_path,
-            )
+            cmd = PythonVersionCommand()
 
             cmd.verify_version("1.2.3")
 
 
 class ProjectFilePythonVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
-        with temp_directory() as temp:
-            pyproject_toml = temp / "pyproject.toml"
-            cmd = PythonVersionCommand(project_file_path=pyproject_toml)
+        with temp_directory(change_into=True):
+            cmd = PythonVersionCommand()
 
             self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(name="pyproject.toml") as pyproject_toml:
-            cmd = PythonVersionCommand(project_file_path=pyproject_toml)
+        with temp_file(
+            name="pyproject.toml", change_into=True
+        ) as pyproject_toml:
+            cmd = PythonVersionCommand()
 
             self.assertEqual(cmd.project_file_found(), pyproject_toml)
             self.assertTrue(cmd.project_found())

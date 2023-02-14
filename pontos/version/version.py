@@ -34,11 +34,8 @@ class VersionCommand(ABC):
 
     project_file_name: str
 
-    def __init__(self, *, project_file_path: Optional[Path] = None) -> None:
-        if project_file_path:
-            self.project_file_path = project_file_path
-        else:
-            self.project_file_path = Path.cwd() / self.project_file_name
+    def __init__(self) -> None:
+        self.project_file_path = Path.cwd() / self.project_file_name
 
     @abstractmethod
     def get_current_version(self) -> str:

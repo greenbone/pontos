@@ -152,11 +152,8 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 )
 
     def test_update_version(self):
-        with temp_file(
-            name="go.mod",
-            change_into=True,
-        ) as temp:
-            cmd = GoVersionCommand(project_file_path=temp)
+        with temp_file(name="go.mod", change_into=True):
+            cmd = GoVersionCommand()
             version = "22.2.2"
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
@@ -173,17 +170,14 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_create_file_update_version(self):
-        with temp_file(
-            name="go.mod",
-            change_into=True,
-        ) as temp:
+        with temp_file(name="go.mod", change_into=True):
             with patch.object(
                 GoVersionCommand,
                 "get_current_version",
                 MagicMock(return_value="21.0.1"),
             ):
                 version = "22.2.2"
-                cmd = GoVersionCommand(project_file_path=temp)
+                cmd = GoVersionCommand()
                 updated = cmd.update_version(version)
 
                 version_file_path = Path(VERSION_FILE_PATH)
@@ -197,11 +191,8 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_no_update(self):
-        with temp_file(
-            name="go.mod",
-            change_into=True,
-        ) as temp:
-            cmd = GoVersionCommand(project_file_path=temp)
+        with temp_file(name="go.mod", change_into=True):
+            cmd = GoVersionCommand()
             version = "22.2.2"
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
@@ -217,11 +208,8 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(updated.changed_files, [])
 
     def test_forced_update(self):
-        with temp_file(
-            name="go.mod",
-            change_into=True,
-        ) as temp:
-            cmd = GoVersionCommand(project_file_path=temp)
+        with temp_file(name="go.mod", change_into=True):
+            cmd = GoVersionCommand()
             version = "22.2.2"
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
@@ -239,16 +227,15 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
 
 class ProjectFileGoVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
-        with temp_directory() as temp:
-            go_mod = temp / "go.mod"
-            cmd = GoVersionCommand(project_file_path=go_mod)
+        with temp_directory(change_into=True):
+            cmd = GoVersionCommand()
 
             self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(name="go.mod") as go_mod:
-            cmd = GoVersionCommand(project_file_path=go_mod)
+        with temp_file(name="go.mod", change_into=True) as go_mod:
+            cmd = GoVersionCommand()
 
             self.assertEqual(cmd.project_file_found(), go_mod)
             self.assertTrue(cmd.project_found())
