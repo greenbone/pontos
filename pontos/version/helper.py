@@ -18,8 +18,11 @@
 #
 
 import re
+from datetime import datetime
 
 from packaging.version import InvalidVersion, Version
+
+from pontos.version.errors import VersionError
 
 
 def strip_version(version: str) -> str:
@@ -70,3 +73,42 @@ def versions_equal(new_version: str, old_version: str) -> bool:
     Checks if new_version and old_version are equal
     """
     return safe_version(old_version) == safe_version(new_version)
+
+
+def calculate_calendar_version(current_version_str: str) -> str:
+    """find the correct next calendar version by checking latest version and
+    the today's date"""
+
+    current_version = Version(current_version_str)
+
+    today = datetime.today()
+
+    if (
+        current_version.major < today.year % 100
+        or current_version.minor < today.month
+    ):
+        release_version = Version(
+            f"{str(today.year  % 100)}.{str(today.month)}.0"
+        )
+        return str(release_version)
+
+    if (
+        current_version.major == today.year % 100
+        and current_version.minor == today.month
+    ):
+        if current_version.dev is None:
+            release_version = Version(
+                f"{str(today.year  % 100)}.{str(today.month)}."
+                f"{str(current_version.micro + 1)}"
+            )
+        else:
+            release_version = Version(
+                f"{str(today.year  % 100)}.{str(today.month)}."
+                f"{str(current_version.micro)}"
+            )
+        return str(release_version)
+    else:
+        raise VersionError(
+            f"'{str(current_version)}' is higher than "
+            f"'{str(today.year  % 100)}.{str(today.month)}'."
+        )
