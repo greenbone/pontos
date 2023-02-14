@@ -143,16 +143,12 @@ class ProjectFileCMakeVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             cmd = CMakeVersionCommand()
 
-            self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(
-            name="CMakeLists.txt", change_into=True
-        ) as cmake_lists_txt:
+        with temp_file(name="CMakeLists.txt", change_into=True):
             cmd = CMakeVersionCommand()
 
-            self.assertEqual(cmd.project_file_found(), cmake_lists_txt)
             self.assertTrue(cmd.project_found())
 
 

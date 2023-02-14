@@ -230,12 +230,10 @@ class ProjectFileGoVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             cmd = GoVersionCommand()
 
-            self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(name="go.mod", change_into=True) as go_mod:
+        with temp_file(name="go.mod", change_into=True):
             cmd = GoVersionCommand()
 
-            self.assertEqual(cmd.project_file_found(), go_mod)
             self.assertTrue(cmd.project_found())

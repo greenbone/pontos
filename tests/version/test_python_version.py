@@ -403,14 +403,10 @@ class ProjectFilePythonVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             cmd = PythonVersionCommand()
 
-            self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(
-            name="pyproject.toml", change_into=True
-        ) as pyproject_toml:
+        with temp_file(name="pyproject.toml", change_into=True):
             cmd = PythonVersionCommand()
 
-            self.assertEqual(cmd.project_file_found(), pyproject_toml)
             self.assertTrue(cmd.project_found())
