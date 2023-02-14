@@ -16,24 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from typing import NoReturn, Tuple, Type
-
-from pontos.version.version import VersionCommand
+from typing import NoReturn
 
 from .__version__ import __version__
-from .cmake import CMakeVersionCommand
+from .commands import COMMANDS
 from .errors import VersionError
-from .go import GoVersionCommand
-from .javascript import JavaScriptVersionCommand
 from .parser import initialize_default_parser
-from .python import PythonVersionCommand
-
-COMMANDS: Tuple[Type[VersionCommand]] = (
-    CMakeVersionCommand,
-    GoVersionCommand,
-    JavaScriptVersionCommand,
-    PythonVersionCommand,
-)
 
 
 def main() -> NoReturn:
