@@ -18,7 +18,7 @@
 
 import re
 from datetime import date
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 
 class ChangelogError(Exception):
@@ -47,13 +47,16 @@ __UNRELEASED_SKELETON = """## [Unreleased]
 
 
 def add_skeleton(
-    markdown: str,
+    markdown: Optional[str],
     new_version: str,
     project_name: str,
     git_tag_prefix: str = "v",
     git_space: str = "greenbone",
 ) -> str:
     git_tag = f"{git_tag_prefix}{new_version}"
+    if not markdown:
+        return __UNRELEASED_SKELETON.format(git_space, project_name, git_tag)
+
     tokens = _tokenize(markdown)
     updated_markdown = ""
 
