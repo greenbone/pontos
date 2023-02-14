@@ -37,7 +37,7 @@ def get_current_version() -> str:
     Get the current Version for the current project
 
     Raises:
-        VersionError if not current version could be found.
+        VersionError if current version can not be found.
     """
 
     for cmd in COMMANDS:
@@ -51,6 +51,19 @@ def get_current_version() -> str:
 def update_version(
     new_version: str, *, develop: Optional[bool] = False
 ) -> VersionUpdate:
+    """
+    Update the Version for the current project in the relevant files
+
+    Args:
+        new_version: The version that will be set for the project
+        develop: Add a dev version section to the version string
+
+    Raises:
+        VersionError if no project settings (file) can be found.
+
+    Returns:
+        Information about the version update
+    """
     for cmd in COMMANDS:
         command = cmd()
         project_file = command.project_file_found()
