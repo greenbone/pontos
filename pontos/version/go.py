@@ -39,7 +39,7 @@ var version = "{}"
 
 # This class is used for Go Version command(s)
 class GoVersionCommand(VersionCommand):
-    project_file_name = Path("go.mod")
+    project_file_name = "go.mod"
     version_file_path = Path("version.go")
 
     def _update_version_file(self, new_version: str) -> None:
