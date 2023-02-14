@@ -20,6 +20,7 @@ from datetime import datetime
 
 from pontos.version.helper import (
     calculate_calendar_version,
+    get_next_patch_version,
     is_version_pep440_compliant,
     safe_version,
     strip_version,
@@ -115,4 +116,31 @@ class CalculateCalendarVersionTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculate_calendar_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+
+class GetNextPatchVersionTestCase(unittest.TestCase):
+    def test_get_next_patch_version(self):
+        today = datetime.today()
+
+        current_versions = [
+            "20.4.1.dev3",
+            f"{str(today.year % 100)}.4.1.dev3",
+            f"19.{str(today.month)}.1.dev3",
+            f"{str(today.year % 100)}.{str(today.month)}.1",
+            "20.6.1",
+        ]
+        assert_versions = [
+            "20.4.1",
+            f"{str(today.year % 100)}.4.1",
+            f"19.{str(today.month)}.1",
+            f"{str(today.year % 100)}.{str(today.month)}.2",
+            "20.6.2",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = get_next_patch_version(current_version)
+
             self.assertEqual(release_version, assert_version)
