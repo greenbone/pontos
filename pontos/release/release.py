@@ -29,7 +29,7 @@ from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.prepare import DEFAULT_CHANGELOG_FILE, RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
-from pontos.version.commands import COMMANDS, get_current_version
+from pontos.version.commands import get_current_version, update_version
 from pontos.version.errors import VersionError
 from pontos.version.helper import get_next_bugfix_version
 from pontos.version.version import VersionUpdate
@@ -94,15 +94,7 @@ class ReleaseCommand:
         self.git.add(changelog_file)
 
     def _update_version(self, next_version: str) -> VersionUpdate:
-        for cmd in COMMANDS:
-            command = cmd()
-            project_file = command.project_file_found()
-            if project_file:
-                return command.update_version(
-                    new_version=next_version, develop=True
-                )
-
-        raise VersionError("No project definition found.")
+        return update_version(next_version, develop=True)
 
     async def run(
         self,

@@ -18,7 +18,7 @@
 import unittest
 
 from pontos.testing import temp_directory, temp_python_module
-from pontos.version.commands import get_current_version
+from pontos.version.commands import get_current_version, update_version
 from pontos.version.errors import VersionError
 
 
@@ -63,3 +63,106 @@ class GetCurrentVersionTestCase(unittest.TestCase):
             version_file = temp_dir / "CMakeLists.txt"
             version_file.write_text("project(VERSION 1.2.3)", encoding="utf8")
             self.assertEqual(get_current_version(), "1.2.3")
+
+
+class UpdateVersionTestCase(unittest.TestCase):
+    def test_no_project(self):
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError, "No project settings file found"
+        ):
+            update_version("1.2.3")
+
+    def test_python_project_version(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(
+            content, name="foo", change_into=True
+        ) as temp_module:
+            temp_dir = temp_module.parent / "pyproject.toml"
+            temp_dir.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+
+            update_version("1.2.4")
+
+            self.assertEqual(get_current_version(), "1.2.4")
+
+    def test_python_project_dev_version(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(
+            content, name="foo", change_into=True
+        ) as temp_module:
+            temp_dir = temp_module.parent / "pyproject.toml"
+            temp_dir.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+
+            update_version("1.2.4", develop=True)
+
+            self.assertEqual(get_current_version(), "1.2.4.dev1")
+
+    def test_go_project_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            project_file = temp_dir / "go.mod"
+            project_file.touch()
+            version_file = temp_dir / "version.go"
+            version_file.write_text('var version = "1.2.3"')
+
+            update_version("1.2.4")
+
+            self.assertEqual(get_current_version(), "1.2.4")
+
+    def test_go_project_dev_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            project_file = temp_dir / "go.mod"
+            project_file.touch()
+            version_file = temp_dir / "version.go"
+            version_file.write_text('var version = "1.2.3"')
+
+            update_version("1.2.4", develop=True)
+
+            self.assertEqual(get_current_version(), "1.2.4.dev1")
+
+    def test_javascript_project_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}', encoding="utf8"
+            )
+
+            update_version("1.2.4")
+
+            self.assertEqual(get_current_version(), "1.2.4")
+
+    def test_javascript_project_dev_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}', encoding="utf8"
+            )
+
+            update_version("1.2.4", develop=True)
+
+            self.assertEqual(get_current_version(), "1.2.4.dev1")
+
+    def test_cmake_project_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            version_file = temp_dir / "CMakeLists.txt"
+            version_file.write_text("project(VERSION 1.2.3)", encoding="utf8")
+
+            update_version("1.2.4")
+
+            self.assertEqual(get_current_version(), "1.2.4")
+
+    def test_cmake_project_dev_version(self):
+        with temp_directory(change_into=True) as temp_dir:
+            version_file = temp_dir / "CMakeLists.txt"
+            version_file.write_text("project(VERSION 1.2.3)", encoding="utf8")
+
+            update_version("1.2.4", develop=True)
+
+            # cmake is special
+            self.assertEqual(get_current_version(), "1.2.4")
