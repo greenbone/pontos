@@ -18,7 +18,6 @@
 
 import json
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
@@ -29,35 +28,33 @@ from pontos.version.javascript import JavaScriptVersionCommand
 class GetCurrentJavaScriptVersionCommandTestCase(unittest.TestCase):
     def test_get_current_version(self):
         content = '{"name": "foo", "version": "1.2.3"}'
-        with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+        with temp_file(content, name="package.json", change_into=True):
+            cmd = JavaScriptVersionCommand()
             version = cmd.get_current_version()
 
             self.assertEqual(version, "1.2.3")
 
     def test_no_project_file(self):
-        cmd = JavaScriptVersionCommand(project_file_path=Path("foo/bar/baz"))
-        with self.assertRaisesRegex(
-            VersionError, "foo/bar/baz file not found."
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError, ".* file not found."
         ):
+            cmd = JavaScriptVersionCommand()
             cmd.get_current_version()
 
     def test_no_package_version(self):
         content = '{"name": "foo"}'
         with temp_file(
             content, name="package.json", change_into=True
-        ) as temp, self.assertRaisesRegex(
-            VersionError, "Version field missing in"
-        ):
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+        ), self.assertRaisesRegex(VersionError, "Version field missing in"):
+            cmd = JavaScriptVersionCommand()
             cmd.get_current_version()
 
     def test_no_valid_json_in_package_version(self):
         content = "{"
         with temp_file(
             content, name="package.json", change_into=True
-        ) as temp, self.assertRaisesRegex(VersionError, "No valid JSON found."):
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+        ), self.assertRaisesRegex(VersionError, "No valid JSON found."):
+            cmd = JavaScriptVersionCommand()
             cmd.get_current_version()
 
 
@@ -66,7 +63,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd = JavaScriptVersionCommand()
             cmd.get_current_version()
             updated = cmd.update_version("22.4.0")
 
@@ -83,7 +80,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd = JavaScriptVersionCommand()
             updated = cmd.update_version("22.4.0.dev1", develop=True)
 
             self.assertEqual(updated.previous, "1.2.3")
@@ -99,7 +96,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd = JavaScriptVersionCommand()
             updated = cmd.update_version("22.4.0", develop=True)
 
             self.assertEqual(updated.previous, "1.2.3")
@@ -115,7 +112,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd = JavaScriptVersionCommand()
             updated = cmd.update_version("1.2.3")
 
             self.assertEqual(updated.previous, "1.2.3")
@@ -131,7 +128,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand(project_file_path=temp)
+            cmd = JavaScriptVersionCommand()
             updated = cmd.update_version("1.2.3", force=True)
 
             self.assertEqual(updated.previous, "1.2.3")
@@ -180,16 +177,15 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
 
 class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
-        with temp_directory() as temp:
-            package_json = temp / "package.json"
-            cmd = JavaScriptVersionCommand(project_file_path=package_json)
+        with temp_directory(change_into=True):
+            cmd = JavaScriptVersionCommand()
 
             self.assertIsNone(cmd.project_file_found())
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
-        with temp_file(name="package.json") as package_json:
-            cmd = JavaScriptVersionCommand(project_file_path=package_json)
+        with temp_file(name="package.json", change_into=True) as package_json:
+            cmd = JavaScriptVersionCommand()
 
             self.assertEqual(cmd.project_file_found(), package_json)
             self.assertTrue(cmd.project_found())
