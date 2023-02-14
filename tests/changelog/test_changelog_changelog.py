@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import unittest
 
-from pontos import changelog
+from pontos.changelog import update_changelog
 
 UNRELEASED = """
 ## Unreleased
@@ -28,7 +28,7 @@ so little
 ### changed
 I don't recognize it anymore
 ### security
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main 
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main
 """
 
 
@@ -44,7 +44,7 @@ something, somehing
 - cool stuff 1
 - cool stuff 2
 """
-        _, cl = changelog.update(test_md, "", "")
+        _, cl = update_changelog(test_md, "", "")
         self.assertEqual(cl, "")
 
     def test_find_unreleased_information_before_another_version(self):
@@ -67,17 +67,17 @@ so much
 so little
 ### changed
 I don't recognize it anymore
-[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main 
+[Unreleased]: https://github.com/greenbone/pontos/compare/v1.0.0...main
 """
 
-        _, result = changelog.update(test_md, "", "")
+        _, result = update_changelog(test_md, "", "")
         self.assertEqual(result.strip(), changed.strip())
 
 
 def test_find_unreleased_information_no_other_version(self):
     test_md = UNRELEASED
 
-    _, result = changelog.update(test_md, "", "")
+    _, result = update_changelog(test_md, "", "")
     self.assertEqual(result.strip(), UNRELEASED.strip())
 
 
@@ -94,5 +94,5 @@ something, somehing
 {UNRELEASED}
         """
 
-    _, result = changelog.update(test_md, "", "")
+    _, result = update_changelog(test_md, "", "")
     self.assertEqual(result.strip(), UNRELEASED.strip())

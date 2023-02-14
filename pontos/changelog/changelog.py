@@ -69,7 +69,7 @@ def add_skeleton(
     return updated_markdown
 
 
-def update(
+def update_changelog(
     markdown: str,
     new_version: str,
     git_tag_prefix: str = "v",
