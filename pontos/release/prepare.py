@@ -24,8 +24,7 @@ from pontos.changelog.changelog import ChangelogError, update_changelog
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.git import Git
 from pontos.terminal import Terminal
-from pontos.version import COMMANDS
-from pontos.version.commands import get_current_version
+from pontos.version.commands import get_current_version, update_version
 from pontos.version.errors import VersionError
 from pontos.version.helper import (
     calculate_calendar_version,
@@ -86,13 +85,7 @@ class PrepareCommand:
         return git_version in git_tags
 
     def _update_version(self, release_version: str) -> VersionUpdate:
-        for cmd in COMMANDS:
-            command = cmd()
-            project_file = command.project_file_found()
-            if project_file:
-                return command.update_version(new_version=release_version)
-
-        raise VersionError("No project definition found.")
+        return update_version(release_version, develop=False)
 
     def _create_old_changelog(
         self, release_version: str, changelog_file: Optional[Path]

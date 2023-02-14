@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Tuple, Type
+from typing import Optional, Tuple, Type
 
 from .cmake import CMakeVersionCommand
 from .errors import VersionError
 from .go import GoVersionCommand
 from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
-from .version import VersionCommand
+from .version import VersionCommand, VersionUpdate
 
 COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
@@ -44,5 +44,19 @@ def get_current_version() -> str:
         command = cmd()
         if command.project_found():
             return command.get_current_version()
+
+    raise VersionError("No project settings file found")
+
+
+def update_version(
+    new_version: str, *, develop: Optional[bool] = False
+) -> VersionUpdate:
+    for cmd in COMMANDS:
+        command = cmd()
+        project_file = command.project_file_found()
+        if project_file:
+            return command.update_version(
+                new_version=new_version, develop=develop
+            )
 
     raise VersionError("No project settings file found")
