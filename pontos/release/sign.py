@@ -25,8 +25,10 @@ import httpx
 from pontos.github.api import GitHubRESTApi
 from pontos.helper import shell_cmd_runner
 from pontos.terminal import Terminal
+from pontos.version.commands import get_current_version
+from pontos.version.errors import VersionError
 
-from .helper import get_current_version, get_git_repository_name
+from .helper import get_git_repository_name
 
 
 class SignReturnValue(IntEnum):
@@ -58,11 +60,16 @@ def sign(
     )
     space: str = args.space
     git_tag_prefix: str = args.git_tag_prefix
-    release_version: str = (
-        args.release_version
-        if args.release_version is not None
-        else get_current_version(terminal)
-    )
+    try:
+        release_version: str = (
+            args.release_version
+            if args.release_version is not None
+            else get_current_version()
+        )
+    except VersionError as e:
+        terminal.error(f"Could not determine current version. {e}")
+        return SignReturnValue.NO_RELEASE_VERSION
+
     if not release_version:
         return SignReturnValue.NO_RELEASE_VERSION
 
