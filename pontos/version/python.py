@@ -20,8 +20,8 @@ from pathlib import Path
 
 import tomlkit
 
+from .errors import VersionError
 from .helper import (
-    VersionError,
     check_develop,
     is_version_pep440_compliant,
     safe_version,

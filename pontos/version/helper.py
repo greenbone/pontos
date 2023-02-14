@@ -23,12 +23,6 @@ import re
 from packaging.version import InvalidVersion, Version
 
 
-class VersionError(Exception):
-    """
-    Some error has occurred during version handling
-    """
-
-
 def strip_version(version: str) -> str:
     """
     Strips a leading 'v' from a version string

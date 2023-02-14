@@ -17,8 +17,8 @@
 
 import unittest
 
+from pontos.version.errors import VersionError
 from pontos.version.helper import (
-    VersionError,
     is_version_pep440_compliant,
     safe_version,
     strip_version,

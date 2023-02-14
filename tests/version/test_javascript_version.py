@@ -22,7 +22,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
-from pontos.version.helper import VersionError
+from pontos.version.errors import VersionError
 from pontos.version.javascript import JavaScriptVersionCommand
 
 

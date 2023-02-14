@@ -21,8 +21,8 @@ from typing import Generator, Optional, Tuple
 
 from packaging.version import Version
 
+from .errors import VersionError
 from .helper import (
-    VersionError,
     check_develop,
     is_version_pep440_compliant,
     safe_version,

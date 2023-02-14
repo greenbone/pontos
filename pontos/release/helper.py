@@ -25,8 +25,8 @@ from packaging.version import InvalidVersion, Version
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.version import COMMANDS
+from pontos.version.errors import VersionError
 from pontos.version.go import GoVersionCommand
-from pontos.version.helper import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -98,10 +98,7 @@ def calculate_calendar_version(terminal: Terminal) -> str:
                 f"{str(current_version.micro + 1)}"
             )
         else:
-            release_version = Version(
-                f"{str(today.year  % 100)}.{str(today.month)}."
-                f"{str(current_version.micro)}"
-            )
+            release_version = Version(f"{str(current_version.micro)}")
         return str(release_version)
     else:
         terminal.error(

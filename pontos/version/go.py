@@ -20,8 +20,8 @@ from pathlib import Path
 
 from pontos.git import Git, TagSort
 
+from .errors import VersionError
 from .helper import (
-    VersionError,
     check_develop,
     is_version_pep440_compliant,
     safe_version,

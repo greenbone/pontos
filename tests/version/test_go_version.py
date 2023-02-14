@@ -22,8 +22,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
+from pontos.version.errors import VersionError
 from pontos.version.go import Git, GoVersionCommand
-from pontos.version.helper import VersionError
 
 
 @dataclass

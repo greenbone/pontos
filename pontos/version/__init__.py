@@ -18,11 +18,12 @@
 import sys
 from typing import NoReturn, Tuple, Type
 
-from pontos.version.helper import VersionError, initialize_default_parser
+from pontos.version.helper import initialize_default_parser
 from pontos.version.version import VersionCommand
 
 from .__version__ import __version__
 from .cmake import CMakeVersionCommand
+from .errors import VersionError
 from .go import GoVersionCommand
 from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
