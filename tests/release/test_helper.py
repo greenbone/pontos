@@ -40,7 +40,7 @@ def init_test_git_repo() -> Generator[Path, None, None]:
         yield repo_path
 
 
-class TestHelperFunctions(unittest.TestCase):
+class GetGitRepositoryNameTestCase(unittest.TestCase):
     def test_get_project_name(self):
         with init_test_git_repo():
             project = get_git_repository_name(remote="foo")
@@ -49,6 +49,8 @@ class TestHelperFunctions(unittest.TestCase):
             project = get_git_repository_name()
             self.assertEqual(project, "testrepo")
 
+
+class FindSigningKeyTestCase(unittest.TestCase):
     def test_find_signing_key(self):
         terminal = MagicMock()
 
@@ -94,20 +96,22 @@ class TestHelperFunctions(unittest.TestCase):
                     "user.signingkey", saved_key, scope=ConfigScope.GLOBAL
                 )
 
+
+class GetLastReleaseVersionTestCase(unittest.TestCase):
     @patch("pontos.release.helper.Git", spec=Git)
-    def test_get_last_release_version_git(self, _git_interface_mock):
+    def test_get_last_release_version(self, _git_interface_mock):
         git_interface = _git_interface_mock.return_value
         git_interface.list_tags.return_value = ["1", "2", "3.55"]
         self.assertEqual(get_last_release_version(), "3.55")
 
     @patch("pontos.release.helper.Git", spec=Git)
-    def test_get_no_release_version_git(self, _git_interface_mock):
+    def test_get_no_release_version(self, _git_interface_mock):
         git_interface = _git_interface_mock.return_value
         git_interface.list_tags.return_value = []
         self.assertIsNone(get_last_release_version())
 
 
-class CalculateHelperVersionTestCase(unittest.TestCase):
+class GetNextDevVersionTestCase(unittest.TestCase):
     def test_get_next_dev_version(self):
         current_versions = [
             "20.4.1",
