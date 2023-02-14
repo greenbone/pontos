@@ -57,6 +57,7 @@ class ReleaseType(Enum):
     # for the future we need
     # MAJOR = "major"
     # MINOR = "minor"
+    # PRE_RELEASE = "pre-release"
 
 
 class PrepareCommand:
