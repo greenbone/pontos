@@ -82,14 +82,13 @@ def calculate_calendar_version(current_version_str: str) -> str:
     current_version = Version(current_version_str)
 
     today = datetime.today()
+    current_year_short = today.year % 100
 
-    if (
-        current_version.major < today.year % 100
-        or current_version.minor < today.month
+    if current_version.major < current_year_short or (
+        current_version.major == current_year_short
+        and current_version.minor < today.month
     ):
-        release_version = Version(
-            f"{str(today.year  % 100)}.{str(today.month)}.0"
-        )
+        release_version = Version(f"{current_year_short}.{today.month}.0")
         return str(release_version)
 
     if (
@@ -98,19 +97,19 @@ def calculate_calendar_version(current_version_str: str) -> str:
     ):
         if current_version.dev is None:
             release_version = Version(
-                f"{str(today.year  % 100)}.{str(today.month)}."
-                f"{str(current_version.micro + 1)}"
+                f"{current_year_short}.{today.month}."
+                f"{current_version.micro + 1}"
             )
         else:
             release_version = Version(
-                f"{str(today.year  % 100)}.{str(today.month)}."
-                f"{str(current_version.micro)}"
+                f"{current_year_short}.{today.month}."
+                f"{current_version.micro}"
             )
         return str(release_version)
     else:
         raise VersionError(
-            f"'{str(current_version)}' is higher than "
-            f"'{str(today.year  % 100)}.{str(today.month)}'."
+            f"'{current_version}' is higher than "
+            f"'{current_year_short}.{today.month}'."
         )
 
 

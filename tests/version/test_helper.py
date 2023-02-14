@@ -18,6 +18,7 @@
 import unittest
 from datetime import datetime
 
+from pontos.version.errors import VersionError
 from pontos.version.helper import (
     calculate_calendar_version,
     get_next_bugfix_version,
@@ -99,18 +100,19 @@ class StripVersionTestCase(unittest.TestCase):
 class CalculateCalendarVersionTestCase(unittest.TestCase):
     def test_calculate_calendar_versions(self):
         today = datetime.today()
+        year_short = today.year % 100
 
         current_versions = [
             "21.4.1.dev3",
-            f"19.{str(today.month)}.1.dev3",
-            f"{str(today.year % 100)}.{str(today.month)}.1.dev3",
-            f"{str(today.year % 100)}.{str(today.month)}.1",
+            f"19.{today.month}.1.dev3",
+            f"{year_short}.{today.month}.1.dev3",
+            f"{year_short}.{today.month}.1",
         ]
         assert_versions = [
-            f"{str(today.year % 100)}.{str(today.month)}.0",
-            f"{str(today.year % 100)}.{str(today.month)}.0",
-            f"{str(today.year % 100)}.{str(today.month)}.1",
-            f"{str(today.year % 100)}.{str(today.month)}.2",
+            f"{year_short}.{today.month}.0",
+            f"{year_short}.{today.month}.0",
+            f"{year_short}.{today.month}.1",
+            f"{year_short}.{today.month}.2",
         ]
 
         for current_version, assert_version in zip(
@@ -118,6 +120,16 @@ class CalculateCalendarVersionTestCase(unittest.TestCase):
         ):
             release_version = calculate_calendar_version(current_version)
             self.assertEqual(release_version, assert_version)
+
+    def test_calculate_calendar_error(self):
+        today = datetime.today()
+        year_short = today.year % 100
+
+        with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
+            calculate_calendar_version(f"{year_short  + 1}.1.0")
+
+        with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
+            calculate_calendar_version(f"{year_short}.{today.month + 1}.0")
 
 
 class GetNextPatchVersionTestCase(unittest.TestCase):
