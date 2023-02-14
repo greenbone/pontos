@@ -31,7 +31,7 @@ from pontos.release.prepare import DEFAULT_CHANGELOG_FILE, RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
 from pontos.version.commands import get_current_version, update_version
 from pontos.version.errors import VersionError
-from pontos.version.helper import get_next_bugfix_version
+from pontos.version.helper import get_next_patch_version
 from pontos.version.version import VersionUpdate
 
 from .helper import find_signing_key, get_git_repository_name
@@ -155,7 +155,7 @@ class ReleaseCommand:
         next_version = (
             next_version
             if next_version is not None
-            else get_next_bugfix_version(release_version)
+            else get_next_patch_version(release_version)
         )
 
         self.terminal.info("Pushing changes")

@@ -113,40 +113,34 @@ def calculate_calendar_version(current_version_str: str) -> str:
         )
 
 
-def get_next_patch_version(current_version_str: str) -> str:
-    """find the correct next patch version by checking latest version"""
-
-    current_version = Version(current_version_str)
-
-    if current_version.dev is not None:
-        release_version = Version(
-            f"{current_version.major}."
-            f"{current_version.minor}."
-            f"{current_version.micro}"
-        )
-    else:
-        release_version = Version(
-            f"{current_version.major}."
-            f"{current_version.minor}."
-            f"{current_version.micro + 1}"
-        )
-
-    return str(release_version)
-
-
-def get_next_bugfix_version(release_version: str) -> str:
+def get_next_patch_version(release_version: str) -> str:
     """
-    Get the next bugfix Version from a valid version
+    Get the next patch version from a valid version
 
-    For example passing "1.2.3" will return "1.2.4".
+    Examples:
+        "1.2.3" will return "1.2.4"
+        "1.2.3.dev1" will return "1.2.3"
+
+    Raises:
+        VersionError if release_version is invalid.
     """
+
     try:
-        release_version_obj = Version(release_version)
-        next_version_obj = Version(
-            f"{release_version_obj.major}."
-            f"{release_version_obj.minor}."
-            f"{release_version_obj.micro + 1}"
-        )
-        return str(next_version_obj)
+        current_version = Version(release_version)
+
+        if current_version.dev is not None:
+            next_version = Version(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.micro}"
+            )
+        else:
+            next_version = Version(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.micro + 1}"
+            )
+
+        return str(next_version)
     except InvalidVersion as e:
         raise VersionError(e) from None
