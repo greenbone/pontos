@@ -170,7 +170,7 @@ def _prepare_changelog(
     return output
 
 
-def __build_scanner():
+def __build_scanner() -> re.Scanner:
     def token_handler(key: str):
         """
         generates a lambda for the regex scanner with a given key.
