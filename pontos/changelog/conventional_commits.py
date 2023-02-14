@@ -27,7 +27,7 @@ from typing import Dict, Iterable, List, Optional
 import tomlkit
 
 from pontos.changelog.errors import ChangelogBuilderError
-from pontos.git import Git, GitError, TagSort
+from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -86,25 +86,19 @@ class ChangelogBuilder:
         return self._build_changelog_file(commit_dict, output)
 
     def _get_git_log(self) -> List[str]:
-        """Getting the git log for the current branch.
-
-        If a last tag is found, the `git log` is searched up to the
-          last tag, found by `git tag | sort -V | tail -1`.
-        Else if no tag is found, the `git log` is searched full, assuming
-          this is a initial release.
+        """Getting the git log for the next version.
 
         Returns:
             A list of `git log` entries
         """
         git = Git()
-        latest_tag = None
         try:
-            latest_tag = git.list_tags(sort=TagSort.VERSION)[-1]
-        except (GitError, IndexError):
-            self._terminal.warning("No tag found.")
-
-        if latest_tag:
-            return git.log(f"{latest_tag}..HEAD", oneline=True)
+            return git.log(f"{self.current_version}..HEAD", oneline=True)
+        except GitError:
+            self._terminal.warning(
+                "Could not find tag for {self.current_version}. Falling back "
+                "to full git log."
+            )
 
         return git.log(oneline=True)
 
