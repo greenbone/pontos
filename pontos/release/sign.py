@@ -17,16 +17,18 @@
 #
 
 import asyncio
+import subprocess
 from argparse import Namespace
 from enum import IntEnum
 from pathlib import Path
-from typing import AsyncContextManager, Optional
+from typing import AsyncContextManager, Iterable, Optional
 
 import httpx
 from rich.progress import Progress as RichProgress
 
+from pontos.git.git import GitError
 from pontos.github.api import GitHubAsyncRESTApi
-from pontos.helper import AsyncDownloadProgressIterable, shell_cmd_runner
+from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
 from pontos.version.commands import get_current_version
@@ -38,9 +40,22 @@ from .helper import get_git_repository_name
 class SignReturnValue(IntEnum):
     SUCCESS = 0
     TOKEN_MISSING = 1
-    NO_RELEASE_VERSION = 2
-    NO_RELEASE = 3
-    UPLOAD_ASSET_ERROR = 4
+    NO_PROJECT = 2
+    NO_RELEASE_VERSION = 3
+    NO_RELEASE = 4
+    UPLOAD_ASSET_ERROR = 5
+    SIGNATURE_GENERATION_FAILED = 6
+
+
+def cmd_runner(*args: Iterable[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        args,
+        check=True,
+        encoding="utf8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 class SignCommand:
@@ -80,7 +95,7 @@ class SignCommand:
             )
         return destination
 
-    async def download_tarball(
+    async def download_tar(
         self,
         rich_progress: RichProgress,
         github: GitHubAsyncRESTApi,
@@ -130,7 +145,14 @@ class SignCommand:
             )
             return SignReturnValue.TOKEN_MISSING
 
-        project = project if project is not None else get_git_repository_name()
+        try:
+            project = (
+                project if project is not None else get_git_repository_name()
+            )
+        except GitError:
+            self.terminal.error("Could not determine project. {e}")
+            return SignReturnValue.NO_PROJECT
+
         try:
             release_version = (
                 release_version
@@ -173,7 +195,7 @@ class SignCommand:
                 )
                 tasks.append(
                     asyncio.create_task(
-                        self.download_tarball(
+                        self.download_tar(
                             rich_progress,
                             github,
                             tarball_destination,
@@ -202,18 +224,36 @@ class SignCommand:
                 self.terminal.info(f"Signing {file_path}")
 
                 if passphrase:
-                    process = shell_cmd_runner(
-                        "gpg --pinentry-mode loopback --default-key "
-                        f"{signing_key} --yes --detach-sign --passphrase "
-                        f"{passphrase} --armor {file_path}"
+                    process = cmd_runner(
+                        "gpg",
+                        "--pinentry-mode",
+                        "loopback",
+                        "--default-key",
+                        signing_key,
+                        "--yes",
+                        "--detach-sign",
+                        "--passphrase",
+                        passphrase,
+                        "--armor",
+                        file_path,
                     )
                 else:
-                    process = shell_cmd_runner(
-                        f"gpg --default-key {signing_key} --yes --detach-sign "
-                        f"--armor {file_path}"
+                    process = cmd_runner(
+                        "gpg",
+                        "--default-key",
+                        signing_key,
+                        "--yes",
+                        "--detach-sign",
+                        "--armor",
+                        file_path,
                     )
 
-                process.check_returncode()
+                if process.returncode:
+                    self.terminal.error(
+                        f"Failed to create signature for {file_path}. "
+                        f"{process.stderr}"
+                    )
+                    return SignReturnValue.SIGNATURE_GENERATION_FAILED
 
             if dry_run:
                 return SignReturnValue.SUCCESS
