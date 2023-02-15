@@ -286,7 +286,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         asset_url = release.upload_url.replace("{?name,label}", "")
 
         async def upload_file(
-            file_path, content_type
+            file_path: Path, content_type: str
         ) -> Tuple[httpx.Response, Path]:
             response = await self._client.post(
                 asset_url,
