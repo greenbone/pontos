@@ -16,15 +16,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import asyncio
 from argparse import Namespace
 from enum import IntEnum
 from pathlib import Path
+from typing import AsyncContextManager, Optional
 
 import httpx
+from rich.progress import Progress as RichProgress
 
-from pontos.github.api import GitHubRESTApi
-from pontos.helper import shell_cmd_runner
+from pontos.github.api import GitHubAsyncRESTApi
+from pontos.helper import AsyncDownloadProgressIterable, shell_cmd_runner
 from pontos.terminal import Terminal
+from pontos.terminal.rich import RichTerminal
 from pontos.version.commands import get_current_version
 from pontos.version.errors import VersionError
 
@@ -39,6 +43,202 @@ class SignReturnValue(IntEnum):
     UPLOAD_ASSET_ERROR = 4
 
 
+class SignCommand:
+    def __init__(self, terminal: RichTerminal) -> None:
+        self.terminal = terminal
+
+    async def _async_download_progress(
+        self,
+        rich_progress: RichProgress,
+        progress: AsyncDownloadProgressIterable[bytes],
+        destination: Path,
+    ) -> None:
+        with destination.open("wb") as f:
+            task_description = f"Downloading [blue]{progress.url}"
+            task_id = rich_progress.add_task(
+                task_description, total=progress.length
+            )
+            async for content, percent in progress:
+                rich_progress.advance(task_id, percent or 1)
+                f.write(content)
+
+            rich_progress.update(task_id, total=1, completed=1)
+
+    async def download_zip(
+        self,
+        rich_progress: RichProgress,
+        github: GitHubAsyncRESTApi,
+        destination: Path,
+        repo: str,
+        git_version: str,
+    ) -> Path:
+        async with github.releases.download_release_zip(
+            repo, git_version
+        ) as download:
+            await self._async_download_progress(
+                rich_progress, download, destination
+            )
+        return destination
+
+    async def download_tarball(
+        self,
+        rich_progress: RichProgress,
+        github: GitHubAsyncRESTApi,
+        destination: Path,
+        repo: str,
+        git_version: str,
+    ) -> Path:
+        async with github.releases.download_release_tarball(
+            repo, git_version
+        ) as download:
+            await self._async_download_progress(
+                rich_progress, download, destination
+            )
+        return destination
+
+    async def download_asset(
+        self,
+        rich_progress: RichProgress,
+        name: str,
+        download_cm: AsyncContextManager[AsyncDownloadProgressIterable[bytes]],
+    ) -> Path:
+        file_path = Path(name)
+        async with download_cm as iterator:
+            await self._async_download_progress(
+                rich_progress, iterator, file_path
+            )
+        return file_path
+
+    async def run(
+        self,
+        *,
+        token: str,
+        dry_run: Optional[bool] = False,
+        project: Optional[str],
+        space: str,
+        git_tag_prefix: Optional[str],
+        release_version: Optional[str],
+        signing_key: str,
+        passphrase: str,
+    ) -> SignReturnValue:
+        if not token and not dry_run:
+            # dry run doesn't upload assets. therefore a token MAY NOT be
+            # required # for public repositories.
+            self.terminal.error(
+                "Token is missing. The GitHub token is required to upload "
+                "signature files."
+            )
+            return SignReturnValue.TOKEN_MISSING
+
+        project = project if project is not None else get_git_repository_name()
+        try:
+            release_version = (
+                release_version
+                if release_version is not None
+                else get_current_version()
+            )
+        except VersionError as e:
+            self.terminal.error(f"Could not determine current version. {e}")
+            return SignReturnValue.NO_RELEASE_VERSION
+
+        if not release_version:
+            return SignReturnValue.NO_RELEASE_VERSION
+
+        git_version: str = f"{git_tag_prefix}{release_version}"
+        repo = f"{space}/{project}"
+
+        async with GitHubAsyncRESTApi(token=token) as github:
+            if not await github.releases.exists(repo, git_version):
+                self.terminal.error(
+                    f"Release version {git_version} does not exist."
+                )
+                return SignReturnValue.NO_RELEASE
+
+            tasks = []
+
+            zip_destination = Path(f"{project}-{release_version}.zip")
+            tarball_destination = Path(f"{project}-{release_version}.tar.gz")
+
+            with self.terminal.progress() as rich_progress:
+                tasks.append(
+                    asyncio.create_task(
+                        self.download_zip(
+                            rich_progress,
+                            github,
+                            zip_destination,
+                            repo,
+                            git_version,
+                        )
+                    )
+                )
+                tasks.append(
+                    asyncio.create_task(
+                        self.download_tarball(
+                            rich_progress,
+                            github,
+                            tarball_destination,
+                            repo,
+                            git_version,
+                        )
+                    )
+                )
+
+                # pylint: disable=line-too-long
+                async for name, download_cm in github.releases.download_release_assets(
+                    repo,
+                    git_version,
+                ):
+                    tasks.append(
+                        asyncio.create_task(
+                            self.download_asset(
+                                rich_progress, name, download_cm
+                            )
+                        )
+                    )
+
+                file_paths = await asyncio.gather(*tasks)
+
+            for file_path in file_paths:
+                self.terminal.info(f"Signing {file_path}")
+
+                if passphrase:
+                    process = shell_cmd_runner(
+                        "gpg --pinentry-mode loopback --default-key "
+                        f"{signing_key} --yes --detach-sign --passphrase "
+                        f"{passphrase} --armor {file_path}"
+                    )
+                else:
+                    process = shell_cmd_runner(
+                        f"gpg --default-key {signing_key} --yes --detach-sign "
+                        f"--armor {file_path}"
+                    )
+
+                process.check_returncode()
+
+            if dry_run:
+                return SignReturnValue.SUCCESS
+
+            upload_files = [
+                (Path(f"{str(p)}.asc"), "application/pgp-signature")
+                for p in file_paths
+            ]
+            self.terminal.info(
+                f"Uploading assets: {[str(p[0]) for p in upload_files]}"
+            )
+
+            try:
+                # pylint: disable=line-too-long
+                async for uploaded_file in github.releases.upload_release_assets(
+                    repo, git_version, upload_files
+                ):
+                    self.terminal.ok(f"Uploaded: {uploaded_file}")
+            except httpx.HTTPStatusError as e:
+                self.terminal.error(f"Failed uploading asset {e}.")
+                return SignReturnValue.UPLOAD_ASSET_ERROR
+
+        return SignReturnValue.SUCCESS
+
+
 def sign(
     terminal: Terminal,
     args: Namespace,
@@ -46,94 +246,15 @@ def sign(
     token: str,
     **_kwargs,
 ) -> IntEnum:
-    if not token and not args.dry_run:
-        # dry run doesn't upload assets. therefore a token MAY NOT be required
-        # for public repositories.
-        terminal.error(
-            "Token is missing. The GitHub token is required to upload "
-            "signature files."
+    return asyncio.run(
+        SignCommand(terminal).run(
+            token=token,
+            dry_run=args.dry_run,
+            project=args.project,
+            space=args.space,
+            git_tag_prefix=args.git_tag_prefix,
+            release_version=args.release_version,
+            signing_key=args.signing_key,
+            passphrase=args.passphrase,
         )
-        return SignReturnValue.TOKEN_MISSING
-
-    project: str = (
-        args.project if args.project is not None else get_git_repository_name()
     )
-    space: str = args.space
-    git_tag_prefix: str = args.git_tag_prefix
-    try:
-        release_version: str = (
-            args.release_version
-            if args.release_version is not None
-            else get_current_version()
-        )
-    except VersionError as e:
-        terminal.error(f"Could not determine current version. {e}")
-        return SignReturnValue.NO_RELEASE_VERSION
-
-    if not release_version:
-        return SignReturnValue.NO_RELEASE_VERSION
-
-    signing_key: str = args.signing_key
-
-    git_version: str = f"{git_tag_prefix}{release_version}"
-    repo = f"{space}/{project}"
-
-    github = GitHubRESTApi(token=token)
-
-    if not github.release_exists(repo, git_version):
-        terminal.error(f"Release version {git_version} does not exist.")
-        return SignReturnValue.NO_RELEASE
-
-    zip_destination = Path(f"{project}-{release_version}.zip")
-    with github.download_release_zip(
-        repo, git_version, zip_destination
-    ) as zip_progress:
-        terminal.download_progress(zip_progress)
-
-    tarball_destination = Path(f"{project}-{release_version}.tar.gz")
-    with github.download_release_tarball(
-        repo, git_version, tarball_destination
-    ) as tar_progress:
-        terminal.download_progress(tar_progress)
-
-    file_paths = [zip_destination, tarball_destination]
-
-    for progress in github.download_release_assets(repo, git_version):
-        file_paths.append(progress.destination)
-        terminal.download_progress(progress)
-
-    for file_path in file_paths:
-        terminal.info(f"Signing {file_path}")
-
-        if args.passphrase:
-            process = shell_cmd_runner(
-                f"gpg --pinentry-mode loopback --default-key {signing_key}"
-                f" --yes --detach-sign --passphrase {args.passphrase}"
-                f" --armor {file_path}"
-            )
-        else:
-            process = shell_cmd_runner(
-                f"gpg --default-key {signing_key} --yes --detach-sign "
-                f"--armor {file_path}"
-            )
-
-        process.check_returncode()
-
-    if args.dry_run:
-        return SignReturnValue.SUCCESS
-
-    upload_files = [
-        (Path(f"{str(p)}.asc"), "application/pgp-signature") for p in file_paths
-    ]
-    terminal.info(f"Uploading assets: {[str(p[0]) for p in upload_files]}")
-
-    try:
-        for uploaded_file in github.upload_release_assets(
-            repo, git_version, upload_files
-        ):
-            terminal.ok(f"Uploaded: {uploaded_file}")
-    except httpx.HTTPError as e:
-        terminal.error(f"Failed uploading asset {e}")
-        return SignReturnValue.UPLOAD_ASSET_ERROR
-
-    return SignReturnValue.SUCCESS
