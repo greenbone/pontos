@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=C0413,W0108
 
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -31,9 +30,9 @@ def mock_terminal() -> MagicMock:
     return MagicMock(spec=Terminal)
 
 
+@patch.dict("os.environ", {"GITHUB_TOKEN": "foo"})
 class SignTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ["GITHUB_TOKEN"] = "foo"
         self.valid_gh_release_response = (
             '{"zipball_url": "zip", "tarball_url":'
             ' "tar", "upload_url":"upload"}'

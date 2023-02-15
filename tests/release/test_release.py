@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=C0413,W0108
 
-import os
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
@@ -35,11 +34,8 @@ def mock_terminal() -> MagicMock:
     return MagicMock(spec=Terminal)
 
 
+@patch.dict("os.environ", {"GITHUB_TOKEN": "foo", "GITHUB_USER": "user"})
 class ReleaseTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        os.environ["GITHUB_TOKEN"] = "foo"
-        os.environ["GITHUB_USER"] = "bar"
-
     @patch("pontos.release.release.Git", autospec=True)
     @patch(
         "pontos.release.release.ReleaseCommand._update_version", autospec=True
@@ -95,7 +91,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:], ("0.0.1", "TOKEN")
+            create_release_mock.await_args.args[1:], ("0.0.1", "foo")
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
@@ -155,7 +151,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:], ("0.0.1", "TOKEN")
+            create_release_mock.await_args.args[1:], ("0.0.1", "foo")
         )
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
@@ -265,7 +261,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:], ("0.0.1", "TOKEN")
+            create_release_mock.await_args.args[1:], ("0.0.1", "foo")
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
@@ -330,7 +326,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:], ("0.0.1", "TOKEN")
+            create_release_mock.await_args.args[1:], ("0.0.1", "foo")
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
