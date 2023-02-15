@@ -17,6 +17,7 @@
 # pylint: disable=C0413,W0108
 
 import unittest
+from asyncio.subprocess import Process
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
@@ -122,7 +123,7 @@ class SignTestCase(unittest.TestCase):
         download_zip_mock: AsyncMock,
         download_tar_mock: AsyncMock,
         download_asset_mock: AsyncMock,
-        cmd_runner_mock: MagicMock,
+        cmd_runner_mock: AsyncMock,
     ):
         tar_file = Path("file.tar")
         zip_file = Path("file.zip")
@@ -143,7 +144,9 @@ class SignTestCase(unittest.TestCase):
                 ]
             )
         )
-        cmd_runner_mock.return_value = MagicMock(returncode=0)
+        process = AsyncMock(spec=Process, returncode=0)
+        process.communicate.return_value = ("", "")
+        cmd_runner_mock.return_value = process
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(
@@ -248,7 +251,9 @@ class SignTestCase(unittest.TestCase):
                 ]
             )
         )
-        cmd_runner_mock.return_value = MagicMock(returncode=0)
+        process = AsyncMock(spec=Process, returncode=0)
+        process.communicate.return_value = ("", "")
+        cmd_runner_mock.return_value = process
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(
@@ -345,9 +350,9 @@ class SignTestCase(unittest.TestCase):
                 ]
             )
         )
-        cmd_runner_mock.return_value = MagicMock(
-            returncode=2, stderr="An error"
-        )
+        process = AsyncMock(spec=Process, returncode=2)
+        process.communicate.return_value = ("", b"An Error")
+        cmd_runner_mock.return_value = process
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(
@@ -425,7 +430,9 @@ class SignTestCase(unittest.TestCase):
                 response=MagicMock(spec=httpx.Response),
             )
         )
-        cmd_runner_mock.return_value = MagicMock(returncode=0)
+        process = AsyncMock(spec=Process, returncode=0)
+        process.communicate.return_value = ("", "")
+        cmd_runner_mock.return_value = process
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(

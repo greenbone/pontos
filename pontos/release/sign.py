@@ -19,6 +19,7 @@
 import asyncio
 import subprocess
 from argparse import Namespace
+from asyncio.subprocess import Process
 from enum import IntEnum
 from pathlib import Path
 from typing import AsyncContextManager, Iterable, Optional
@@ -26,6 +27,7 @@ from typing import AsyncContextManager, Iterable, Optional
 import httpx
 from rich.progress import Progress as RichProgress
 
+from pontos.errors import PontosError
 from pontos.git.git import GitError
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
@@ -47,12 +49,15 @@ class SignReturnValue(IntEnum):
     SIGNATURE_GENERATION_FAILED = 6
 
 
-def cmd_runner(*args: Iterable[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        args,
-        check=True,
-        encoding="utf8",
-        errors="replace",
+class SignatureError(PontosError):
+    """
+    Error while creating a signature
+    """
+
+
+async def cmd_runner(*args: Iterable[str]) -> Process:
+    return await asyncio.create_subprocess_exec(
+        *args,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -123,6 +128,43 @@ class SignCommand:
                 rich_progress, iterator, file_path
             )
         return file_path
+
+    async def sign_file(
+        self, file_path: Path, signing_key: str, passphrase: Optional[str]
+    ) -> None:
+        self.terminal.info(f"Signing {file_path}")
+
+        if passphrase:
+            process = await cmd_runner(
+                "gpg",
+                "--pinentry-mode",
+                "loopback",
+                "--default-key",
+                signing_key,
+                "--yes",
+                "--detach-sign",
+                "--passphrase",
+                passphrase,
+                "--armor",
+                file_path,
+            )
+        else:
+            process = await cmd_runner(
+                "gpg",
+                "--default-key",
+                signing_key,
+                "--yes",
+                "--detach-sign",
+                "--armor",
+                file_path,
+            )
+
+        _, stderr = await process.communicate()
+        if process.returncode:
+            raise SignatureError(
+                f"Could not create signature for {file_path}. "
+                f"{stderr.decode(errors='replace')}"
+            )
 
     async def run(
         self,
@@ -220,40 +262,37 @@ class SignCommand:
 
                 file_paths = await asyncio.gather(*tasks)
 
-            for file_path in file_paths:
-                self.terminal.info(f"Signing {file_path}")
+            tasks = [
+                asyncio.create_task(
+                    self.sign_file(file_path, signing_key, passphrase)
+                )
+                for file_path in file_paths
+            ]
 
-                if passphrase:
-                    process = cmd_runner(
-                        "gpg",
-                        "--pinentry-mode",
-                        "loopback",
-                        "--default-key",
-                        signing_key,
-                        "--yes",
-                        "--detach-sign",
-                        "--passphrase",
-                        passphrase,
-                        "--armor",
-                        file_path,
-                    )
-                else:
-                    process = cmd_runner(
-                        "gpg",
-                        "--default-key",
-                        signing_key,
-                        "--yes",
-                        "--detach-sign",
-                        "--armor",
-                        file_path,
-                    )
+            done, pending = await asyncio.wait(
+                tasks, return_when=asyncio.FIRST_EXCEPTION
+            )
 
-                if process.returncode:
-                    self.terminal.error(
-                        f"Failed to create signature for {file_path}. "
-                        f"{process.stderr}"
-                    )
-                    return SignReturnValue.SIGNATURE_GENERATION_FAILED
+            has_error = False
+            for task in done:
+                try:
+                    await task
+                except (asyncio.CancelledError, asyncio.InvalidStateError):
+                    pass
+                except SignatureError as e:
+                    self.terminal.error(e)
+                    has_error = True
+
+            for task in pending:
+                # we had an error
+                try:
+                    task.cancel()
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
+            if has_error:
+                return SignReturnValue.SIGNATURE_GENERATION_FAILED
 
             if dry_run:
                 return SignReturnValue.SUCCESS
