@@ -71,6 +71,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         *,
         accept: Optional[str] = DEFAULT_ACCEPT_HEADER,
         content_type: Optional[str] = None,
+        content_length: Optional[int] = None,
     ) -> Headers:
         """
         Get the default request headers
@@ -83,6 +84,8 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             headers["Authorization"] = f"token {self.token}"
         if content_type:
             headers["Content-Type"] = content_type
+        if content_length:
+            headers["Content-Length"] = str(content_length)
 
         return headers
 
@@ -181,6 +184,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         params: Optional[Params] = None,
         content: Optional[str] = None,
         content_type: Optional[str] = None,
+        content_length: Optional[int] = None,
     ) -> httpx.Response:
         """
         Post request to a GitHub API
@@ -190,7 +194,9 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             params: Optional params to use for the post request
             data: Optional data to include in the post request
         """
-        headers = self._request_headers(content_type=content_type)
+        headers = self._request_headers(
+            content_type=content_type, content_length=content_length
+        )
         url = self._request_url(api)
         return await self._client.post(
             url, params=params, headers=headers, json=data, content=content
