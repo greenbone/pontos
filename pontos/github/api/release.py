@@ -292,6 +292,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                 asset_url,
                 params={"name": file_path.name},
                 content_type=content_type,
+                content_length=file_path.stat().st_size,
                 content=upload(file_path),
             )
             return response, file_path
