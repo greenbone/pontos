@@ -164,6 +164,24 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             content=None,
         )
 
+    async def test_post_with_content_length(self):
+        await self.client.post(
+            "/foo/bar", data={"foo": "bar"}, content_length=123
+        )
+
+        self.http_client.post.assert_awaited_once_with(
+            f"{DEFAULT_GITHUB_API_URL}/foo/bar",
+            headers={
+                "Accept": DEFAULT_ACCEPT_HEADER,
+                "Authorization": "token token",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
+                "Content-Length": "123",
+            },
+            json={"foo": "bar"},
+            params=None,
+            content=None,
+        )
+
     async def test_put(self):
         await self.client.put("/foo/bar", data={"foo": "bar"})
 
