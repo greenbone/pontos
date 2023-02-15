@@ -299,8 +299,8 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
         get_assets_url_response.json.return_value = data
         get_assets_response = create_response()
         get_assets_response.json.return_value = [
-            {"browser_download_url": "http://bar", "name": "bar"},
-            {"browser_download_url": "http://baz", "name": "baz"},
+            {"url": "http://bar", "name": "bar"},
+            {"url": "http://baz", "name": "baz"},
         ]
         response = create_response(headers=MagicMock())
         response.headers.get.return_value = 2
@@ -389,8 +389,8 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
         get_assets_url_response.json.return_value = data
         get_assets_response = create_response()
         get_assets_response.json.return_value = [
-            {"browser_download_url": "http://bar", "name": "bar"},
-            {"browser_download_url": "http://baz", "name": "baz"},
+            {"url": "http://bar", "name": "bar"},
+            {"url": "http://baz", "name": "baz"},
         ]
         response = create_response(headers=MagicMock())
         response.headers.get.return_value = 2

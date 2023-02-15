@@ -235,7 +235,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         assets_json = response.json()
         for asset_json in assets_json:
-            asset_url: str = asset_json.get("browser_download_url", "")
+            asset_url: str = asset_json.get("url", "")
             name: str = asset_json.get("name", "")
 
             if match_pattern and not Path(name).match(match_pattern):
