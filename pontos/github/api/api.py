@@ -17,54 +17,27 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Callable, Dict, Iterable, Iterator, Optional, Type
+from typing import Optional, Type
 
 import httpx
 
-from pontos.github.api.artifacts import (
-    GitHubAsyncRESTArtifacts,
-    GitHubRESTArtifactsMixin,
-)
-from pontos.github.api.branch import (
-    GitHubAsyncRESTBranches,
-    GitHubRESTBranchMixin,
-)
+from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
+from pontos.github.api.branch import GitHubAsyncRESTBranches
 from pontos.github.api.client import GitHubAsyncRESTClient
-from pontos.github.api.contents import (
-    GitHubAsyncRESTContent,
-    GitHubRESTContentMixin,
-)
+from pontos.github.api.contents import GitHubAsyncRESTContent
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
-    JSON,
-    JSON_OBJECT,
-    _get_next_url,
 )
-from pontos.github.api.labels import (
-    GitHubAsyncRESTLabels,
-    GitHubRESTLabelsMixin,
-)
-from pontos.github.api.organizations import (
-    GitHubAsyncRESTOrganizations,
-    GitHubRESTOrganizationsMixin,
-)
-from pontos.github.api.pull_requests import (
-    GitHubAsyncRESTPullRequests,
-    GitHubRESTPullRequestsMixin,
-)
-from pontos.github.api.release import (
-    GitHubAsyncRESTReleases,
-    GitHubRESTReleaseMixin,
-)
+from pontos.github.api.labels import GitHubAsyncRESTLabels
+from pontos.github.api.organizations import GitHubAsyncRESTOrganizations
+from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
+from pontos.github.api.release import GitHubAsyncRESTReleases
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
 from pontos.github.api.search import GitHubAsyncRESTSearch
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
-from pontos.github.api.workflows import (
-    GitHubAsyncRESTWorkflows,
-    GitHubRESTWorkflowsMixin,
-)
+from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
 
 
 class GitHubAsyncRESTApi(AbstractAsyncContextManager):
@@ -189,150 +162,3 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
         return await self._client.__aexit__(exc_type, exc_value, traceback)
-
-
-class GitHubRESTApi(
-    GitHubRESTArtifactsMixin,
-    GitHubRESTBranchMixin,
-    GitHubRESTContentMixin,
-    GitHubRESTLabelsMixin,
-    GitHubRESTOrganizationsMixin,
-    GitHubRESTPullRequestsMixin,
-    GitHubRESTReleaseMixin,
-    GitHubRESTWorkflowsMixin,
-):
-    """GitHubRESTApi Mixin"""
-
-    def __init__(
-        self,
-        token: Optional[str] = None,
-        url: Optional[str] = DEFAULT_GITHUB_API_URL,
-        *,
-        timeout: httpx.Timeout = DEFAULT_TIMEOUT_CONFIG,
-    ) -> None:
-        self.token = token
-        self.url = url
-        self.timeout = timeout
-
-    def _request_headers(
-        self, *, content_type: Optional[str] = None
-    ) -> Dict[str, str]:
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-        }
-        if self.token:
-            headers["Authorization"] = f"token {self.token}"
-        if content_type:
-            headers["Content-Type"] = content_type
-
-        return headers
-
-    def _request_kwargs(self, *, data, content) -> Dict[str, str]:
-        kwargs = {}
-        if data is not None:
-            kwargs["json"] = data
-        if content is not None:
-            kwargs["content"] = content
-        return kwargs
-
-    def _request_internal(
-        self,
-        url: str,
-        *,
-        params: Optional[Dict[str, str]] = None,
-        data: Optional[Dict[str, str]] = None,
-        content: Optional[bytes] = None,
-        request: Optional[Callable] = None,
-        content_type: Optional[str] = None,
-    ) -> httpx.Response:
-        request = request or httpx.get
-        headers = self._request_headers(content_type=content_type)
-        kwargs = self._request_kwargs(data=data, content=content)
-        return request(
-            url,
-            headers=headers,
-            params=params,
-            follow_redirects=True,
-            timeout=self.timeout,
-            **kwargs,
-        )
-
-    def _request_api_url(self, api) -> str:
-        return f"{self.url}{api}"
-
-    def _request(
-        self,
-        api: str,
-        *,
-        params: Optional[Dict[str, str]] = None,
-        data: Optional[Dict[str, str]] = None,
-        request: Optional[Callable] = None,
-    ) -> httpx.Response:
-        return self._request_internal(
-            self._request_api_url(api),
-            params=params,
-            data=data,
-            request=request,
-        )
-
-    def _request_all(
-        self,
-        api: str,
-        *,
-        params: Optional[Dict[str, str]] = None,
-        data: Optional[Dict[str, str]] = None,
-        request: Optional[Callable] = None,
-    ) -> Iterator[JSON]:
-        response: httpx.Response = self._request(
-            api, params=params, data=data, request=request
-        )
-
-        yield from response.json()
-
-        next_url = _get_next_url(response)
-
-        while next_url:
-            response = self._request_internal(
-                next_url, params=params, data=data, request=request
-            )
-
-            yield from response.json()
-
-            next_url = _get_next_url(response)
-
-        return data
-
-    def _get_paged_items(
-        self, api: str, key: str, *, params: Optional[JSON_OBJECT] = None
-    ) -> Iterable[JSON_OBJECT]:
-        """
-        Internal method to get the paged items information from different REST
-        URLs.
-        """
-        page = 1
-        per_page = 100
-        params = params or {}
-        params.update({"per_page": per_page, "page": page})
-
-        response: httpx.Response = self._request(
-            api, request=httpx.get, params=params
-        )
-        response.raise_for_status()
-
-        json = response.json()
-        total = json.get("total_count", 0)
-        items = json[key]
-        downloaded = len(items)
-
-        while total - downloaded > 0:
-            page += 1
-            params = {"per_page": per_page, "page": page}
-
-            response = self._request(api, request=httpx.get, params=params)
-            response.raise_for_status()
-
-            json = response.json()
-            items.extend(json[key])
-            downloaded = len(items)
-
-        return items

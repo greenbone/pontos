@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pontos.github.api.api import GitHubAsyncRESTApi, GitHubRESTApi
+from pontos.github.api.api import GitHubAsyncRESTApi
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
@@ -28,7 +28,6 @@ __all__ = [
     "JSON",
     "JSON_OBJECT",
     "FileStatus",
-    "GitHubRESTApi",
     "GitHubAsyncRESTApi",
     "DEFAULT_TIMEOUT_CONFIG",
     "DEFAULT_GITHUB_API_URL",

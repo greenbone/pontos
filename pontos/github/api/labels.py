@@ -16,9 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import AsyncIterator, Iterable, List
-
-import httpx
+from typing import AsyncIterator, Iterable
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON
@@ -65,42 +63,4 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         api = f"/repos/{repo}/issues/{issue}/labels"
         data = {"labels": labels}
         response = await self._client.post(api, data=data)
-        response.raise_for_status()
-
-
-class GitHubRESTLabelsMixin:
-    def get_labels(
-        self,
-        repo: str,
-        issue: int,
-    ) -> List[str]:
-        """
-        Get all labels that are set in the issue/pr
-
-        Args:
-            repo:   GitHub repository (owner/name) to use
-            issue:  Issue/Pull request number
-
-        Returns:
-            List of existing labels
-        """
-        api = f"/repos/{repo}/issues/{issue}/labels"
-        response: httpx.Response = self._request(api)
-        return [f["name"] for f in response.json()]
-
-    def set_labels(self, repo: str, issue: int, labels: List[str]):
-        """
-        Set labels in the issue/pr. Existing labels will be overwritten
-
-        Args:
-            repo:   GitHub repository (owner/name) to use
-            issue:  Issue/Pull request number
-            labels: List of labels, that should be set.
-                    Existing labels will be overwritten
-        """
-        api = f"/repos/{repo}/issues/{issue}/labels"
-        data = {"labels": labels}
-        response: httpx.Response = self._request(
-            api, data=data, request=httpx.post
-        )
         response.raise_for_status()

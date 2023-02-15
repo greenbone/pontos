@@ -19,7 +19,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos.github.api import GitHubRESTApi
 from pontos.github.api.contents import GitHubAsyncRESTContent
 from tests.github.api import (
     GitHubAsyncRESTTestCase,
@@ -64,41 +63,3 @@ class GitHubAsyncRESTContentTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/contents/a/file.txt", params={}
         )
-
-
-class GitHubContentTestCase(unittest.TestCase):
-    @patch("pontos.github.api.api.httpx.get")
-    def test_path_exists(self, requests_mock: MagicMock):
-        response = MagicMock()
-        response.ok = True
-        requests_mock.return_value = response
-
-        api = GitHubRESTApi("12345")
-        exists = api.path_exists(repo="foo/bar", path="baz", branch="main")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/contents/baz",
-            params={
-                "ref": "main",
-            },
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)
-        self.assertTrue(exists)
-
-    @patch("pontos.github.api.api.httpx.get")
-    def test_path_not_exists(self, requests_mock: MagicMock):
-        response = MagicMock()
-        response.is_success = False
-        requests_mock.return_value = response
-
-        api = GitHubRESTApi("12345")
-        exists = api.path_exists(repo="foo/bar", path="baz", branch="main")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/contents/baz",
-            params={
-                "ref": "main",
-            },
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)
-        self.assertFalse(exists)
