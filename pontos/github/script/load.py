@@ -24,7 +24,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Generator, Union
 
-from pontos.github.api.api import GitHubAsyncRESTApi, GitHubRESTApi
+from pontos.github.api.api import GitHubAsyncRESTApi
 from pontos.github.script.errors import GitHubScriptError
 from pontos.helper import add_sys_path, ensure_unload_module
 
@@ -77,30 +77,32 @@ def run_github_script_function(
             f"{GITHUB_SCRIPT_FUNCTION_NAME} function is missing."
         )
     func = getattr(module, GITHUB_SCRIPT_FUNCTION_NAME)
-    if asyncio.iscoroutinefunction(func):
-        # it's async
-        async def run_async() -> int:
-            async with GitHubAsyncRESTApi(token, timeout=timeout) as api:
-                return await func(api, args)
+    if not asyncio.iscoroutinefunction(func):
+        # it's not async
+        raise GitHubScriptError(
+            f"{module.__file__} is not a valid Pontos GitHub Script. "
+            f"{GITHUB_SCRIPT_FUNCTION_NAME} need to be an async coroutine "
+            "function."
+        )
 
-        loop_owner = False
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop_owner = True
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+    async def run_async() -> int:
+        async with GitHubAsyncRESTApi(token, timeout=timeout) as api:
+            return await func(api, args)
 
-        try:
-            retval = loop.run_until_complete(run_async())
-        finally:
-            if loop_owner:
-                loop.close()
-        return retval
+    loop_owner = False
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop_owner = True
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-    # it's sync
-    api = GitHubRESTApi(token, timeout=timeout)
-    return func(api, args)
+    try:
+        retval = loop.run_until_complete(run_async())
+    finally:
+        if loop_owner:
+            loop.close()
+    return retval
 
 
 def run_add_arguments_function(
