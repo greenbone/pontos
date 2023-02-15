@@ -19,12 +19,13 @@ import os
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Any, AsyncIterator, Awaitable, Generator, Iterable, Optional
 
 from pontos.git.git import exec_git
 from pontos.helper import add_sys_path, ensure_unload_module, unload_module
 
 __all__ = (
+    "AsyncIteratorMock",
     "temp_directory",
     "temp_git_repository",
     "temp_file",
@@ -210,3 +211,14 @@ def temp_python_module(
         test_file = tmp_dir / f"{name}.py"
         test_file.write_text(content, encoding="utf8")
         yield test_file
+
+
+class AsyncIteratorMock(AsyncIterator):
+    def __init__(self, iterable: Iterable[Any]) -> None:
+        self.iterator = iter(iterable)
+
+    async def __anext__(self) -> Awaitable[Any]:
+        try:
+            return next(self.iterator)
+        except StopIteration:
+            raise StopAsyncIteration() from None

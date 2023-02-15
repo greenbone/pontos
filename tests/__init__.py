@@ -19,9 +19,10 @@
 
 import builtins
 import sys
-from typing import Any, AsyncIterator, Awaitable, Iterable
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock
+
+from pontos.testing import AsyncIteratorMock
 
 if sys.version_info.minor < 10:
     # aiter and anext have been added in Python 3.10
@@ -38,17 +39,6 @@ else:
 
     def anext(obj):  # pylint: disable=redefined-builtin
         return builtins.anext(obj)
-
-
-class AsyncIteratorMock(AsyncIterator):
-    def __init__(self, iterable: Iterable[Any]) -> None:
-        self.iterator = iter(iterable)
-
-    async def __anext__(self) -> Awaitable[Any]:
-        try:
-            return next(self.iterator)
-        except StopIteration:
-            raise StopAsyncIteration() from None
 
 
 __all__ = (
