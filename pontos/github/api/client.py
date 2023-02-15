@@ -37,6 +37,7 @@ Params = Dict[str, str]
 # supported GitHub API version
 # https://docs.github.com/en/rest/overview/api-versions
 GITHUB_API_VERSION = "2022-11-28"
+DEFAULT_ACCEPT_HEADER = "application/vnd.github+json"
 
 
 class GitHubAsyncRESTClient(AbstractAsyncContextManager):
@@ -65,13 +66,16 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self._client = httpx.AsyncClient(timeout=timeout, http2=True)
 
     def _request_headers(
-        self, *, content_type: Optional[str] = None
+        self,
+        *,
+        accept: Optional[str] = DEFAULT_ACCEPT_HEADER,
+        content_type: Optional[str] = None,
     ) -> Headers:
         """
         Get the default request headers
         """
         headers = {
-            "Accept": "application/vnd.github+json",
+            "Accept": accept,
             "X-GitHub-Api-Version": GITHUB_API_VERSION,
         }
         if self.token:
