@@ -38,6 +38,7 @@ Params = Dict[str, str]
 # https://docs.github.com/en/rest/overview/api-versions
 GITHUB_API_VERSION = "2022-11-28"
 DEFAULT_ACCEPT_HEADER = "application/vnd.github+json"
+ACCEPT_HEADER_OCTET_STREAM = "application/octet-stream"
 
 
 class GitHubAsyncRESTClient(AbstractAsyncContextManager):
@@ -248,7 +249,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         Args:
             api: API path to use for the post request
         """
-        headers = self._request_headers()
+        headers = self._request_headers(accept=ACCEPT_HEADER_OCTET_STREAM)
         url = self._request_url(api)
         return self._client.stream(
             "GET", url, headers=headers, follow_redirects=True
