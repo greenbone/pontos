@@ -133,6 +133,18 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         Raises:
             HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            async with api.download_release_tarball(
+                "foo/bar", "v1.0.0"
+            ) as download:
+                file_path = Path("a.file.tar.gz")
+                with file_path.open("wb") as f:
+                    async for content, progress in download:
+                        f.write(content)
+                        print(progress)
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
         return download_async(self._client.stream(api))
@@ -151,6 +163,18 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         Raises:
             HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+            async with api.download_release_zip(
+                "foo/bar", "v1.0.0"
+            ) as download:
+                file_path = Path("a.file.zip")
+                with file_path.open("wb") as f:
+                    async for content, progress in download:
+                        f.write(content)
+                        print(progress)
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download_async(self._client.stream(api))
@@ -180,12 +204,14 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         Example:
             .. code-block:: python
 
-            async def download_asset(name, download_cm):
+            async def download_asset(name: str, download_cm) -> Path:
                 async with download_cm as iterator:
-                    with Path(name).open("wb") as f:
+                    file_path = Path(name)
+                    with file_path.open("wb") as f:
                         async for content, progress in iterator:
                             f.write(content)
                             print(name, progress)
+                    return file_path
 
 
             tasks = []
@@ -196,7 +222,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                     download_asset(name, download_cm)
                 )
 
-            await asyncio.gather(*tasks)
+            file_paths = await asyncio.gather(*tasks)
 
         """
         release = await self.get(repo, tag)
