@@ -59,6 +59,7 @@ class ChangelogBuilder:
         next_version: str,
         space: str,
         project: str,
+        git_tag_prefix: Optional[str] = "v",
         config: Optional[Path] = None,
     ):
         self._terminal = terminal
@@ -77,6 +78,8 @@ class ChangelogBuilder:
         self.project = project
         self.space = space
 
+        self.git_tag_prefix = git_tag_prefix
+
         self.current_version = current_version
         self.next_version = next_version
 
@@ -92,11 +95,15 @@ class ChangelogBuilder:
             A list of `git log` entries
         """
         git = Git()
+        git_version = f"{self.git_tag_prefix}{self.current_version}"
         try:
-            return git.log(f"{self.current_version}..HEAD", oneline=True)
+            return git.log(
+                f"{git_version}..HEAD",
+                oneline=True,
+            )
         except GitError:
             self._terminal.warning(
-                "Could not find tag for {self.current_version}. Falling back "
+                f"Could not find tag for {git_version}. Falling back "
                 "to full git log."
             )
 
