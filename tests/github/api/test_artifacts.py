@@ -18,12 +18,11 @@
 # pylint: disable=redefined-builtin, line-too-long
 
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 
 import httpx
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
-from pontos.helper import DEFAULT_TIMEOUT
 from tests import AsyncIteratorMock, AsyncMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 

@@ -17,21 +17,15 @@
 
 # pylint: disable=redefined-builtin, line-too-long, too-many-lines
 
-import json
-import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from httpx import HTTPStatusError
 
 from pontos.github.api.helper import FileStatus
 from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
 from tests import AsyncIteratorMock, aiter, anext
-from tests.github.api import (
-    GitHubAsyncRESTTestCase,
-    create_response,
-    default_request,
-)
+from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent
 
