@@ -19,21 +19,16 @@
 
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from httpx import HTTPStatusError
 
-from pontos.github.api import GitHubRESTApi
 from pontos.github.api.branch import (
     GitHubAsyncRESTBranches,
     update_from_applied_settings,
 )
 from pontos.github.models.branch import BranchProtection
-from tests.github.api import (
-    GitHubAsyncRESTTestCase,
-    create_response,
-    default_request,
-)
+from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent
 
@@ -536,55 +531,3 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
         self.client.delete.assert_awaited_once_with(
             "/repos/foo/bar/branches/baz/protection/required_status_checks"
         )
-
-
-class GitHubBranchTestCase(unittest.TestCase):
-    @patch("pontos.github.api.api.httpx.get")
-    def test_branch_exists(self, requests_mock: MagicMock):
-        response = MagicMock()
-        response.ok = True
-        requests_mock.return_value = response
-
-        api = GitHubRESTApi("12345")
-        exists = api.branch_exists("foo/bar", "main")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/branches/main",
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)
-        self.assertTrue(exists)
-
-    @patch("pontos.github.api.api.httpx.get")
-    def test_branch_not_exists(self, requests_mock: MagicMock):
-        response = MagicMock()
-        response.is_success = False
-        requests_mock.return_value = response
-
-        api = GitHubRESTApi("12345")
-        exists = api.branch_exists("foo/bar", "main")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/branches/main",
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)
-        self.assertFalse(exists)
-
-    @patch("pontos.github.api.api.httpx.delete")
-    def test_delete_branch(self, requests_mock: MagicMock):
-        api = GitHubRESTApi("12345")
-        api.delete_branch("foo/bar", "foo")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/git/refs/foo",
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)
-
-    @patch("pontos.github.api.api.httpx.get")
-    def test_branch_protection_rules(self, requests_mock: MagicMock):
-        api = GitHubRESTApi("12345")
-        api.branch_protection_rules(repo="foo/bar", branch="baz")
-
-        args, kwargs = default_request(
-            "https://api.github.com/repos/foo/bar/branches/baz/protection",
-        )
-        requests_mock.assert_called_once_with(*args, **kwargs)

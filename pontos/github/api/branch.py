@@ -17,8 +17,6 @@
 
 from typing import Any, Dict, Iterable, Optional, Tuple
 
-import httpx
-
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.branch import BranchProtection
 
@@ -752,48 +750,3 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         )
         response = await self._client.delete(api)
         response.raise_for_status()
-
-
-class GitHubRESTBranchMixin:
-    def branch_exists(self, repo: str, branch: str) -> bool:
-        """
-        Check if a single branch in a repository exists
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            branch: Branch name to check
-        """
-        api = f"/repos/{repo}/branches/{branch}"
-        response: httpx.Response = self._request(api)
-        return response.is_success
-
-    def delete_branch(self, repo: str, branch: str):
-        """
-        Delete a branch on GitHub
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            branch: Branch to be deleted
-
-        Raises:
-            HTTPError if the request was invalid
-        """
-        api = f"/repos/{repo}/git/refs/{branch}"
-        response: httpx.Response = self._request(api, request=httpx.delete)
-        response.raise_for_status()
-
-    def branch_protection_rules(self, repo: str, branch: str):
-        """
-        Get branch protection rules for a specific repository
-        branch
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            branch: Get protection rules for this branch
-
-        Raises:
-            HTTPError if the request was invalid
-        """
-        api = f"/repos/{repo}/branches/{branch}/protection"
-        response: httpx.Response = self._request(api)
-        return response.json()

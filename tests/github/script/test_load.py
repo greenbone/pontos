@@ -70,26 +70,7 @@ class RunAddArgumentsFunction(unittest.TestCase):
                 parser.parse_args(["--foo", "123"])
 
 
-class RunGithubScriptFunctionTestCase(unittest.TestCase):
-    def test_run_sync_github_script_function(self):
-        with temp_file(
-            "def github_script(api, args):\n\treturn 1",
-            name="foo.py",
-        ) as f, load_script(f) as module:
-            self.assertEqual(
-                run_github_script_function(module, "123", 123, {}), 1
-            )
-
-    def test_no_github_script_function(self):
-        with temp_file(
-            "def foo():\n\tpass",
-            name="foo.py",
-        ) as f, load_script(f) as module:
-            with self.assertRaises(GitHubScriptError):
-                run_github_script_function(module, "123", 123, {})
-
-
-class AsyncRunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
+class RunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
     def test_run_async_github_script_function(self):
         with temp_file(
             "async def github_script(api, args):\n\treturn 1",
@@ -98,3 +79,19 @@ class AsyncRunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
             self.assertEqual(
                 run_github_script_function(module, "123", 123, {}), 1
             )
+
+    def test_sync_github_script_function_not_supported(self):
+        with temp_file(
+            "def github_script(api, args):\n\treturn 1",
+            name="foo.py",
+        ) as f, load_script(f) as module:
+            with self.assertRaises(GitHubScriptError):
+                run_github_script_function(module, "123", 123, {})
+
+    def test_no_github_script_function(self):
+        with temp_file(
+            "def foo():\n\tpass",
+            name="foo.py",
+        ) as f, load_script(f) as module:
+            with self.assertRaises(GitHubScriptError):
+                run_github_script_function(module, "123", 123, {})

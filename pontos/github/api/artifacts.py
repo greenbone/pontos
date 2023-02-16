@@ -15,27 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
-from typing import (
-    AsyncContextManager,
-    AsyncIterator,
-    ContextManager,
-    Iterable,
-    Optional,
-    Union,
-)
-
-import httpx
+from typing import AsyncContextManager, AsyncIterator, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST, Params
-from pontos.github.api.helper import JSON_OBJECT
 from pontos.github.models.artifact import Artifact
-from pontos.helper import (
-    AsyncDownloadProgressIterable,
-    DownloadProgressIterable,
-    download,
-    download_async,
-)
+from pontos.helper import AsyncDownloadProgressIterable, download_async
 
 
 class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
@@ -155,108 +139,3 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}/zip"
         return download_async(self._client.stream(api))
-
-
-class GitHubRESTArtifactsMixin:
-    def get_repository_artifacts(self, repo: str) -> Iterable[JSON_OBJECT]:
-        """
-        List all artifacts of a repository
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-
-        Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
-
-        Returns:
-            Information about the artifacts in the repository as a dict
-        """
-        api = f"/repos/{repo}/actions/artifacts"
-        return self._get_paged_items(api, "artifacts")
-
-    def get_repository_artifact(self, repo: str, artifact: str) -> JSON_OBJECT:
-        """
-        Get a single artifact of a repository
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            artifact: ID of the artifact
-
-        Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
-
-        Returns:
-            Information about the artifact as a dict
-        """
-        api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response: httpx.Response = self._request(api, request=httpx.get)
-        response.raise_for_status()
-        return response.json()
-
-    def download_repository_artifact(
-        self, repo: str, artifact: str, destination: Union[Path, str]
-    ) -> ContextManager[DownloadProgressIterable]:
-        """
-        Download a repository artifact zip file
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            artifact: ID of the artifact
-            destination: A path where to store the downloaded file
-
-        Raises:
-            HTTPError if the request was invalid
-
-        Example:
-            .. code-block:: python
-
-            api = GitHubRESTApi("...")
-
-            print("Downloading", end="")
-
-            with api.download_repository_artifact(
-                "org/repo", "123", "/tmp/artifact.zip"
-            ) as progress_iterator:
-                for progress in progress_iterator:
-                    print(".", end="")
-        """
-        api = f"{self.url}/repos/{repo}/actions/artifacts/{artifact}/zip"
-        return download(api, destination, headers=self._request_headers())
-
-    def get_workflow_run_artifacts(
-        self, repo: str, run: str
-    ) -> Iterable[JSON_OBJECT]:
-        """
-        List all artifacts for a workflow run
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            run: The unique identifier of the workflow run
-
-        Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
-
-        Returns:
-            Information about the artifacts in the workflow as a dict
-        """
-        api = f"/repos/{repo}/actions/runs/{run}/artifacts"
-        return self._get_paged_items(api, "artifacts")
-
-    def delete_repository_artifact(self, repo: str, artifact: str):
-        """
-        Delete an artifact of a repository
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            artifact: ID of the artifact
-
-        Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
-        """
-        api = f"/repos/{repo}/actions/artifacts/{artifact}"
-        response: httpx.Response = self._request(api, request=httpx.delete)
-        response.raise_for_status()

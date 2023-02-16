@@ -18,8 +18,6 @@
 
 from typing import Optional
 
-import httpx
-
 from pontos.github.api.client import GitHubAsyncREST
 
 
@@ -44,27 +42,4 @@ class GitHubAsyncRESTContent(GitHubAsyncREST):
             params["ref"] = branch
 
         response = await self._client.get(api, params=params)
-        return response.is_success
-
-
-class GitHubRESTContentMixin:
-    def path_exists(
-        self, repo: str, path: str, *, branch: Optional[str] = None
-    ) -> bool:
-        """
-        Check if a path (file or directory) exists in a branch of a repository
-
-        Args:
-            repo: GitHub repository (owner/name) to use
-            path: to the file/directory in question
-            branch: Branch to check, defaults to default branch (:
-
-        Returns:
-            True if existing, False else
-        """
-        api = f"/repos/{repo}/contents/{path}"
-        params = {}
-        if branch:
-            params["ref"] = branch
-        response: httpx.Response = self._request(api, params=params)
         return response.is_success
