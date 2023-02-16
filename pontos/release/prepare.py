@@ -136,6 +136,7 @@ class PrepareCommand:
             space=self.space,
             project=self.project,
             config=cc_config,
+            git_tag_prefix=self.git_tag_prefix,
         )
 
         output_file = changelog_builder.create_changelog_file(
