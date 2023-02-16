@@ -18,7 +18,6 @@
 
 import os
 import re
-import subprocess
 import sys
 import warnings
 from contextlib import asynccontextmanager, contextmanager
@@ -35,7 +34,6 @@ from typing import (
     Dict,
     Generator,
     Generic,
-    Iterable,
     Iterator,
     Optional,
     Tuple,
@@ -285,17 +283,6 @@ def download(
             destination=destination,
             length=total_length,
         )
-
-
-def shell_cmd_runner(args: Iterable[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        args,
-        shell=True,
-        check=True,
-        errors="utf-8",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
 
 
 def deprecated(
