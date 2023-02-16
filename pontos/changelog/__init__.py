@@ -16,12 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .changelog import ChangelogError, add_skeleton, update_changelog
-from .conventional_commits import ChangelogBuilder, ChangelogBuilderError, main
+from .conventional_commits import ChangelogBuilder, main
+from .errors import ChangelogBuilderError, ChangelogError
 
 __all__ = [
-    "add_skeleton",
-    "update_changelog",
     "ChangelogError",
     "ChangelogBuilder",
     "ChangelogBuilderError",

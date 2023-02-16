@@ -95,14 +95,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         help="Prefix for git tag versions. Default: %(default)s",
     )
     prepare_parser.add_argument(
-        "--changelog",
-        type=Path,
-        help=(
-            "The CHANGELOG file path, defaults "
-            "to CHANGELOG.md in the repository root directory"
-        ),
-    )
-    prepare_parser.add_argument(
         "--space",
         default="greenbone",
         help="User/Team name in github",
@@ -110,15 +102,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     prepare_parser.add_argument(
         "--project",
         help="The github project",
-    )
-    prepare_parser.add_argument(
-        "--conventional-commits",
-        "-CC",
-        help=(
-            "Wether to use conventional commits and create "
-            "the changelog directly from the git log"
-        ),
-        action="store_true",
     )
     prepare_parser.add_argument(
         "--conventional-commits-config",
