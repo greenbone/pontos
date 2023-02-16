@@ -24,10 +24,9 @@ from typing import Optional
 
 import httpx
 
-from pontos.changelog.changelog import add_skeleton
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
-from pontos.release.prepare import DEFAULT_CHANGELOG_FILE, RELEASE_TEXT_FILE
+from pontos.release.prepare import RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
 from pontos.version.commands import get_current_version, update_version
 from pontos.version.errors import VersionError
@@ -70,29 +69,6 @@ class ReleaseCommand:
 
         release_file.unlink()
 
-    def _update_old_changelog(
-        self, changelog_file: Optional[Path], release_version: str
-    ) -> None:
-        if not changelog_file:
-            changelog_file = Path(DEFAULT_CHANGELOG_FILE)
-
-        markdown = (
-            changelog_file.read_text(encoding="utf8")
-            if changelog_file.exists()
-            else ""
-        )
-
-        updated = add_skeleton(
-            markdown=markdown,
-            new_version=release_version,
-            project_name=self.project,
-            git_tag_prefix=self.git_tag_prefix,
-            git_space=self.space,
-        )
-        changelog_file.write_text(updated, encoding="utf-8")
-
-        self.git.add(changelog_file)
-
     def _update_version(self, next_version: str) -> VersionUpdate:
         return update_version(next_version, develop=True)
 
@@ -107,8 +83,6 @@ class ReleaseCommand:
         git_signing_key: str,
         git_remote_name: Optional[str],
         git_tag_prefix: Optional[str],
-        changelog_file: Optional[Path],
-        conventional_commits: bool,
     ) -> ReleaseReturnValue:
         """
         Create a release
@@ -126,10 +100,6 @@ class ReleaseCommand:
             git_remote_name: Name of the git remote to use.
             git_tag_prefix: An optional prefix to use for creating a git tag
                 from the release version.
-            changelog_file: A changelog file to use for releases not using
-                conventional commits.
-            conventional_commits: Use release description from conventional
-                commits (Requires successful prepare).
         """
         git_signing_key = (
             git_signing_key
@@ -171,10 +141,6 @@ class ReleaseCommand:
             "Automatic adjustments after release\n",
             f"* Update to version {next_version}",
         ]
-
-        if not conventional_commits:
-            self._update_old_changelog(changelog_file, release_version)
-            commit_msg.append(f"* Add empty changelog after {release_version}")
 
         try:
             updated = self._update_version(next_version)
@@ -221,8 +187,6 @@ def release(
             git_remote_name=args.git_remote_name,
             git_signing_key=args.git_signing_key,
             git_tag_prefix=args.git_tag_prefix,
-            changelog_file=args.changelog,
-            conventional_commits=args.conventional_commits,
             next_version=args.next_version,
         )
     )

@@ -20,9 +20,7 @@ from enum import Enum, IntEnum
 from pathlib import Path
 from typing import Optional
 
-from pontos.changelog.changelog import update_changelog
 from pontos.changelog.conventional_commits import ChangelogBuilder
-from pontos.changelog.errors import ChangelogError
 from pontos.git import Git
 from pontos.terminal import Terminal
 from pontos.version.commands import get_current_version, update_version
@@ -89,44 +87,6 @@ class PrepareCommand:
     def _update_version(self, release_version: str) -> VersionUpdate:
         return update_version(release_version, develop=False)
 
-    def _create_old_changelog(
-        self, release_version: str, changelog_file: Optional[Path]
-    ) -> str:
-        if not changelog_file:
-            changelog_file = Path(DEFAULT_CHANGELOG_FILE)
-
-        if not changelog_file.exists():
-            raise ChangelogError(
-                f"Changelog file {changelog_file} does not exist."
-            )
-
-        # Try to get the unreleased section of the specific version
-        changelog_text, release_text = update_changelog(
-            changelog_file.read_text(encoding="utf-8"),
-            release_version,
-            git_tag_prefix=self.git_tag_prefix,
-            containing_version=release_version,
-        )
-
-        if not changelog_text:
-            # Try to get unversioned unrelease section
-            changelog_text, release_text = update_changelog(
-                changelog_file.read_text(encoding="utf-8"),
-                release_version,
-                git_tag_prefix=self.git_tag_prefix,
-            )
-
-        if not changelog_text:
-            raise ChangelogError(
-                f"No unreleased text found in {changelog_file}"
-            )
-
-        changelog_file.write_text(changelog_text, encoding="utf8")
-
-        self.git.add(changelog_file)
-
-        return release_text
-
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
         last_release_version = get_last_release_version()
         changelog_builder = ChangelogBuilder(
@@ -159,8 +119,6 @@ class PrepareCommand:
         release_version: Optional[str],
         git_signing_key: Optional[str],
         git_tag_prefix: Optional[str],
-        changelog_file: Optional[Path],
-        conventional_commits: bool,
         cc_config: Optional[Path],
     ) -> PrepareReturnValue:
         """
@@ -179,10 +137,6 @@ class PrepareCommand:
             git_signing_key: A GPG key ID to use for creating signatures.
             git_tag_prefix: An optional prefix to use for creating a git tag
                 from the release version.
-            changelog_file: A changelog file to use for releases not using
-                conventional commits.
-            conventional_commits: Create changelog and release description from
-                conventional commits.
             cc_config: A path to a settings file for creating conventional
                 commits.
         """
@@ -229,12 +183,7 @@ class PrepareCommand:
             )
             return PrepareReturnValue.UPDATE_VERSION_ERROR
 
-        if conventional_commits:
-            release_text = self._create_changelog(release_version, cc_config)
-        else:
-            release_text = self._create_old_changelog(
-                release_version, changelog_file
-            )
+        release_text = self._create_changelog(release_version, cc_config)
 
         self.terminal.info("Committing changes")
 
@@ -279,7 +228,5 @@ def prepare(
         release_type=release_type,
         release_version=args.release_version,
         git_tag_prefix=args.git_tag_prefix,
-        changelog_file=args.changelog,
         cc_config=args.cc_config,
-        conventional_commits=args.conventional_commits,
     )

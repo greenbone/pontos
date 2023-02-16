@@ -17,7 +17,6 @@
 # pylint: disable=C0413,W0108
 
 import unittest
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
@@ -80,12 +79,10 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        git_mock.return_value.add.assert_has_calls(
-            [call(Path("CHANGELOG.md")), call("MyProject.conf")]
-        )
+        git_mock.return_value.add.assert_has_calls([call("MyProject.conf")])
         git_mock.return_value.commit.assert_called_once_with(
             "Automatic adjustments after release\n\n* Update to version "
-            "0.0.2.dev1\n* Add empty changelog after 0.0.1",
+            "0.0.2.dev1",
             verify=False,
             gpg_signing_key="123",
         )
@@ -248,14 +245,12 @@ class ReleaseTestCase(unittest.TestCase):
         # git_mock.return_value.add.assert_called_with()
         git_mock.return_value.add.assert_has_calls(
             [
-                call(Path("CHANGELOG.md")),
                 call("MyProject.conf"),
             ]
         )
         git_mock.return_value.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
-            "* Update to version 0.0.2.dev1\n"
-            "* Add empty changelog after 0.0.1",
+            "* Update to version 0.0.2.dev1",
             verify=False,
             gpg_signing_key="1234",
         )
@@ -313,14 +308,12 @@ class ReleaseTestCase(unittest.TestCase):
         # git_mock.return_value.add.assert_called_with()
         git_mock.return_value.add.assert_has_calls(
             [
-                call(Path("CHANGELOG.md")),
                 call("MyProject.conf"),
             ]
         )
         git_mock.return_value.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
-            "* Update to version 0.0.2\n"
-            "* Add empty changelog after 0.0.1",
+            "* Update to version 0.0.2",
             verify=False,
             gpg_signing_key="1234",
         )
