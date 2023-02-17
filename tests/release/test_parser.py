@@ -21,6 +21,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+from pontos.release.helper import ReleaseType
 from pontos.release.parser import (
     DEFAULT_CHANGELOG_CONFIG_FILE,
     DEFAULT_SIGNING_KEY,
@@ -58,17 +59,13 @@ class PrepareParseArgsTestCase(unittest.TestCase):
 
     def test_version_group(self):
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            _, _, _ = parse_args(["prepare", "--patch", "--calendar"])
+            parse_args(["prepare", "--patch", "--calendar"])
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            _, _, _ = parse_args(
-                ["prepare", "--patch", "--release-version", "1.2.3"]
-            )
+            parse_args(["prepare", "--patch", "--release-type", "patch"])
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            _, _, _ = parse_args(
-                ["prepare", "--calendar", "--release-version", "1.2.3"]
-            )
+            parse_args(["prepare", "--calendar", "--release-type", "patch"])
 
     def test_default(self):
         _, _, args = parse_args(["prepare", "--patch"])
@@ -76,6 +73,10 @@ class PrepareParseArgsTestCase(unittest.TestCase):
         self.assertEqual(args.git_tag_prefix, "v")
         self.assertEqual(args.space, "greenbone")
         self.assertEqual(args.cc_config, Path(DEFAULT_CHANGELOG_CONFIG_FILE))
+
+    def test_missing_release_type(self):
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["prepare"])
 
     def test_git_signing_key(self):
         _, _, args = parse_args(
@@ -109,17 +110,76 @@ class PrepareParseArgsTestCase(unittest.TestCase):
     def test_calendar(self):
         _, _, args = parse_args(["prepare", "--calendar"])
 
-        self.assertTrue(args.calendar)
+        self.assertFalse("calendar" in args)
+        self.assertEqual(args.release_type, ReleaseType.CALENDAR)
 
     def test_patch(self):
         _, _, args = parse_args(["prepare", "--patch"])
 
-        self.assertTrue(args.patch)
+        self.assertFalse("patch" in args)
+        self.assertEqual(args.release_type, ReleaseType.PATCH)
+
+    def test_release_type(self):
+        _, _, args = parse_args(["prepare", "--release-type", "patch"])
+
+        self.assertEqual(args.release_type, ReleaseType.PATCH)
+
+        _, _, args = parse_args(["prepare", "--release-type", "calendar"])
+
+        self.assertEqual(args.release_type, ReleaseType.CALENDAR)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["prepare", "--release-type", "foo"])
+
+    def test_release_type_version_without_release_version(self):
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["prepare", "--release-type", "version"])
+
+        _, _, args = parse_args(
+            [
+                "prepare",
+                "--release-type",
+                "version",
+                "--release-version",
+                "1.2.3",
+            ]
+        )
+        self.assertEqual(args.release_type, ReleaseType.VERSION)
+        self.assertEqual(args.release_version, "1.2.3")
 
     def test_release_version(self):
         _, _, args = parse_args(["prepare", "--release-version", "1.2.3"])
 
         self.assertEqual(args.release_version, "1.2.3")
+        self.assertEqual(args.release_type, ReleaseType.VERSION)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["prepare", "--release-version", "1.2.3", "--patch"])
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["prepare", "--release-version", "1.2.3", "--calendar"])
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "prepare",
+                    "--release-version",
+                    "1.2.3",
+                    "--release-type",
+                    "patch",
+                ]
+            )
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "prepare",
+                    "--release-version",
+                    "1.2.3",
+                    "--release-type",
+                    "calendar",
+                ]
+            )
 
 
 class ReleaseParseArgsTestCase(unittest.TestCase):
