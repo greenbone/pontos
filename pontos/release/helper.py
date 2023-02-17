@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
 from typing import Optional
 
 from pontos.git import Git, GitError
@@ -22,6 +23,16 @@ from pontos.terminal import Terminal
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
+
+
+class ReleaseType(Enum):
+    PATCH = "patch"
+    CALENDAR = "calendar"
+    VERSION = "version"
+    # for the future we need
+    # MAJOR = "major"
+    # MINOR = "minor"
+    # PRE_RELEASE = "pre-release"
 
 
 def get_last_release_version() -> Optional[str]:
