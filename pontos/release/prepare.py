@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import Namespace
-from enum import Enum, IntEnum
+from enum import IntEnum
 from pathlib import Path
 from typing import Optional
 
@@ -32,6 +32,7 @@ from pontos.version.helper import (
 from pontos.version.version import VersionUpdate
 
 from .helper import (
+    ReleaseType,
     find_signing_key,
     get_git_repository_name,
     get_last_release_version,
@@ -47,16 +48,6 @@ class PrepareReturnValue(IntEnum):
     ALREADY_TAKEN = 2
     UPDATE_VERSION_ERROR = 3
     CHANGELOG_ERROR = 4
-
-
-class ReleaseType(Enum):
-    PATCH = "patch"
-    CALENDAR = "calendar"
-    VERSION = "version"
-    # for the future we need
-    # MAJOR = "major"
-    # MINOR = "minor"
-    # PRE_RELEASE = "pre-release"
 
 
 class PrepareCommand:
