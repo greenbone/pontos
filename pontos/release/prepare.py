@@ -205,18 +205,11 @@ def prepare(
     **_kwargs,
 ) -> IntEnum:
     cmd = PrepareCommand(terminal)
-    if args.calendar:
-        release_type = ReleaseType.CALENDAR
-    elif args.patch:
-        release_type = ReleaseType.PATCH
-    else:
-        release_type = ReleaseType.VERSION
-
     return cmd.run(
         git_signing_key=args.git_signing_key,
         project=args.project,
         space=args.space,
-        release_type=release_type,
+        release_type=args.release_type,
         release_version=args.release_version,
         git_tag_prefix=args.git_tag_prefix,
         cc_config=args.cc_config,
