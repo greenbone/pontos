@@ -41,13 +41,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         help="Don't print messages to the terminal",
     )
 
-    parser.add_argument(
-        "--log-file",
-        dest="log_file",
-        type=str,
-        help="Activate logging using the given file path",
-    )
-
     subparsers = parser.add_subparsers(
         title="subcommands",
         description="valid subcommands",
