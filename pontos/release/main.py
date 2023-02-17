@@ -151,23 +151,6 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         default="greenbone",
         help="User/Team name in github",
     )
-    release_parser.add_argument(
-        "--changelog",
-        help=(
-            "The CHANGELOG file path, defaults "
-            "to CHANGELOG.md in the repository root directory"
-        ),
-        type=Path,
-    )
-    release_parser.add_argument(
-        "--conventional-commits",
-        "-CC",
-        help=(
-            "Wether to use conventional commits and create "
-            "the changelog directly from the git log"
-        ),
-        action="store_true",
-    )
 
     sign_parser = subparsers.add_parser("sign")
     sign_parser.set_defaults(func=sign)
