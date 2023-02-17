@@ -16,13 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from argparse import ArgumentParser, FileType, Namespace
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Tuple
 
 from .prepare import prepare
 from .release import release
 from .sign import sign
+
+DEFAULT_CHANGELOG_CONFIG_FILE = "changelog.toml"
+DEFAULT_SIGNING_KEY = "0ED1E580"
 
 
 def parse_args(args) -> Tuple[str, str, Namespace]:
@@ -91,8 +94,8 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     prepare_parser.add_argument(
         "--conventional-commits-config",
         dest="cc_config",
-        default=Path("changelog.toml"),
-        type=FileType("r"),
+        default=Path(DEFAULT_CHANGELOG_CONFIG_FILE),
+        type=Path,
         help="Conventional commits config file (toml), including conventions.",
     )
 
@@ -141,7 +144,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     sign_parser.set_defaults(func=sign)
     sign_parser.add_argument(
         "--signing-key",
-        default="0ED1E580",
+        default=DEFAULT_SIGNING_KEY,
         help="The key to sign zip, tarballs of a release. Default %(default)s.",
     )
     sign_parser.add_argument(
