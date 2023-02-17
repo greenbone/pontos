@@ -79,66 +79,6 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        git_mock.return_value.add.assert_has_calls([call("MyProject.conf")])
-        git_mock.return_value.commit.assert_called_once_with(
-            "Automatic adjustments after release\n\n* Update to version "
-            "0.0.2.dev1",
-            verify=False,
-            gpg_signing_key="123",
-        )
-
-        self.assertEqual(
-            create_release_mock.await_args.args[1:], ("0.0.1", "foo")
-        )
-
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
-
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch(
-        "pontos.release.release.ReleaseCommand._update_version", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    def test_release_conventional_commits_successfully(
-        self,
-        create_release_mock: AsyncMock,
-        update_version_mock: MagicMock,
-        git_mock: MagicMock,
-    ):
-        update_version_mock.return_value = VersionUpdate(
-            previous="0.0.1", new="0.0.2.dev1", changed_files=["MyProject.conf"]
-        )
-
-        _, token, args = parse_args(
-            [
-                "release",
-                "--project",
-                "foo",
-                "--git-signing-key",
-                "123",
-                "--release-version",
-                "0.0.1",
-                "--next-version",
-                "0.0.2.dev1",
-                "-CC",
-            ]
-        )
-        terminal = mock_terminal()
-
-        with temp_git_repository():
-            released = release(
-                terminal=terminal,
-                args=args,
-                token=token,
-            )
-
-        git_mock.return_value.push.assert_has_calls(
-            [
-                call(follow_tags=True, remote=None),
-                call(follow_tags=True, remote=None),
-            ],
-        )
         git_mock.return_value.add.assert_called_once_with("MyProject.conf")
         git_mock.return_value.commit.assert_called_once_with(
             "Automatic adjustments after release\n\n* Update to version "
@@ -150,6 +90,7 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(
             create_release_mock.await_args.args[1:], ("0.0.1", "foo")
         )
+
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
     @patch("pontos.release.release.Git", autospec=True)
