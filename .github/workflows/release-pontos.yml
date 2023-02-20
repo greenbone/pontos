@@ -19,16 +19,56 @@ jobs:
           else
             echo "RELEASE_REF=${{ github.base_ref }}" >> $GITHUB_ENV
           fi
-      - name: Release with release action
-        uses: greenbone/actions/release@v2
+      - uses: actions/checkout@v3
         with:
-          python-version: "3.10"
-          conventional-commits: true
-          github-user: ${{ secrets.GREENBONE_BOT }}
-          github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
-          github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
-          gpg-key: ${{ secrets.GPG_KEY }}
-          gpg-fingerprint: ${{ secrets.GPG_FINGERPRINT }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          strategy: calendar
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+          persist-credentials: false
           ref: ${{ env.RELEASE_REF }}
+      - name: Set git name, mail and origin
+        run: |
+          git config --global user.name "${{ secrets.GREENBONE_BOT }}"
+          git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
+          git remote set-url origin https://${{ secrets.GREENBONE_BOT_TOKEN }}@github.com/${{ github.repository }}
+          - name: allow admin users bypassing protection on ${{ env.RELEASE_REF }} branch
+      - uses: actions/poetry@v2
+      - name: Allow admin users bypassing protection on ${{ env.RELEASE_REF }} branch
+        run: |
+          poetry run pontos-github-script scripts/github/enforce-admins.py ${{ github.repository }} ${{ env.RELEASE_REF }} --allow
+        env:
+          GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+          GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
+      - name: Prepare release
+        run: |
+          poetry run pontos-release prepare --release-type calendar
+        env:
+          GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+          GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
+      - name: Get release version
+        run: |
+          VERSION=$(poetry run pontos-version show)
+          echo "Releasing $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Create release
+        run: |
+          poetry run pontos-release release
+        env:
+          GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+          GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
+      - name: Disable bypassing protection on ${{ env.RELEASE_REF }} branch for admin users
+        run: |
+          poetry run pontos-github-script scripts/github/enforce-admins.py ${{ github.repository }} ${{ env.RELEASE_REF }} --no-allow
+        env:
+          GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+          GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
+      - name: Import gpg key from secrets
+        run: |
+          echo -e "${{ secrets.GPG_KEY }}" >> tmp.file
+          gpg --pinentry-mode loopback --passphrase ${{ secrets.GPG_PASSPHRASE }} --import tmp.file
+          rm tmp.file
+      - name: Sign assets for released version
+        run: |
+          echo "Signing assets for ${{env.VERSION}}"
+          poetry run pontos-release sign --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ env.VERSION }}
+        env:
+          GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
+          GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
