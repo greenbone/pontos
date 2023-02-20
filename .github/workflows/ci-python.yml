@@ -52,3 +52,14 @@ jobs:
         with:
           version: "3.10"
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  check-version:
+    name: Check versioning for consistency
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install python, poetry and dependencies
+        uses: greenbone/actions/poetry@v2
+      - name: Check version
+        run: |
+          poetry run pontos-version verify current
