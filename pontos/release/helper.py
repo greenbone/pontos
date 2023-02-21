@@ -29,9 +29,9 @@ class ReleaseType(Enum):
     PATCH = "patch"
     CALENDAR = "calendar"
     VERSION = "version"
+    MAJOR = "major"
+    MINOR = "minor"
     # for the future we need
-    # MAJOR = "major"
-    # MINOR = "minor"
     # PRE_RELEASE = "pre-release"
 
 

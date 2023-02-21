@@ -38,7 +38,7 @@ class VersionCalculator:
         try:
             current_version = Version(version)
 
-            if current_version.dev is not None:
+            if current_version.is_prerelease:
                 next_version = Version(
                     f"{current_version.major}."
                     f"{current_version.minor}."
@@ -96,3 +96,21 @@ class VersionCalculator:
                 f"'{current_version}' is higher than "
                 f"'{current_year_short}.{today.month}'."
             )
+
+    def next_minor_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            release_version = Version(
+                f"{current_version.major}.{current_version.minor +1}.0"
+            )
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None
+
+    def next_major_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            release_version = Version(f"{current_version.major + 1}.0.0")
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None

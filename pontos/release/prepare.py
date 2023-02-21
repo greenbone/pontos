@@ -67,6 +67,12 @@ class PrepareCommand:
         if release_type == ReleaseType.PATCH:
             return calculator.next_patch_version(current_version)
 
+        if release_type == ReleaseType.MINOR:
+            return calculator.next_minor_version(current_version)
+
+        if release_type == ReleaseType.MAJOR:
+            return calculator.next_major_version(current_version)
+
         if not release_version:
             raise VersionError(
                 "No release version provided. Either use a different release "
