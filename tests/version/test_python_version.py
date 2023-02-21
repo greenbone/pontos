@@ -24,8 +24,18 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import tomlkit
 
 from pontos.testing import temp_directory, temp_file, temp_python_module
+from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
 from pontos.version.python import PythonVersionCommand
+
+
+class JavaScriptVersionCommandTestCase(unittest.TestCase):
+    def test_get_version_calculator(self):
+        python = PythonVersionCommand()
+
+        self.assertIsInstance(
+            python.get_version_calculator(), VersionCalculator
+        )
 
 
 class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
