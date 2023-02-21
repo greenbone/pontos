@@ -18,11 +18,8 @@
 #
 
 import re
-from datetime import datetime
 
 from packaging.version import InvalidVersion, Version
-
-from pontos.version.errors import VersionError
 
 
 def strip_version(version: str) -> str:
@@ -73,74 +70,3 @@ def versions_equal(new_version: str, old_version: str) -> bool:
     Checks if new_version and old_version are equal
     """
     return safe_version(old_version) == safe_version(new_version)
-
-
-def calculate_calendar_version(current_version_str: str) -> str:
-    """find the correct next calendar version by checking latest version and
-    the today's date"""
-
-    current_version = Version(current_version_str)
-
-    today = datetime.today()
-    current_year_short = today.year % 100
-
-    if current_version.major < current_year_short or (
-        current_version.major == current_year_short
-        and current_version.minor < today.month
-    ):
-        release_version = Version(f"{current_year_short}.{today.month}.0")
-        return str(release_version)
-
-    if (
-        current_version.major == today.year % 100
-        and current_version.minor == today.month
-    ):
-        if current_version.dev is None:
-            release_version = Version(
-                f"{current_year_short}.{today.month}."
-                f"{current_version.micro + 1}"
-            )
-        else:
-            release_version = Version(
-                f"{current_year_short}.{today.month}."
-                f"{current_version.micro}"
-            )
-        return str(release_version)
-    else:
-        raise VersionError(
-            f"'{current_version}' is higher than "
-            f"'{current_year_short}.{today.month}'."
-        )
-
-
-def get_next_patch_version(release_version: str) -> str:
-    """
-    Get the next patch version from a valid version
-
-    Examples:
-        "1.2.3" will return "1.2.4"
-        "1.2.3.dev1" will return "1.2.3"
-
-    Raises:
-        VersionError if release_version is invalid.
-    """
-
-    try:
-        current_version = Version(release_version)
-
-        if current_version.dev is not None:
-            next_version = Version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro}"
-            )
-        else:
-            next_version = Version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1}"
-            )
-
-        return str(next_version)
-    except InvalidVersion as e:
-        raise VersionError(e) from None

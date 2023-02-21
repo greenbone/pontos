@@ -16,12 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from datetime import datetime
 
-from pontos.version.errors import VersionError
 from pontos.version.helper import (
-    calculate_calendar_version,
-    get_next_patch_version,
     is_version_pep440_compliant,
     safe_version,
     strip_version,
@@ -94,69 +90,3 @@ class StripVersionTestCase(unittest.TestCase):
     def test_version_string_with_v(self):
         self.assertEqual(strip_version("v1.2.3"), "1.2.3")
         self.assertEqual(strip_version("v1.2.3dev"), "1.2.3dev")
-
-
-class CalculateCalendarVersionTestCase(unittest.TestCase):
-    def test_calculate_calendar_versions(self):
-        today = datetime.today()
-        year_short = today.year % 100
-
-        current_versions = [
-            "21.4.1.dev3",
-            f"19.{today.month}.1.dev3",
-            f"{year_short}.{today.month}.1.dev3",
-            f"{year_short}.{today.month}.1",
-        ]
-        assert_versions = [
-            f"{year_short}.{today.month}.0",
-            f"{year_short}.{today.month}.0",
-            f"{year_short}.{today.month}.1",
-            f"{year_short}.{today.month}.2",
-        ]
-
-        for current_version, assert_version in zip(
-            current_versions, assert_versions
-        ):
-            release_version = calculate_calendar_version(current_version)
-            self.assertEqual(release_version, assert_version)
-
-    def test_calculate_calendar_error(self):
-        today = datetime.today()
-        year_short = today.year % 100
-
-        with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
-            calculate_calendar_version(f"{year_short  + 1}.1.0")
-
-        with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
-            calculate_calendar_version(f"{year_short}.{today.month + 1}.0")
-
-
-class GetNextPatchVersionTestCase(unittest.TestCase):
-    def test_get_next_patch_version(self):
-        today = datetime.today()
-
-        current_versions = [
-            "20.4.1.dev3",
-            f"{str(today.year % 100)}.4.1.dev3",
-            f"19.{str(today.month)}.1.dev3",
-            f"{str(today.year % 100)}.{str(today.month)}.1",
-            "20.6.1",
-        ]
-        assert_versions = [
-            "20.4.1",
-            f"{str(today.year % 100)}.4.1",
-            f"19.{str(today.month)}.1",
-            f"{str(today.year % 100)}.{str(today.month)}.2",
-            "20.6.2",
-        ]
-
-        for current_version, assert_version in zip(
-            current_versions, assert_versions
-        ):
-            release_version = get_next_patch_version(current_version)
-
-            self.assertEqual(release_version, assert_version)
-
-    def test_invalid_version(self):
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            get_next_patch_version("abc")
