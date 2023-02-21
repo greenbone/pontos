@@ -16,20 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import Namespace
-from enum import IntEnum
+from enum import IntEnum, auto
 from pathlib import Path
 from typing import Optional
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
+from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.terminal import Terminal
-from pontos.version.commands import get_current_version, update_version
+from pontos.version.commands import COMMANDS
 from pontos.version.errors import VersionError
-from pontos.version.helper import (
-    calculate_calendar_version,
-    get_next_patch_version,
-)
-from pontos.version.version import VersionUpdate
+from pontos.version.version import VersionCommand
 
 from .helper import (
     ReleaseType,
@@ -44,10 +41,11 @@ DEFAULT_CHANGELOG_FILE = "CHANGELOG.md"
 
 class PrepareReturnValue(IntEnum):
     SUCCESS = 0
-    NO_RELEASE_VERSION = 1
-    ALREADY_TAKEN = 2
-    UPDATE_VERSION_ERROR = 3
-    CHANGELOG_ERROR = 4
+    PROJECT_SETTINGS_NOT_FOUND = auto()
+    NO_RELEASE_VERSION = auto()
+    ALREADY_TAKEN = auto()
+    UPDATE_VERSION_ERROR = auto()
+    CHANGELOG_ERROR = auto()
 
 
 class PrepareCommand:
@@ -56,13 +54,18 @@ class PrepareCommand:
         self.terminal = terminal
 
     def _get_release_version(
-        self, release_type: ReleaseType, release_version: Optional[str]
+        self,
+        command: VersionCommand,
+        release_type: ReleaseType,
+        release_version: Optional[str],
     ) -> str:
+        current_version = command.get_current_version()
+        calculator = command.get_version_calculator()
         if release_type == ReleaseType.CALENDAR:
-            return calculate_calendar_version(get_current_version())
+            return calculator.next_calendar_version(current_version)
 
         if release_type == ReleaseType.PATCH:
-            return get_next_patch_version(get_current_version())
+            return calculator.next_patch_version(current_version)
 
         if not release_version:
             raise VersionError(
@@ -75,8 +78,13 @@ class PrepareCommand:
         git_tags = self.git.list_tags()
         return git_version in git_tags
 
-    def _update_version(self, release_version: str) -> VersionUpdate:
-        return update_version(release_version, develop=False)
+    def _gather_project(self) -> VersionCommand:
+        for cmd in COMMANDS:
+            command = cmd()
+            if command.project_found():
+                return command
+
+        raise PontosError("No project settings file found")
 
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
         last_release_version = get_last_release_version()
@@ -143,8 +151,14 @@ class PrepareCommand:
         self.space = space
 
         try:
+            command = self._gather_project()
+        except PontosError as e:
+            self.terminal.error(f"Unable to determine project settings. {e}")
+            return PrepareReturnValue.PROJECT_SETTINGS_NOT_FOUND
+
+        try:
             release_version = self._get_release_version(
-                release_type, release_version
+                command, release_type, release_version
             )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
@@ -162,7 +176,7 @@ class PrepareCommand:
             return PrepareReturnValue.ALREADY_TAKEN
 
         try:
-            updated = self._update_version(release_version)
+            updated = command.update_version(release_version)
 
             self.terminal.ok(f"Updated version to {release_version}")
 

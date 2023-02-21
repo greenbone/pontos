@@ -33,7 +33,7 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
-from pontos.version.commands import get_current_version
+from pontos.version.commands import COMMANDS
 from pontos.version.errors import VersionError
 
 from .helper import get_git_repository_name
@@ -66,6 +66,21 @@ async def cmd_runner(*args: Iterable[str]) -> Process:
 class SignCommand:
     def __init__(self, terminal: RichTerminal) -> None:
         self.terminal = terminal
+
+    def _get_current_version(self) -> str:
+        """
+        Get the current Version for the current project
+
+        Raises:
+            VersionError if current version can not be found.
+        """
+
+        for cmd in COMMANDS:
+            command = cmd()
+            if command.project_found():
+                return command.get_current_version()
+
+        raise VersionError("No project settings file found")
 
     async def _async_download_progress(
         self,
@@ -199,7 +214,7 @@ class SignCommand:
             release_version = (
                 release_version
                 if release_version is not None
-                else get_current_version()
+                else self._get_current_version()
             )
         except VersionError as e:
             self.terminal.error(f"Could not determine current version. {e}")

@@ -18,36 +18,45 @@
 
 import asyncio
 from argparse import Namespace
-from enum import IntEnum
+from enum import IntEnum, auto
 from pathlib import Path
 from typing import Optional
 
 import httpx
 
+from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.prepare import RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
-from pontos.version.commands import get_current_version, update_version
+from pontos.version.commands import COMMANDS
 from pontos.version.errors import VersionError
-from pontos.version.helper import get_next_patch_version
-from pontos.version.version import VersionUpdate
+from pontos.version.version import VersionCommand
 
 from .helper import find_signing_key, get_git_repository_name
 
 
 class ReleaseReturnValue(IntEnum):
     SUCCESS = 0
-    TOKEN_MISSING = 1
-    NO_RELEASE_VERSION = 2
-    CREATE_RELEASE_ERROR = 3
-    UPDATE_VERSION_ERROR = 4
+    PROJECT_SETTINGS_NOT_FOUND = auto()
+    TOKEN_MISSING = auto()
+    NO_RELEASE_VERSION = auto()
+    CREATE_RELEASE_ERROR = auto()
+    UPDATE_VERSION_ERROR = auto()
 
 
 class ReleaseCommand:
     def __init__(self, terminal: Terminal) -> None:
         self.git = Git()
         self.terminal = terminal
+
+    def _gather_project(self) -> VersionCommand:
+        for cmd in COMMANDS:
+            command = cmd()
+            if command.project_found():
+                return command
+
+        raise PontosError("No project settings file found")
 
     async def _create_release(self, release_version: str, token: str) -> None:
         self.terminal.info(f"Creating release for {release_version}")
@@ -68,9 +77,6 @@ class ReleaseCommand:
         )
 
         release_file.unlink()
-
-    def _update_version(self, next_version: str) -> VersionUpdate:
-        return update_version(next_version, develop=True)
 
     async def run(
         self,
@@ -113,8 +119,14 @@ class ReleaseCommand:
         self.space = space
 
         try:
+            command = self._gather_project()
+        except PontosError as e:
+            self.terminal.error(f"Unable to determine project settings. {e}")
+            return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
+
+        try:
             if not release_version:
-                release_version = get_current_version()
+                release_version = command.get_current_version()
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
             return ReleaseReturnValue.NO_RELEASE_VERSION
@@ -122,10 +134,12 @@ class ReleaseCommand:
         if not release_version:
             return ReleaseReturnValue.NO_RELEASE_VERSION
 
+        calculator = command.get_version_calculator()
+
         next_version = (
             next_version
             if next_version is not None
-            else get_next_patch_version(release_version)
+            else calculator.next_patch_version(release_version)
         )
 
         self.terminal.info("Pushing changes")
@@ -143,7 +157,7 @@ class ReleaseCommand:
         ]
 
         try:
-            updated = self._update_version(next_version)
+            updated = command.update_version(next_version, develop=True)
         except VersionError as e:
             self.terminal.error(
                 f"Error while updating version after release. {e}"
