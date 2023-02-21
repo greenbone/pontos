@@ -189,6 +189,108 @@ class PrepareTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.find_signing_key", autospec=True)
+    @patch(
+        "pontos.release.prepare.PrepareCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
+    def test_prepare_release_type_minor(
+        self,
+        gather_project_mock: MagicMock,
+        create_changelog_mock: MagicMock,
+        find_signing_key_mock: MagicMock,
+        git_mock: MagicMock,
+    ):
+        calculator = VersionCalculator()
+        current_version = "21.6.0"
+        next_version = "21.7.0"
+        version_command_mock = MagicMock(spec=VersionCommand)
+        version_command_mock.get_current_version.return_value = current_version
+        version_command_mock.get_version_calculator.return_value = calculator
+        gather_project_mock.return_value = version_command_mock
+        version_command_mock.update_version.return_value = VersionUpdate(
+            previous=current_version,
+            new=next_version,
+            changed_files=["MyProject.conf"],
+        )
+        create_changelog_mock.return_value = "A changelog text"
+        find_signing_key_mock.return_value = "0815"
+
+        _, _, args = parse_args(
+            ["prepare", "--project", "foo", "--release-type", "minor"]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
+                args=args,
+            )
+        self.assertEqual(released, PrepareReturnValue.SUCCESS)
+
+        git_mock.return_value.add.assert_called_once_with("MyProject.conf")
+        git_mock.return_value.commit.assert_called_once_with(
+            f"Automatic release to {next_version}",
+            verify=False,
+            gpg_signing_key="0815",
+        )
+        git_mock.return_value.tag.assert_called_once_with(
+            f"v{next_version}",
+            message=f"Automatic release to {next_version}",
+            gpg_key_id="0815",
+        )
+
+    @patch("pontos.release.prepare.Git", autospec=True)
+    @patch("pontos.release.prepare.find_signing_key", autospec=True)
+    @patch(
+        "pontos.release.prepare.PrepareCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
+    def test_prepare_release_type_major(
+        self,
+        gather_project_mock: MagicMock,
+        create_changelog_mock: MagicMock,
+        find_signing_key_mock: MagicMock,
+        git_mock: MagicMock,
+    ):
+        calculator = VersionCalculator()
+        current_version = "21.6.0"
+        next_version = "22.0.0"
+        version_command_mock = MagicMock(spec=VersionCommand)
+        version_command_mock.get_current_version.return_value = current_version
+        version_command_mock.get_version_calculator.return_value = calculator
+        gather_project_mock.return_value = version_command_mock
+        version_command_mock.update_version.return_value = VersionUpdate(
+            previous=current_version,
+            new=next_version,
+            changed_files=["MyProject.conf"],
+        )
+        create_changelog_mock.return_value = "A changelog text"
+        find_signing_key_mock.return_value = "0815"
+
+        _, _, args = parse_args(
+            ["prepare", "--project", "foo", "--release-type", "major"]
+        )
+        with temp_git_repository():
+            released = prepare(
+                terminal=mock_terminal(),
+                args=args,
+            )
+        self.assertEqual(released, PrepareReturnValue.SUCCESS)
+
+        git_mock.return_value.add.assert_called_once_with("MyProject.conf")
+        git_mock.return_value.commit.assert_called_once_with(
+            f"Automatic release to {next_version}",
+            verify=False,
+            gpg_signing_key="0815",
+        )
+        git_mock.return_value.tag.assert_called_once_with(
+            f"v{next_version}",
+            message=f"Automatic release to {next_version}",
+            gpg_key_id="0815",
+        )
+
+    @patch("pontos.release.prepare.Git", autospec=True)
     @patch(
         "pontos.release.prepare.PrepareCommand._create_changelog",
         autospec=True,

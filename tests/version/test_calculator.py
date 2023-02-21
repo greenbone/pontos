@@ -25,21 +25,28 @@ from pontos.version.errors import VersionError
 class VersionCalculatorTestCase(unittest.TestCase):
     def test_next_patch_version(self):
         calculator = VersionCalculator()
-        today = datetime.today()
 
         current_versions = [
-            "20.4.1.dev3",
-            f"{str(today.year % 100)}.4.1.dev3",
-            f"19.{str(today.month)}.1.dev3",
-            f"{str(today.year % 100)}.{str(today.month)}.1",
-            "20.6.1",
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
         ]
         assert_versions = [
-            "20.4.1",
-            f"{str(today.year % 100)}.4.1",
-            f"19.{str(today.month)}.1",
-            f"{str(today.year % 100)}.{str(today.month)}.2",
-            "20.6.2",
+            "0.0.2",
+            "1.2.4",
+            "1.2.4",
+            "1.2.3",
+            "1.2.3",
+            "1.2.3",
+            "22.4.2",
+            "22.4.1",
+            "22.4.1",
         ]
 
         for current_version, assert_version in zip(
@@ -91,3 +98,77 @@ class VersionCalculatorTestCase(unittest.TestCase):
             calculator.next_calendar_version(
                 f"{year_short}.{today.month + 1}.0"
             )
+
+    def test_next_minor_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "0.1.0",
+            "1.3.0",
+            "1.3.0",
+            "1.3.0",
+            "1.3.0",
+            "1.3.0",
+            "22.5.0",
+            "22.5.0",
+            "22.5.0",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_minor_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_minor_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_minor_version("abc")
+
+    def test_next_major_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "1.0.0",
+            "2.0.0",
+            "2.0.0",
+            "2.0.0",
+            "2.0.0",
+            "2.0.0",
+            "23.0.0",
+            "23.0.0",
+            "23.0.0",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_major_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_major_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_major_version("abc")
