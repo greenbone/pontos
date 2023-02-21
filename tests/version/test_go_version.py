@@ -22,6 +22,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
+from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
 from pontos.version.go import Git, GoVersionCommand
 
@@ -38,6 +39,13 @@ TEMPLATE = """package main
 
 var version = "{}"
 \n"""
+
+
+class GoVersionCommandTestCase(unittest.TestCase):
+    def test_get_version_calculator(self):
+        go = GoVersionCommand()
+
+        self.assertIsInstance(go.get_version_calculator(), VersionCalculator)
 
 
 class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
