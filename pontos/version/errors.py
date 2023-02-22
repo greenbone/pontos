@@ -16,7 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class VersionError(Exception):
+from pontos.errors import PontosError
+
+
+class VersionError(PontosError):
     """
     Some error has occurred during version handling
     """
