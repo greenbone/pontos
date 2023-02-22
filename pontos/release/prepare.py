@@ -24,7 +24,7 @@ from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.terminal import Terminal
-from pontos.version.commands import COMMANDS
+from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
 from pontos.version.version import VersionCommand
 
@@ -77,14 +77,6 @@ class PrepareCommand:
     def _has_tag(self, git_version: str) -> bool:
         git_tags = self.git.list_tags()
         return git_version in git_tags
-
-    def _gather_project(self) -> VersionCommand:
-        for cmd in COMMANDS:
-            command = cmd()
-            if command.project_found():
-                return command
-
-        raise PontosError("No project settings file found")
 
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
         last_release_version = get_last_release_version()
@@ -151,7 +143,7 @@ class PrepareCommand:
         self.space = space
 
         try:
-            command = self._gather_project()
+            command = gather_project()
         except PontosError as e:
             self.terminal.error(f"Unable to determine project settings. {e}")
             return PrepareReturnValue.PROJECT_SETTINGS_NOT_FOUND

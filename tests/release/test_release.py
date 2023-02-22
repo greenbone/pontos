@@ -41,9 +41,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_release_successfully(
         self,
         gather_project_mock: MagicMock,
@@ -125,9 +123,7 @@ class ReleaseTestCase(unittest.TestCase):
             released, ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
         )
 
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_no_release_error(self, gather_project_mock: MagicMock):
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
@@ -154,9 +150,7 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_no_release(self, gather_project_mock: MagicMock):
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
@@ -185,9 +179,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_github_create_release_failure(
         self,
         gather_project_mock: MagicMock,
@@ -238,9 +230,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_update_version_error(
         self,
         gather_project_mock: MagicMock,
@@ -294,9 +284,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch(
-        "pontos.release.release.ReleaseCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.release.gather_project", autospec=True)
     def test_release_to_specific_git_remote(
         self,
         gather_project_mock: MagicMock,
