@@ -17,6 +17,8 @@
 
 from typing import Tuple, Type
 
+from pontos.version.errors import ProjectError
+
 from .cmake import CMakeVersionCommand
 from .go import GoVersionCommand
 from .javascript import JavaScriptVersionCommand
@@ -29,3 +31,19 @@ COMMANDS: Tuple[Type[VersionCommand]] = (
     JavaScriptVersionCommand,
     PythonVersionCommand,
 )
+
+
+def gather_project() -> VersionCommand:
+    """
+    Get the fitting VersionCommand for a project in the current working
+    directory
+
+    Raises:
+        ProjectError if no fitting VersionCommand could be found
+    """
+    for cmd in COMMANDS:
+        command = cmd()
+        if command.project_found():
+            return command
+
+    raise ProjectError("No project settings file found")
