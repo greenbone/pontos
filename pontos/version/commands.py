@@ -25,7 +25,7 @@ from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
 from .version import VersionCommand
 
-COMMANDS: Tuple[Type[VersionCommand]] = (
+_COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
     GoVersionCommand,
     JavaScriptVersionCommand,
@@ -41,7 +41,7 @@ def gather_project() -> VersionCommand:
     Raises:
         ProjectError if no fitting VersionCommand could be found
     """
-    for cmd in COMMANDS:
+    for cmd in _COMMANDS:
         command = cmd()
         if command.project_found():
             return command
