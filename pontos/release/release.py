@@ -29,9 +29,8 @@ from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.prepare import RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
-from pontos.version.commands import COMMANDS
+from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
-from pontos.version.version import VersionCommand
 
 from .helper import find_signing_key, get_git_repository_name
 
@@ -49,14 +48,6 @@ class ReleaseCommand:
     def __init__(self, terminal: Terminal) -> None:
         self.git = Git()
         self.terminal = terminal
-
-    def _gather_project(self) -> VersionCommand:
-        for cmd in COMMANDS:
-            command = cmd()
-            if command.project_found():
-                return command
-
-        raise PontosError("No project settings file found")
 
     async def _create_release(self, release_version: str, token: str) -> None:
         self.terminal.info(f"Creating release for {release_version}")
@@ -119,7 +110,7 @@ class ReleaseCommand:
         self.space = space
 
         try:
-            command = self._gather_project()
+            command = gather_project()
         except PontosError as e:
             self.terminal.error(f"Unable to determine project settings. {e}")
             return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND

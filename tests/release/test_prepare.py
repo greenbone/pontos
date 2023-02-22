@@ -44,9 +44,7 @@ class PrepareTestCase(unittest.TestCase):
         "pontos.release.prepare.PrepareCommand._create_changelog",
         autospec=True,
     )
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_prepare_release_type_version(
         self,
         gather_project_mock: MagicMock,
@@ -94,9 +92,7 @@ class PrepareTestCase(unittest.TestCase):
         "pontos.release.prepare.PrepareCommand._create_changelog",
         autospec=True,
     )
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_prepare_release_type_calendar(
         self,
         gather_project_mock: MagicMock,
@@ -147,9 +143,7 @@ class PrepareTestCase(unittest.TestCase):
         "pontos.release.prepare.PrepareCommand._create_changelog",
         autospec=True,
     )
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_prepare_release_type_patch(
         self,
         gather_project_mock: MagicMock,
@@ -199,9 +193,7 @@ class PrepareTestCase(unittest.TestCase):
         "pontos.release.prepare.PrepareCommand._create_changelog",
         autospec=True,
     )
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_use_git_signing_key_on_prepare(
         self,
         gather_project_mock: MagicMock,
@@ -266,9 +258,7 @@ class PrepareTestCase(unittest.TestCase):
         )
 
     @patch("pontos.release.prepare.Git", autospec=True)
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_no_release_version_error(
         self,
         gather_project_mock: MagicMock,
@@ -302,9 +292,7 @@ class PrepareTestCase(unittest.TestCase):
         self.assertEqual(released, PrepareReturnValue.NO_RELEASE_VERSION)
 
     @patch("pontos.release.prepare.Git", autospec=True)
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_no_release_version(
         self,
         gather_project_mock: MagicMock,
@@ -336,9 +324,7 @@ class PrepareTestCase(unittest.TestCase):
         self.assertEqual(released, PrepareReturnValue.NO_RELEASE_VERSION)
 
     @patch("pontos.release.prepare.Git", autospec=True)
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_fail_if_tag_is_already_taken(
         self,
         gather_project_mock: MagicMock,
@@ -371,9 +357,7 @@ class PrepareTestCase(unittest.TestCase):
         git_mock.return_value.list_tags.assert_called_once()
 
     @patch("pontos.release.prepare.Git", autospec=True)
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_updating_version_error(
         self,
         gather_project_mock: MagicMock,
@@ -403,9 +387,7 @@ class PrepareTestCase(unittest.TestCase):
 
     @patch("pontos.release.prepare.Git", autospec=True)
     @patch("pontos.release.prepare.ChangelogBuilder", autospec=True)
-    @patch(
-        "pontos.release.prepare.PrepareCommand._gather_project", autospec=True
-    )
+    @patch("pontos.release.prepare.gather_project", autospec=True)
     def test_prepare_conventional_commits(
         self,
         gather_project_mock: MagicMock,
