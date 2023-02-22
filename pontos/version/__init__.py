@@ -18,8 +18,10 @@
 import sys
 from typing import NoReturn
 
+from pontos.errors import PontosError
+from pontos.version.commands import gather_project
+
 from .__version__ import __version__
-from .commands import COMMANDS
 from .errors import VersionError
 from .parser import initialize_default_parser
 
@@ -27,14 +29,9 @@ from .parser import initialize_default_parser
 def main() -> NoReturn:
     parser = initialize_default_parser()
 
-    found = False
-    for cmd in COMMANDS:
-        command = cmd()
-        if command.project_found():
-            found = True
-            break
-
-    if not found:
+    try:
+        command = gather_project()
+    except PontosError:
         print("No project found.", file=sys.stderr)
         sys.exit(1)
 
