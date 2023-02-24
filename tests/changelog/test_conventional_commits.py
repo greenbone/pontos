@@ -20,14 +20,13 @@ import unittest
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from pontos.changelog.conventional_commits import (
     ChangelogBuilder,
     ChangelogBuilderError,
     parse_args,
 )
-from pontos.git import GitError
 from pontos.testing import temp_directory
 
 
@@ -37,6 +36,8 @@ class StdOutput:
 
 
 class ChangelogBuilderTestCase(unittest.TestCase):
+    maxDiff = None
+
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder(self, git_mock: MagicMock):
         terminal = MagicMock()
@@ -45,8 +46,6 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
 
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
         git_mock.return_value.log.return_value = [
@@ -62,14 +61,6 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        changelog_builder = ChangelogBuilder(
-            terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
-            space="foo",
-            project="bar",
-            config=config_toml,
-        )
         expected_output = f"""# Changelog
 
 All notable changes to this project will be documented in this file.
@@ -98,15 +89,21 @@ All notable changes to this project will be documented in this file.
 ## Testing
 * bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
 
-[0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
+[0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
-        with temp_directory(change_into=True):
-            output_file = changelog_builder.create_changelog_file(output)
-            self.assertEqual(
-                output_file.read_text(encoding="utf-8"), expected_output
-            )
+        changelog_builder = ChangelogBuilder(
+            terminal=terminal,
+            space="foo",
+            project="bar",
+            config=config_toml,
+        )
+        changelog = changelog_builder.create_changelog(
+            last_version="0.0.1", next_version="0.0.2"
+        )
 
-        git_mock.return_value.log.assert_called_with(
+        self.assertEqual(changelog, expected_output)
+
+        git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
 
@@ -114,65 +111,59 @@ All notable changes to this project will be documented in this file.
     def test_changelog_builder_no_commits(self, git_mock: MagicMock):
         terminal = MagicMock()
 
+        today = datetime.today().strftime("%Y-%m-%d")
+
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
+        expected_output = f"""# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.0.2] - {today}
+
+[0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
         git_mock.return_value.log.return_value = []
 
         changelog_builder = ChangelogBuilder(
             terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
             space="foo",
             project="bar",
             config=config_toml,
         )
+        changelog = changelog_builder.create_changelog(
+            last_version="0.0.1", next_version="0.0.2"
+        )
 
-        with self.assertRaises(ChangelogBuilderError):
-            output_file = changelog_builder.create_changelog_file(output)
+        self.assertEqual(changelog, expected_output)
 
-            self.assertIsNone(output_file)
-
-        git_mock.return_value.log.assert_called_with(
+        git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
-    def test_changelog_builder_no_tag(self, git_mock: MagicMock):
+    def test_changelog_builder_no_last_version(self, git_mock: MagicMock):
         terminal = MagicMock()
 
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
-        git_mock.return_value.log.side_effect = [
-            GitError(1, None, None, None),
-            [
-                "1234567 Add: foo bar",
-                "8abcdef Add: bar baz",
-                "8abcd3f Add bar baz",
-                "8abcd3d Adding bar baz",
-                "1337abc Change: bar to baz",
-                "42a42a4 Remove: foo bar again",
-                "fedcba8 Test: bar baz testing",
-                "dead901 Refactor: bar baz ref",
-                "fedcba8 Fix: bar baz fixing",
-                "d0c4d0c Doc: bar baz documenting",
-            ],
-        ]
 
-        changelog_builder = ChangelogBuilder(
-            terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
-            project="bar",
-            space="foo",
-            config=config_toml,
-        )
+        git_mock.return_value.log.return_value = [
+            "1234567 Add: foo bar",
+            "8abcdef Add: bar baz",
+            "8abcd3f Add bar baz",
+            "8abcd3d Adding bar baz",
+            "1337abc Change: bar to baz",
+            "42a42a4 Remove: foo bar again",
+            "fedcba8 Test: bar baz testing",
+            "dead901 Refactor: bar baz ref",
+            "fedcba8 Fix: bar baz fixing",
+            "d0c4d0c Doc: bar baz documenting",
+        ]
+        git_mock.return_value.rev_list.return_value = ["123"]
+
         expected_output = f"""# Changelog
 
 All notable changes to this project will be documented in this file.
@@ -201,16 +192,149 @@ All notable changes to this project will be documented in this file.
 ## Testing
 * bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
 
-[0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
-        with temp_directory(change_into=True):
-            output_file = changelog_builder.create_changelog_file(output)
-            self.assertEqual(
-                output_file.read_text(encoding="utf-8"), expected_output
-            )
+[0.0.2]: https://github.com/foo/bar/compare/123...v0.0.2"""
 
-        git_mock.return_value.log.assert_has_calls(
-            [call("v0.0.1..HEAD", oneline=True), call(oneline=True)]
+        changelog_builder = ChangelogBuilder(
+            terminal=terminal,
+            project="bar",
+            space="foo",
+            config=config_toml,
         )
+        changelog = changelog_builder.create_changelog(next_version="0.0.2")
+
+        self.assertEqual(changelog, expected_output)
+
+        git_mock.return_value.log.assert_called_once_with(oneline=True)
+
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder_no_next_version(self, git_mock: MagicMock):
+        terminal = MagicMock()
+
+        own_path = Path(__file__).absolute().parent
+        config_toml = own_path / "changelog.toml"
+
+        git_mock.return_value.log.return_value = [
+            "1234567 Add: foo bar",
+            "8abcdef Add: bar baz",
+            "8abcd3f Add bar baz",
+            "8abcd3d Adding bar baz",
+            "1337abc Change: bar to baz",
+            "42a42a4 Remove: foo bar again",
+            "fedcba8 Test: bar baz testing",
+            "dead901 Refactor: bar baz ref",
+            "fedcba8 Fix: bar baz fixing",
+            "d0c4d0c Doc: bar baz documenting",
+        ]
+        git_mock.return_value.rev_list.return_value = ["123"]
+
+        expected_output = """# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+## Added
+* foo bar [1234567](https://github.com/foo/bar/commit/1234567)
+* bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+
+## Removed
+* foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
+
+## Changed
+* bar to baz [1337abc](https://github.com/foo/bar/commit/1337abc)
+
+## Bug Fixes
+* bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+## Documentation
+* bar baz documenting [d0c4d0c](https://github.com/foo/bar/commit/d0c4d0c)
+
+## Refactor
+* bar baz ref [dead901](https://github.com/foo/bar/commit/dead901)
+
+## Testing
+* bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+[Unreleased]: https://github.com/foo/bar/compare/v0.0.1...HEAD"""
+
+        changelog_builder = ChangelogBuilder(
+            terminal=terminal,
+            project="bar",
+            space="foo",
+            config=config_toml,
+        )
+        changelog = changelog_builder.create_changelog(last_version="0.0.1")
+
+        self.assertEqual(changelog, expected_output)
+
+        git_mock.return_value.log.assert_called_once_with(
+            "v0.0.1..HEAD", oneline=True
+        )
+
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_changelog_builder_no_next_and_last_version(
+        self, git_mock: MagicMock
+    ):
+        terminal = MagicMock()
+
+        own_path = Path(__file__).absolute().parent
+        config_toml = own_path / "changelog.toml"
+
+        git_mock.return_value.log.return_value = [
+            "1234567 Add: foo bar",
+            "8abcdef Add: bar baz",
+            "8abcd3f Add bar baz",
+            "8abcd3d Adding bar baz",
+            "1337abc Change: bar to baz",
+            "42a42a4 Remove: foo bar again",
+            "fedcba8 Test: bar baz testing",
+            "dead901 Refactor: bar baz ref",
+            "fedcba8 Fix: bar baz fixing",
+            "d0c4d0c Doc: bar baz documenting",
+        ]
+        git_mock.return_value.rev_list.return_value = ["123"]
+
+        expected_output = """# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+## Added
+* foo bar [1234567](https://github.com/foo/bar/commit/1234567)
+* bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+
+## Removed
+* foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
+
+## Changed
+* bar to baz [1337abc](https://github.com/foo/bar/commit/1337abc)
+
+## Bug Fixes
+* bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+## Documentation
+* bar baz documenting [d0c4d0c](https://github.com/foo/bar/commit/d0c4d0c)
+
+## Refactor
+* bar baz ref [dead901](https://github.com/foo/bar/commit/dead901)
+
+## Testing
+* bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+[Unreleased]: https://github.com/foo/bar/compare/123...HEAD"""
+
+        changelog_builder = ChangelogBuilder(
+            terminal=terminal,
+            project="bar",
+            space="foo",
+            config=config_toml,
+        )
+        changelog = changelog_builder.create_changelog()
+
+        self.assertEqual(changelog, expected_output)
+
+        git_mock.return_value.log.assert_called_once_with(oneline=True)
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_conventional_commits(
@@ -218,10 +342,18 @@ All notable changes to this project will be documented in this file.
     ):
         terminal = MagicMock()
 
+        today = datetime.today().strftime("%Y-%m-%d")
+
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
+        expected_output = f"""# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.0.2] - {today}
+
+[0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
+
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
         git_mock.return_value.log.return_value = [
             "1234567 foo bar",
@@ -229,17 +361,19 @@ All notable changes to this project will be documented in this file.
         ]
         changelog_builder = ChangelogBuilder(
             terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
             space="foo",
             project="bar",
             config=config_toml,
         )
+        changelog = changelog_builder.create_changelog(
+            last_version="0.0.1", next_version="0.0.2"
+        )
 
-        with self.assertRaises(ChangelogBuilderError):
-            output_file = changelog_builder.create_changelog_file(output)
+        self.assertEqual(changelog, expected_output)
 
-            self.assertIsNone(output_file)
+        git_mock.return_value.log.assert_called_once_with(
+            "v0.0.1..HEAD", oneline=True
+        )
 
     def test_changelog_builder_config_file_not_exists(self):
         terminal = MagicMock()
@@ -250,8 +384,6 @@ All notable changes to this project will be documented in this file.
         ):
             ChangelogBuilder(
                 terminal=terminal,
-                current_version="0.0.1",
-                next_version="1.0.0",
                 space="foo",
                 project="bar",
                 config=temp_dir / "changelog.toml",
@@ -265,9 +397,6 @@ All notable changes to this project will be documented in this file.
 
         today = datetime.today().strftime("%Y-%m-%d")
 
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
-
         git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
             "8abcdef Add: bar baz",
@@ -283,11 +412,8 @@ All notable changes to this project will be documented in this file.
 
         changelog_builder = ChangelogBuilder(
             terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
             space="foo",
             project="bar",
-            config=None,
         )
         expected_output = f"""# Changelog
 
@@ -308,15 +434,14 @@ All notable changes to this project will be documented in this file.
 ## Bug Fixes
 * bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
 
-[0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
+[0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
-        with temp_directory(change_into=True):
-            output_file = changelog_builder.create_changelog_file(output)
-            self.assertEqual(
-                output_file.read_text(encoding="utf-8"), expected_output
-            )
+        changelog = changelog_builder.create_changelog(
+            last_version="0.0.1", next_version="0.0.2"
+        )
+        self.assertEqual(changelog, expected_output)
 
-        git_mock.return_value.log.assert_called_with(
+        git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
 
@@ -328,9 +453,6 @@ All notable changes to this project will be documented in this file.
 
         today = datetime.today().strftime("%Y-%m-%d")
 
-        release_version = "0.0.2"
-        output = f"v{release_version}.md"
-
         git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
             "8abcdef Add: bar baz",
@@ -346,12 +468,9 @@ All notable changes to this project will be documented in this file.
 
         changelog_builder = ChangelogBuilder(
             terminal=terminal,
-            current_version="0.0.1",
-            next_version=release_version,
             space="foo",
             project="bar",
             git_tag_prefix="",
-            config=None,
         )
         expected_output = f"""# Changelog
 
@@ -374,14 +493,83 @@ All notable changes to this project will be documented in this file.
 
 [0.0.2]: https://github.com/foo/bar/compare/0.0.1...0.0.2"""
 
-        with temp_directory(change_into=True):
-            output_file = changelog_builder.create_changelog_file(output)
-            self.assertEqual(
-                output_file.read_text(encoding="utf-8"), expected_output
-            )
+        changelog = changelog_builder.create_changelog(
+            last_version="0.0.1", next_version="0.0.2"
+        )
+        self.assertEqual(changelog, expected_output)
 
-        git_mock.return_value.log.assert_called_with(
+        git_mock.return_value.log.assert_called_once_with(
             "0.0.1..HEAD", oneline=True
+        )
+
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_write_changelog_to_file(self, git_mock: MagicMock):
+        terminal = MagicMock()
+
+        today = datetime.today().strftime("%Y-%m-%d")
+
+        own_path = Path(__file__).absolute().parent
+        config_toml = own_path / "changelog.toml"
+
+        git_mock.return_value.list_tags.return_value = ["v0.0.1"]
+        git_mock.return_value.log.return_value = [
+            "1234567 Add: foo bar",
+            "8abcdef Add: bar baz",
+            "8abcd3f Add bar baz",
+            "8abcd3d Adding bar baz",
+            "1337abc Change: bar to baz",
+            "42a42a4 Remove: foo bar again",
+            "fedcba8 Test: bar baz testing",
+            "dead901 Refactor: bar baz ref",
+            "fedcba8 Fix: bar baz fixing",
+            "d0c4d0c Doc: bar baz documenting",
+        ]
+
+        expected_output = f"""# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.0.2] - {today}
+
+## Added
+* foo bar [1234567](https://github.com/foo/bar/commit/1234567)
+* bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+
+## Removed
+* foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
+
+## Changed
+* bar to baz [1337abc](https://github.com/foo/bar/commit/1337abc)
+
+## Bug Fixes
+* bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+## Documentation
+* bar baz documenting [d0c4d0c](https://github.com/foo/bar/commit/d0c4d0c)
+
+## Refactor
+* bar baz ref [dead901](https://github.com/foo/bar/commit/dead901)
+
+## Testing
+* bar baz testing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+[0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
+
+        changelog_builder = ChangelogBuilder(
+            terminal=terminal, space="foo", project="bar", config=config_toml
+        )
+
+        with temp_directory() as temp_dir:
+            changelog_file = temp_dir / "changelog.md"
+            changelog_builder.create_changelog_file(
+                changelog_file, last_version="0.0.1", next_version="0.0.2"
+            )
+            changelog = changelog_file.read_text(encoding="utf8")
+
+        self.assertEqual(changelog, expected_output)
+
+        git_mock.return_value.log.assert_called_once_with(
+            "v0.0.1..HEAD", oneline=True
         )
 
 

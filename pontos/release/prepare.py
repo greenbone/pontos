@@ -85,22 +85,24 @@ class PrepareCommand:
         return git_version in git_tags
 
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
-        last_release_version = get_last_release_version()
+        last_release_version = get_last_release_version(self.git_tag_prefix)
         changelog_builder = ChangelogBuilder(
             terminal=self.terminal,
-            current_version=last_release_version,
-            next_version=release_version,
             space=self.space,
             project=self.project,
             config=cc_config,
             git_tag_prefix=self.git_tag_prefix,
         )
 
-        output_file = changelog_builder.create_changelog_file(
-            f"v{release_version}.md"
+        changelog_file = Path("changelog") / f"v{release_version}.md"
+
+        changelog_builder.create_changelog_file(
+            changelog_file,
+            last_version=last_release_version,
+            next_version=release_version,
         )
-        self.git.add(output_file)
-        return output_file.read_text(encoding="utf-8").replace(
+        self.git.add(changelog_file)
+        return changelog_file.read_text(encoding="utf-8").replace(
             "# Changelog\n\n"
             "All notable changes to this project "
             "will be documented in this file.\n\n",

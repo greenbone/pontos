@@ -22,12 +22,12 @@ import sys
 from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
 import tomlkit
 
 from pontos.changelog.errors import ChangelogBuilderError
-from pontos.git import Git, GitError
+from pontos.git import Git
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -55,8 +55,6 @@ class ChangelogBuilder:
         self,
         *,
         terminal: Terminal,
-        current_version: str,
-        next_version: str,
         space: str,
         project: str,
         git_tag_prefix: Optional[str] = "v",
@@ -80,34 +78,76 @@ class ChangelogBuilder:
 
         self.git_tag_prefix = git_tag_prefix
 
-        self.current_version = current_version
-        self.next_version = next_version
+    def create_changelog(
+        self,
+        *,
+        last_version: Optional[str] = None,
+        next_version: Optional[str] = None,
+    ) -> str:
+        """
+        Create a changelog
 
-    def create_changelog_file(self, output: str) -> Optional[Path]:
-        commit_list = self._get_git_log()
+        Args:
+            last_version: Version of the last release. If None it is considered
+                as the first release.
+            next_version: Version of the to be created release the changelog
+                corresponds to. If None a changelog for an unrelease version
+                will be created.
+
+        Returns:
+            The created changelog content.
+        """
+        commit_list = self._get_git_log(last_version)
         commit_dict = self._sort_commits(commit_list)
-        return self._build_changelog_file(commit_dict, output)
+        return self._build_changelog(last_version, next_version, commit_dict)
 
-    def _get_git_log(self) -> List[str]:
+    def create_changelog_file(
+        self,
+        output: Union[str, Path],
+        *,
+        last_version: Optional[str] = None,
+        next_version: Optional[str] = None,
+    ) -> None:
+        """
+        Create a changelog and write the changelog to a file
+
+        Args:
+            output: A file path where to store the changelog
+            last_version: Version of the last release. If None it is considered
+                as the first release.
+            next_version: Version of the to be created release the changelog
+                corresponds to. If None a changelog for an unrelease version
+                will be created.
+        """
+        changelog = self.create_changelog(
+            last_version=last_version, next_version=next_version
+        )
+        self._write_changelog_file(changelog, output)
+
+    def _get_first_commit(self) -> str:
+        """
+        Git the first commit ID for the current branch
+        """
+        git = Git()
+        return git.rev_list("HEAD", max_parents=0, abbrev_commit=True)[0]
+
+    def _get_git_log(self, last_version: Optional[str]) -> List[str]:
         """Getting the git log for the next version.
+
+        Requires the fitting branch to be checked out
 
         Returns:
             A list of `git log` entries
         """
         git = Git()
-        git_version = f"{self.git_tag_prefix}{self.current_version}"
-        try:
-            return git.log(
-                f"{git_version}..HEAD",
-                oneline=True,
-            )
-        except GitError:
-            self._terminal.warning(
-                f"Could not find tag for {git_version}. Falling back "
-                "to full git log."
-            )
+        if not last_version:
+            return git.log(oneline=True)
 
-        return git.log(oneline=True)
+        git_version = f"{self.git_tag_prefix}{last_version}"
+        return git.log(
+            f"{git_version}..HEAD",
+            oneline=True,
+        )
 
     def _sort_commits(self, commits: List[str]) -> Dict[str, List[str]]:
         """Sort the commits by commit type and group them
@@ -155,68 +195,87 @@ class ChangelogBuilder:
                         )
                         self._terminal.info(f"{commit[0]}: {cleaned_msg}")
 
-        if not commit_dict:
-            raise ChangelogBuilderError("No conventional commits found.")
-
         return commit_dict
 
-    def _build_changelog_file(
-        self, commit_dict: Dict[str, List[str]], output: str
-    ) -> Optional[Path]:
+    def _build_changelog(
+        self,
+        last_version: Optional[str],
+        next_version: Optional[str],
+        commit_dict: Dict[str, List[str]],
+    ) -> str:
         """
-        Building the changelog file with the passed dict.
+        Building the changelog from the passed commit information.
 
         Args:
             commit_dict: dict containing sorted commits
-            output: File name to write changelog into
 
         Returns:
-            The path to the changelog file or None
+            The changelog content
         """
 
         # changelog header
-        changelog = (
-            "# Changelog\n\n"
+        changelog = [
+            "# Changelog\n",
             "All notable changes to this project "
-            "will be documented in this file.\n\n"
-        )
-        if self.next_version:
-            changelog += (
-                f"## [{self.next_version}] - {date.today().isoformat()}\n"
+            "will be documented in this file.\n",
+        ]
+        if next_version:
+            changelog.append(
+                f"## [{next_version}] - {date.today().isoformat()}"
             )
         else:
-            changelog += "## [Unreleased]\n\n"
+            changelog.append("## [Unreleased]")
 
         # changelog entries
         commit_types = self.config.get("commit_types")
         for commit_type in commit_types:
             if commit_type["group"] in commit_dict.keys():
-                changelog += f"\n## {commit_type['group']}\n"
+                changelog.append(f"\n## {commit_type['group']}")
                 for msg in commit_dict[commit_type["group"]]:
-                    changelog += f"* {msg}\n"
+                    changelog.append(f"* {msg}")
 
         # comparison line (footer)
         pre = "\n[Unreleased]: "
         compare_link = f"{ADDRESS}{self.space}/{self.project}/compare/"
-        if self.next_version and self.current_version:
-            pre = f"\n[{self.next_version}]: "
-            diff = f"{self.current_version}...{self.next_version}"
-        elif self.current_version:
-            diff = f"\n{self.current_version}...HEAD"
+        if next_version and last_version:
+            pre = f"\n[{next_version}]: "
+            diff = (
+                f"{self.git_tag_prefix}{last_version}..."
+                f"{self.git_tag_prefix}{next_version}"
+            )
+        elif next_version:
+            first_commit = self._get_first_commit()
+            pre = f"\n[{next_version}]: "
+            diff = f"{first_commit}...{self.git_tag_prefix}{next_version}"
+        elif last_version:
+            # unreleased version
+            diff = f"{self.git_tag_prefix}{last_version}...HEAD"
         else:
-            diff = "???...HEAD"
+            # unreleased version
+            first_commit = self._get_first_commit()
+            diff = f"{first_commit}...HEAD"
 
-        changelog += f"{pre}{compare_link}{diff}"
+        changelog.append(f"{pre}{compare_link}{diff}")
 
-        if not changelog:
-            return None
+        return "\n".join(changelog)
 
-        changelog_dir: Path = Path.cwd() / self.config.get("changelog_dir")
+    def _write_changelog_file(
+        self, changelog: str, output: Union[str, Path]
+    ) -> None:
+        """
+        Write changelog to an output file
+
+        Args:
+            changelog: Changelog content to write to output file
+            output: File name to write changelog into
+        """
+
+        changelog_file = Path(output)
+
+        changelog_dir = changelog_file.parent
         changelog_dir.mkdir(parents=True, exist_ok=True)
 
-        output_path = changelog_dir / output
-        output_path.write_text(changelog, encoding="utf-8")
-        return output_path
+        changelog_file.write_text(changelog, encoding="utf-8")
 
 
 def parse_args(args: Iterable[str] = None) -> ArgumentParser:
@@ -299,10 +358,12 @@ def main(
                 config=parsed_args.config,
                 project=args.project,
                 space=args.space,
-                current_version=args.current_version,
+            )
+            changelog_builder.create_changelog_file(
+                args.output,
+                last_version=args.current_version,
                 next_version=args.next_version,
             )
-            changelog_builder.create_changelog_file(args.output)
         except ChangelogBuilderError as e:
             term.error(str(e))
             sys.exit(1)
