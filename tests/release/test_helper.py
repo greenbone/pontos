@@ -108,3 +108,11 @@ class GetLastReleaseVersionTestCase(unittest.TestCase):
         git_interface = _git_interface_mock.return_value
         git_interface.list_tags.return_value = []
         self.assertIsNone(get_last_release_version())
+
+    @patch("pontos.release.helper.Git", spec=Git)
+    def test_get_last_release_version_with_git_prefix(
+        self, _git_interface_mock
+    ):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = ["v1", "v2", "v3.55"]
+        self.assertEqual(get_last_release_version("v"), "3.55")

@@ -35,7 +35,9 @@ class ReleaseType(Enum):
     # PRE_RELEASE = "pre-release"
 
 
-def get_last_release_version() -> Optional[str]:
+def get_last_release_version(
+    git_tag_prefix: Optional[str] = "",
+) -> Optional[str]:
     """Get the last released Version from git.
 
     Returns:
@@ -45,7 +47,12 @@ def get_last_release_version() -> Optional[str]:
 
     git_interface = Git()
     tag_list = git_interface.list_tags()
-    return tag_list[-1] if tag_list else None
+
+    if not tag_list:
+        return None
+
+    last_release_version = tag_list[-1]
+    return last_release_version.strip(git_tag_prefix)
 
 
 def get_git_repository_name(
