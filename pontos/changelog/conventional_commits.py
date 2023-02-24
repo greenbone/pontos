@@ -28,7 +28,6 @@ import tomlkit
 
 from pontos.changelog.errors import ChangelogBuilderError
 from pontos.git import Git
-from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
 
@@ -52,14 +51,11 @@ class ChangelogBuilder:
     def __init__(
         self,
         *,
-        terminal: Terminal,
         space: str,
         project: str,
         git_tag_prefix: Optional[str] = "v",
         config: Optional[Path] = None,
     ):
-        self._terminal = terminal
-
         if config:
             if not config.exists():
                 raise ChangelogBuilderError(
@@ -191,7 +187,6 @@ class ChangelogBuilder:
                             f"{cleaned_msg} [{commit[0]}]"
                             f"({commit_link}{commit[0]})"
                         )
-                        self._terminal.info(f"{commit[0]}: {cleaned_msg}")
 
         return commit_dict
 
@@ -352,7 +347,6 @@ def main(
     with term.indent():
         try:
             changelog_builder = ChangelogBuilder(
-                terminal=term,
                 config=parsed_args.config,
                 project=args.project,
                 space=args.space,
