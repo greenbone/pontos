@@ -87,7 +87,6 @@ class PrepareCommand:
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
         last_release_version = get_last_release_version(self.git_tag_prefix)
         changelog_builder = ChangelogBuilder(
-            terminal=self.terminal,
             space=self.space,
             project=self.project,
             config=cc_config,

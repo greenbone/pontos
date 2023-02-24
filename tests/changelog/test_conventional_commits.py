@@ -40,8 +40,6 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder(self, git_mock: MagicMock):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -92,7 +90,6 @@ All notable changes to this project will be documented in this file.
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             space="foo",
             project="bar",
             config=config_toml,
@@ -109,8 +106,6 @@ All notable changes to this project will be documented in this file.
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_commits(self, git_mock: MagicMock):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -126,7 +121,6 @@ All notable changes to this project will be documented in this file.
         git_mock.return_value.log.return_value = []
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             space="foo",
             project="bar",
             config=config_toml,
@@ -143,8 +137,6 @@ All notable changes to this project will be documented in this file.
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_last_version(self, git_mock: MagicMock):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -195,7 +187,6 @@ All notable changes to this project will be documented in this file.
 [0.0.2]: https://github.com/foo/bar/compare/123...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             project="bar",
             space="foo",
             config=config_toml,
@@ -208,8 +199,6 @@ All notable changes to this project will be documented in this file.
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_next_version(self, git_mock: MagicMock):
-        terminal = MagicMock()
-
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
 
@@ -258,7 +247,6 @@ All notable changes to this project will be documented in this file.
 [Unreleased]: https://github.com/foo/bar/compare/v0.0.1...HEAD"""
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             project="bar",
             space="foo",
             config=config_toml,
@@ -275,8 +263,6 @@ All notable changes to this project will be documented in this file.
     def test_changelog_builder_no_next_and_last_version(
         self, git_mock: MagicMock
     ):
-        terminal = MagicMock()
-
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
 
@@ -325,7 +311,6 @@ All notable changes to this project will be documented in this file.
 [Unreleased]: https://github.com/foo/bar/compare/123...HEAD"""
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             project="bar",
             space="foo",
             config=config_toml,
@@ -340,8 +325,6 @@ All notable changes to this project will be documented in this file.
     def test_changelog_builder_no_conventional_commits(
         self, git_mock: MagicMock
     ):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -360,7 +343,6 @@ All notable changes to this project will be documented in this file.
             "8abcdef bar baz",
         ]
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             space="foo",
             project="bar",
             config=config_toml,
@@ -376,14 +358,11 @@ All notable changes to this project will be documented in this file.
         )
 
     def test_changelog_builder_config_file_not_exists(self):
-        terminal = MagicMock()
-
         with temp_directory() as temp_dir, self.assertRaisesRegex(
             ChangelogBuilderError,
             r"Changelog Config file '.*\.toml' does not exist\.",
         ):
             ChangelogBuilder(
-                terminal=terminal,
                 space="foo",
                 project="bar",
                 config=temp_dir / "changelog.toml",
@@ -393,8 +372,6 @@ All notable changes to this project will be documented in this file.
     def test_changelog_builder_with_default_changelog_config(
         self, git_mock: MagicMock
     ):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         git_mock.return_value.log.return_value = [
@@ -411,7 +388,6 @@ All notable changes to this project will be documented in this file.
         ]
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             space="foo",
             project="bar",
         )
@@ -449,8 +425,6 @@ All notable changes to this project will be documented in this file.
     def test_changelog_builder_with_empty_git_tag_prefix(
         self, git_mock: MagicMock
     ):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         git_mock.return_value.log.return_value = [
@@ -467,7 +441,6 @@ All notable changes to this project will be documented in this file.
         ]
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal,
             space="foo",
             project="bar",
             git_tag_prefix="",
@@ -504,8 +477,6 @@ All notable changes to this project will be documented in this file.
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_write_changelog_to_file(self, git_mock: MagicMock):
-        terminal = MagicMock()
-
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -556,7 +527,7 @@ All notable changes to this project will be documented in this file.
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            terminal=terminal, space="foo", project="bar", config=config_toml
+            space="foo", project="bar", config=config_toml
         )
 
         with temp_directory() as temp_dir:
