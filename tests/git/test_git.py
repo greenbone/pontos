@@ -500,3 +500,18 @@ e6ea80d Update README
 
         self.assertEqual(logs[0], "50f9963 Add CircleCI config for pontos")
         self.assertEqual(logs[5], "464f24d Initial commit")
+
+    @patch("pontos.git.git.exec_git")
+    def test_rev_list(self, exec_git_mock):
+        git = Git()
+        git.rev_list("foo", "bar", "baz", max_parents=123, abbrev_commit=True)
+
+        exec_git_mock.assert_called_once_with(
+            "rev-list",
+            "--max-parents=123",
+            "--abbrev-commit",
+            "foo",
+            "bar",
+            "baz",
+            cwd=None,
+        )
