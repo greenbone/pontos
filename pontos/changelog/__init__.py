@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .conventional_commits import ChangelogBuilder, main
+from .conventional_commits import ChangelogBuilder
 from .errors import ChangelogBuilderError, ChangelogError
+from .main import main
 
 __all__ = [
     "ChangelogError",

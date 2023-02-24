@@ -17,19 +17,14 @@
 
 
 import re
-import subprocess
-import sys
-from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import tomlkit
 
 from pontos.changelog.errors import ChangelogBuilderError
 from pontos.git import Git
-from pontos.terminal.null import NullTerminal
-from pontos.terminal.rich import RichTerminal
 
 ADDRESS = "https://github.com/"
 
@@ -269,99 +264,3 @@ class ChangelogBuilder:
         changelog_dir.mkdir(parents=True, exist_ok=True)
 
         changelog_file.write_text(changelog, encoding="utf-8")
-
-
-def parse_args(args: Iterable[str] = None) -> ArgumentParser:
-    parser = ArgumentParser(
-        description="Conventional commits utility.",
-        prog="pontos-changelog",
-    )
-
-    parser.add_argument(
-        "--config",
-        "-C",
-        default="changelog.toml",
-        type=Path,
-        help="Conventional commits config file (toml), including conventions.",
-    )
-
-    parser.add_argument(
-        "--project",
-        required=True,
-        help="The github project",
-    )
-
-    parser.add_argument(
-        "--space",
-        default="greenbone",
-        help="User/Team name in github",
-    )
-
-    parser.add_argument(
-        "--current-version",
-        default="greenbone",
-        help="Current version before these changes",
-    )
-
-    parser.add_argument(
-        "--next-version",
-        help="The planned release version",
-    )
-
-    parser.add_argument(
-        "--output",
-        "-o",
-        default="unreleased.md",
-        help="The path to the output file (.md)",
-    )
-
-    parser.add_argument(
-        "--quiet",
-        "-q",
-        action="store_true",
-        help="Don't print messages to the terminal",
-    )
-
-    parser.add_argument(
-        "--log-file",
-        dest="log_file",
-        type=str,
-        help="Activate logging using the given file path",
-    )
-
-    return parser.parse_args(args=args)
-
-
-def main(
-    args=None,
-) -> None:
-    parsed_args = parse_args(args)
-
-    if parsed_args.quiet:
-        term = NullTerminal()
-    else:
-        term = RichTerminal()
-
-    term.bold_info("pontos-changelog")
-
-    with term.indent():
-        try:
-            changelog_builder = ChangelogBuilder(
-                config=parsed_args.config,
-                project=args.project,
-                space=args.space,
-            )
-            changelog_builder.create_changelog_file(
-                args.output,
-                last_version=args.current_version,
-                next_version=args.next_version,
-            )
-        except ChangelogBuilderError as e:
-            term.error(str(e))
-            sys.exit(1)
-        except subprocess.CalledProcessError as e:
-            term.error(f'Could not run command "{e.cmd}".')
-            term.out(f"Error was: {e.stderr}")
-            sys.exit(1)
-
-    sys.exit(0)
