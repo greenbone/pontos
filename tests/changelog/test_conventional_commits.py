@@ -25,7 +25,6 @@ from unittest.mock import MagicMock, patch
 from pontos.changelog.conventional_commits import (
     ChangelogBuilder,
     ChangelogBuilderError,
-    parse_args,
 )
 from pontos.testing import temp_directory
 
@@ -542,14 +541,3 @@ All notable changes to this project will be documented in this file.
         git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
-
-
-class ParseArgsTestCase(unittest.TestCase):
-    def test_parse_args(self):
-        parsed_args = parse_args(
-            ["-q", "--log-file", "blah", "--project", "urghs"]
-        )
-
-        self.assertTrue(parsed_args.quiet)
-        self.assertEqual(parsed_args.log_file, "blah")
-        self.assertEqual(parsed_args.project, "urghs")
