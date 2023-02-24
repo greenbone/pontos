@@ -124,6 +124,9 @@ class Git:
         """
         self._cwd = cwd.absolute()
 
+    def exec(self, *args: str) -> str:
+        return exec_git(*args, cwd=self._cwd)
+
     def init(self, *, bare: Optional[bool] = False) -> None:
         """
         Init a git repository
@@ -135,7 +138,8 @@ class Git:
         args = ["init"]
         if bare:
             args.append("--bare")
-        exec_git(*args, cwd=self._cwd)
+
+        self.exec(*args)
 
     def create_branch(
         self, branch: str, *, start_point: Optional[str] = None
@@ -152,7 +156,7 @@ class Git:
         if start_point:
             args.append(start_point)
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def rebase(
         self,
@@ -188,7 +192,7 @@ class Git:
         if head:
             args.append(head)
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def clone(
         self,
@@ -217,10 +221,7 @@ class Git:
             args.extend(["--depth", str(depth)])
         args.extend([repo_url, str(destination.absolute())])
 
-        exec_git(
-            *args,
-            cwd=self._cwd,
-        )
+        self.exec(*args)
 
     def push(
         self,
@@ -251,7 +252,7 @@ class Git:
             if branch:
                 args.append(branch)
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def config(
         self,
@@ -277,7 +278,7 @@ class Git:
         if value is not None:
             args.append(value)
 
-        return exec_git(*args, cwd=self._cwd)
+        return self.exec(*args)
 
     def cherry_pick(self, commits: Union[str, List[str]]) -> None:
         """
@@ -293,7 +294,7 @@ class Git:
         args = ["cherry-pick"]
         args.extend(commits)
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def list_tags(self, *, sort: Optional[TagSort] = None) -> List[str]:
         """
@@ -302,7 +303,8 @@ class Git:
         args = ["tag", "-l"]
         if sort:
             args.append(f"--sort={sort.value}")
-        return exec_git(*args, cwd=self._cwd).splitlines()
+
+        return self.exec(*args).splitlines()
 
     def add(self, files: Union[PathLike, List[PathLike]]) -> None:
         """
@@ -317,7 +319,7 @@ class Git:
         args = ["add"]
         args.extend([fspath(file) for file in files])
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def commit(
         self,
@@ -342,7 +344,7 @@ class Git:
 
         args.extend(["-m", message])
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def tag(
         self,
@@ -374,7 +376,7 @@ class Git:
 
         args.append(tag)
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def fetch(
         self,
@@ -402,7 +404,7 @@ class Git:
         if verbose:
             args.append("-v")
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def add_remote(self, remote: str, url: str) -> None:
         """
@@ -415,7 +417,7 @@ class Git:
 
         args = ["remote", "add", remote, url]
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def remote_url(self, remote: str = "origin") -> str:
         """
@@ -425,7 +427,7 @@ class Git:
             remote: Name of the remote. Default: origin.
         """
         args = ["remote", "get-url", remote]
-        return exec_git(*args, cwd=self._cwd)
+        return self.exec(*args)
 
     def checkout(
         self, branch: str, *, start_point: Optional[str] = None
@@ -444,7 +446,7 @@ class Git:
         else:
             args = ["checkout", branch]
 
-        exec_git(*args, cwd=self._cwd)
+        self.exec(*args)
 
     def log(self, *log_args: str, oneline: Optional[bool] = None) -> List[str]:
         """
@@ -458,4 +460,4 @@ class Git:
 
         args.extend(log_args)
 
-        return exec_git(*args, cwd=self._cwd).splitlines()
+        return self.exec(*args).splitlines()
