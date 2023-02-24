@@ -30,7 +30,7 @@ jobs:
           git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
           git remote set-url origin https://${{ secrets.GREENBONE_BOT_TOKEN }}@github.com/${{ github.repository }}
           - name: allow admin users bypassing protection on ${{ env.RELEASE_REF }} branch
-      - uses: actions/poetry@v2
+      - uses: greenbone/actions/poetry@v2
       - name: Allow admin users bypassing protection on ${{ env.RELEASE_REF }} branch
         run: |
           poetry run pontos-github-script scripts/github/enforce-admins.py ${{ github.repository }} ${{ env.RELEASE_REF }} --allow
