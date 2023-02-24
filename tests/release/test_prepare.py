@@ -490,8 +490,10 @@ class PrepareTestCase(unittest.TestCase):
     @patch("pontos.release.prepare.Git", autospec=True)
     @patch("pontos.release.prepare.ChangelogBuilder", autospec=True)
     @patch("pontos.release.prepare.gather_project", autospec=True)
+    @patch("pontos.release.prepare.get_last_release_version", autospec=True)
     def test_prepare_conventional_commits(
         self,
+        get_last_release_verson_mock: MagicMock,
         gather_project_mock: MagicMock,
         changelog_builder_mock: MagicMock,
         git_mock: MagicMock,
@@ -499,15 +501,27 @@ class PrepareTestCase(unittest.TestCase):
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.return_value = VersionUpdate(
-            previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+            previous="0.0.1", new="1.2.3", changed_files=["MyProject.conf"]
         )
+        get_last_release_verson_mock.return_value = "0.0.1"
+        content = """## [1.2.3] - 2021-08-23
 
-        own_path = Path(__file__).absolute().parent
+## Added
+
+* Need for commits. [1234567](https://github.com/foo/bar/commit/1234567)
+
+## Changed
+
+* fooooo. [1234568](https://github.com/foo/bar/commit/1234568)
+
+[1.2.3]: https://github.com/y0urself/test_workflows/compare/0.0.1...1.2.3"""
+
         with temp_git_repository() as temp_dir:
             release_file = temp_dir / ".release.md"
-            changelog_file = own_path / "v1.2.3.md"
-            builder = changelog_builder_mock.return_value
-            builder.create_changelog_file.return_value = changelog_file
+            changelog_dir = temp_dir / "changelog"
+            changelog_dir.mkdir(parents=True)
+            changelog_file = changelog_dir / "v1.2.3.md"
+            changelog_file.write_text(content, encoding="utf8")
 
             _, _, args = parse_args(
                 [
@@ -526,10 +540,16 @@ class PrepareTestCase(unittest.TestCase):
             self.assertEqual(released, PrepareReturnValue.SUCCESS)
 
             git_mock.return_value.add.assert_has_calls(
-                [call("MyProject.conf"), call(changelog_file)]
+                [call("MyProject.conf"), call(Path("changelog/v1.2.3.md"))]
             )
 
-            expected_release_content = """## [21.8.1] - 2021-08-23
+            changelog_builder_mock.return_value.create_changelog_file.assert_called_once_with(
+                Path("changelog/v1.2.3.md"),
+                last_version="0.0.1",
+                next_version="1.2.3",
+            )
+
+            expected_release_content = """## [1.2.3] - 2021-08-23
 
 ## Added
 
@@ -539,7 +559,7 @@ class PrepareTestCase(unittest.TestCase):
 
 * fooooo. [1234568](https://github.com/foo/bar/commit/1234568)
 
-[21.8.1]: https://github.com/y0urself/test_workflows/compare/21.8.0...21.8.1"""
+[1.2.3]: https://github.com/y0urself/test_workflows/compare/0.0.1...1.2.3"""
 
             self.assertEqual(
                 release_file.read_text(encoding="utf-8"),
