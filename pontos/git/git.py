@@ -461,3 +461,41 @@ class Git:
         args.extend(log_args)
 
         return self.exec(*args).splitlines()
+
+    def rev_list(
+        self,
+        *commit: str,
+        max_parents: Optional[int] = None,
+        abbrev_commit: Optional[bool] = False,
+    ) -> List[str]:
+        """
+        Lists commit objects in reverse chronological order
+
+        Args:
+            commit: commit objects.
+            max_parents: Only list nth oldest commits
+            abbrev_commit: Set to True to show  prefix that names the commit
+                object uniquely instead of the full commit ID.
+
+        Examples:
+            .. code-block:: python
+
+            git = Git()
+            git.rev_list("foo", "bar", "^baz")
+
+            This will "list all the commits which are reachable from foo or bar,
+            but not from baz".
+
+            git = Git()
+            git.rev_list("foo", max_parents=0)
+
+            This will return the first commit of foo.
+        """
+        args = ["rev-list"]
+        if max_parents is not None:
+            args.append(f"--max-parents={max_parents}")
+        if abbrev_commit:
+            args.append("--abbrev-commit")
+
+        args.extend(commit)
+        return self.exec(*args).splitlines()
