@@ -25,6 +25,13 @@ from pontos.git.git import ConfigScope, MergeStrategy, TagSort
 
 class GitTestCase(unittest.TestCase):
     @patch("pontos.git.git.exec_git")
+    def test_exec(self, exec_git_mock):
+        git = Git()
+        git.exec("foo", "bar", "baz")
+
+        exec_git_mock.assert_called_once_with("foo", "bar", "baz", cwd=None)
+
+    @patch("pontos.git.git.exec_git")
     def test_clone(self, exec_git_mock):
         git = Git()
         git.clone("http://foo/foo.git", Path("/bar"))
