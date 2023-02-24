@@ -40,8 +40,6 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
     { message = "^change", group = "Changed"},
     { message = "^fix", group = "Bug Fixes"},
 ]
-
-changelog_dir = "changelog"
 """
 
 
