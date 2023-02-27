@@ -202,11 +202,7 @@ class ChangelogBuilder:
         """
 
         # changelog header
-        changelog = [
-            "# Changelog\n",
-            "All notable changes to this project "
-            "will be documented in this file.\n",
-        ]
+        changelog = []
         if next_version:
             changelog.append(
                 f"## [{next_version}] - {date.today().isoformat()}"

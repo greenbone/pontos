@@ -58,11 +58,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -109,11 +105,7 @@ All notable changes to this project will be documented in this file.
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
@@ -155,11 +147,7 @@ All notable changes to this project will be documented in this file.
         ]
         git_mock.return_value.rev_list.return_value = ["123"]
 
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -215,11 +203,7 @@ All notable changes to this project will be documented in this file.
         ]
         git_mock.return_value.rev_list.return_value = ["123"]
 
-        expected_output = """# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [Unreleased]
+        expected_output = """## [Unreleased]
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -279,11 +263,7 @@ All notable changes to this project will be documented in this file.
         ]
         git_mock.return_value.rev_list.return_value = ["123"]
 
-        expected_output = """# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [Unreleased]
+        expected_output = """## [Unreleased]
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -328,11 +308,7 @@ All notable changes to this project will be documented in this file.
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
@@ -390,11 +366,7 @@ All notable changes to this project will be documented in this file.
             space="foo",
             project="bar",
         )
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -444,11 +416,7 @@ All notable changes to this project will be documented in this file.
             project="bar",
             git_tag_prefix="",
         )
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
@@ -495,11 +463,7 @@ All notable changes to this project will be documented in this file.
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        expected_output = f"""# Changelog
-
-All notable changes to this project will be documented in this file.
-
-## [0.0.2] - {today}
+        expected_output = f"""## [0.0.2] - {today}
 
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
