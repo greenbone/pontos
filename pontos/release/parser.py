@@ -146,11 +146,18 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     release_parser = subparsers.add_parser("release")
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
+        "--release-type",
+        help="Select the release type for calculating the release version. "
+        f"Possible choices are: {to_choices(ReleaseType)}.",
+        type=enum_type(ReleaseType),
+    )
+    release_parser.add_argument(
         "--release-version",
         help=(
             "Will release changelog as version. Must be PEP 440 compliant. "
             "default: lookup version in project definition."
         ),
+        action=ReleaseVersionAction,
     )
 
     release_parser.add_argument(
@@ -182,6 +189,19 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         "--space",
         default="greenbone",
         help="User/Team name in github",
+    )
+    release_parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Only create release changes locally and do not upload them to a "
+        "remote repository. Also do not create a GitHub release.",
+    )
+    release_parser.add_argument(
+        "--conventional-commits-config",
+        dest="cc_config",
+        type=Path,
+        help="Conventional commits config file (toml), including conventions."
+        " If not set defaults are used.",
     )
 
     sign_parser = subparsers.add_parser("sign")
@@ -222,7 +242,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     parsed_args = parser.parse_args(args)
 
-    if parsed_args.func is prepare:
+    if parsed_args.func in (prepare, release):
         # check for release-type
         if not getattr(parsed_args, "release_type"):
             parser.error("--release-type is required.")
