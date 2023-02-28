@@ -77,6 +77,15 @@ class ReleaseCommand:
         if release_type == ReleaseType.MAJOR:
             return calculator.next_major_version(current_version)
 
+        if release_type == ReleaseType.ALPHA:
+            return calculator.next_alpha_version(current_version)
+
+        if release_type == ReleaseType.BETA:
+            return calculator.next_beta_version(current_version)
+
+        if release_type == ReleaseType.RELEASE_CANDIDATE:
+            return calculator.next_release_candidate_version(current_version)
+
         if not release_version:
             raise VersionError(
                 "No release version provided. Either use a different release "
