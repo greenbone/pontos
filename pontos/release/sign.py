@@ -33,9 +33,8 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
-from pontos.version.commands import gather_project
 
-from .helper import get_git_repository_name
+from .helper import get_git_repository_name, get_last_release_version
 
 
 class SignReturnValue(IntEnum):
@@ -65,13 +64,6 @@ async def cmd_runner(*args: Iterable[str]) -> Process:
 class SignCommand:
     def __init__(self, terminal: RichTerminal) -> None:
         self.terminal = terminal
-
-    def _get_current_version(self) -> str:
-        """
-        Get the current Version for the current project
-        """
-
-        return gather_project().get_current_version()
 
     async def _async_download_progress(
         self,
@@ -205,10 +197,10 @@ class SignCommand:
             release_version = (
                 release_version
                 if release_version is not None
-                else self._get_current_version()
+                else get_last_release_version(git_tag_prefix)
             )
         except PontosError as e:
-            self.terminal.error(f"Could not determine current version. {e}")
+            self.terminal.error(f"Could not determine release version. {e}")
             return SignReturnValue.NO_RELEASE_VERSION
 
         if not release_version:
