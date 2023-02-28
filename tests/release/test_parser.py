@@ -116,6 +116,28 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.release_type, ReleaseType.CALENDAR)
 
+        _, _, args = parse_args(["release", "--release-type", "minor"])
+
+        self.assertEqual(args.release_type, ReleaseType.MINOR)
+
+        _, _, args = parse_args(["release", "--release-type", "major"])
+
+        self.assertEqual(args.release_type, ReleaseType.MAJOR)
+
+        _, _, args = parse_args(["release", "--release-type", "alpha"])
+
+        self.assertEqual(args.release_type, ReleaseType.ALPHA)
+
+        _, _, args = parse_args(["release", "--release-type", "beta"])
+
+        self.assertEqual(args.release_type, ReleaseType.BETA)
+
+        _, _, args = parse_args(
+            ["release", "--release-type", "release-candidate"]
+        )
+
+        self.assertEqual(args.release_type, ReleaseType.RELEASE_CANDIDATE)
+
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
             parse_args(["release", "--release-type", "foo"])
 
