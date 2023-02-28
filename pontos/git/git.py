@@ -21,8 +21,10 @@ from os import PathLike, fspath
 from pathlib import Path
 from typing import List, Optional, Union
 
+from pontos.errors import PontosError
 
-class GitError(subprocess.CalledProcessError):
+
+class GitError(subprocess.CalledProcessError, PontosError):
     """
     Error raised while executing a git command
     """
