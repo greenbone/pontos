@@ -50,7 +50,7 @@ class VersionCommand(ABC):
 
     @abstractmethod
     def update_version(
-        self, new_version: str, *, develop: bool = False, force: bool = False
+        self, new_version: str, *, force: bool = False
     ) -> VersionUpdate:
         """Update the current version of this project"""
 

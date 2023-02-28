@@ -22,7 +22,6 @@ import tomlkit
 
 from .errors import VersionError
 from .helper import (
-    check_develop,
     is_version_pep440_compliant,
     safe_version,
     strip_version,
@@ -189,11 +188,9 @@ class PythonVersionCommand(VersionCommand):
                 )
 
     def update_version(
-        self, new_version: str, *, develop: bool = False, force: bool = False
+        self, new_version: str, *, force: bool = False
     ) -> VersionUpdate:
         new_version = safe_version(new_version)
-        if not check_develop(new_version) and develop:
-            new_version = f"{new_version}.dev1"
 
         try:
             current_version = self.get_current_version()

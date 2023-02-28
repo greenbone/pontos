@@ -35,7 +35,7 @@ class CMakeVersionCommand(VersionCommand):
     project_file_name = "CMakeLists.txt"
 
     def update_version(
-        self, new_version: str, *, develop: bool = False, force: bool = False
+        self, new_version: str, *, force: bool = False
     ) -> VersionUpdate:
         content = self.project_file_path.read_text(encoding="utf-8")
         cmvp = CMakeVersionParser(content)
@@ -44,7 +44,7 @@ class CMakeVersionCommand(VersionCommand):
         if not force and versions_equal(new_version, previous_version):
             return VersionUpdate(previous=previous_version, new=new_version)
 
-        new_content = cmvp.update_version(new_version, develop=develop)
+        new_content = cmvp.update_version(new_version)
         self.project_file_path.write_text(new_content, encoding="utf-8")
         return VersionUpdate(
             previous=previous_version,
@@ -94,7 +94,7 @@ class CMakeVersionParser:
             return f"{self._current_version}.dev1"
         return self._current_version
 
-    def update_version(self, new_version: str, *, develop: bool = False) -> str:
+    def update_version(self, new_version: str) -> str:
         if not is_version_pep440_compliant(new_version):
             raise VersionError(
                 f"version {new_version} is not pep 440 compliant."
@@ -111,6 +111,8 @@ class CMakeVersionParser:
                     )
                 )
             develop = True
+        else:
+            develop = False
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, new_version)

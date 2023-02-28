@@ -227,29 +227,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 encoding="utf8",
             )
             cmd = PythonVersionCommand()
-            updated = cmd.update_version("22.2", develop=True)
-
-            self.assertEqual(updated.new, "22.2.dev1")
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
-
-            text = tmp_file.read_text(encoding="utf8")
-
-            toml = tomlkit.parse(text)
-
-            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
-
-    def test_not_override_development_version(self):
-        content = "__version__ = '1.2.3'"
-        with temp_python_module(content, name="foo", change_into=True) as temp:
-            tmp_file = temp.parent / "pyproject.toml"
-            tmp_file.write_text(
-                '[tool.poetry]\nversion = "1.2.3"\n'
-                '[tool.pontos.version]\nversion-module-file = "foo.py"',
-                encoding="utf8",
-            )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version("22.2.dev1", develop=True)
+            updated = cmd.update_version("22.2.dev1")
 
             self.assertEqual(updated.new, "22.2.dev1")
             self.assertEqual(updated.previous, "1.2.3")

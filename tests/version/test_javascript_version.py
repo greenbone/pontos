@@ -84,28 +84,12 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(fake_package["version"], "22.4.0")
 
-    def test_update_version_check_develop(self):
-        content = '{"name":"foo", "version":"1.2.3"}'
-
-        with temp_file(content, name="package.json", change_into=True) as temp:
-            cmd = JavaScriptVersionCommand()
-            updated = cmd.update_version("22.4.0.dev1", develop=True)
-
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.new, "22.4.0.dev1")
-            self.assertEqual(updated.changed_files, [temp])
-
-            with temp.open(mode="r", encoding="utf-8") as fp:
-                fake_package = json.load(fp)
-
-            self.assertEqual(fake_package["version"], "22.4.0.dev1")
-
     def test_update_version_develop(self):
         content = '{"name":"foo", "version":"1.2.3"}'
 
         with temp_file(content, name="package.json", change_into=True) as temp:
             cmd = JavaScriptVersionCommand()
-            updated = cmd.update_version("22.4.0", develop=True)
+            updated = cmd.update_version("22.4.0.dev1")
 
             self.assertEqual(updated.previous, "1.2.3")
             self.assertEqual(updated.new, "22.4.0.dev1")
