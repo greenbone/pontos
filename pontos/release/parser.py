@@ -24,11 +24,9 @@ from typing import Callable, Tuple, Type
 
 from pontos.release.helper import ReleaseType
 
-from .prepare import prepare
 from .release import release
 from .sign import sign
 
-DEFAULT_CHANGELOG_CONFIG_FILE = "changelog.toml"
 DEFAULT_SIGNING_KEY = "0ED1E580"
 
 
@@ -80,77 +78,21 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         required=True,
     )
 
-    prepare_parser = subparsers.add_parser("prepare")
-    prepare_parser.set_defaults(func=prepare)
-    prepare_parser.add_argument(
-        "--release-version",
-        help="Version for the created release. Must be PEP 440 compliant."
-        "Implicitly sets --release-type version.",
-        action=ReleaseVersionAction,
-    )
-
-    version_group = prepare_parser.add_mutually_exclusive_group()
-    version_group.add_argument(
-        "--calendar",
-        dest="release_type",
-        help=(
-            "Automatically calculate calendar release version, from current"
-            " version and date. Deprecated, user --release-type "
-            f"{ReleaseType.CALENDAR.value} instead."
-        ),
-        const=ReleaseType.CALENDAR,
-        action="store_const",
-    )
-    version_group.add_argument(
-        "--patch",
-        dest="release_type",
-        help="Release next patch version: "
-        "e.g. x.x.3 -> x.x.4. Deprecated, "
-        f"use --release-type {ReleaseType.PATCH.value} instead.",
-        const=ReleaseType.PATCH,
-        action="store_const",
-    )
-    version_group.add_argument(
+    release_parser = subparsers.add_parser("release")
+    release_parser.set_defaults(func=release)
+    release_parser.add_argument(
         "--release-type",
         help="Select the release type for calculating the release version. "
         f"Possible choices are: {to_choices(ReleaseType)}.",
         type=enum_type(ReleaseType),
     )
-
-    prepare_parser.add_argument(
-        "--git-signing-key",
-        help="The key to sign the commits and tag for a release",
-    )
-    prepare_parser.add_argument(
-        "--git-tag-prefix",
-        default="v",
-        help="Prefix for git tag versions. Default: %(default)s",
-    )
-    prepare_parser.add_argument(
-        "--space",
-        default="greenbone",
-        help="User/Team name in github",
-    )
-    prepare_parser.add_argument(
-        "--project",
-        help="The github project",
-    )
-    prepare_parser.add_argument(
-        "--conventional-commits-config",
-        dest="cc_config",
-        default=Path(DEFAULT_CHANGELOG_CONFIG_FILE),
-        type=Path,
-        help="Conventional commits config file (toml), including conventions.",
-    )
-
-    release_parser = subparsers.add_parser("release")
-    release_parser.set_defaults(func=release)
     release_parser.add_argument(
         "--release-version",
         help=(
             "Will release changelog as version. Must be PEP 440 compliant. "
             "default: lookup version in project definition."
         ),
+        action=ReleaseVersionAction,
     )
 
     release_parser.add_argument(
@@ -182,6 +124,19 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         "--space",
         default="greenbone",
         help="User/Team name in github",
+    )
+    release_parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Only create release changes locally and do not upload them to a "
+        "remote repository. Also do not create a GitHub release.",
+    )
+    release_parser.add_argument(
+        "--conventional-commits-config",
+        dest="cc_config",
+        type=Path,
+        help="Conventional commits config file (toml), including conventions."
+        " If not set defaults are used.",
     )
 
     sign_parser = subparsers.add_parser("sign")
@@ -222,7 +177,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     parsed_args = parser.parse_args(args)
 
-    if parsed_args.func is prepare:
+    if parsed_args.func in (release,):
         # check for release-type
         if not getattr(parsed_args, "release_type"):
             parser.error("--release-type is required.")
