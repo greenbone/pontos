@@ -21,12 +21,7 @@ from pathlib import Path
 from pontos.git import Git, TagSort
 
 from .errors import VersionError
-from .helper import (
-    check_develop,
-    is_version_pep440_compliant,
-    safe_version,
-    versions_equal,
-)
+from .helper import is_version_pep440_compliant, safe_version, versions_equal
 from .version import VersionCommand, VersionUpdate
 
 TEMPLATE = """package main
@@ -88,12 +83,10 @@ class GoVersionCommand(VersionCommand):
             )
 
     def update_version(
-        self, new_version: str, *, develop: bool = False, force: bool = False
+        self, new_version: str, *, force: bool = False
     ) -> VersionUpdate:
         """Update the current version of this project"""
         new_version = safe_version(new_version)
-        if not check_develop(new_version) and develop:
-            new_version = f"{new_version}.dev1"
 
         try:
             current_version = self.get_current_version()

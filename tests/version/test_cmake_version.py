@@ -101,14 +101,14 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22", develop=True)
+            updated = cmake.update_version("22.dev1")
 
             self.assertEqual(
-                "project(VERSION 22)\nset(PROJECT_DEV_VERSION 1)",
+                "project(VERSION 22.0.0)\nset(PROJECT_DEV_VERSION 1)",
                 temp.read_text(encoding="utf8"),
             )
             self.assertEqual(updated.previous, "21")
-            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.new, "22.dev1")
             self.assertEqual(updated.changed_files, [temp])
 
     def test_no_update(self):
@@ -216,7 +216,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
         self.assertEqual(under_test._project_dev_version_line_number, 7)
         self.assertEqual(under_test._project_dev_version, "1")
-        result = under_test.update_version("41.41.41", develop=False)
+        result = under_test.update_version("41.41.41")
         self.assertEqual(under_test._project_dev_version, "0")
         self.assertEqual(
             result,
@@ -238,7 +238,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
         self.assertEqual(under_test._project_dev_version_line_number, 4)
         self.assertEqual(under_test._project_dev_version, "1")
-        result = under_test.update_version("41.41.41", develop=False)
+        result = under_test.update_version("41.41.41")
         self.assertEqual(under_test._project_dev_version, "0")
         self.assertEqual(
             result,

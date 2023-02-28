@@ -21,7 +21,6 @@ from pathlib import Path
 from typing import Any
 
 from pontos.version.helper import (
-    check_develop,
     is_version_pep440_compliant,
     safe_version,
     versions_equal,
@@ -125,11 +124,9 @@ class JavaScriptVersionCommand(VersionCommand):
         return True
 
     def update_version(
-        self, new_version: str, *, develop: bool = False, force: bool = False
+        self, new_version: str, *, force: bool = False
     ) -> VersionUpdate:
         new_version = safe_version(new_version)
-        if not check_develop(new_version) and develop:
-            new_version = f"{new_version}.dev1"
 
         package_version = self.get_current_version()
         if not force and versions_equal(new_version, package_version):
