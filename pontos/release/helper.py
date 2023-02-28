@@ -19,6 +19,7 @@ from enum import Enum
 from typing import Optional
 
 from pontos.git import Git, GitError
+from pontos.git.git import TagSort
 from pontos.terminal import Terminal
 
 DEFAULT_TIMEOUT = 1000
@@ -47,7 +48,7 @@ def get_last_release_version(
     """
 
     git_interface = Git()
-    tag_list = git_interface.list_tags()
+    tag_list = git_interface.list_tags(sort=TagSort.VERSION)
 
     if not tag_list:
         return None
