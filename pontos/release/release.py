@@ -238,13 +238,13 @@ class ReleaseCommand:
         next_version = (
             next_version
             if next_version is not None
-            else calculator.next_patch_version(release_version)
+            else calculator.next_dev_version(release_version)
         )
 
         self.terminal.info("Updating version after release")
 
         try:
-            updated = command.update_version(next_version, develop=True)
+            updated = command.update_version(next_version)
         except VersionError as e:
             self.terminal.error(
                 f"Error while updating version after release. {e}"

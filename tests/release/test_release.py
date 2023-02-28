@@ -99,7 +99,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1", develop=True)]
+            [call("0.0.2"), call("1.0.0.dev1")]
         )
 
         self.assertEqual(
@@ -161,10 +161,8 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         version_command_mock.get_current_version.return_value = "0.0.1"
-        version_calculator = MagicMock(spec=VersionCalculator)
-        version_calculator.next_patch_version.return_value = "0.0.2"
         version_command_mock.get_version_calculator.return_value = (
-            version_calculator
+            VersionCalculator()
         )
 
         _, token, args = parse_args(
@@ -194,9 +192,8 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        version_calculator.next_patch_version.assert_called_once_with("0.0.1")
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1", develop=True)],
+            [call("0.0.2"), call("1.0.0.dev1")],
         )
 
         self.assertEqual(
@@ -295,7 +292,7 @@ class ReleaseTestCase(unittest.TestCase):
             "0.0.1"
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("23.2.0"), call("23.2.1.dev1", develop=True)]
+            [call("23.2.0"), call("23.2.1.dev1")]
         )
 
         self.assertEqual(
@@ -357,10 +354,8 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         version_command_mock.get_current_version.return_value = "0.0.1"
-        version_calculator = MagicMock(spec=VersionCalculator)
-        version_calculator.next_minor_version.return_value = "0.1.0"
         version_command_mock.get_version_calculator.return_value = (
-            version_calculator
+            VersionCalculator()
         )
 
         _, token, args = parse_args(
@@ -390,9 +385,8 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        version_calculator.next_minor_version.assert_called_once_with("0.0.1")
         version_command_mock.update_version.assert_has_calls(
-            [call("0.1.0"), call("0.1.1.dev1", develop=True)],
+            [call("0.1.0"), call("0.1.1.dev1")],
         )
 
         self.assertEqual(
@@ -454,10 +448,8 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         version_command_mock.get_current_version.return_value = "0.0.1"
-        version_calculator = MagicMock(spec=VersionCalculator)
-        version_calculator.next_major_version.return_value = "1.0.0"
         version_command_mock.get_version_calculator.return_value = (
-            version_calculator
+            VersionCalculator()
         )
 
         _, token, args = parse_args(
@@ -487,9 +479,8 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        version_calculator.next_major_version.assert_called_once_with("0.0.1")
         version_command_mock.update_version.assert_has_calls(
-            [call("1.0.0"), call("1.0.1.dev1", develop=True)],
+            [call("1.0.0"), call("1.0.1.dev1")],
         )
 
         self.assertEqual(
@@ -832,7 +823,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.1"), call("0.0.2.dev1", develop=True)]
+            [call("0.0.1"), call("0.0.2.dev1")]
         )
 
         self.assertEqual(
@@ -1127,7 +1118,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
         git_mock.return_value.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
-            "* Update to version 0.0.3\n",
+            "* Update to version 0.0.3.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
@@ -1235,7 +1226,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1", develop=True)]
+            [call("0.0.2"), call("1.0.0.dev1")]
         )
 
         self.assertEqual(
