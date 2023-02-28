@@ -172,3 +172,153 @@ class VersionCalculatorTestCase(unittest.TestCase):
         calculator = VersionCalculator()
         with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
             calculator.next_major_version("abc")
+
+    def test_next_alpha_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "0.0.2a1",
+            "1.2.4a1",
+            "1.2.4a1",
+            "1.2.3a2",
+            "1.2.4a1",
+            "1.2.4a1",
+            "22.4.2a1",
+            "22.4.1a1",
+            "22.4.1a1",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_alpha_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_alpha_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_alpha_version("abc")
+
+    def test_next_beta_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "0.0.2b1",
+            "1.2.4b1",
+            "1.2.4b1",
+            "1.2.3b1",
+            "1.2.3b2",
+            "1.2.4b1",
+            "22.4.2b1",
+            "22.4.1b1",
+            "22.4.1b1",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_beta_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_beta_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_beta_version("abc")
+
+    def test_next_release_candidate_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "0.0.2rc1",
+            "1.2.4rc1",
+            "1.2.4rc1",
+            "1.2.3rc1",
+            "1.2.3rc1",
+            "1.2.3rc2",
+            "22.4.2rc1",
+            "22.4.1rc1",
+            "22.4.1rc1",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_release_candidate_version(
+                current_version
+            )
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_release_candidate_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_release_candidate_version("abc")
+
+    def test_next_dev_version(self):
+        calculator = VersionCalculator()
+
+        current_versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        assert_versions = [
+            "0.0.2.dev1",
+            "1.2.4.dev1",
+            "1.2.4.dev1",
+            "1.2.4.dev1",
+            "1.2.4.dev1",
+            "1.2.4.dev1",
+            "22.4.2.dev1",
+            "22.4.1.dev2",
+            "22.4.1.dev4",
+        ]
+
+        for current_version, assert_version in zip(
+            current_versions, assert_versions
+        ):
+            release_version = calculator.next_dev_version(current_version)
+            self.assertEqual(release_version, assert_version)
+
+    def test_next_dev_version_error(self):
+        calculator = VersionCalculator()
+        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
+            calculator.next_dev_version("abc")
