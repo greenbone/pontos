@@ -21,7 +21,7 @@ jobs:
           fi
       - uses: actions/checkout@v3
         with:
-          fetch-depth: ${{ env.FETCH_DEPTH }}
+          fetch-depth: 0
           persist-credentials: false
           ref: ${{ env.RELEASE_REF }}
       - name: Set git name, mail and origin
