@@ -24,15 +24,21 @@ from typing import Optional
 
 import httpx
 
+from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
-from pontos.release.prepare import RELEASE_TEXT_FILE
 from pontos.terminal import Terminal
 from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
+from pontos.version.version import VersionCommand
 
-from .helper import find_signing_key, get_git_repository_name
+from .helper import (
+    ReleaseType,
+    find_signing_key,
+    get_git_repository_name,
+    get_last_release_version,
+)
 
 
 class ReleaseReturnValue(IntEnum):
@@ -40,8 +46,10 @@ class ReleaseReturnValue(IntEnum):
     PROJECT_SETTINGS_NOT_FOUND = auto()
     TOKEN_MISSING = auto()
     NO_RELEASE_VERSION = auto()
+    ALREADY_TAKEN = auto()
     CREATE_RELEASE_ERROR = auto()
     UPDATE_VERSION_ERROR = auto()
+    UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
 
 
 class ReleaseCommand:
@@ -49,11 +57,55 @@ class ReleaseCommand:
         self.git = Git()
         self.terminal = terminal
 
-    async def _create_release(self, release_version: str, token: str) -> None:
-        self.terminal.info(f"Creating release for {release_version}")
+    def _get_release_version(
+        self,
+        command: VersionCommand,
+        release_type: ReleaseType,
+        release_version: Optional[str],
+    ) -> str:
+        current_version = command.get_current_version()
+        calculator = command.get_version_calculator()
+        if release_type == ReleaseType.CALENDAR:
+            return calculator.next_calendar_version(current_version)
 
-        release_file = Path(RELEASE_TEXT_FILE)
-        changelog_text = release_file.read_text(encoding="utf-8")
+        if release_type == ReleaseType.PATCH:
+            return calculator.next_patch_version(current_version)
+
+        if release_type == ReleaseType.MINOR:
+            return calculator.next_minor_version(current_version)
+
+        if release_type == ReleaseType.MAJOR:
+            return calculator.next_major_version(current_version)
+
+        if not release_version:
+            raise VersionError(
+                "No release version provided. Either use a different release "
+                "strategy or provide a release version."
+            )
+        return release_version
+
+    def _has_tag(self, git_version: str) -> bool:
+        git_tags = self.git.list_tags()
+        return git_version in git_tags
+
+    def _create_changelog(self, release_version: str, cc_config: Path) -> str:
+        last_release_version = get_last_release_version(self.git_tag_prefix)
+        changelog_builder = ChangelogBuilder(
+            space=self.space,
+            project=self.project,
+            config=cc_config,
+            git_tag_prefix=self.git_tag_prefix,
+        )
+
+        return changelog_builder.create_changelog(
+            last_version=last_release_version,
+            next_version=release_version,
+        )
+
+    async def _create_release(
+        self, release_version: str, token: str, release_text: str
+    ) -> None:
+        self.terminal.info(f"Creating release for {release_version}")
 
         github = GitHubAsyncRESTApi(token=token)
 
@@ -64,10 +116,8 @@ class ReleaseCommand:
             repo,
             git_version,
             name=f"{self.project} {release_version}",
-            body=changelog_text,
+            body=release_text,
         )
-
-        release_file.unlink()
 
     async def run(
         self,
@@ -75,11 +125,14 @@ class ReleaseCommand:
         token: str,
         space: str,
         project: Optional[str],
+        release_type: ReleaseType,
         release_version: Optional[str],
         next_version: Optional[str],
         git_signing_key: str,
         git_remote_name: Optional[str],
         git_tag_prefix: Optional[str],
+        cc_config: Optional[Path],
+        local: Optional[bool] = False,
     ) -> ReleaseReturnValue:
         """
         Create a release
@@ -90,6 +143,10 @@ class ReleaseCommand:
                 links in the changelog.
             project: Name of the project to release. If not set it will be
                 gathered via the git remote url.
+            release_type: Type of the release to prepare. Defines the release
+                version. PATCH increments the bugfix version. CALENDAR creates
+                a new CalVer release version. VERSION uses the provided
+                release_version.
             release_version: Optional release version to use. If not set the
                 current version will be determined from the project.
             next_version: Optional version to set after the release.
@@ -97,6 +154,10 @@ class ReleaseCommand:
             git_remote_name: Name of the git remote to use.
             git_tag_prefix: An optional prefix to use for creating a git tag
                 from the release version.
+            cc_config: A path to a settings file for creating conventional
+                commits.
+            local: Only create changes locally and don't push changes to
+                remote repository. Also don't create a GitHub release.
         """
         git_signing_key = (
             git_signing_key
@@ -116,14 +177,61 @@ class ReleaseCommand:
             return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
         try:
-            if not release_version:
-                release_version = command.get_current_version()
+            release_version = self._get_release_version(
+                command, release_type, release_version
+            )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
             return ReleaseReturnValue.NO_RELEASE_VERSION
 
         if not release_version:
             return ReleaseReturnValue.NO_RELEASE_VERSION
+
+        self.terminal.info(f"Preparing the release {release_version}")
+
+        git_version = f"{self.git_tag_prefix}{release_version}"
+
+        if self._has_tag(git_version):
+            self.terminal.error(f"Git tag {git_version} already exists.")
+            return ReleaseReturnValue.ALREADY_TAKEN
+
+        try:
+            updated = command.update_version(release_version)
+
+            self.terminal.ok(f"Updated version to {release_version}")
+
+            for path in updated.changed_files:
+                self.git.add(path)
+        except VersionError as e:
+            self.terminal.error(
+                f"Unable to update version to {release_version}. {e}"
+            )
+            return ReleaseReturnValue.UPDATE_VERSION_ERROR
+
+        self.terminal.info("Creating changelog")
+
+        release_text = self._create_changelog(release_version, cc_config)
+
+        self.terminal.info("Committing changes")
+
+        commit_msg = f"Automatic release to {release_version}"
+
+        self.git.commit(
+            commit_msg, verify=False, gpg_signing_key=git_signing_key
+        )
+        self.git.tag(
+            git_version, gpg_key_id=git_signing_key, message=commit_msg
+        )
+
+        if not local:
+            self.terminal.info("Pushing changes")
+            self.git.push(follow_tags=True, remote=git_remote_name)
+
+            try:
+                await self._create_release(release_version, token, release_text)
+            except httpx.HTTPStatusError as e:
+                self.terminal.error(str(e))
+                return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
         calculator = command.get_version_calculator()
 
@@ -133,19 +241,7 @@ class ReleaseCommand:
             else calculator.next_patch_version(release_version)
         )
 
-        self.terminal.info("Pushing changes")
-        self.git.push(follow_tags=True, remote=git_remote_name)
-
-        try:
-            await self._create_release(release_version, token)
-        except httpx.HTTPStatusError as e:
-            self.terminal.error(str(e))
-            return ReleaseReturnValue.CREATE_RELEASE_ERROR
-
-        commit_msg = [
-            "Automatic adjustments after release\n",
-            f"* Update to version {next_version}",
-        ]
+        self.terminal.info("Updating version after release")
 
         try:
             updated = command.update_version(next_version, develop=True)
@@ -153,17 +249,23 @@ class ReleaseCommand:
             self.terminal.error(
                 f"Error while updating version after release. {e}"
             )
-            return ReleaseReturnValue.UPDATE_VERSION_ERROR
+            return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
 
         for f in updated.changed_files:
             self.git.add(f)
 
+        commit_msg = f"""Automatic adjustments after release
+
+* Update to version {next_version}
+"""
+
         self.git.commit(
-            "\n".join(commit_msg), verify=False, gpg_signing_key=git_signing_key
+            commit_msg, verify=False, gpg_signing_key=git_signing_key
         )
 
-        # pushing the new tag
-        self.git.push(follow_tags=True, remote=git_remote_name)
+        if not local:
+            self.terminal.info("Pushing changes")
+            self.git.push(follow_tags=True, remote=git_remote_name)
 
         return ReleaseReturnValue.SUCCESS
 
@@ -188,10 +290,13 @@ def release(
             token=token,
             space=args.space,
             project=args.project,
+            release_type=args.release_type,
             release_version=args.release_version,
+            next_version=args.next_version,
             git_remote_name=args.git_remote_name,
             git_signing_key=args.git_signing_key,
             git_tag_prefix=args.git_tag_prefix,
-            next_version=args.next_version,
+            cc_config=args.cc_config,
+            local=args.local,
         )
     )
