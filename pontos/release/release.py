@@ -99,6 +99,12 @@ class ReleaseCommand:
 
     def _create_changelog(self, release_version: str, cc_config: Path) -> str:
         last_release_version = get_last_release_version(self.git_tag_prefix)
+
+        self.terminal.info(
+            f"Creating changelog for {release_version} since "
+            f"{last_release_version}"
+        )
+
         changelog_builder = ChangelogBuilder(
             space=self.space,
             project=self.project,
@@ -114,8 +120,6 @@ class ReleaseCommand:
     async def _create_release(
         self, release_version: str, token: str, release_text: str
     ) -> None:
-        self.terminal.info(f"Creating release for {release_version}")
-
         github = GitHubAsyncRESTApi(token=token)
 
         git_version = f"{self.git_tag_prefix}{release_version}"
@@ -210,14 +214,13 @@ class ReleaseCommand:
             self.terminal.ok(f"Updated version to {release_version}")
 
             for path in updated.changed_files:
+                self.terminal.info(f"Adding changes of {path}")
                 self.git.add(path)
         except VersionError as e:
             self.terminal.error(
                 f"Unable to update version to {release_version}. {e}"
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
-
-        self.terminal.info("Creating changelog")
 
         release_text = self._create_changelog(release_version, cc_config)
 
@@ -237,7 +240,11 @@ class ReleaseCommand:
             self.git.push(follow_tags=True, remote=git_remote_name)
 
             try:
+                self.terminal.info(f"Creating release for {release_version}")
+
                 await self._create_release(release_version, token, release_text)
+
+                self.terminal.ok(f"Created release {release_version}")
             except httpx.HTTPStatusError as e:
                 self.terminal.error(str(e))
                 return ReleaseReturnValue.CREATE_RELEASE_ERROR
@@ -250,10 +257,9 @@ class ReleaseCommand:
             else calculator.next_dev_version(release_version)
         )
 
-        self.terminal.info("Updating version after release")
-
         try:
             updated = command.update_version(next_version)
+            self.terminal.ok(f"Updated version after release to {next_version}")
         except VersionError as e:
             self.terminal.error(
                 f"Error while updating version after release. {e}"
@@ -261,6 +267,7 @@ class ReleaseCommand:
             return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
 
         for f in updated.changed_files:
+            self.terminal.info(f"Adding changes of {f}")
             self.git.add(f)
 
         commit_msg = f"""Automatic adjustments after release
@@ -268,6 +275,7 @@ class ReleaseCommand:
 * Update to version {next_version}
 """
 
+        self.terminal.info("Committing changes")
         self.git.commit(
             commit_msg, verify=False, gpg_signing_key=git_signing_key
         )
