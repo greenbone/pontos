@@ -31,8 +31,9 @@ class ReleaseType(Enum):
     VERSION = "version"
     MAJOR = "major"
     MINOR = "minor"
-    # for the future we need
-    # PRE_RELEASE = "pre-release"
+    ALPHA = "alpha"
+    BETA = "beta"
+    RELEASE_CANDIDATE = "release-candidate"
 
 
 def get_last_release_version(
