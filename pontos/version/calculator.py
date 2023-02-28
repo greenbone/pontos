@@ -114,3 +114,111 @@ class VersionCalculator:
             return str(release_version)
         except InvalidVersion as e:
             raise VersionError(e) from None
+
+    def next_dev_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            if current_version.is_devrelease:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }.dev{current_version.dev + 1}"
+                )
+            else:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro + 1 }.dev1"
+                )
+
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None
+
+    def next_alpha_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            if current_version.is_devrelease:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }a1"
+                )
+            elif (
+                current_version.is_prerelease and current_version.pre[0] == "a"
+            ):
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }a{current_version.pre[1] + 1}"
+                )
+            else:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro + 1 }a1"
+                )
+
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None
+
+    def next_beta_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            if current_version.is_devrelease or (
+                current_version.is_prerelease and current_version.pre[0] == "a"
+            ):
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }b1"
+                )
+            elif (
+                current_version.is_prerelease and current_version.pre[0] == "b"
+            ):
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }b{current_version.pre[1] + 1}"
+                )
+            else:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro + 1 }b1"
+                )
+
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None
+
+    def next_release_candidate_version(self, version: str) -> str:
+        try:
+            current_version = Version(version)
+            if current_version.is_devrelease or (
+                current_version.is_prerelease and current_version.pre[0] != "rc"
+            ):
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }rc1"
+                )
+            elif (
+                current_version.is_prerelease and current_version.pre[0] == "rc"
+            ):
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro }rc{current_version.pre[1] + 1}"
+                )
+            else:
+                release_version = Version(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.micro + 1 }rc1"
+                )
+
+            return str(release_version)
+        except InvalidVersion as e:
+            raise VersionError(e) from None
