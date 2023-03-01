@@ -109,7 +109,7 @@ class ReleaseCommand:
         )
 
     async def _create_release(
-        self, release_version: str, token: str, release_text: str
+        self, release_version: Version, token: str, release_text: str
     ) -> None:
         github = GitHubAsyncRESTApi(token=token)
 
@@ -121,6 +121,7 @@ class ReleaseCommand:
             git_version,
             name=f"{self.project} {release_version}",
             body=release_text,
+            prerelease=release_version.is_prerelease,
         )
 
     async def run(
