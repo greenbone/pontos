@@ -21,10 +21,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from pontos.git.git import Git
 from pontos.testing import temp_directory, temp_file
-from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
-from pontos.version.go import Git, GoVersionCommand
+from pontos.version.go import GoVersionCommand
+from pontos.version.version import Version, VersionCalculator
 
 
 @dataclass
@@ -61,7 +62,7 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
             )
             result_version = GoVersionCommand().get_current_version()
 
-            self.assertEqual(version, result_version)
+            self.assertEqual(result_version, Version(version))
             version_file_path.unlink()
 
     def test_no_version_found(self):
@@ -101,24 +102,10 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
         ), patch.object(
             GoVersionCommand,
             "get_current_version",
-            MagicMock(return_value="21.0.1"),
+            MagicMock(return_value=Version("21.0.1")),
         ):
             cmd = GoVersionCommand()
-            cmd.verify_version("21.0.1")
-
-    def test_verify_branch_not_pep(self):
-        with temp_file(
-            name="go.mod",
-            change_into=True,
-        ), patch.object(
-            GoVersionCommand,
-            "get_current_version",
-            MagicMock(return_value="021.02a"),
-        ), self.assertRaisesRegex(
-            VersionError, "The version 021.02a is not PEP 440 compliant."
-        ):
-            cmd = GoVersionCommand()
-            cmd.verify_version("21.0.1")
+            cmd.verify_version(Version("21.0.1"))
 
     def test_verify_branch_not_equal(self):
         with temp_file(
@@ -127,13 +114,13 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
         ), patch.object(
             GoVersionCommand,
             "get_current_version",
-            MagicMock(return_value="21.0.1"),
+            MagicMock(return_value=Version("21.0.1")),
         ), self.assertRaisesRegex(
             VersionError,
             "Provided version 21.2 does not match the current version 21.0.1.",
         ):
             cmd = GoVersionCommand()
-            cmd.verify_version("21.2")
+            cmd.verify_version(Version("21.2"))
 
 
 class UpdateGoVersionCommandTestCase(unittest.TestCase):
@@ -146,14 +133,16 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 "list_tags",
                 MagicMock(return_value=["21.0.1"]),
             ):
-                version = "22.2.2"
+                version = Version("22.2.2")
                 updated_version_obj = GoVersionCommand().update_version(version)
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
 
-                self.assertIn(version, content)
+                self.assertIn(str(version), content)
 
-                self.assertEqual(updated_version_obj.previous, "21.0.1")
+                self.assertEqual(
+                    updated_version_obj.previous, Version("21.0.1")
+                )
                 self.assertEqual(updated_version_obj.new, version)
                 self.assertEqual(
                     updated_version_obj.changed_files, [version_file_path]
@@ -162,7 +151,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
     def test_update_version(self):
         with temp_file(name="go.mod", change_into=True):
             cmd = GoVersionCommand()
-            version = "22.2.2"
+            version = Version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("0.0.1"), encoding="utf-8"
@@ -170,11 +159,11 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             updated = cmd.update_version(version)
 
             content = version_file_path.read_text(encoding="utf-8")
-            self.assertIn(version, content)
+            self.assertIn(str(version), content)
             version_file_path.unlink()
 
             self.assertEqual(updated.new, version)
-            self.assertEqual(updated.previous, "0.0.1")
+            self.assertEqual(updated.previous, Version("0.0.1"))
             self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_create_file_update_version(self):
@@ -182,26 +171,26 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             with patch.object(
                 GoVersionCommand,
                 "get_current_version",
-                MagicMock(return_value="21.0.1"),
+                MagicMock(return_value=Version("21.0.1")),
             ):
-                version = "22.2.2"
+                version = Version("22.2.2")
                 cmd = GoVersionCommand()
                 updated = cmd.update_version(version)
 
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
 
-                self.assertIn(version, content)
+                self.assertIn(str(version), content)
                 version_file_path.unlink()
 
                 self.assertEqual(updated.new, version)
-                self.assertEqual(updated.previous, "21.0.1")
+                self.assertEqual(updated.previous, Version("21.0.1"))
                 self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_no_update(self):
         with temp_file(name="go.mod", change_into=True):
             cmd = GoVersionCommand()
-            version = "22.2.2"
+            version = Version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("22.2.2"), encoding="utf-8"
@@ -209,7 +198,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             updated = cmd.update_version(version)
 
             content = version_file_path.read_text(encoding="utf-8")
-            self.assertIn(version, content)
+            self.assertIn(str(version), content)
 
             self.assertEqual(updated.new, version)
             self.assertEqual(updated.previous, version)
@@ -218,7 +207,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
     def test_forced_update(self):
         with temp_file(name="go.mod", change_into=True):
             cmd = GoVersionCommand()
-            version = "22.2.2"
+            version = Version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("22.2.2"), encoding="utf-8"
@@ -226,7 +215,7 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             updated = cmd.update_version(version, force=True)
 
             content = version_file_path.read_text(encoding="utf-8")
-            self.assertIn(version, content)
+            self.assertIn(str(version), content)
 
             self.assertEqual(updated.new, version)
             self.assertEqual(updated.previous, version)

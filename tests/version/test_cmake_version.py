@@ -22,9 +22,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
-from pontos.version.calculator import VersionCalculator
 from pontos.version.cmake import CMakeVersionCommand, CMakeVersionParser
 from pontos.version.errors import VersionError
+from pontos.version.version import Version, VersionCalculator
 
 
 class CMakeVersionCommandTestCase(unittest.TestCase):
@@ -35,10 +35,9 @@ class CMakeVersionCommandTestCase(unittest.TestCase):
 
 
 class VerifyCMakeVersionCommandTestCase(unittest.TestCase):
-    def test_return_error_string_incorrect_version_on_verify(self):
+    def test_verify_version(self):
         with temp_file(
-            "project(VERSION so_much_version_so_much_wow)\n"
-            "set(PROJECT_DEV_VERSION 0)",
+            "project(VERSION 1.2.3)\n" "set(PROJECT_DEV_VERSION 0)",
             name="CMakeLists.txt",
             change_into=True,
         ):
@@ -46,10 +45,10 @@ class VerifyCMakeVersionCommandTestCase(unittest.TestCase):
 
             with self.assertRaisesRegex(
                 VersionError,
-                "The version so_much_version_so_much_wow is not PEP 440 "
-                "compliant.",
+                "Provided version 2.3.4 does not match the "
+                "current version 1.2.3.",
             ):
-                cmake.verify_version("so_much_version_so_much_wow")
+                cmake.verify_version(Version("2.3.4"))
 
 
 class GetCurrentCMakeVersionCommandTestCase(unittest.TestCase):
@@ -73,7 +72,7 @@ class GetCurrentCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ):
             cmake = CMakeVersionCommand()
-            self.assertEqual(cmake.get_current_version(), "21")
+            self.assertEqual(cmake.get_current_version(), Version("21"))
 
 
 class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
@@ -84,14 +83,14 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22")
+            updated = cmake.update_version(Version("22"))
 
             self.assertEqual(
                 "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
                 temp.read_text(encoding="utf8"),
             )
-            self.assertEqual(updated.previous, "21")
-            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.previous, Version("21"))
+            self.assertEqual(updated.new, Version("22"))
             self.assertEqual(updated.changed_files, [temp])
 
     def test_update_dev_version(self):
@@ -101,14 +100,14 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22.dev1")
+            updated = cmake.update_version(Version("22.dev1"))
 
             self.assertEqual(
                 "project(VERSION 22.0.0)\nset(PROJECT_DEV_VERSION 1)",
                 temp.read_text(encoding="utf8"),
             )
-            self.assertEqual(updated.previous, "21")
-            self.assertEqual(updated.new, "22.dev1")
+            self.assertEqual(updated.previous, Version("21"))
+            self.assertEqual(updated.new, Version("22.dev1"))
             self.assertEqual(updated.changed_files, [temp])
 
     def test_no_update(self):
@@ -118,14 +117,14 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22")
+            updated = cmake.update_version(Version("22"))
 
             self.assertEqual(
                 "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
                 temp.read_text(encoding="utf8"),
             )
-            self.assertEqual(updated.previous, "22")
-            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.previous, Version("22"))
+            self.assertEqual(updated.new, Version("22"))
             self.assertEqual(updated.changed_files, [])
 
     def test_forced_update(self):
@@ -135,14 +134,14 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ) as temp:
             cmake = CMakeVersionCommand()
-            updated = cmake.update_version("22", force=True)
+            updated = cmake.update_version(Version("22"), force=True)
 
             self.assertEqual(
                 "project(VERSION 22)\nset(PROJECT_DEV_VERSION 0)",
                 temp.read_text(encoding="utf8"),
             )
-            self.assertEqual(updated.previous, "22")
-            self.assertEqual(updated.new, "22")
+            self.assertEqual(updated.previous, Version("22"))
+            self.assertEqual(updated.new, Version("22"))
             self.assertEqual(updated.changed_files, [temp])
 
 
@@ -163,28 +162,24 @@ class ProjectFileCMakeVersionCommandTestCase(unittest.TestCase):
 class CMakeVersionParserTestCase(unittest.TestCase):
     def test_get_current_version_single_line_project(self):
         under_test = CMakeVersionParser("project(VERSION 2.3.4)")
-        self.assertEqual(under_test.get_current_version(), "2.3.4")
+        self.assertEqual(under_test.get_current_version(), Version("2.3.4"))
 
     def test_update_version_project(self):
         under_test = CMakeVersionParser("project(VERSION 2.3.4)")
         self.assertEqual(
-            under_test.update_version("2.3.5"), "project(VERSION 2.3.5)"
+            under_test.update_version(Version("2.3.5")),
+            "project(VERSION 2.3.5)",
         )
-
-    def test_update_raise_exception_when_version_is_incorrect(self):
-        under_test = CMakeVersionParser("project(VERSION 2.3.4)")
-        with self.assertRaises(VersionError):
-            under_test.update_version("so_much_version_so_much_wow")
 
     def test_not_confuse_version_outside_project(self):
         under_test = CMakeVersionParser(
             "non_project(VERSION 2.3.5)\nproject(VERSION 2.3.4)"
         )
-        self.assertEqual(under_test.get_current_version(), "2.3.4")
+        self.assertEqual(under_test.get_current_version(), Version("2.3.4"))
 
     def test_get_current_version_multiline_project(self):
         under_test = CMakeVersionParser("project\n(\nVERSION\n\t    2.3.4)")
-        self.assertEqual(under_test.get_current_version(), "2.3.4")
+        self.assertEqual(under_test.get_current_version(), Version("2.3.4"))
 
     def test_find_project_dev_version(self):
         test_cmake_lists = """
@@ -216,7 +211,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
         self.assertEqual(under_test._project_dev_version_line_number, 7)
         self.assertEqual(under_test._project_dev_version, "1")
-        result = under_test.update_version("41.41.41")
+        result = under_test.update_version(Version("41.41.41"))
         self.assertEqual(under_test._project_dev_version, "0")
         self.assertEqual(
             result,
@@ -238,7 +233,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
 
         self.assertEqual(under_test._project_dev_version_line_number, 4)
         self.assertEqual(under_test._project_dev_version, "1")
-        result = under_test.update_version("41.41.41")
+        result = under_test.update_version(Version("41.41.41"))
         self.assertEqual(under_test._project_dev_version, "0")
         self.assertEqual(
             result,
@@ -251,7 +246,7 @@ class CMakeVersionParserTestCase(unittest.TestCase):
         under_test = CMakeVersionParser(
             "project\n(\nDESCRIPTION something VERSION 2.3.4 LANGUAGES c\n)"
         )
-        self.assertEqual(under_test.get_current_version(), "2.3.4")
+        self.assertEqual(under_test.get_current_version(), Version("2.3.4"))
 
     def test_raise_exception_project_no_version(self):
         with self.assertRaises(ValueError) as context:

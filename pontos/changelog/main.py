@@ -22,9 +22,9 @@ from typing import Iterable, NoReturn
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
-from pontos.release.helper import get_last_release_version
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+from pontos.version.helper import get_last_release_version
 
 
 def parse_args(args: Iterable[str] = None) -> ArgumentParser:

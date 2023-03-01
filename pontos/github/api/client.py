@@ -69,7 +69,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
     def _request_headers(
         self,
         *,
-        accept: str = DEFAULT_ACCEPT_HEADER,
+        accept: Optional[str] = None,
         content_type: Optional[str] = None,
         content_length: Optional[int] = None,
     ) -> Headers:
@@ -77,7 +77,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         Get the default request headers
         """
         headers: Dict[str, str] = {
-            "Accept": accept,
+            "Accept": accept or DEFAULT_ACCEPT_HEADER,
             "X-GitHub-Api-Version": GITHUB_API_VERSION,
         }
         if self.token:
@@ -248,14 +248,21 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             url, params=params, headers=headers, json=data, content=content
         )
 
-    def stream(self, api: str) -> AsyncContextManager[httpx.Response]:
+    def stream(
+        self,
+        api: str,
+        *,
+        accept: Optional[str] = None,
+    ) -> AsyncContextManager[httpx.Response]:
         """
         Stream data from a GitHub API
 
         Args:
             api: API path to use for the post request
+            accept: Expected content type in the response.
+                Default "application/octet-stream".
         """
-        headers = self._request_headers(accept=ACCEPT_HEADER_OCTET_STREAM)
+        headers = self._request_headers(accept=accept)
         url = self._request_url(api)
         return self._client.stream(
             "GET", url, headers=headers, follow_redirects=True

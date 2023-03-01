@@ -17,17 +17,12 @@
 
 import importlib.util
 from pathlib import Path
+from typing import Literal, Union
 
 import tomlkit
 
 from .errors import VersionError
-from .helper import (
-    is_version_pep440_compliant,
-    safe_version,
-    strip_version,
-    versions_equal,
-)
-from .version import VersionCommand, VersionUpdate
+from .version import Version, VersionCommand, VersionUpdate, parse_version
 
 TEMPLATE = """# pylint: disable=invalid-name
 
@@ -42,7 +37,7 @@ class PythonVersionCommand(VersionCommand):
     _version_file_path = None
     _pyproject_toml = None
 
-    def _get_version_from_pyproject_toml(self) -> str:
+    def _get_version_from_pyproject_toml(self) -> Version:
         """
         Return the version information from the [tool.poetry] section of the
         pyproject.toml file. The version may be in non standardized form.
@@ -53,24 +48,24 @@ class PythonVersionCommand(VersionCommand):
             and "poetry" in self.pyproject_toml["tool"]  # type: ignore
             and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long
         ):
-            return self.pyproject_toml["tool"]["poetry"]["version"]  # type: ignore # pylint: disable=line-too-long
+            return parse_version(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore # pylint: disable=line-too-long
 
         raise VersionError(
             "Version information not found in "
             f"{self.project_file_path} file."
         )
 
-    def _update_version_file(self, new_version: str) -> None:
+    def _update_version_file(self, new_version: Version) -> None:
         """
         Update the version file with the new version
         """
         self.version_file_path.write_text(
-            TEMPLATE.format(new_version), encoding="utf-8"
+            TEMPLATE.format(str(new_version)), encoding="utf-8"
         )
 
     def _update_pyproject_version(
         self,
-        new_version: str,
+        new_version: Version,
     ) -> None:
         """
         Update the version in the pyproject.toml file
@@ -88,7 +83,7 @@ class PythonVersionCommand(VersionCommand):
             # pylint: disable=line-too-long, no-member # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member)
             pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
 
-        pyproject_toml["tool"]["poetry"]["version"] = new_version  # type: ignore # pylint: disable=line-too-long
+        pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore # pylint: disable=line-too-long
 
         self.project_file_path.write_text(
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
@@ -138,7 +133,7 @@ class PythonVersionCommand(VersionCommand):
                 f"section of {str(self.project_file_path)}."
             ) from None
 
-    def get_current_version(self) -> str:
+    def get_current_version(self) -> Version:
         version_module_name = self.version_file_path.stem
         module_parts = list(self.version_file_path.parts[:-1]) + [
             version_module_name
@@ -150,6 +145,7 @@ class PythonVersionCommand(VersionCommand):
             )
             version_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(version_module)
+            return parse_version(version_module.__version__)
         except FileNotFoundError:
             raise VersionError(
                 f"Could not load version from '{module_name}'. "
@@ -160,16 +156,10 @@ class PythonVersionCommand(VersionCommand):
                 f"Could not load version from '{module_name}'. Import failed."
             ) from None
 
-        return version_module.__version__
-
-    def verify_version(self, version: str) -> None:
+    def verify_version(
+        self, version: Union[Literal["current"], Version]
+    ) -> None:
         current_version = self.get_current_version()
-        if not is_version_pep440_compliant(current_version):
-            raise VersionError(
-                f"The version {current_version} in "
-                f"{str(self.version_file_path)} is not PEP 440 compliant."
-            )
-
         pyproject_version = self._get_version_from_pyproject_toml()
 
         if pyproject_version != current_version:
@@ -180,18 +170,15 @@ class PythonVersionCommand(VersionCommand):
             )
 
         if version != "current":
-            provided_version = strip_version(version)
-            if provided_version != current_version:
+            if version != current_version:
                 raise VersionError(
-                    f"Provided version {provided_version} does not match the "
+                    f"Provided version {version} does not match the "
                     f"current version {current_version}."
                 )
 
     def update_version(
-        self, new_version: str, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        new_version = safe_version(new_version)
-
         try:
             current_version = self.get_current_version()
         except VersionError:
@@ -199,7 +186,7 @@ class PythonVersionCommand(VersionCommand):
             # pyproject.toml
             current_version = self._get_version_from_pyproject_toml()
 
-        if not force and versions_equal(new_version, current_version):
+        if not force and new_version == current_version:
             return VersionUpdate(previous=current_version, new=new_version)
 
         self._update_pyproject_version(new_version=new_version)

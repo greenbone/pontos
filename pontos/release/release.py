@@ -31,14 +31,10 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
 from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
-from pontos.version.version import VersionCommand
+from pontos.version.helper import get_last_release_version
+from pontos.version.version import Version, VersionCommand
 
-from .helper import (
-    ReleaseType,
-    find_signing_key,
-    get_git_repository_name,
-    get_last_release_version,
-)
+from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
 
 class ReleaseReturnValue(IntEnum):
@@ -61,8 +57,8 @@ class ReleaseCommand:
         self,
         command: VersionCommand,
         release_type: ReleaseType,
-        release_version: Optional[str],
-    ) -> str:
+        release_version: Optional[Version],
+    ) -> Version:
         current_version = command.get_current_version()
         calculator = command.get_version_calculator()
         if release_type == ReleaseType.CALENDAR:
@@ -97,14 +93,9 @@ class ReleaseCommand:
         git_tags = self.git.list_tags()
         return git_version in git_tags
 
-    def _create_changelog(self, release_version: str, cc_config: Path) -> str:
-        last_release_version = get_last_release_version(self.git_tag_prefix)
-
-        self.terminal.info(
-            f"Creating changelog for {release_version} since "
-            f"{last_release_version}"
-        )
-
+    def _create_changelog(
+        self, release_version: str, last_release_version: str, cc_config: Path
+    ) -> str:
         changelog_builder = ChangelogBuilder(
             space=self.space,
             project=self.project,
@@ -139,7 +130,7 @@ class ReleaseCommand:
         space: str,
         project: Optional[str],
         release_type: ReleaseType,
-        release_version: Optional[str],
+        release_version: Optional[Version],
         next_version: Optional[str],
         git_signing_key: str,
         git_remote_name: Optional[str],
@@ -222,7 +213,16 @@ class ReleaseCommand:
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
-        release_text = self._create_changelog(release_version, cc_config)
+        last_release_version = get_last_release_version(self.git_tag_prefix)
+
+        self.terminal.info(
+            f"Creating changelog for {release_version} since "
+            f"{last_release_version}"
+        )
+
+        release_text = self._create_changelog(
+            release_version, last_release_version, cc_config
+        )
 
         self.terminal.info("Committing changes")
 

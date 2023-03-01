@@ -20,7 +20,6 @@
 from unittest.mock import MagicMock, call, patch
 
 from pontos.github.api.client import (
-    ACCEPT_HEADER_OCTET_STREAM,
     DEFAULT_ACCEPT_HEADER,
     GITHUB_API_VERSION,
     GitHubAsyncRESTClient,
@@ -257,7 +256,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             "GET",
             f"{DEFAULT_GITHUB_API_URL}/foo/bar",
             headers={
-                "Accept": ACCEPT_HEADER_OCTET_STREAM,
+                "Accept": DEFAULT_ACCEPT_HEADER,
                 "Authorization": "token token",
                 "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },
@@ -277,7 +276,7 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             "GET",
             "https://github.com/foo/bar",
             headers={
-                "Accept": ACCEPT_HEADER_OCTET_STREAM,
+                "Accept": DEFAULT_ACCEPT_HEADER,
                 "Authorization": "token token",
                 "X-GitHub-Api-Version": GITHUB_API_VERSION,
             },

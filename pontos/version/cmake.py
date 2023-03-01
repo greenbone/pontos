@@ -17,34 +17,27 @@
 
 
 import re
-from typing import Generator, Optional, Tuple
+from typing import Generator, Literal, Optional, Tuple, Union
 
-from packaging.version import Version
+from pontos.version.errors import VersionError
 
-from .errors import VersionError
-from .helper import (
-    check_develop,
-    is_version_pep440_compliant,
-    safe_version,
-    versions_equal,
-)
-from .version import VersionCommand, VersionUpdate
+from .version import Version, VersionCommand, VersionUpdate, parse_version
 
 
 class CMakeVersionCommand(VersionCommand):
     project_file_name = "CMakeLists.txt"
 
     def update_version(
-        self, new_version: str, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
         content = self.project_file_path.read_text(encoding="utf-8")
-        cmvp = CMakeVersionParser(content)
+        cmake_version_parser = CMakeVersionParser(content)
         previous_version = self.get_current_version()
 
-        if not force and versions_equal(new_version, previous_version):
+        if not force and new_version == previous_version:
             return VersionUpdate(previous=previous_version, new=new_version)
 
-        new_content = cmvp.update_version(new_version)
+        new_content = cmake_version_parser.update_version(new_version)
         self.project_file_path.write_text(new_content, encoding="utf-8")
         return VersionUpdate(
             previous=previous_version,
@@ -52,15 +45,18 @@ class CMakeVersionCommand(VersionCommand):
             changed_files=[self.project_file_path],
         )
 
-    def get_current_version(self) -> str:
+    def get_current_version(self) -> Version:
         content = self.project_file_path.read_text(encoding="utf-8")
         return CMakeVersionParser(content).get_current_version()
 
-    def verify_version(self, version: str) -> None:
+    def verify_version(
+        self, version: Union[Literal["current"], Version]
+    ) -> None:
         current_version = self.get_current_version()
-        if not is_version_pep440_compliant(current_version):
+        if current_version != version:
             raise VersionError(
-                f"The version {current_version} is not PEP 440 compliant."
+                f"Provided version {version} does not match the "
+                f"current version {current_version}."
             )
 
 
@@ -89,33 +85,26 @@ class CMakeVersionParser:
         ]
     )
 
-    def get_current_version(self) -> str:
-        if self.is_dev_version():
-            return f"{self._current_version}.dev1"
-        return self._current_version
+    def get_current_version(self) -> Version:
+        return (
+            parse_version(f"{self._current_version}.dev1")
+            if self.is_dev_version()
+            else parse_version(self._current_version)
+        )
 
-    def update_version(self, new_version: str) -> str:
-        if not is_version_pep440_compliant(new_version):
-            raise VersionError(
-                f"version {new_version} is not pep 440 compliant."
+    def update_version(self, new_version: Version) -> str:
+        if new_version.is_devrelease:
+            new_version = parse_version(
+                f"{str(new_version.major)}."
+                f"{str(new_version.minor)}."
+                f"{str(new_version.micro)}"
             )
-
-        new_version = safe_version(new_version)
-        if check_develop(new_version):
-            vers = Version(new_version)
-            if vers.dev is not None:
-                new_version = str(
-                    Version(
-                        f"{str(vers.major)}.{str(vers.minor)}"
-                        f".{str(vers.micro)}"
-                    )
-                )
             develop = True
         else:
             develop = False
 
         to_update = self._cmake_content_lines[self._version_line_number]
-        updated = to_update.replace(self._current_version, new_version)
+        updated = to_update.replace(self._current_version, str(new_version))
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
         if self._project_dev_version_line_number:
