@@ -17,12 +17,11 @@
 
 import re
 from pathlib import Path
-
-from pontos.git import Git, TagSort
+from typing import Literal, Union
 
 from .errors import VersionError
-from .helper import is_version_pep440_compliant, safe_version, versions_equal
-from .version import VersionCommand, VersionUpdate
+from .helper import get_last_release_version
+from .version import Version, VersionCommand, VersionUpdate, parse_version
 
 TEMPLATE = """package main
 
@@ -37,15 +36,15 @@ class GoVersionCommand(VersionCommand):
     project_file_name = "go.mod"
     version_file_path = Path("version.go")
 
-    def _update_version_file(self, new_version: str) -> None:
+    def _update_version_file(self, new_version: Version) -> None:
         """
         Update the version file with the new version
         """
         self.version_file_path.write_text(
-            TEMPLATE.format(new_version), encoding="utf-8"
+            TEMPLATE.format(str(new_version)), encoding="utf-8"
         )
 
-    def get_current_version(self) -> str:
+    def get_current_version(self) -> Version:
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
@@ -57,7 +56,7 @@ class GoVersionCommand(VersionCommand):
                 r'var version = "([deprv0-9.]+)"', version_file_text
             )
             if match:
-                return match.group(1)
+                return parse_version(match.group(1))
             else:
                 raise VersionError(
                     f"No version found in the {self.version_file_path} file."
@@ -68,32 +67,27 @@ class GoVersionCommand(VersionCommand):
                 "This file is required for pontos"
             )
 
-    def verify_version(self, version: str) -> None:
+    def verify_version(
+        self, version: Union[Literal["current"], Version]
+    ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
-        if not is_version_pep440_compliant(current_version):
-            raise VersionError(
-                f"The version {current_version} is not PEP 440 compliant."
-            )
-
-        if not versions_equal(current_version, version):
+        if current_version != version:
             raise VersionError(
                 f"Provided version {version} does not match the "
                 f"current version {current_version}."
             )
 
     def update_version(
-        self, new_version: str, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
         """Update the current version of this project"""
-        new_version = safe_version(new_version)
-
         try:
             current_version = self.get_current_version()
         except VersionError:
-            current_version = Git().list_tags(sort=TagSort.VERSION)[-1]
+            current_version = get_last_release_version("v")
 
-        if not force and versions_equal(new_version, current_version):
+        if not force and new_version == current_version:
             return VersionUpdate(previous=current_version, new=new_version)
 
         self._update_version_file(new_version=new_version)

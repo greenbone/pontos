@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Callable, Tuple, Type
 
 from pontos.release.helper import ReleaseType
+from pontos.version.version import parse_version
 
 from .release import release
 from .sign import sign
@@ -92,6 +93,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
             "Will release changelog as version. Must be PEP 440 compliant. "
             "default: lookup version in project definition."
         ),
+        type=parse_version,
         action=ReleaseVersionAction,
     )
 
@@ -101,6 +103,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
             "Sets the next PEP 440 compliant version in project definition "
             "after the release. default: set to next dev version"
         ),
+        type=parse_version,
     )
 
     release_parser.add_argument(
@@ -149,6 +152,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     sign_parser.add_argument(
         "--release-version",
         help="Will release changelog as version. Must be PEP 440 compliant.",
+        type=parse_version,
     )
     sign_parser.add_argument(
         "--git-tag-prefix",

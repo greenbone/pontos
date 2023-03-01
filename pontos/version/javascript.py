@@ -18,16 +18,10 @@
 import json
 import re
 from pathlib import Path
-from typing import Any
-
-from pontos.version.helper import (
-    is_version_pep440_compliant,
-    safe_version,
-    versions_equal,
-)
+from typing import Any, Dict, Literal, Union
 
 from .errors import VersionError
-from .version import VersionCommand, VersionUpdate
+from .version import Version, VersionCommand, VersionUpdate, parse_version
 
 GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
 
@@ -38,7 +32,7 @@ class JavaScriptVersionCommand(VersionCommand):
     _package = None
 
     @property
-    def package(self) -> Any:
+    def package(self) -> Dict[str, Any]:
         if self._package:
             return self._package
 
@@ -66,32 +60,29 @@ class JavaScriptVersionCommand(VersionCommand):
 
         return self._package
 
-    def get_current_version(self) -> str:
+    def get_current_version(self) -> Version:
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
-        return self.package["version"]
+        return parse_version(self.package["version"])
 
-    def verify_version(self, version: str) -> None:
+    def verify_version(
+        self, version: Union[Literal["current"], Version]
+    ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
-        if not is_version_pep440_compliant(current_version):
-            raise VersionError(
-                f"The version {current_version} is not PEP 440 compliant."
-            )
-
-        if not versions_equal(current_version, version):
+        if current_version != version:
             raise VersionError(
                 f"Provided version {version} does not match the "
                 f"current version {current_version}."
             )
 
-    def _update_package_json(self, new_version: str) -> None:
+    def _update_package_json(self, new_version: Version) -> None:
         """
         Update the version in the package.json file
         """
         try:
-            self.package["version"] = new_version
+            self.package["version"] = str(new_version)
 
             with self.project_file_path.open(mode="w") as fp:
                 json.dump(obj=self.package, fp=fp, indent=2)
@@ -104,7 +95,7 @@ class JavaScriptVersionCommand(VersionCommand):
         except json.JSONDecodeError as e:
             raise VersionError("Couldn't load JSON") from e
 
-    def _update_version_file(self, new_version: str) -> bool:
+    def _update_version_file(self, new_version: Version) -> bool:
         """
         Update the version file with the new version
         """
@@ -124,12 +115,10 @@ class JavaScriptVersionCommand(VersionCommand):
         return True
 
     def update_version(
-        self, new_version: str, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        new_version = safe_version(new_version)
-
         package_version = self.get_current_version()
-        if not force and versions_equal(new_version, package_version):
+        if not force and new_version == package_version:
             return VersionUpdate(previous=package_version, new=new_version)
 
         changed_files = [self.project_file_path]

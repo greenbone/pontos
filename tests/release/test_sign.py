@@ -240,7 +240,7 @@ class SignTestCase(unittest.TestCase):
                 ],
             )
 
-    @patch("pontos.release.helper.Git", autospec=True)
+    @patch("pontos.version.helper.Git", autospec=True)
     @patch("pontos.release.sign.cmd_runner", autospec=True)
     @patch("pontos.release.sign.SignCommand.download_asset", autospec=True)
     @patch("pontos.release.sign.SignCommand.download_tar", autospec=True)

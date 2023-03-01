@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Type
+from typing import Literal, Type, Union
 
 from packaging.version import InvalidVersion
 from packaging.version import Version as PackagingVersion
@@ -222,16 +222,18 @@ class VersionCommand(ABC):
         self.project_file_path = Path.cwd() / self.project_file_name
 
     @abstractmethod
-    def get_current_version(self) -> str:
+    def get_current_version(self) -> Version:
         """Get the current version of this project"""
 
     @abstractmethod
-    def verify_version(self, version: str) -> None:
+    def verify_version(
+        self, version: Union[Literal["current"], Version]
+    ) -> None:
         """Verify the current version of this project"""
 
     @abstractmethod
     def update_version(
-        self, new_version: str, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
         """Update the current version of this project"""
 

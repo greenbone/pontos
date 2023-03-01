@@ -34,6 +34,7 @@ from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
 from pontos.version.helper import get_last_release_version
+from pontos.version.version import Version
 
 from .helper import get_git_repository_name
 
@@ -173,7 +174,7 @@ class SignCommand:
         project: Optional[str],
         space: str,
         git_tag_prefix: Optional[str],
-        release_version: Optional[str],
+        release_version: Optional[Version],
         signing_key: str,
         passphrase: str,
     ) -> SignReturnValue:
