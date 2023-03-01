@@ -31,14 +31,10 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
 from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
+from pontos.version.helper import get_last_release_version
 from pontos.version.version import VersionCommand
 
-from .helper import (
-    ReleaseType,
-    find_signing_key,
-    get_git_repository_name,
-    get_last_release_version,
-)
+from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
 
 class ReleaseReturnValue(IntEnum):

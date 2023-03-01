@@ -33,8 +33,9 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
+from pontos.version.helper import get_last_release_version
 
-from .helper import get_git_repository_name, get_last_release_version
+from .helper import get_git_repository_name
 
 
 class SignReturnValue(IntEnum):

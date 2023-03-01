@@ -16,12 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from unittest.mock import patch
 
+from pontos.git.git import Git
 from pontos.version.helper import (
+    get_last_release_version,
     is_version_pep440_compliant,
     safe_version,
     strip_version,
 )
+from pontos.version.version import Version
 
 
 class IsVersionPep440CompliantTestCase(unittest.TestCase):
@@ -90,3 +94,25 @@ class StripVersionTestCase(unittest.TestCase):
     def test_version_string_with_v(self):
         self.assertEqual(strip_version("v1.2.3"), "1.2.3")
         self.assertEqual(strip_version("v1.2.3dev"), "1.2.3dev")
+
+
+class GetLastReleaseVersionTestCase(unittest.TestCase):
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_version(self, _git_interface_mock):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = ["1", "2", "3.55"]
+        self.assertEqual(get_last_release_version(), Version("3.55"))
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_no_release_version(self, _git_interface_mock):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = []
+        self.assertIsNone(get_last_release_version())
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_version_with_git_prefix(
+        self, _git_interface_mock
+    ):
+        git_interface = _git_interface_mock.return_value
+        git_interface.list_tags.return_value = ["v1", "v2", "v3.55"]
+        self.assertEqual(get_last_release_version("v"), Version("3.55"))
