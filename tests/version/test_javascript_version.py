@@ -21,9 +21,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
-from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
 from pontos.version.javascript import JavaScriptVersionCommand
+from pontos.version.version import Version, VersionCalculator
 
 
 class JavaScriptVersionCommandTestCase(unittest.TestCase):
@@ -40,7 +40,7 @@ class GetCurrentJavaScriptVersionCommandTestCase(unittest.TestCase):
             cmd = JavaScriptVersionCommand()
             version = cmd.get_current_version()
 
-            self.assertEqual(version, "1.2.3")
+            self.assertEqual(version, Version("1.2.3"))
 
     def test_no_project_file(self):
         with temp_directory(change_into=True), self.assertRaisesRegex(
@@ -73,10 +73,10 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
         with temp_file(content, name="package.json", change_into=True) as temp:
             cmd = JavaScriptVersionCommand()
             cmd.get_current_version()
-            updated = cmd.update_version("22.4.0")
+            updated = cmd.update_version(Version("22.4.0"))
 
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.new, "22.4.0")
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("22.4.0"))
             self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
@@ -89,10 +89,10 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
         with temp_file(content, name="package.json", change_into=True) as temp:
             cmd = JavaScriptVersionCommand()
-            updated = cmd.update_version("22.4.0.dev1")
+            updated = cmd.update_version(Version("22.4.0.dev1"))
 
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.new, "22.4.0.dev1")
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("22.4.0.dev1"))
             self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
@@ -105,10 +105,10 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
         with temp_file(content, name="package.json", change_into=True) as temp:
             cmd = JavaScriptVersionCommand()
-            updated = cmd.update_version("1.2.3")
+            updated = cmd.update_version(Version("1.2.3"))
 
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("1.2.3"))
             self.assertEqual(updated.changed_files, [])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
@@ -121,10 +121,10 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
         with temp_file(content, name="package.json", change_into=True) as temp:
             cmd = JavaScriptVersionCommand()
-            updated = cmd.update_version("1.2.3", force=True)
+            updated = cmd.update_version(Version("1.2.3"), force=True)
 
-            self.assertEqual(updated.previous, "1.2.3")
-            self.assertEqual(updated.new, "1.2.3")
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("1.2.3"))
             self.assertEqual(updated.changed_files, [temp])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
@@ -134,37 +134,26 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
 
 class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
-    def test_current_version_not_pep440_compliant(self):
-        with patch.object(
-            JavaScriptVersionCommand,
-            "get_current_version",
-            MagicMock(return_value="01.02.003"),
-        ), self.assertRaisesRegex(
-            VersionError, "The version .* is not PEP 440 compliant."
-        ):
-            cmd = JavaScriptVersionCommand()
-            cmd.verify_version("22.4")
-
     def test_versions_not_equal(self):
         with patch.object(
             JavaScriptVersionCommand,
             "get_current_version",
-            MagicMock(return_value="1.2.3"),
+            MagicMock(return_value=Version("1.2.3")),
         ), self.assertRaisesRegex(
             VersionError,
             "Provided version .* does not match the current version .*",
         ):
             cmd = JavaScriptVersionCommand()
-            cmd.verify_version("22.4")
+            cmd.verify_version(Version("22.4"))
 
     def test_verify_success(self):
         with patch.object(
             JavaScriptVersionCommand,
             "get_current_version",
-            MagicMock(return_value="22.4"),
+            MagicMock(return_value=Version("22.4")),
         ):
             cmd = JavaScriptVersionCommand()
-            cmd.verify_version("22.4")
+            cmd.verify_version(Version("22.4"))
 
 
 class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):

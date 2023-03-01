@@ -25,6 +25,7 @@ from pontos.release.helper import ReleaseType
 from pontos.release.parser import DEFAULT_SIGNING_KEY, parse_args
 from pontos.release.release import release
 from pontos.release.sign import sign
+from pontos.version.version import Version
 
 
 class ParseArgsTestCase(unittest.TestCase):
@@ -105,7 +106,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
             ["release", "--next-version", "1.2.3", "--release-type", "patch"]
         )
 
-        self.assertEqual(args.next_version, "1.2.3")
+        self.assertEqual(args.next_version, Version("1.2.3"))
 
     def test_release_type(self):
         _, _, args = parse_args(["release", "--release-type", "patch"])
@@ -155,12 +156,12 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
             ]
         )
         self.assertEqual(args.release_type, ReleaseType.VERSION)
-        self.assertEqual(args.release_version, "1.2.3")
+        self.assertEqual(args.release_version, Version("1.2.3"))
 
     def test_release_version(self):
         _, _, args = parse_args(["release", "--release-version", "1.2.3"])
 
-        self.assertEqual(args.release_version, "1.2.3")
+        self.assertEqual(args.release_version, Version("1.2.3"))
         self.assertEqual(args.release_type, ReleaseType.VERSION)
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
@@ -238,7 +239,7 @@ class SignParseArgsTestCase(unittest.TestCase):
     def test_release_version(self):
         _, _, args = parse_args(["sign", "--release-version", "1.2.3"])
 
-        self.assertEqual(args.release_version, "1.2.3")
+        self.assertEqual(args.release_version, Version("1.2.3"))
 
     def test_dry_run(self):
         _, _, args = parse_args(["sign", "--dry-run"])

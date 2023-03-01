@@ -28,10 +28,14 @@ from pontos.release.main import parse_args
 from pontos.release.release import ReleaseReturnValue, release
 from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
-from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
 from pontos.version.go import GoVersionCommand
-from pontos.version.version import VersionCommand, VersionUpdate
+from pontos.version.version import (
+    Version,
+    VersionCalculator,
+    VersionCommand,
+    VersionUpdate,
+)
 
 
 def mock_terminal() -> MagicMock:
@@ -56,16 +60,21 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2")
+        next_version = Version("1.0.0.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="0.0.2", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2",
-                new="1.0.0.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -99,12 +108,12 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1")]
+            [call(release_version), call(next_version)]
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -147,20 +156,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2")
+        next_version = Version("1.0.0.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="0.0.2", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2",
-                new="1.0.0.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -193,12 +207,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -241,22 +255,27 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("23.2.0")
+        next_version = Version("23.2.1.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="23.2.0", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="23.2.0",
-                new="23.2.1.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_calculator = MagicMock(spec=VersionCalculator)
-        version_calculator.next_calendar_version.return_value = "23.2.0"
+        version_calculator.next_calendar_version.return_value = release_version
         version_command_mock.get_version_calculator.return_value = (
             version_calculator
         )
@@ -289,15 +308,15 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_calculator.next_calendar_version.assert_called_once_with(
-            "0.0.1"
+            current_version
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("23.2.0"), call("23.2.1.dev1")]
+            [call(release_version), call(next_version)]
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("23.2.0", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -340,20 +359,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.1.0")
+        next_version = Version("0.1.1.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="0.1.0", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.1.0",
-                new="0.1.1.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -386,12 +410,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("0.1.0"), call("0.1.1.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.1.0", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -434,20 +458,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("1.0.0")
+        next_version = Version("1.0.1.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="1.0.0", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="1.0.0",
-                new="1.0.1.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -480,12 +509,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("1.0.0"), call("1.0.1.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("1.0.0", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -528,22 +557,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2a1")
+        next_version = Version("0.0.3.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2a1",
+                previous=current_version,
+                new=release_version,
                 changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2a1",
-                new="0.0.3.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -574,12 +606,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2a1"), call("0.0.3.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2a1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -622,22 +654,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2b1")
+        next_version = Version("0.0.3.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2b1",
+                previous=current_version,
+                new=release_version,
                 changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2b1",
-                new="0.0.3.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -668,12 +703,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2b1"), call("0.0.3.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2b1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -716,22 +751,25 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2rc1")
+        next_version = Version("0.0.3.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2rc1",
+                previous=current_version,
+                new=release_version,
                 changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2rc1",
-                new="0.0.3.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
-        version_command_mock.get_current_version.return_value = "0.0.1"
+        version_command_mock.get_current_version.return_value = current_version
         version_command_mock.get_version_calculator.return_value = (
             VersionCalculator()
         )
@@ -762,12 +800,12 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2rc1"), call("0.0.3.dev1")],
+            [call(release_version), call(next_version)],
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2rc1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_has_calls(
@@ -973,7 +1011,9 @@ class ReleaseTestCase(unittest.TestCase):
 
         git_mock.return_value.push.assert_not_called()
 
-        version_command_mock.update_version.assert_called_once_with("0.0.1")
+        version_command_mock.update_version.assert_called_once_with(
+            Version("0.0.1")
+        )
 
         create_release_mock.assert_not_awaited()
 
@@ -998,15 +1038,20 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -1051,7 +1096,7 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         self.assertEqual(released, ReleaseReturnValue.CREATE_RELEASE_ERROR)
@@ -1071,12 +1116,17 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionError("An error"),
         ]
@@ -1107,12 +1157,12 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.1"), call("0.0.2.dev1")]
+            [call(release_version), call(next_version)]
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         git_mock.return_value.add.assert_called_once_with("MyProject.conf")
@@ -1142,15 +1192,20 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -1188,7 +1243,11 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
+        )
+
+        version_command_mock.update_version.assert_has_calls(
+            [call(release_version), call(next_version)],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1219,15 +1278,20 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -1265,7 +1329,11 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.1", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
+        )
+
+        version_command_mock.update_version.assert_has_calls(
+            [call(release_version), call(next_version)],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1294,15 +1362,20 @@ class ReleaseTestCase(unittest.TestCase):
         github_api_mock: AsyncMock,
         git_mock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -1346,6 +1419,10 @@ class ReleaseTestCase(unittest.TestCase):
             "bar/foo", "v0.0.1", name="foo 0.0.1", body="A Changelog"
         )
 
+        version_command_mock.update_version.assert_has_calls(
+            [call(release_version), call(next_version)],
+        )
+
         git_mock.return_value.add.assert_called_with("MyProject.conf")
         git_mock.return_value.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
@@ -1373,6 +1450,8 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
+        release_version = Version("0.0.2")
+
         create_changelog_mock.return_value = "A Changelog"
         _, token, args = parse_args(["release", "--release-type", "patch"])
 
@@ -1412,7 +1491,7 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2", "foo", "A Changelog"),
+            (release_version, "foo", "A Changelog"),
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
@@ -1432,19 +1511,24 @@ class ReleaseTestCase(unittest.TestCase):
         cc_git_mock: MagicMock,
         git_mock: MagicMock,
     ):
+        current_version = Version("0.0.1")
+        release_version = Version("0.0.2")
+        next_version = Version("1.0.0.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.1", new="0.0.2", changed_files=["project.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["project.conf"],
             ),
             VersionUpdate(
-                previous="0.0.2",
-                new="1.0.0.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["project.conf", "version.lang"],
             ),
         ]
-        get_last_release_version_mock.return_value = "0.0.1"
+        get_last_release_version_mock.return_value = current_version
         cc_git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
             "8abcdef Add: bar baz",
@@ -1510,12 +1594,12 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         version_command_mock.update_version.assert_has_calls(
-            [call("0.0.2"), call("1.0.0.dev1")]
+            [call(release_version), call(next_version)]
         )
 
         self.assertEqual(
             create_release_mock.await_args.args[1:],
-            ("0.0.2", "foo", expected_changelog),
+            (release_version, "foo", expected_changelog),
         )
 
         git_mock.return_value.tag.assert_called_once_with(
@@ -1557,15 +1641,20 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1")
+        next_version = Version("0.0.2.dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         version_command_mock.update_version.side_effect = [
             VersionUpdate(
-                previous="0.0.0", new="0.0.1", changed_files=["MyProject.conf"]
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
             ),
             VersionUpdate(
-                previous="0.0.1",
-                new="0.0.2.dev1",
+                previous=release_version,
+                new=next_version,
                 changed_files=["MyProject.conf"],
             ),
         ]
@@ -1596,6 +1685,10 @@ class ReleaseTestCase(unittest.TestCase):
         git_mock.return_value.push.assert_not_called()
 
         create_release_mock.assert_not_awaited()
+
+        version_command_mock.update_version.assert_has_calls(
+            [call(release_version), call(next_version)]
+        )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
         git_mock.return_value.commit.assert_called_with(
