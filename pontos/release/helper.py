@@ -16,10 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from typing import Optional
 
 from pontos.git import Git, GitError
-from pontos.git.git import TagSort
 from pontos.terminal import Terminal
 
 DEFAULT_TIMEOUT = 1000
@@ -35,26 +33,6 @@ class ReleaseType(Enum):
     ALPHA = "alpha"
     BETA = "beta"
     RELEASE_CANDIDATE = "release-candidate"
-
-
-def get_last_release_version(
-    git_tag_prefix: Optional[str] = "",
-) -> Optional[str]:
-    """Get the last released Version from git.
-
-    Returns:
-        Last released git-tag if tags were found
-        or None
-    """
-
-    git_interface = Git()
-    tag_list = git_interface.list_tags(sort=TagSort.VERSION)
-
-    if not tag_list:
-        return None
-
-    last_release_version = tag_list[-1]
-    return last_release_version.strip(git_tag_prefix)
 
 
 def get_git_repository_name(

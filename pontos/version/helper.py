@@ -18,8 +18,12 @@
 #
 
 import re
+from typing import Optional
 
-from packaging.version import InvalidVersion, Version
+from packaging.version import InvalidVersion
+
+from pontos.git import Git, TagSort
+from pontos.version.version import Version, parse_version
 
 
 def strip_version(version: str) -> str:
@@ -70,3 +74,24 @@ def versions_equal(new_version: str, old_version: str) -> bool:
     Checks if new_version and old_version are equal
     """
     return safe_version(old_version) == safe_version(new_version)
+
+
+def get_last_release_version(
+    git_tag_prefix: Optional[str] = "",
+) -> Optional[Version]:
+    """Get the last released Version from git.
+
+    Returns:
+        Last released git-tag if tags were found
+        or None
+    """
+
+    tag_list = Git().list_tags(sort=TagSort.VERSION)
+
+    if not tag_list:
+        return None
+
+    last_release_version = tag_list[-1]
+    last_release_version = last_release_version.strip(git_tag_prefix)
+
+    return parse_version(last_release_version)

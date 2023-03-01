@@ -20,14 +20,10 @@ import subprocess
 import unittest
 from pathlib import Path
 from typing import Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from pontos.git.git import ConfigScope, Git, GitError, exec_git
-from pontos.release.helper import (
-    find_signing_key,
-    get_git_repository_name,
-    get_last_release_version,
-)
+from pontos.release.helper import find_signing_key, get_git_repository_name
 from pontos.testing import temp_git_repository
 
 
@@ -94,25 +90,3 @@ class FindSigningKeyTestCase(unittest.TestCase):
                 git.config(
                     "user.signingkey", saved_key, scope=ConfigScope.GLOBAL
                 )
-
-
-class GetLastReleaseVersionTestCase(unittest.TestCase):
-    @patch("pontos.release.helper.Git", spec=Git)
-    def test_get_last_release_version(self, _git_interface_mock):
-        git_interface = _git_interface_mock.return_value
-        git_interface.list_tags.return_value = ["1", "2", "3.55"]
-        self.assertEqual(get_last_release_version(), "3.55")
-
-    @patch("pontos.release.helper.Git", spec=Git)
-    def test_get_no_release_version(self, _git_interface_mock):
-        git_interface = _git_interface_mock.return_value
-        git_interface.list_tags.return_value = []
-        self.assertIsNone(get_last_release_version())
-
-    @patch("pontos.release.helper.Git", spec=Git)
-    def test_get_last_release_version_with_git_prefix(
-        self, _git_interface_mock
-    ):
-        git_interface = _git_interface_mock.return_value
-        git_interface.list_tags.return_value = ["v1", "v2", "v3.55"]
-        self.assertEqual(get_last_release_version("v"), "3.55")
