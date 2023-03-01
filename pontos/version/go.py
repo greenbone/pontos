@@ -41,9 +41,14 @@ class GoVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        self.version_file_path.write_text(
-            TEMPLATE.format(str(new_version)), encoding="utf-8"
-        )
+        if self.version_file_path.exists():
+            version = self.get_current_version()
+            template = self.version_file_path.read_text(
+                encoding="utf-8"
+            ).replace(str(version), str(new_version))
+        else:
+            template = TEMPLATE.format(str(new_version))
+        self.version_file_path.write_text(template, encoding="utf-8")
 
     def get_current_version(self) -> Version:
         """Get the current version of this project
