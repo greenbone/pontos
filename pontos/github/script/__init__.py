@@ -91,6 +91,9 @@ def main():
         except json.JSONDecodeError:
             # not a json response
             print(e, file=sys.stderr)
+        except httpx.ResponseNotRead:
+            # a streaming response failed
+            print(e, file=sys.stderr)
 
         sys.exit(1)
     except PontosError as e:
