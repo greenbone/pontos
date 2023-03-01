@@ -29,6 +29,7 @@ from typing import (
 import httpx
 
 from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.helper import JSON_OBJECT
 from pontos.github.models.release import Release
 from pontos.helper import AsyncDownloadProgressIterable, download_async, upload
 
@@ -42,8 +43,8 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         body: Optional[str] = None,
         name: Optional[str] = None,
         target_commitish: Optional[str] = None,
-        draft: Optional[bool] = False,
-        prerelease: Optional[bool] = False,
+        draft: bool = False,
+        prerelease: bool = False,
     ) -> Release:
         """
         Create a new GitHub release
@@ -62,7 +63,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         Raises:
             httpx.HTTPStatusError if the request was invalid
         """
-        data = {
+        data: JSON_OBJECT = {
             "tag_name": tag,
             "draft": draft,
             "prerelease": prerelease,
@@ -284,13 +285,13 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                 params={"name": file_path.name},
                 content_type=content_type,
                 content_length=file_path.stat().st_size,
-                content=upload(file_path),
+                content=upload(file_path),  # type: ignore
             )
             return response, file_path
 
         tasks = []
         for file_path in files:
-            if isinstance(file_path, Tuple):
+            if isinstance(file_path, tuple):
                 file_path, content_type = file_path
             else:
                 content_type = "application/octet-stream"

@@ -20,7 +20,7 @@
 import os
 from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from pontos.github.api import FileStatus
 from pontos.github.cmds import (
@@ -49,7 +49,7 @@ def get_repository_type(rtype: str) -> RepositoryType:
 
 
 def parse_args(
-    args: List[str] = None,
+    args: Optional[List[str]] = None,
 ) -> Namespace:
     """
     Parsing args for Pontos GitHub

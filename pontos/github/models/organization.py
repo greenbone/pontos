@@ -233,7 +233,7 @@ class Repository(GitHubModel):
     squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None
     squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None
     temp_clone_token: Optional[str] = None
-    topics: Optional[List[str]] = field(default_factory=list)
+    topics: Optional[List[str]] = field(default_factory=list[str])
     updated_at: Optional[datetime] = None
     use_squash_pr_title_as_default: Optional[bool] = None
     visibility: Optional[str] = None

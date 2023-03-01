@@ -17,10 +17,10 @@
 
 from collections import defaultdict
 from pathlib import Path
-from typing import AsyncIterator, Dict, Iterable, Optional
+from typing import AsyncIterator, Dict, Iterable, List, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.helper import FileStatus
+from pontos.github.api.helper import JSON_OBJECT, FileStatus
 from pontos.github.models.pull_request import PullRequest, PullRequestCommit
 
 
@@ -109,7 +109,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             httpx.HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/pulls"
-        data = {
+        data: JSON_OBJECT = {
             "head": head_branch,
             "base": base_branch,
             "title": title,
@@ -147,7 +147,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
 
-        data = {}
+        data: JSON_OBJECT = {}
         if base_branch:
             data["base"] = base_branch
         if title:
@@ -174,7 +174,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             httpx.HTTPStatusError if the request was invalid
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
-        data = {"body": comment}
+        data: JSON_OBJECT = {"body": comment}
         response = await self._client.post(api, data=data)
         response.raise_for_status()
 
@@ -205,7 +205,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/files"
-        file_dict = defaultdict(list)
+        file_dict: Dict[FileStatus, List[Path]] = defaultdict(list)
 
         async for response in self._client.get_all(api, params=params):
             for f in response.json():
@@ -218,4 +218,4 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
                 if not status_list or status in status_list:
                     file_dict[status].append(Path(f["filename"]))
 
-        return file_dict
+        return file_dict  # type: ignore

@@ -69,14 +69,14 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
     def _request_headers(
         self,
         *,
-        accept: Optional[str] = DEFAULT_ACCEPT_HEADER,
+        accept: str = DEFAULT_ACCEPT_HEADER,
         content_type: Optional[str] = None,
         content_length: Optional[int] = None,
     ) -> Headers:
         """
         Get the default request headers
         """
-        headers = {
+        headers: Dict[str, str] = {
             "Accept": accept,
             "X-GitHub-Api-Version": GITHUB_API_VERSION,
         }
@@ -91,7 +91,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
     def _request_kwargs(
         self, *, json: Optional[JSON] = None, content: Optional[Any] = None
-    ) -> Dict[str, str]:
+    ) -> JSON:
         """
         Get the default request arguments
         """
@@ -100,7 +100,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             kwargs["json"] = json
         if content is not None:
             kwargs["content"] = content
-        return kwargs
+        return kwargs  # type: ignore
 
     def _request_api_url(self, api: str) -> str:
         return f"{self.url}{api}"
@@ -128,7 +128,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         url = self._request_url(api)
         headers = self._request_headers()
         kwargs = self._request_kwargs()
-        return await self._client.get(
+        return await self._client.get(  # type: ignore
             url,
             headers=headers,
             params=params,
@@ -271,7 +271,9 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        return await self._client.__aexit__(exc_type, exc_value, traceback)
+        return await self._client.__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )
 
 
 class GitHubAsyncREST:
@@ -302,5 +304,5 @@ class GitHubAsyncREST:
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
             data: JSON_OBJECT = response.json()
-            for item in data.get(name, []):
-                yield model_cls.from_dict(item)
+            for item in data.get(name, []):  # type: ignore
+                yield model_cls.from_dict(item)  # type:ignore

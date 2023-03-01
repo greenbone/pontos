@@ -46,7 +46,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             data: JSON = response.json()
 
             for label in data:
-                yield label["name"]
+                yield label["name"]  # type: ignore
 
     async def set_all(
         self, repo: str, issue: int, labels: Iterable[str]
@@ -61,6 +61,6 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
                 be overwritten.
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
-        data = {"labels": labels}
+        data: JSON = {"labels": labels}  # type: ignore
         response = await self._client.post(api, data=data)
         response.raise_for_status()
