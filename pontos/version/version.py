@@ -129,6 +129,13 @@ class VersionCalculator:
                 f"{current_version.minor}."
                 f"{current_version.micro }.dev{current_version.dev + 1}"
             )
+        elif current_version.is_prerelease:
+            release_version = parse_version(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.micro }{current_version.pre[0]}"
+                f"{current_version.pre[1]}+dev1"
+            )
         else:
             release_version = parse_version(
                 f"{current_version.major}."
