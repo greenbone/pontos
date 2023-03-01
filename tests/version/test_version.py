@@ -18,8 +18,8 @@
 import unittest
 from datetime import datetime
 
-from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
+from pontos.version.version import Version, VersionCalculator, parse_version
 
 
 class VersionCalculatorTestCase(unittest.TestCase):
@@ -52,15 +52,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_patch_version(current_version)
+            release_version = calculator.next_patch_version(
+                Version(current_version)
+            )
 
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_patch_version_invalid_version(self):
-        calculator = VersionCalculator()
-
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_patch_version("abc")
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_calendar_versions(self):
         calculator = VersionCalculator()
@@ -83,8 +79,10 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_calendar_version(current_version)
-            self.assertEqual(release_version, assert_version)
+            release_version = calculator.next_calendar_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_calendar_version_error(self):
         calculator = VersionCalculator()
@@ -92,11 +90,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
         year_short = today.year % 100
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
-            calculator.next_calendar_version(f"{year_short  + 1}.1.0")
+            calculator.next_calendar_version(Version(f"{year_short  + 1}.1.0"))
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
             calculator.next_calendar_version(
-                f"{year_short}.{today.month + 1}.0"
+                Version(f"{year_short}.{today.month + 1}.0")
             )
 
     def test_next_minor_version(self):
@@ -128,13 +126,10 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_minor_version(current_version)
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_minor_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_minor_version("abc")
+            release_version = calculator.next_minor_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_major_version(self):
         calculator = VersionCalculator()
@@ -165,13 +160,10 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_major_version(current_version)
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_major_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_major_version("abc")
+            release_version = calculator.next_major_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_alpha_version(self):
         calculator = VersionCalculator()
@@ -202,13 +194,10 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_alpha_version(current_version)
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_alpha_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_alpha_version("abc")
+            release_version = calculator.next_alpha_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_beta_version(self):
         calculator = VersionCalculator()
@@ -239,13 +228,10 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_beta_version(current_version)
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_beta_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_beta_version("abc")
+            release_version = calculator.next_beta_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_release_candidate_version(self):
         calculator = VersionCalculator()
@@ -277,14 +263,9 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_release_candidate_version(
-                current_version
+                Version(current_version)
             )
-            self.assertEqual(release_version, assert_version)
-
-    def test_next_release_candidate_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_release_candidate_version("abc")
+            self.assertEqual(release_version, Version(assert_version))
 
     def test_next_dev_version(self):
         calculator = VersionCalculator()
@@ -315,10 +296,36 @@ class VersionCalculatorTestCase(unittest.TestCase):
         for current_version, assert_version in zip(
             current_versions, assert_versions
         ):
-            release_version = calculator.next_dev_version(current_version)
-            self.assertEqual(release_version, assert_version)
+            release_version = calculator.next_dev_version(
+                Version(current_version)
+            )
+            self.assertEqual(release_version, Version(assert_version))
 
-    def test_next_dev_version_error(self):
-        calculator = VersionCalculator()
-        with self.assertRaisesRegex(VersionError, "Invalid version: 'abc'"):
-            calculator.next_dev_version("abc")
+
+class ParseVersionTestCase(unittest.TestCase):
+    def test_parse_version(self):
+        versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        for version in versions:
+            self.assertEqual(parse_version(version), Version(version))
+
+    def test_parse_error(self):
+        versions = [
+            "abc",
+            "1.2.3d",
+        ]
+
+        for version in versions:
+            with self.assertRaisesRegex(
+                VersionError, "^Invalid version: '.*'$"
+            ):
+                parse_version(version)
