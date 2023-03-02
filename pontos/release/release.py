@@ -29,10 +29,10 @@ from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
-from pontos.version.commands import gather_project
 from pontos.version.errors import VersionError
 from pontos.version.helper import get_last_release_version
-from pontos.version.version import Version, VersionCommand
+from pontos.version.project import Project
+from pontos.version.version import Version
 
 from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
@@ -55,12 +55,12 @@ class ReleaseCommand:
 
     def _get_release_version(
         self,
-        command: VersionCommand,
+        project: Project,
         release_type: ReleaseType,
         release_version: Optional[Version],
     ) -> Version:
-        current_version = command.get_current_version()
-        calculator = command.get_version_calculator()
+        current_version = project.get_current_version()
+        calculator = project.get_version_calculator()
         if release_type == ReleaseType.CALENDAR:
             return calculator.next_calendar_version(current_version)
 
@@ -176,14 +176,14 @@ class ReleaseCommand:
         self.space = space
 
         try:
-            command = gather_project()
+            project = Project.gather_project()
         except PontosError as e:
             self.terminal.error(f"Unable to determine project settings. {e}")
             return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
         try:
             release_version = self._get_release_version(
-                command, release_type, release_version
+                project, release_type, release_version
             )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
@@ -201,7 +201,7 @@ class ReleaseCommand:
             return ReleaseReturnValue.ALREADY_TAKEN
 
         try:
-            updated = command.update_version(release_version)
+            updated = project.update_version(release_version)
 
             self.terminal.ok(f"Updated version to {release_version}")
 
@@ -253,13 +253,12 @@ class ReleaseCommand:
                 self.terminal.error(str(e))
                 return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
-        calculator = command.get_version_calculator()
-
         if not next_version:
+            calculator = project.get_version_calculator()
             next_version = calculator.next_dev_version(release_version)
 
         try:
-            updated = command.update_version(next_version)
+            updated = project.update_version(next_version)
             self.terminal.ok(f"Updated version after release to {next_version}")
         except VersionError as e:
             self.terminal.error(
