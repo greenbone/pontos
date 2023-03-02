@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Type, Union
+from typing import Literal, Union
 
 from packaging.version import InvalidVersion
 from packaging.version import Version as PackagingVersion
@@ -223,7 +223,6 @@ class VersionCommand(ABC):
     version commands for several programming languages"""
 
     project_file_name: str
-    version_calculator_class: Type[VersionCalculator] = VersionCalculator
 
     def __init__(self) -> None:
         self.project_file_path = Path.cwd() / self.project_file_name
@@ -249,6 +248,3 @@ class VersionCommand(ABC):
         Returns True if a command has detected a corresponding project
         """
         return self.project_file_path.exists()
-
-    def get_version_calculator(self) -> VersionCalculator:
-        return self.version_calculator_class()
