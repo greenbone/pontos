@@ -32,7 +32,7 @@ from pontos.terminal import Terminal
 from pontos.version.errors import VersionError
 from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
-from pontos.version.version import Version
+from pontos.version.version import Version, VersionCalculator
 
 from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
@@ -60,7 +60,7 @@ class ReleaseCommand:
         release_version: Optional[Version],
     ) -> Version:
         current_version = project.get_current_version()
-        calculator = project.get_version_calculator()
+        calculator = VersionCalculator()
         if release_type == ReleaseType.CALENDAR:
             return calculator.next_calendar_version(current_version)
 
@@ -254,8 +254,7 @@ class ReleaseCommand:
                 return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
         if not next_version:
-            calculator = project.get_version_calculator()
-            next_version = calculator.next_dev_version(release_version)
+            next_version = VersionCalculator().next_dev_version(release_version)
 
         try:
             updated = project.update_version(next_version)

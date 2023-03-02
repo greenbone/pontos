@@ -16,21 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import List, Literal, Type, Union
+from typing import List, Literal, Union
 
 from pontos.version.commands import get_commands
 from pontos.version.errors import ProjectError
-from pontos.version.version import (
-    Version,
-    VersionCalculator,
-    VersionCommand,
-    VersionUpdate,
-)
+from pontos.version.version import Version, VersionCommand, VersionUpdate
 
 
 class Project:
-    version_calculator_class: Type[VersionCalculator] = VersionCalculator
-
     def __init__(self, commands: List[VersionCommand]) -> None:
         self._commands = commands
 
@@ -53,9 +46,6 @@ class Project:
             raise ProjectError("No project settings file found")
 
         return cls(commands)
-
-    def get_version_calculator(self) -> VersionCalculator:
-        return self.version_calculator_class()
 
     def update_version(
         self, new_version: Version, *, force: bool = False

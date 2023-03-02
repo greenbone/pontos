@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, line-too-long
 
 import unittest
 from datetime import datetime
@@ -31,7 +31,7 @@ from pontos.testing import temp_git_repository
 from pontos.version.errors import VersionError
 from pontos.version.go import GoVersionCommand
 from pontos.version.project import Project
-from pontos.version.version import Version, VersionCalculator, VersionUpdate
+from pontos.version.version import Version, VersionUpdate
 
 
 def mock_terminal() -> MagicMock:
@@ -171,7 +171,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -234,6 +233,7 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
     @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.VersionCalculator", autospec=True)
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
@@ -247,6 +247,7 @@ class ReleaseTestCase(unittest.TestCase):
         gather_project_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
+        version_calculator_mock: MagicMock,
         git_mock: MagicMock,
     ):
         current_version = Version("0.0.1")
@@ -268,9 +269,9 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        version_calculator = MagicMock(spec=VersionCalculator)
-        version_calculator.next_calendar_version.return_value = release_version
-        project_mock.get_version_calculator.return_value = version_calculator
+        version_calculator_mock.return_value.next_calendar_version.return_value = (
+            release_version
+        )
 
         _, token, args = parse_args(
             [
@@ -299,7 +300,7 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        version_calculator.next_calendar_version.assert_called_once_with(
+        version_calculator_mock.return_value.next_calendar_version.assert_called_once_with(
             current_version
         )
         project_mock.update_version.assert_has_calls(
@@ -370,7 +371,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -467,7 +467,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -564,7 +563,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -659,7 +657,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -754,7 +751,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         project_mock.get_current_version.return_value = current_version
-        project_mock.get_version_calculator.return_value = VersionCalculator()
 
         _, token, args = parse_args(
             [
@@ -885,16 +881,19 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
+    @patch("pontos.release.release.VersionCalculator", autospec=True)
     @patch("pontos.release.release.Project.gather_project", autospec=True)
-    def test_no_release(self, gather_project_mock: MagicMock):
+    def test_no_release(
+        self,
+        gather_project_mock: MagicMock,
+        version_calculator_mock: MagicMock,
+    ):
         project_mock = MagicMock(spec=Project)
-        version_calculator_mock = MagicMock(spec=VersionCalculator)
         gather_project_mock.return_value = project_mock
         project_mock.get_current_version.return_value = None
-        project_mock.get_version_calculator.return_value = (
-            version_calculator_mock
+        version_calculator_mock.return_value.next_patch_version.return_value = (
+            None
         )
-        version_calculator_mock.next_patch_version.return_value = None
 
         _, token, args = parse_args(
             [
