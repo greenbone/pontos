@@ -19,7 +19,7 @@ import unittest
 
 from pontos.testing import temp_directory, temp_python_module
 from pontos.version.cmake import CMakeVersionCommand
-from pontos.version.commands import gather_project
+from pontos.version.commands import gather_project, get_commands
 from pontos.version.errors import ProjectError
 from pontos.version.go import GoVersionCommand
 from pontos.version.javascript import JavaScriptVersionCommand
@@ -71,3 +71,8 @@ class GatherProjectTestCase(unittest.TestCase):
             version_file.write_text("project(VERSION 1.2.3)", encoding="utf8")
 
             self.assertIsInstance(gather_project(), CMakeVersionCommand)
+
+
+class GetCommandsTestCase(unittest.TestCase):
+    def test_available_commands(self):
+        self.assertEqual(len(get_commands()), 4)

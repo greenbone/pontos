@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Tuple, Type
+from typing import Iterable, Tuple, Type
 
 from pontos.version.errors import ProjectError
 
@@ -47,3 +47,7 @@ def gather_project() -> VersionCommand:
             return command
 
     raise ProjectError("No project settings file found")
+
+
+def get_commands() -> Iterable[Type[VersionCommand]]:
+    return _COMMANDS
