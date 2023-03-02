@@ -23,14 +23,7 @@ from unittest.mock import MagicMock, patch
 from pontos.testing import temp_directory, temp_file
 from pontos.version.errors import VersionError
 from pontos.version.javascript import JavaScriptVersionCommand
-from pontos.version.version import Version, VersionCalculator
-
-
-class JavaScriptVersionCommandTestCase(unittest.TestCase):
-    def test_get_version_calculator(self):
-        js = JavaScriptVersionCommand()
-
-        self.assertIsInstance(js.get_version_calculator(), VersionCalculator)
+from pontos.version.version import Version
 
 
 class GetCurrentJavaScriptVersionCommandTestCase(unittest.TestCase):

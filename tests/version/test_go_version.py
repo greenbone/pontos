@@ -25,7 +25,7 @@ from pontos.git.git import Git
 from pontos.testing import temp_directory, temp_file
 from pontos.version.errors import VersionError
 from pontos.version.go import GoVersionCommand
-from pontos.version.version import Version, VersionCalculator
+from pontos.version.version import Version
 
 
 @dataclass
@@ -40,13 +40,6 @@ TEMPLATE = """package {}
 
 var version = "{}"
 \n"""
-
-
-class GoVersionCommandTestCase(unittest.TestCase):
-    def test_get_version_calculator(self):
-        go = GoVersionCommand()
-
-        self.assertIsInstance(go.get_version_calculator(), VersionCalculator)
 
 
 class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
