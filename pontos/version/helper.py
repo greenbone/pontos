@@ -78,20 +78,31 @@ def versions_equal(new_version: str, old_version: str) -> bool:
 
 def get_last_release_version(
     git_tag_prefix: Optional[str] = "",
+    *,
+    ignore_pre_releases: Optional[bool] = False,
 ) -> Optional[Version]:
     """Get the last released Version from git.
 
+    Args:
+        git_tag_prefix: Git tag prefix to consider
+        ignore_pre_release: Ignore pre releases and only consider non pre
+            releases. Default is False.
+
     Returns:
-        Last released git-tag if tags were found
+        Last released git-tag as Version if tags were found
         or None
     """
 
     tag_list = Git().list_tags(sort=TagSort.VERSION)
 
-    if not tag_list:
-        return None
+    while tag_list:
+        last_release_version = tag_list[-1]
+        last_release_version = last_release_version.strip(git_tag_prefix)
 
-    last_release_version = tag_list[-1]
-    last_release_version = last_release_version.strip(git_tag_prefix)
+        version = parse_version(last_release_version)
+        if not version.is_prerelease or not ignore_pre_releases:
+            return version
 
-    return parse_version(last_release_version)
+        tag_list = tag_list[:-1]
+
+    return None

@@ -109,7 +109,7 @@ class ReleaseCommand:
         )
 
     async def _create_release(
-        self, release_version: str, token: str, release_text: str
+        self, release_version: Version, token: str, release_text: str
     ) -> None:
         github = GitHubAsyncRESTApi(token=token)
 
@@ -121,6 +121,7 @@ class ReleaseCommand:
             git_version,
             name=f"{self.project} {release_version}",
             body=release_text,
+            prerelease=release_version.is_prerelease,
         )
 
     async def run(
@@ -213,7 +214,10 @@ class ReleaseCommand:
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
-        last_release_version = get_last_release_version(self.git_tag_prefix)
+        last_release_version = get_last_release_version(
+            self.git_tag_prefix,
+            ignore_pre_releases=not release_version.is_prerelease,
+        )
 
         self.terminal.info(
             f"Creating changelog for {release_version} since "
@@ -251,11 +255,8 @@ class ReleaseCommand:
 
         calculator = command.get_version_calculator()
 
-        next_version = (
-            next_version
-            if next_version is not None
-            else calculator.next_dev_version(release_version)
-        )
+        if not next_version:
+            next_version = calculator.next_dev_version(release_version)
 
         try:
             updated = command.update_version(next_version)

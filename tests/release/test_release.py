@@ -559,7 +559,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = Version("0.0.1")
         release_version = Version("0.0.2a1")
-        next_version = Version("0.0.3.dev1")
+        next_version = Version("0.0.2a1+dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -626,7 +626,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.3.dev1\n",
+                    "* Update to version 0.0.2a1+dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
@@ -656,7 +656,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = Version("0.0.1")
         release_version = Version("0.0.2b1")
-        next_version = Version("0.0.3.dev1")
+        next_version = Version("0.0.2b1+dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -723,7 +723,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.3.dev1\n",
+                    "* Update to version 0.0.2b1+dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
@@ -753,7 +753,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = Version("0.0.1")
         release_version = Version("0.0.2rc1")
-        next_version = Version("0.0.3.dev1")
+        next_version = Version("0.0.2rc1+dev1")
         version_command_mock = MagicMock(spec=VersionCommand)
         gather_project_mock.return_value = version_command_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -820,7 +820,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.3.dev1\n",
+                    "* Update to version 0.0.2rc1+dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
@@ -1416,7 +1416,11 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         create_api_mock.assert_awaited_once_with(
-            "bar/foo", "v0.0.1", name="foo 0.0.1", body="A Changelog"
+            "bar/foo",
+            "v0.0.1",
+            name="foo 0.0.1",
+            body="A Changelog",
+            prerelease=False,
         )
 
         version_command_mock.update_version.assert_has_calls(
@@ -1432,6 +1436,99 @@ class ReleaseTestCase(unittest.TestCase):
         )
         git_mock.return_value.tag.assert_called_once_with(
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
+        )
+
+        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.GitHubAsyncRESTApi", autospec=True)
+    @patch(
+        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+    )
+    @patch("pontos.release.release.gather_project", autospec=True)
+    def test_release_github_api_pre_release(
+        self,
+        gather_project_mock: MagicMock,
+        create_changelog_mock: MagicMock,
+        github_api_mock: AsyncMock,
+        git_mock,
+    ):
+        current_version = Version("0.0.0")
+        release_version = Version("0.0.1a1")
+        next_version = Version("0.0.1a1+dev1")
+        version_command_mock = MagicMock(spec=VersionCommand)
+        gather_project_mock.return_value = version_command_mock
+        version_command_mock.update_version.side_effect = [
+            VersionUpdate(
+                previous=current_version,
+                new=release_version,
+                changed_files=["MyProject.conf"],
+            ),
+            VersionUpdate(
+                previous=release_version,
+                new=next_version,
+                changed_files=["MyProject.conf"],
+            ),
+        ]
+        create_changelog_mock.return_value = "A Changelog"
+        create_api_mock = AsyncMock()
+        github_api_mock.return_value.releases.create = create_api_mock
+
+        _, token, args = parse_args(
+            [
+                "release",
+                "--space",
+                "bar",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.1a1",
+                "--next-version",
+                "0.0.1a1+dev1",
+                "--git-remote-name",
+                "upstream",
+                "--git-signing-key",
+                "1234",
+            ]
+        )
+
+        with temp_git_repository():
+            released = release(
+                terminal=mock_terminal(),
+                args=args,
+                token=token,
+            )
+
+        git_mock.return_value.push.assert_has_calls(
+            [
+                call(follow_tags=True, remote="upstream"),
+                call(follow_tags=True, remote="upstream"),
+            ],
+        )
+
+        create_api_mock.assert_awaited_once_with(
+            "bar/foo",
+            "v0.0.1a1",
+            name="foo 0.0.1a1",
+            body="A Changelog",
+            prerelease=True,
+        )
+
+        version_command_mock.update_version.assert_has_calls(
+            [call(release_version), call(next_version)],
+        )
+
+        git_mock.return_value.add.assert_called_with("MyProject.conf")
+        git_mock.return_value.commit.assert_called_with(
+            "Automatic adjustments after release\n\n"
+            "* Update to version 0.0.1a1+dev1\n",
+            verify=False,
+            gpg_signing_key="1234",
+        )
+        git_mock.return_value.tag.assert_called_once_with(
+            "v0.0.1a1",
+            gpg_key_id="1234",
+            message="Automatic release to 0.0.1a1",
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
