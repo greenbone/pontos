@@ -19,7 +19,7 @@ import sys
 from typing import NoReturn
 
 from pontos.errors import PontosError
-from pontos.version.commands import gather_project
+from pontos.version.project import Project
 
 from .__version__ import __version__
 from .errors import VersionError
@@ -29,23 +29,21 @@ from .parser import initialize_default_parser
 def main() -> NoReturn:
     parser = initialize_default_parser()
 
-    try:
-        command = gather_project()
-    except PontosError:
-        print("No project found.", file=sys.stderr)
-        sys.exit(1)
-
     args = parser.parse_args()
 
-    if not getattr(args, "command", None):
+    if not getattr(args, "command"):
         parser.print_usage()
         sys.exit(1)
 
     try:
+        project = Project.gather_project()
+    except PontosError:
+        print("No project found.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
         if args.command == "update":
-            updated = command.update_version(
-                args.version, force=args.force, develop=args.develop
-            )
+            updated = project.update_version(args.version, force=args.force)
             if updated:
                 print(
                     f"Updated version from {updated.previous} to {updated.new}."
@@ -53,9 +51,9 @@ def main() -> NoReturn:
             else:
                 print("Version is already up-to-date.")
         elif args.command == "show":
-            print(command.get_current_version())
+            print(project.get_current_version())
         elif args.command == "verify":
-            command.verify_version(args.version)
+            project.verify_version(args.version)
     except VersionError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
