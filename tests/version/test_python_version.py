@@ -258,13 +258,12 @@ class VerifyVersionTestCase(unittest.TestCase):
             PythonVersionCommand,
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "The version .* in .* doesn't match the current version .*.",
         ):
             cmd = PythonVersionCommand()
-            with self.assertRaisesRegex(
-                VersionError,
-                "The version .* in .* doesn't match the current version .*.",
-            ):
-                cmd.verify_version(Version("1.2.3"))
+            cmd.verify_version(Version("1.2.3"))
 
     def test_current_version(self):
         fake_version_py = Path("foo.py")
@@ -283,6 +282,30 @@ class VerifyVersionTestCase(unittest.TestCase):
             PythonVersionCommand,
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
+        ):
+            cmd = PythonVersionCommand()
+            cmd.verify_version("current")
+
+    def test_current_failure(self):
+        fake_version_py = Path("foo.py")
+        content = (
+            '[tool.poetry]\nversion = "1.2.4"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
+
+        with temp_file(
+            content, name="pyproject.toml", change_into=True
+        ), patch.object(
+            PythonVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("1.2.3")),
+        ), patch.object(
+            PythonVersionCommand,
+            "version_file_path",
+            new=PropertyMock(return_value=fake_version_py),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "The version .* in .* doesn't match the current version .*.",
         ):
             cmd = PythonVersionCommand()
             cmd.verify_version("current")
