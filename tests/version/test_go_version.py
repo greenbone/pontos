@@ -86,6 +86,17 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
         ):
             GoVersionCommand().get_current_version()
 
+    def test_invalid_version(self):
+        with temp_file(
+            name="go.mod",
+            change_into=True,
+        ), self.assertRaisesRegex(VersionError, "^Invalid version: 'abc'"):
+            version_file_path = Path(VERSION_FILE_PATH)
+            version_file_path.write_text(
+                TEMPLATE.format("main", "abc"), encoding="utf-8"
+            )
+            GoVersionCommand().get_current_version()
+
 
 class VerifyGoVersionCommandTestCase(unittest.TestCase):
     def test_verify_version(self):
