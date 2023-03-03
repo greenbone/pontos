@@ -28,9 +28,9 @@ from pontos.version.version import Version
 
 
 class VerifyCMakeVersionCommandTestCase(unittest.TestCase):
-    def test_verify_version(self):
+    def test_verify_failure(self):
         with temp_file(
-            "project(VERSION 1.2.3)\n" "set(PROJECT_DEV_VERSION 0)",
+            "project(VERSION 1.2.3)\nset(PROJECT_DEV_VERSION 0)",
             name="CMakeLists.txt",
             change_into=True,
         ):
@@ -42,6 +42,17 @@ class VerifyCMakeVersionCommandTestCase(unittest.TestCase):
                 "current version 1.2.3.",
             ):
                 cmake.verify_version(Version("2.3.4"))
+
+    def test_verify_current(self):
+        with temp_directory(
+            change_into=True,
+        ):
+            cmake = CMakeVersionCommand()
+
+            with self.assertRaisesRegex(
+                VersionError, "^.*CMakeLists.txt not found."
+            ):
+                cmake.verify_version("current")
 
 
 class GetCurrentCMakeVersionCommandTestCase(unittest.TestCase):

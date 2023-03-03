@@ -115,6 +115,29 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
             cmd = GoVersionCommand()
             cmd.verify_version(Version("21.2"))
 
+    def test_verify_current(self):
+        with temp_file(
+            name="go.mod",
+            change_into=True,
+        ), patch.object(
+            GoVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("21.0.1")),
+        ):
+            cmd = GoVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_failure(self):
+        with temp_file(
+            name="go.mod",
+            change_into=True,
+        ), self.assertRaisesRegex(
+            VersionError,
+            "^No version.go file found. This file is required for pontos",
+        ):
+            cmd = GoVersionCommand()
+            cmd.verify_version("current")
+
 
 class UpdateGoVersionCommandTestCase(unittest.TestCase):
     def test_no_file_but_tag_update_version(self):

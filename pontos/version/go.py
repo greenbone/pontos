@@ -76,6 +76,10 @@ class GoVersionCommand(VersionCommand):
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
+
+        if version == "current":
+            return
+
         if current_version != version:
             raise VersionError(
                 f"Provided version {version} does not match the "
