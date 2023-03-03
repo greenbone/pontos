@@ -23,12 +23,11 @@ from typing import Any, Dict, Literal, Optional, Union
 from .errors import VersionError
 from .version import Version, VersionCommand, VersionUpdate, parse_version
 
-GREENBONE_JS_VERSION_FILE = Path("src", "version.js")
-
 
 # This class is used for JavaScript Version command(s)
 class JavaScriptVersionCommand(VersionCommand):
     project_file_name = "package.json"
+    version_file_path = Path("src", "version.js")
     _package = None
 
     @property
@@ -61,14 +60,14 @@ class JavaScriptVersionCommand(VersionCommand):
         return self._package
 
     def _get_current_js_file_version(self) -> Optional[Version]:
-        if not GREENBONE_JS_VERSION_FILE.exists():
+        if not self.version_file_path.exists():
             return None
 
-        content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
+        content = self.version_file_path.read_text(encoding="utf-8")
         match = re.search(r'VERSION = "(?P<version>.*)";', content)
         if not match:
             raise VersionError(
-                f"VERSION variable not found in {GREENBONE_JS_VERSION_FILE}"
+                f"VERSION variable not found in {self.version_file_path}"
             )
 
         return Version(match.group("version"))
@@ -90,7 +89,7 @@ class JavaScriptVersionCommand(VersionCommand):
             if js_version and js_version != current_version:
                 raise VersionError(
                     f"The version {js_version} in "
-                    f"{GREENBONE_JS_VERSION_FILE} doesn't match the current "
+                    f"{self.version_file_path} doesn't match the current "
                     f"version {current_version}."
                 )
             return
@@ -107,7 +106,7 @@ class JavaScriptVersionCommand(VersionCommand):
             raise VersionError(
                 f"Provided version {version} does not match the "
                 f"current version {js_version} in "
-                f"{GREENBONE_JS_VERSION_FILE}."
+                f"{self.version_file_path}."
             )
 
     def _update_package_json(self, new_version: Version) -> None:
@@ -132,16 +131,16 @@ class JavaScriptVersionCommand(VersionCommand):
         """
         Update the version file with the new version
         """
-        if not GREENBONE_JS_VERSION_FILE.exists():
+        if not self.version_file_path.exists():
             return False
 
-        content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
+        content = self.version_file_path.read_text(encoding="utf-8")
         content = re.sub(
             pattern=r'VERSION = "(?P<version>.*)";',
             repl=f'VERSION = "{new_version}";',
             string=content,
         )
-        GREENBONE_JS_VERSION_FILE.write_text(content, encoding="utf-8")
+        self.version_file_path.write_text(content, encoding="utf-8")
         return True
 
     def update_version(
@@ -156,7 +155,7 @@ class JavaScriptVersionCommand(VersionCommand):
 
         updated = self._update_version_file(new_version=new_version)
         if updated:
-            changed_files.append(GREENBONE_JS_VERSION_FILE)
+            changed_files.append(self.version_file_path)
 
         return VersionUpdate(
             previous=package_version,
