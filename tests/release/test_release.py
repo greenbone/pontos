@@ -1619,6 +1619,7 @@ class ReleaseTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/greenbone/foo/commit/1234567)
 * bar baz [8abcdef](https://github.com/greenbone/foo/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/greenbone/foo/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/greenbone/foo/commit/42a42a4)
