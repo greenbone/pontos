@@ -77,6 +77,43 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(fake_package["version"], "22.4.0")
 
+    def test_update_js_version_file(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = """const foo = "bar";
+const VERSION = "1.2.3";
+const func = () => ();
+"""
+
+        with temp_directory(change_into=True) as temp_dir:
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            updated = cmd.update_version(Version("22.4.0"))
+
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("22.4.0"))
+            self.assertEqual(
+                updated.changed_files,
+                [package_json, JavaScriptVersionCommand.version_file_path],
+            )
+
+            with package_json.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0")
+
+            self.assertEqual(
+                js_version_file.read_text(encoding="utf8"),
+                'const foo = "bar";\nconst VERSION = "22.4.0";\n'
+                "const func = () => ();\n",
+            )
+
     def test_update_version_develop(self):
         content = '{"name":"foo", "version":"1.2.3"}'
 
@@ -147,6 +184,77 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
         ):
             cmd = JavaScriptVersionCommand()
             cmd.verify_version(Version("22.4"))
+
+    def test_verify_js_mismatch(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("22.4")),
+        ), patch.object(
+            JavaScriptVersionCommand,
+            "_get_current_js_file_version",
+            MagicMock(return_value=Version("22.5")),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "Provided version 22.4 does not match the current version 22.5 in "
+            "src/version.js.",
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version(Version("22.4"))
+
+    def test_verify_current(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("22.4")),
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_failure(self):
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError, "^.*package.json file not found"
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_js_version_matches(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = 'const VERSION = "1.2.3";'
+
+        with temp_directory(change_into=True) as temp_dir:
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_js_mismatch(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = 'const VERSION = "1.2.4";'
+
+        with temp_directory(
+            change_into=True
+        ) as temp_dir, self.assertRaisesRegex(
+            VersionError,
+            "The version 1.2.4 in src/version.js doesn't match the current "
+            "version 1.2.3.",
+        ):
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
 
 
 class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):
