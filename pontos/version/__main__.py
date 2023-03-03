@@ -17,7 +17,7 @@
 
 # pylint: disable=invalid-name
 
-from pontos import version
+from .main import main
 
 if __name__ == "__main__":
-    version.main()
+    main()

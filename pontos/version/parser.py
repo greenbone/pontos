@@ -16,6 +16,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+from typing import Literal, Union
+
+from pontos.version.version import Version, parse_version
+
+
+def verify_version_type(version: str) -> Union[Version, Literal["current"]]:
+    if version == "current":
+        return version
+
+    return parse_version(version)
 
 
 def initialize_default_parser() -> argparse.ArgumentParser:
@@ -29,31 +39,28 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         description="Version handling utilities.",
         prog="version",
     )
-    parser.add_argument(
-        "--quiet", help="don't print messages", action="store_true"
-    )
-
     subparsers = parser.add_subparsers(
         title="subcommands",
-        description="valid subcommands",
-        help="additional help",
+        description="Valid subcommands",
+        help="Additional help",
         dest="command",
+        required=True,
     )
 
     verify_parser = subparsers.add_parser("verify")
-    verify_parser.add_argument("version", help="version string to compare")
+    verify_parser.add_argument(
+        "version", help="Version string to compare", type=verify_version_type
+    )
     subparsers.add_parser("show")
 
     update_parser = subparsers.add_parser("update")
-    update_parser.add_argument("version", help="version string to use")
     update_parser.add_argument(
-        "--force",
-        help="don't check if version is already set",
-        action="store_true",
+        "version", help="Version string to use", type=parse_version
     )
     update_parser.add_argument(
-        "--develop",
-        help="indicates if it is a develop version",
+        "--force",
+        help="Don't check if version is already set. "
+        "This will override existing version information!",
         action="store_true",
     )
     return parser
