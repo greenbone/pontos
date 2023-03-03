@@ -18,7 +18,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal, Optional, Union
 
 from .errors import VersionError
 from .version import Version, VersionCommand, VersionUpdate, parse_version
@@ -60,6 +60,19 @@ class JavaScriptVersionCommand(VersionCommand):
 
         return self._package
 
+    def _get_current_js_file_version(self) -> Optional[Version]:
+        if not GREENBONE_JS_VERSION_FILE.exists():
+            return None
+
+        content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
+        match = re.search(r'VERSION = "(?P<version>.*)";', content)
+        if not match:
+            raise VersionError(
+                f"VERSION variable not found in {GREENBONE_JS_VERSION_FILE}"
+            )
+
+        return Version(match.group("version"))
+
     def get_current_version(self) -> Version:
         """Get the current version of this project
         In go the version is only defined within the repository
@@ -71,10 +84,30 @@ class JavaScriptVersionCommand(VersionCommand):
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
+
+        if version == "current":
+            js_version = self._get_current_js_file_version()
+            if js_version and js_version != current_version:
+                raise VersionError(
+                    f"The version {js_version} in "
+                    f"{GREENBONE_JS_VERSION_FILE} doesn't match the current "
+                    f"version {current_version}."
+                )
+            return
+
         if current_version != version:
             raise VersionError(
                 f"Provided version {version} does not match the "
-                f"current version {current_version}."
+                f"current version {current_version} in "
+                f"{self.project_file_path}."
+            )
+
+        js_version = self._get_current_js_file_version()
+        if js_version and js_version != version:
+            raise VersionError(
+                f"Provided version {version} does not match the "
+                f"current version {js_version} in "
+                f"{GREENBONE_JS_VERSION_FILE}."
             )
 
     def _update_package_json(self, new_version: Version) -> None:

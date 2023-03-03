@@ -22,7 +22,10 @@ from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version.errors import VersionError
-from pontos.version.javascript import JavaScriptVersionCommand
+from pontos.version.javascript import (
+    GREENBONE_JS_VERSION_FILE,
+    JavaScriptVersionCommand,
+)
 from pontos.version.version import Version
 
 
@@ -147,6 +150,73 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
         ):
             cmd = JavaScriptVersionCommand()
             cmd.verify_version(Version("22.4"))
+
+    def test_verify_js_mismatch(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("22.4")),
+        ), patch.object(
+            JavaScriptVersionCommand,
+            "_get_current_js_file_version",
+            MagicMock(return_value=Version("22.5")),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "Provided version 22.4 does not match the current version 22.5 in "
+            "src/version.js.",
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version(Version("22.4"))
+
+    def test_verify_current(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("22.4")),
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_failure(self):
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError, "^.*package.json file not found"
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_js_version_matches(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = 'const VERSION = "1.2.3";'
+
+        with temp_directory(change_into=True) as temp_dir:
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
+
+    def test_verify_current_js_mismatch(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = 'const VERSION = "1.2.4";'
+
+        with temp_directory(
+            change_into=True
+        ) as temp_dir, self.assertRaisesRegex(
+            VersionError,
+            "The version 1.2.4 in src/version.js doesn't match the current "
+            "version 1.2.3.",
+        ):
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version("current")
 
 
 class ProjectFileJavaScriptVersionCommandTestCase(unittest.TestCase):
