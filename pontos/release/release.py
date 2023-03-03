@@ -29,10 +29,11 @@ from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
+from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
 from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
-from pontos.version.version import Version, VersionCalculator
+from pontos.version.version import Version
 
 from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
