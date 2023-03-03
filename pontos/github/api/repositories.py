@@ -18,6 +18,7 @@
 from typing import Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.helper import JSON_OBJECT
 from pontos.github.models.organization import (
     GitIgnoreTemplate,
     LicenseType,
@@ -81,7 +82,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         has_downloads: Optional[bool] = True,
         is_template: Optional[bool] = False,
         team_id: Optional[str] = None,
-        auto_init: Optional[str] = False,
+        auto_init: Optional[bool] = False,
         gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
         license_template: Optional[Union[LicenseType, str]] = None,
         allow_squash_merge: Optional[bool] = True,
@@ -187,7 +188,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 failed.
         """
         api = f"/orgs/{organization}/repos"
-        data = {"name": name}
+        data: JSON_OBJECT = {"name": name}
 
         if description:
             data["description"] = description
@@ -261,7 +262,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         """
         api = f"/repos/{repo}"
 
-        data = {"archived": True}
+        data: JSON_OBJECT = {"archived": True}
         response = await self._client.post(api, data=data)
         response.raise_for_status()
 
@@ -377,7 +378,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         """
         api = f"/repos/{repo}"
 
-        data = {}
+        data: JSON_OBJECT = {}
         if name:
             data["name"] = name
         if description:

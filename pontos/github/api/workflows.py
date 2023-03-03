@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncIterator, Dict, Optional, Union
+from typing import Any, AsyncIterator, Dict, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import Event
@@ -45,7 +45,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             Information about the workflows as an iterable of dicts
         """
         api = f"/repos/{repo}/actions/workflows"
-        return self._get_paged_items(api, "workflows", Workflow)
+        return self._get_paged_items(api, "workflows", Workflow)  # type: ignore
 
     async def get(self, repo: str, workflow: Union[str, int]) -> Workflow:
         """
@@ -76,7 +76,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         workflow: Union[str, int],
         *,
         ref: str,
-        inputs: Dict[str, str] = None,
+        inputs: Optional[Dict[str, str]] = None,
     ) -> None:
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
@@ -106,7 +106,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 )
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
-        data = {"ref": ref}
+        data: Dict[str, Any] = {"ref": ref}
 
         if inputs:
             data["inputs"] = inputs
@@ -167,7 +167,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             if workflow
             else f"/repos/{repo}/actions/runs"
         )
-        params = {}
+        params: Dict[str, Any] = {}
         if actor:
             params["actor"] = actor
         if branch:
@@ -181,7 +181,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         if exclude_pull_requests is not None:
             params["exclude_pull_requests"] = exclude_pull_requests
 
-        return self._get_paged_items(
+        return self._get_paged_items(  # type: ignore
             api, "workflow_runs", WorkflowRun, params=params
         )
 

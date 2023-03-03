@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncIterator, Iterable, Optional
+from typing import Any, AsyncIterator, Dict, Iterable, Optional
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import (
@@ -93,7 +93,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams"
-        data = {"name": name}
+        data: Dict[str, Any] = {"name": name}
         if description:
             data["description"] = description
         if maintainers:
@@ -169,7 +169,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams/{team}"
-        data = {}
+        data: Dict[str, Any] = {}
         if name:
             data["name"] = name
         if description:
@@ -257,7 +257,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             `httpx.HTTPStatusError` if there was an error in the request
         """
         api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
-        data = {"role": role.value}
+        data: Dict[str, Any] = {"role": role.value}
         response = await self._client.put(api, data=data)
         response.raise_for_status()
 
@@ -339,7 +339,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             f"/orgs/{organization}/teams/{team}/repos/{organization}/"
             f"{repository}"
         )
-        data = {"permission": permission.value}
+        data: Dict[str, Any] = {"permission": permission.value}
         response = await self._client.put(api, data=data)
         response.raise_for_status()
 

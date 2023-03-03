@@ -107,7 +107,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         email: Optional[str] = None,
         invitee_id: Optional[Union[str, int]] = None,
         role: Union[InvitationRole, str] = InvitationRole.DIRECT_MEMBER,
-        team_ids: Iterable[Union[str, int]] = None,
+        team_ids: Optional[Iterable[Union[str, int]]] = None,
     ) -> None:
         """
         Invite a user to a GitHub Organization
