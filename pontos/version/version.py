@@ -63,7 +63,15 @@ class VersionCommand(ABC):
     def verify_version(
         self, version: Union[Literal["current"], Version]
     ) -> None:
-        """Verify the current version of this project"""
+        """
+        Verify the current version of this project
+
+        Args:
+            version: Version to check against the current applied version of
+                this project. If version is "current" the command should verify
+                if all version information is consistent, for example if the
+                version information in several files is the same.
+        """
 
     @abstractmethod
     def update_version(
