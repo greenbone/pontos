@@ -46,6 +46,9 @@ class CMakeVersionCommand(VersionCommand):
         )
 
     def get_current_version(self) -> Version:
+        if not self.project_file_path.exists():
+            raise VersionError(f"{self.project_file_path} not found.")
+
         content = self.project_file_path.read_text(encoding="utf-8")
         return CMakeVersionParser(content).get_current_version()
 
@@ -53,6 +56,10 @@ class CMakeVersionCommand(VersionCommand):
         self, version: Union[Literal["current"], Version]
     ) -> None:
         current_version = self.get_current_version()
+
+        if version == "current":
+            return
+
         if current_version != version:
             raise VersionError(
                 f"Provided version {version} does not match the "
