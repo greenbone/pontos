@@ -22,10 +22,7 @@ from unittest.mock import MagicMock, patch
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version.errors import VersionError
-from pontos.version.javascript import (
-    GREENBONE_JS_VERSION_FILE,
-    JavaScriptVersionCommand,
-)
+from pontos.version.javascript import JavaScriptVersionCommand
 from pontos.version.version import Version
 
 
@@ -90,7 +87,9 @@ const func = () => ();
         with temp_directory(change_into=True) as temp_dir:
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
-            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
 
@@ -100,7 +99,8 @@ const func = () => ();
             self.assertEqual(updated.previous, Version("1.2.3"))
             self.assertEqual(updated.new, Version("22.4.0"))
             self.assertEqual(
-                updated.changed_files, [package_json, GREENBONE_JS_VERSION_FILE]
+                updated.changed_files,
+                [package_json, JavaScriptVersionCommand.version_file_path],
             )
 
             with package_json.open(mode="r", encoding="utf-8") as fp:
@@ -225,7 +225,9 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True) as temp_dir:
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
-            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
 
@@ -245,7 +247,9 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
         ):
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
-            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_path
+            )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
 
