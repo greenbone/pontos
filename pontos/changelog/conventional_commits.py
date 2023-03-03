@@ -29,14 +29,12 @@ from pontos.git import Git
 ADDRESS = "https://github.com/"
 
 DEFAULT_CHANGELOG_CONFIG = """commit_types = [
-    { message = "add", group = "Added"},
-    { message = "remove", group = "Removed"},
-    { message = "change", group = "Changed"},
-    { message = "fix", group = "Bug Fixes"},
+    { message = "^add", group = "Added"},
+    { message = "^remove", group = "Removed"},
+    { message = "^change", group = "Changed"},
+    { message = "^fix", group = "Bug Fixes"},
 ]
 """
-
-JIRA_ID = r"(\s?/?\[?[A-Z0-9]+[\- ][0-9]{1,5}\]?\s?/?)?"
 
 
 class ChangelogBuilder:
@@ -164,15 +162,14 @@ class ChangelogBuilder:
         commit_link = f"{ADDRESS}{self.space}/{self.project}/commit/"
 
         commit_dict = {}
-
-        self._prepare_regexs([t["message"] for t in commit_types])
         if commits and len(commits) > 0:
             for commit in commits:
                 commit = commit.split(" ", maxsplit=1)
                 for commit_type in commit_types:
-                    match = self._check_for_conventional_commit(
-                        commit_type["message"], commit[1]
+                    reg = re.compile(
+                        rf'{commit_type["message"]}\s?[:|-]', flags=re.I
                     )
+                    match = reg.match(commit[1])
                     if match:
                         if commit_type["group"] not in commit_dict:
                             commit_dict[commit_type["group"]] = []
@@ -187,19 +184,6 @@ class ChangelogBuilder:
                         )
 
         return commit_dict
-
-    def _prepare_regexs(self, commit_types: List[str]) -> None:
-        # only compile these regexes once
-        self.cc_regexes: Dict[str, re.Pattern] = {}
-        for commit_type in commit_types:
-            self.cc_regexes[commit_type] = re.compile(
-                rf"{JIRA_ID}{commit_type}{JIRA_ID}\s??[:|-]?\s", flags=re.I
-            )
-
-    def _check_for_conventional_commit(
-        self, commit_type: str, commit_msg: str
-    ) -> Optional[re.Match]:
-        return self.cc_regexes[commit_type].match(commit_msg)
 
     def _build_changelog(
         self,
