@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Tuple, Type
-
-from pontos.version.errors import ProjectError
+from typing import Iterable, Tuple, Type
 
 from .cmake import CMakeVersionCommand
 from .go import GoVersionCommand
@@ -25,7 +23,7 @@ from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
 from .version import VersionCommand
 
-_COMMANDS: Tuple[Type[VersionCommand]] = (
+__COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
     GoVersionCommand,
     JavaScriptVersionCommand,
@@ -33,17 +31,5 @@ _COMMANDS: Tuple[Type[VersionCommand]] = (
 )
 
 
-def gather_project() -> VersionCommand:
-    """
-    Get the fitting VersionCommand for a project in the current working
-    directory
-
-    Raises:
-        ProjectError if no fitting VersionCommand could be found
-    """
-    for cmd in _COMMANDS:
-        command = cmd()
-        if command.project_found():
-            return command
-
-    raise ProjectError("No project settings file found")
+def get_commands() -> Iterable[Type[VersionCommand]]:
+    return __COMMANDS

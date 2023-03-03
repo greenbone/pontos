@@ -24,14 +24,7 @@ from unittest.mock import MagicMock, patch
 from pontos.testing import temp_directory, temp_file
 from pontos.version.cmake import CMakeVersionCommand, CMakeVersionParser
 from pontos.version.errors import VersionError
-from pontos.version.version import Version, VersionCalculator
-
-
-class CMakeVersionCommandTestCase(unittest.TestCase):
-    def test_get_version_calculator(self):
-        cmake = CMakeVersionCommand()
-
-        self.assertIsInstance(cmake.get_version_calculator(), VersionCalculator)
+from pontos.version.version import Version
 
 
 class VerifyCMakeVersionCommandTestCase(unittest.TestCase):

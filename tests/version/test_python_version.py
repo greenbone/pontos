@@ -26,16 +26,7 @@ import tomlkit
 from pontos.testing import temp_directory, temp_file, temp_python_module
 from pontos.version.errors import VersionError
 from pontos.version.python import PythonVersionCommand
-from pontos.version.version import Version, VersionCalculator
-
-
-class PythonVersionCommandTestCase(unittest.TestCase):
-    def test_get_version_calculator(self):
-        python = PythonVersionCommand()
-
-        self.assertIsInstance(
-            python.get_version_calculator(), VersionCalculator
-        )
+from pontos.version.version import Version
 
 
 class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
