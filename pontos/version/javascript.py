@@ -137,11 +137,8 @@ class JavaScriptVersionCommand(VersionCommand):
 
         content = GREENBONE_JS_VERSION_FILE.read_text(encoding="utf-8")
         content = re.sub(
-            pattern=(
-                r'VERSION = (?P<quote>[\'"])[\d+\.]{2,3}'
-                r"{.dev[\d]}(?P=quote);"
-            ),
-            repl=f"VERSION = {new_version};",
+            pattern=r'VERSION = "(?P<version>.*)";',
+            repl=f'VERSION = "{new_version}";',
             string=content,
         )
         GREENBONE_JS_VERSION_FILE.write_text(content, encoding="utf-8")

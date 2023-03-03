@@ -80,6 +80,40 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(fake_package["version"], "22.4.0")
 
+    def test_update_js_version_file(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        js_content = """const foo = "bar";
+const VERSION = "1.2.3";
+const func = () => ();
+"""
+
+        with temp_directory(change_into=True) as temp_dir:
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+            js_version_file = temp_dir / GREENBONE_JS_VERSION_FILE
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(js_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            updated = cmd.update_version(Version("22.4.0"))
+
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("22.4.0"))
+            self.assertEqual(
+                updated.changed_files, [package_json, GREENBONE_JS_VERSION_FILE]
+            )
+
+            with package_json.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0")
+
+            self.assertEqual(
+                js_version_file.read_text(encoding="utf8"),
+                'const foo = "bar";\nconst VERSION = "22.4.0";\n'
+                "const func = () => ();\n",
+            )
+
     def test_update_version_develop(self):
         content = '{"name":"foo", "version":"1.2.3"}'
 
