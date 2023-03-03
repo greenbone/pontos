@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# pylint: disable=protected-access
+
+import re
 import unittest
 from dataclasses import dataclass
 from datetime import datetime
@@ -63,6 +66,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -152,6 +156,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -208,6 +213,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -268,6 +274,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -371,6 +378,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -421,6 +429,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -451,9 +460,9 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
         git_mock.return_value.log.return_value = [
-            "1234567 Add: foo bar",
-            "8abcdef Add: bar baz",
-            "8abcd3f Add bar baz",
+            "1234567 TXT-123 Add: foo bar",
+            "8abcdef [XC-33] Add: bar baz",
+            "8abcd3f Add/TT 55 bar baz",
             "8abcd3d Adding bar baz",
             "1337abc Change: bar to baz",
             "42a42a4 Remove: foo bar again",
@@ -468,6 +477,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 ## Added
 * foo bar [1234567](https://github.com/foo/bar/commit/1234567)
 * bar baz [8abcdef](https://github.com/foo/bar/commit/8abcdef)
+* bar baz [8abcd3f](https://github.com/foo/bar/commit/8abcd3f)
 
 ## Removed
 * foo bar again [42a42a4](https://github.com/foo/bar/commit/42a42a4)
@@ -505,3 +515,43 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
+
+    def test_regex(self):
+        own_path = Path(__file__).absolute().parent
+        config_toml = own_path / "changelog.toml"
+
+        changelog_builder = ChangelogBuilder(
+            space="foo", project="bar", config=config_toml
+        )
+        commit_types = changelog_builder.config.get("commit_types")
+        changelog_builder._prepare_regexs([t["message"] for t in commit_types])
+
+        commit_messages = [
+            "TEST-3 Add: blah",
+            "BLUBB-123 Change: blah",
+            "TEST 123 Add: blah",
+            "Add/TEST-123: blah",
+            "TEST 123 Fix blah",
+            "TE5T-23 Fix blah",
+            "Fix - blah",
+            "Fix : blah",
+            "Fix: blah",
+            "Fix| blah",
+            "[TEST-123] Add: blah",
+            "TEST-123/Add blah",
+        ]
+        matches = len(commit_messages)
+        found = 0
+
+        for commit_message in commit_messages:
+            for commit_type in ["add", "fix", "change"]:
+                match = changelog_builder._check_for_conventional_commit(
+                    commit_type=commit_type, commit_msg=commit_message
+                )
+                if match:
+                    self.assertIsInstance(match, re.Match)
+                    matched = True
+                    found = found + 1
+            self.assertTrue(matched)
+            matched = False
+        self.assertEqual(matches, found)
