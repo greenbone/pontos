@@ -23,7 +23,7 @@ from pontos.version import __version__
 # -- Project information -----------------------------------------------------
 
 project = "pontos"
-copyright = "2022, Greenbone Networks GmbH <info@greenbone.net>"
+copyright = "2022-2023, Greenbone Networks GmbH <info@greenbone.net>"
 author = "Greenbone Networks GmbH <info@greenbone.net>"
 
 # The full version, including alpha/beta/rc tags
