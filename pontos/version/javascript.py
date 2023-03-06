@@ -27,7 +27,7 @@ from .version import Version, VersionCommand, VersionUpdate, parse_version
 # This class is used for JavaScript Version command(s)
 class JavaScriptVersionCommand(VersionCommand):
     project_file_name = "package.json"
-    version_file_path = Path("src", "version.js")
+    version_file_paths = (Path("src", "version.js"), Path("src", "version.ts"))
     _package = None
 
     @property
@@ -59,16 +59,16 @@ class JavaScriptVersionCommand(VersionCommand):
 
         return self._package
 
-    def _get_current_js_file_version(self) -> Optional[Version]:
-        if not self.version_file_path.exists():
+    def _get_current_file_version(
+        self, version_file: Path
+    ) -> Optional[Version]:
+        if not version_file.exists():
             return None
 
-        content = self.version_file_path.read_text(encoding="utf-8")
+        content = version_file.read_text(encoding="utf-8")
         match = re.search(r'VERSION = "(?P<version>.*)";', content)
         if not match:
-            raise VersionError(
-                f"VERSION variable not found in {self.version_file_path}"
-            )
+            raise VersionError(f"VERSION variable not found in {version_file}")
 
         return Version(match.group("version"))
 
@@ -85,13 +85,14 @@ class JavaScriptVersionCommand(VersionCommand):
         current_version = self.get_current_version()
 
         if version == "current":
-            js_version = self._get_current_js_file_version()
-            if js_version and js_version != current_version:
-                raise VersionError(
-                    f"The version {js_version} in "
-                    f"{self.version_file_path} doesn't match the current "
-                    f"version {current_version}."
-                )
+            for version_file in self.version_file_paths:
+                file_version = self._get_current_file_version(version_file)
+                if file_version and file_version != current_version:
+                    raise VersionError(
+                        f"The version {file_version} in "
+                        f"{version_file} doesn't match the current "
+                        f"version {current_version}."
+                    )
             return
 
         if current_version != version:
@@ -101,13 +102,13 @@ class JavaScriptVersionCommand(VersionCommand):
                 f"{self.project_file_path}."
             )
 
-        js_version = self._get_current_js_file_version()
-        if js_version and js_version != version:
-            raise VersionError(
-                f"Provided version {version} does not match the "
-                f"current version {js_version} in "
-                f"{self.version_file_path}."
-            )
+        for version_file in self.version_file_paths:
+            file_version = self._get_current_file_version(version_file)
+            if file_version and file_version != version:
+                raise VersionError(
+                    f"Provided version {version} does not match the "
+                    f"current version {file_version} in {version_file}."
+                )
 
     def _update_package_json(self, new_version: Version) -> None:
         """
@@ -127,20 +128,22 @@ class JavaScriptVersionCommand(VersionCommand):
         except json.JSONDecodeError as e:
             raise VersionError("Couldn't load JSON") from e
 
-    def _update_version_file(self, new_version: Version) -> bool:
+    def _update_version_file(
+        self, version_file: Path, new_version: Version
+    ) -> bool:
         """
         Update the version file with the new version
         """
-        if not self.version_file_path.exists():
+        if not version_file.exists():
             return False
 
-        content = self.version_file_path.read_text(encoding="utf-8")
+        content = version_file.read_text(encoding="utf-8")
         content = re.sub(
             pattern=r'VERSION = "(?P<version>.*)";',
             repl=f'VERSION = "{new_version}";',
             string=content,
         )
-        self.version_file_path.write_text(content, encoding="utf-8")
+        version_file.write_text(content, encoding="utf-8")
         return True
 
     def update_version(
@@ -153,9 +156,12 @@ class JavaScriptVersionCommand(VersionCommand):
         changed_files = [self.project_file_path]
         self._update_package_json(new_version=new_version)
 
-        updated = self._update_version_file(new_version=new_version)
-        if updated:
-            changed_files.append(self.version_file_path)
+        for version_file in self.version_file_paths:
+            updated = self._update_version_file(
+                version_file, new_version=new_version
+            )
+            if updated:
+                changed_files.append(version_file)
 
         return VersionUpdate(
             previous=package_version,

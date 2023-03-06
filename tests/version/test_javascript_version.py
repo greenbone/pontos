@@ -88,7 +88,7 @@ const func = () => ();
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
             js_version_file = (
-                temp_dir / JavaScriptVersionCommand.version_file_path
+                temp_dir / JavaScriptVersionCommand.version_file_paths[0]
             )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
@@ -100,7 +100,54 @@ const func = () => ();
             self.assertEqual(updated.new, Version("22.4.0"))
             self.assertEqual(
                 updated.changed_files,
-                [package_json, JavaScriptVersionCommand.version_file_path],
+                [package_json, JavaScriptVersionCommand.version_file_paths[0]],
+            )
+
+            with package_json.open(mode="r", encoding="utf-8") as fp:
+                fake_package = json.load(fp)
+
+            self.assertEqual(fake_package["version"], "22.4.0")
+
+            self.assertEqual(
+                js_version_file.read_text(encoding="utf8"),
+                'const foo = "bar";\nconst VERSION = "22.4.0";\n'
+                "const func = () => ();\n",
+            )
+
+    def test_update_version_files(self):
+        content = '{"name":"foo", "version":"1.2.3"}'
+        file_content = """const foo = "bar";
+const VERSION = "1.2.3";
+const func = () => ();
+"""
+
+        with temp_directory(change_into=True) as temp_dir:
+            package_json = temp_dir / "package.json"
+            package_json.write_text(content, encoding="utf8")
+
+            js_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_paths[0]
+            )
+            js_version_file.parent.mkdir()
+            js_version_file.write_text(file_content, encoding="utf8")
+
+            ts_version_file = (
+                temp_dir / JavaScriptVersionCommand.version_file_paths[1]
+            )
+            ts_version_file.write_text(file_content, encoding="utf8")
+
+            cmd = JavaScriptVersionCommand()
+            updated = cmd.update_version(Version("22.4.0"))
+
+            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, Version("22.4.0"))
+            self.assertEqual(
+                updated.changed_files,
+                [
+                    package_json,
+                    JavaScriptVersionCommand.version_file_paths[0],
+                    JavaScriptVersionCommand.version_file_paths[1],
+                ],
             )
 
             with package_json.open(mode="r", encoding="utf-8") as fp:
@@ -192,12 +239,29 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
             MagicMock(return_value=Version("22.4")),
         ), patch.object(
             JavaScriptVersionCommand,
-            "_get_current_js_file_version",
+            "_get_current_file_version",
             MagicMock(return_value=Version("22.5")),
         ), self.assertRaisesRegex(
             VersionError,
             "Provided version 22.4 does not match the current version 22.5 in "
             "src/version.js.",
+        ):
+            cmd = JavaScriptVersionCommand()
+            cmd.verify_version(Version("22.4"))
+
+    def test_verify_ts_mismatch(self):
+        with patch.object(
+            JavaScriptVersionCommand,
+            "get_current_version",
+            MagicMock(return_value=Version("22.4")),
+        ), patch.object(
+            JavaScriptVersionCommand,
+            "_get_current_file_version",
+            MagicMock(side_effect=[Version("22.4"), Version("22.5")]),
+        ), self.assertRaisesRegex(
+            VersionError,
+            "Provided version 22.4 does not match the current version 22.5 in "
+            "src/version.ts.",
         ):
             cmd = JavaScriptVersionCommand()
             cmd.verify_version(Version("22.4"))
@@ -226,7 +290,7 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
             js_version_file = (
-                temp_dir / JavaScriptVersionCommand.version_file_path
+                temp_dir / JavaScriptVersionCommand.version_file_paths[0]
             )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
@@ -248,7 +312,7 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
             js_version_file = (
-                temp_dir / JavaScriptVersionCommand.version_file_path
+                temp_dir / JavaScriptVersionCommand.version_file_paths[0]
             )
             js_version_file.parent.mkdir()
             js_version_file.write_text(js_content, encoding="utf8")
