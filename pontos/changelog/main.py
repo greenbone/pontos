@@ -18,16 +18,17 @@
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Iterable, NoReturn
+from typing import NoReturn, Optional, Sequence
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+from pontos.terminal.terminal import Terminal
 from pontos.version.helper import get_last_release_version
 
 
-def parse_args(args: Iterable[str] = None) -> ArgumentParser:
+def parse_args(args: Optional[Sequence[str]] = None) -> ArgumentParser:
     parser = ArgumentParser(
         description="Conventional commits utility.",
         prog="pontos-changelog",
@@ -83,35 +84,38 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
         help="Don't print messages to the terminal",
     )
 
-    return parser.parse_args(args=args)
+    return parser.parse_args(args=args)  # type: ignore
 
 
-def main(args: Iterable[str] = None) -> NoReturn:
-    parsed_args = parse_args(args)
+def main(args: Optional[Sequence[str]] = None) -> NoReturn:
+    parsed_args = parse_args(args)  # type: ignore
 
-    term = NullTerminal if parsed_args.quiet else RichTerminal()
-
-    if parsed_args.current_version:
-        last_version = parsed_args.current_version
+    if parsed_args.quiet:
+        term: Terminal = NullTerminal  # type: ignore
     else:
-        last_version = get_last_release_version(parsed_args.git_tag_prefix)
+        term = RichTerminal()
+
+    if parsed_args.current_version:  # type: ignore
+        last_version = parsed_args.current_version  # type: ignore
+    else:
+        last_version = get_last_release_version(parsed_args.git_tag_prefix)  # type: ignore # pylint: disable=line-too-long
 
     try:
         changelog_builder = ChangelogBuilder(
-            config=parsed_args.config,
-            project=parsed_args.project,
-            space=parsed_args.space,
+            config=parsed_args.config,  # type: ignore
+            project=parsed_args.project,  # type: ignore
+            space=parsed_args.space,  # type: ignore
         )
-        if parsed_args.output:
+        if parsed_args.output:  # type: ignore
             changelog_builder.create_changelog_file(
-                parsed_args.output,
+                parsed_args.output,  # type: ignore
                 last_version=last_version,
-                next_version=parsed_args.next_version,
+                next_version=parsed_args.next_version,  # type: ignore
             )
         else:
             changelog = changelog_builder.create_changelog(
                 last_version=last_version,
-                next_version=parsed_args.next_version,
+                next_version=parsed_args.next_version,  # type: ignore
             )
             print(changelog)
     except PontosError as e:

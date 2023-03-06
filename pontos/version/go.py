@@ -93,7 +93,7 @@ class GoVersionCommand(VersionCommand):
         try:
             current_version = self.get_current_version()
         except VersionError:
-            current_version = get_last_release_version("v")
+            current_version = get_last_release_version("v")  # type: ignore
 
         if not force and new_version == current_version:
             return VersionUpdate(previous=current_version, new=new_version)

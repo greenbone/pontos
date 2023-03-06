@@ -23,7 +23,7 @@ from pontos.version.version import Version, parse_version
 
 def verify_version_type(version: str) -> Union[Version, Literal["current"]]:
     if version == "current":
-        return version
+        return "current"
 
     return parse_version(version)
 

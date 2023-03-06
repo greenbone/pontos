@@ -23,7 +23,7 @@ from .javascript import JavaScriptVersionCommand
 from .python import PythonVersionCommand
 from .version import VersionCommand
 
-__COMMANDS: Tuple[Type[VersionCommand]] = (
+__COMMANDS: Tuple[Type[VersionCommand]] = (  # type: ignore
     CMakeVersionCommand,
     GoVersionCommand,
     JavaScriptVersionCommand,

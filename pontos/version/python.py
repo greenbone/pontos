@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import importlib.util
+from importlib.machinery import ModuleSpec
 from pathlib import Path
 from typing import Literal, Union
 
@@ -140,11 +141,11 @@ class PythonVersionCommand(VersionCommand):
         ]
         module_name = ".".join(module_parts)
         try:
-            spec = importlib.util.spec_from_file_location(
+            spec: ModuleSpec = importlib.util.spec_from_file_location(  # type: ignore # pylint: disable=line-too-long
                 module_name, self.version_file_path
             )
             version_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(version_module)
+            spec.loader.exec_module(version_module)  # type: ignore
             return parse_version(version_module.__version__)
         except FileNotFoundError:
             raise VersionError(

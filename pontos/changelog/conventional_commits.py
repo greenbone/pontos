@@ -19,7 +19,7 @@
 import re
 from datetime import date
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 import tomlkit
 
@@ -157,14 +157,14 @@ class ChangelogBuilder:
         Returns
             The dict containing the commit messages"""
         # get the commit types from the toml
-        commit_types = self.config.get("commit_types")
+        commit_types: Iterable = self.config.get("commit_types")  # type: ignore
 
         commit_link = f"{ADDRESS}{self.space}/{self.project}/commit/"
 
-        commit_dict = {}
+        commit_dict: Dict[str, List[str]] = {}
         if commits and len(commits) > 0:
-            for commit in commits:
-                commit = commit.split(" ", maxsplit=1)
+            for commitmsg in commits:
+                commit = commitmsg.split(" ", maxsplit=1)
                 for commit_type in commit_types:
                     reg = re.compile(
                         rf'{commit_type["message"]}\s?[:|-]', flags=re.I
@@ -211,7 +211,7 @@ class ChangelogBuilder:
             changelog.append("## [Unreleased]")
 
         # changelog entries
-        commit_types = self.config.get("commit_types")
+        commit_types: Iterable = self.config.get("commit_types")  # type: ignore
         for commit_type in commit_types:
             if commit_type["group"] in commit_dict.keys():
                 changelog.append(f"\n## {commit_type['group']}")
