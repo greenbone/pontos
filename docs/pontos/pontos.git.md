@@ -1,21 +1,21 @@
-pontos.git package
-==================
+# pontos.git package
 
-Submodules
-----------
+## Submodules
 
-pontos.git.git module
----------------------
+## pontos.git.git module
 
+```{eval-rst}
 .. automodule:: pontos.git.git
    :members:
    :undoc-members:
    :show-inheritance:
+```
 
-Module contents
----------------
+## Module contents
 
+```{eval-rst}
 .. automodule:: pontos.git
    :members:
    :undoc-members:
    :show-inheritance:
+```
