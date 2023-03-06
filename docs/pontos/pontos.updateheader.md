@@ -1,21 +1,21 @@
-pontos.updateheader package
-===========================
+# pontos.updateheader package
 
-Submodules
-----------
+## Submodules
 
-pontos.updateheader.updateheader module
----------------------------------------
+## pontos.updateheader.updateheader module
 
+```{eval-rst}
 .. automodule:: pontos.updateheader.updateheader
    :members:
    :undoc-members:
    :show-inheritance:
+```
 
-Module contents
----------------
+## Module contents
 
+```{eval-rst}
 .. automodule:: pontos.updateheader
    :members:
    :undoc-members:
    :show-inheritance:
+```
