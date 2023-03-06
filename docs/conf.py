@@ -13,10 +13,10 @@
 
 # pylint: disable=invalid-name,redefined-builtin,wrong-import-position
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, Path(__file__).parent.absolute())
 
 from pontos.version import __version__
 
