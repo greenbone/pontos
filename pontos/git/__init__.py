@@ -17,4 +17,10 @@
 
 from .git import ConfigScope, Git, GitError, MergeStrategy, TagSort
 
-__all__ = ("Git", "GitError", "MergeStrategy", "ConfigScope", "TagSort")
+__all__ = (
+    "MergeStrategy",
+    "ConfigScope",
+    "TagSort",
+    "GitError",
+    "Git",
+)

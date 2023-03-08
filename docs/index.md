@@ -17,12 +17,5 @@ This sections explains how to install **Pontos** and shows example use cases.
 install
 tools
 development
-other
-```
-
-```{toctree}
-:caption: Development
-:hidden: true
-
-pontos/pontos
+api
 ```

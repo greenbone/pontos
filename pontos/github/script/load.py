@@ -49,7 +49,9 @@ def load_script(
     Example:
         .. code-block:: python
 
-            with load_module("path/to/script.py") as module:
+            from pontos.github.script import load_script
+
+            with load_script("path/to/script.py") as module:
                 module.func()
     """
     path = Path(script)
@@ -72,6 +74,24 @@ def run_github_script_function(
         token: A GitHub token for authentication
         timeout: Timeout for the GitHub requests in seconds
         args: Arguments forwarded to the script function
+
+    Raises:
+        GitHubScriptError: If the module doesn't have a github_script function
+            or if the github_script function is not an async coroutine.
+
+    Returns:
+        The return value of the github_script coroutine
+
+    Example:
+        .. code-block:: python
+
+            from pontos.github.script import (
+                load_script,
+                run_github_script_function,
+            )
+
+            with load_script("path/to/script.py") as module:
+                return run_github_script_function(module, token, 60.0, args)
     """
     if not hasattr(module, GITHUB_SCRIPT_FUNCTION_NAME):
         raise GitHubScriptError(
@@ -111,12 +131,27 @@ def run_add_arguments_function(
     module: ModuleType, parser: ArgumentParser
 ) -> None:
     """
-    Run a GitHub script add_script_arguments function
+    Run a GitHub script add_script_arguments function (if available in the
+    module).
 
     Args:
         module: Module containing the GitHub script add_script_arguments
             function
         parser: An ArgumentParser to add additional CLI arguments
+
+    Example:
+        .. code-block:: python
+
+            from argparse import ArgumentParser
+            from pontos.github.script import (
+                load_script,
+                run_github_script_function,
+            )
+
+            parser = ArgumentParser()
+
+            with load_script("path/to/script.py") as module:
+                run_add_arguments_function(module, parser)
     """
     func = getattr(module, GITHUB_SCRIPT_PARSER_FUNCTION_NAME, None)
     if func:

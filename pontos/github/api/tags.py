@@ -53,6 +53,28 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
             git_object_type: The type of the object we're tagging. Normally this
                 is a commit type but it can also be a tree or a blob.
             date: When this object was tagged.
+
+        Raises:
+            HTTPStatusError: If the request was invalid
+
+        Returns:
+            A new git tag
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    tag = await api.tags.create(
+                        "foo/bar",
+                        "v1.2.3",
+                        "Create tag v1.2.3",
+                        "John Doe",
+                        "john@doe.com",
+                        e746420,
+                    )
+                    print(tag)
         """
         data = {
             "tag": tag,
@@ -89,6 +111,21 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
                 The name is not case sensitive.
             tag: Github tag name.
             sha: The SHA1 value for this Github tag.
+
+        Raises:
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.tags.create_tag_reference(
+                        "foo/bar",
+                        "v1.2.3",
+                        e746420,
+                    )
         """
 
         data: Dict[str, Any] = {
@@ -107,6 +144,18 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
         Args:
             repo: GitHub repository (owner/name) to use
             tag_sha: SHA of the git tag object
+
+        Raises:
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    tag = await api.tags.get("foo/bar", e746420)
+                    print(tag)
         """
         api = f"/repos/{repo}/git/tags/{tag_sha}"
         response = await self._client.get(api)

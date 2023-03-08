@@ -39,6 +39,10 @@ from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
 
 class ReleaseReturnValue(IntEnum):
+    """
+    Possible return values of ReleaseCommand
+    """
+
     SUCCESS = 0
     PROJECT_SETTINGS_NOT_FOUND = auto()
     TOKEN_MISSING = auto()
@@ -50,6 +54,13 @@ class ReleaseReturnValue(IntEnum):
 
 
 class ReleaseCommand:
+    """
+    A CLI command for creating a release
+
+    Args:
+        terminal: A Terminal for output
+    """
+
     def __init__(self, terminal: Terminal) -> None:
         self.git = Git()
         self.terminal = terminal

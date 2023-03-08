@@ -19,4 +19,6 @@ from pontos.errors import PontosError
 
 
 class GitHubApiError(PontosError):
-    """Error while using the GitHub API"""
+    """
+    Error while using the GitHub API
+    """

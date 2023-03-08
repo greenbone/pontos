@@ -17,21 +17,15 @@
 """
 Load and run Pontos GitHub Scripts
 
-A Pontos GitHub Script is a Python module that has a github_script and
-optionally a add_script_arguments functions. These functions should have the
-following signatures:
+A Pontos GitHub Script is a Python module that has a github_script coroutine
+function and optionally a add_script_arguments function. These functions should
+have the following signatures:
 
 .. code-block:: python
 
     async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
 
     def add_script_arguments(parser: ArgumentParser) -> None:
-
-Instead of an async coroutine a sync function is also possible:
-
-.. code-block:: python
-
-    def github_script(api: GitHubRESTApi, args: Namespace) -> int:
 
 Example:
 
@@ -42,8 +36,8 @@ Example:
         parser.add_argument("repository")
 
     async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
-        repo_data = api.repository.get(args.repository)
-        print(repo_data["description"])
+        repo = await api.repositories.get(args.repository)
+        print(repo.html_url, repo.description)
         return 0
 """
 
@@ -54,12 +48,21 @@ from argparse import ArgumentParser
 import httpx
 
 from pontos.errors import PontosError
-from pontos.github.script.load import (
+
+from .errors import GitHubScriptError
+from .load import (
     load_script,
     run_add_arguments_function,
     run_github_script_function,
 )
-from pontos.github.script.parser import create_parser
+from .parser import create_parser
+
+__all__ = (
+    "GitHubScriptError",
+    "load_script",
+    "run_add_arguments_function",
+    "run_github_script_function",
+)
 
 
 def main():

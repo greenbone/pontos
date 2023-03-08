@@ -46,7 +46,29 @@ class GitHubAsyncRESTSearch(GitHubAsyncREST):
             sort: Sort the found repositories by this criteria.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding repositories
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models import (
+                    InReadmeQualifier,
+                    InTopicsQualifier,
+                )
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    # search for keywords in repo topics and READMEs
+                    async for repo in api.search(
+                        keywords=["utils", "search", "golang"],
+                        qualifier=[
+                            InTopicsQualifier(),
+                            InReadmeQualifier(),
+                        ],
+                    )
         """
         api = "/search/repositories"
         params = {

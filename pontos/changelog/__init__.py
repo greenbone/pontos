@@ -22,7 +22,6 @@ from .main import main
 
 __all__ = [
     "ChangelogError",
-    "ChangelogBuilder",
     "ChangelogBuilderError",
-    "main",
+    "ChangelogBuilder",
 ]

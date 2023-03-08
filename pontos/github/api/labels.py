@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import AsyncIterator, Iterable
+from typing import AsyncIterator, Iterable, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON
@@ -26,7 +26,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
     async def get_all(
         self,
         repo: str,
-        issue: int,
+        issue: Union[int, str],
     ) -> AsyncIterator[str]:
         """
         Get all labels that are set in the issue/pr
@@ -36,7 +36,16 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             issue:  Issue/Pull request number
 
         Returns:
-            Iterable of existing labels
+            An async iterator yielding the labels
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for label in api.labels.get_all("foo/bar", 123):
+                        print(label)
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         params = {"per_page": "100"}
@@ -49,7 +58,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
                 yield label["name"]  # type: ignore
 
     async def set_all(
-        self, repo: str, issue: int, labels: Iterable[str]
+        self, repo: str, issue: Union[int, str], labels: Iterable[str]
     ) -> None:
         """
         Set labels in the issue/pr. Existing labels will be overwritten
@@ -59,6 +68,14 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             issue:  Issue/Pull request number
             labels: Iterable of labels, that should be set. Existing labels will
                 be overwritten.
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.labels.set_all("foo/bar", 123, ["bug", "doc"])
         """
         api = f"/repos/{repo}/issues/{issue}/labels"
         data: JSON = {"labels": labels}  # type: ignore

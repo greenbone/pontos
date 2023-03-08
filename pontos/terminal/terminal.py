@@ -45,6 +45,10 @@ STATUS_LEN = 2
 
 
 class Terminal(ABC):
+    """
+    Abstract base class representing a terminal console
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self._indent = 0
@@ -55,12 +59,14 @@ class Terminal(ABC):
         A context manager for indenting output using spaces
 
         Example:
-            with terminal.indent():
-                terminal.print("...")
+            .. code-block:: python
+
+                with terminal.indent():
+                    terminal.print("...")
 
         Args:
             indentation: Number of spaces to be used for indentation.
-                         By default 4.
+                By default 4.
         """
         current_indent = self._indent
         self._add_indent(indentation)

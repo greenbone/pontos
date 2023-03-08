@@ -22,20 +22,48 @@ from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
 
-__add__ = (
+__all__ = (
     "Release",
     "ReleaseAsset",
     "ReleaseAssetState",
+    "ReleaseReactions",
 )
 
 
 class ReleaseAssetState(Enum):
+    """
+    State of a release asset
+
+    Attributes:
+        UPLOADED: Uploaded
+        OPEN: Open
+    """
+
     UPLOADED = "uploaded"
     OPEN = "open"
 
 
 @dataclass
 class ReleaseAsset(GitHubModel):
+    """
+    A GitHub release asset model
+
+    Attributes:
+        url: URL of the release asset
+        browser_download_url: Direct URL to download the asset from
+        id: ID of the asset
+        node_id: Node ID of the asset
+        name: Name of the asset
+        state: State of the asset
+        content_type: MIME content type of the asset
+        size: Size of the asset
+        download_count: Number of downloads
+        created_at: Creation date
+        updated_at: Upload date
+        label: Label of the asset
+        uploader: User who uploaded the asset
+    """
+
     url: str
     browser_download_url: str
     id: int
@@ -52,7 +80,21 @@ class ReleaseAsset(GitHubModel):
 
 
 @dataclass
-class Reactions(GitHubModel):
+class ReleaseReactions(GitHubModel):
+    """
+    Reactions to a GitHub release
+
+    Attributes:
+        url: URL to the release reactions
+        total_count: Total number of reactions
+        laugh: Number of user reacted with laugh
+        confused: Number of user reacted with confused
+        heart: Number of user reacted with heart
+        hooray: Number of user reacted with hooray
+        eyes: Number of user reacted with eyes
+        rocket: Number of user reacted with rocket
+    """
+
     url: str
     total_count: int
     laugh: int
@@ -65,6 +107,35 @@ class Reactions(GitHubModel):
 
 @dataclass
 class Release(GitHubModel):
+    """
+    A GitHub release model
+
+    Attributes:
+        assets_url: URL to the release assets
+        created_at: Creation Date
+        draft: True if the release is a draft
+        html_url: URL to the web page of the release
+        id: ID of the release
+        node_id: Node ID of the release
+        prerelease: True if the release is a pre release
+        tag_name: Name of the tag referenced by the release
+        target_commitish: Git commit ID of the tag references by the release
+        upload_url: URL to upload release assets to
+        url: URL of the release
+        assets: Information about the release assets
+        author: User created the release
+        body_html: Body of the release as HTML
+        body_text: Body of the release as text
+        body: Body of the release
+        discussion_url: URL to the release discussion
+        mentions_count:
+        name: Name of the release
+        published_at: Publication date of the release
+        reactions: Reaction information
+        tarball_url: URL to the tarball archive of the release
+        zipball_url: URL to the zip archive of the release
+    """
+
     assets_url: str
     created_at: datetime
     draft: bool
@@ -85,6 +156,6 @@ class Release(GitHubModel):
     mentions_count: Optional[int] = None
     name: Optional[str] = None
     published_at: Optional[datetime] = None
-    reactions: Optional[Reactions] = None
+    reactions: Optional[ReleaseReactions] = None
     tarball_url: Optional[str] = None
     zipball_url: Optional[str] = None

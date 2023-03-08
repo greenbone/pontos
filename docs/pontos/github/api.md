@@ -3,6 +3,4 @@
 ```{eval-rst}
 .. automodule:: pontos.github.api
    :members:
-   :undoc-members:
-   :show-inheritance:
 ```
