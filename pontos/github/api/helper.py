@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import httpx
@@ -25,13 +24,6 @@ DEFAULT_TIMEOUT = 180.0  # three minutes
 DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(DEFAULT_TIMEOUT)  # three minutes
 JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
 JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
-
-
-class FileStatus(Enum):
-    ADDED = "added"
-    DELETED = "deleted"
-    MODIFIED = "modified"
-    RENAMED = "renamed"
 
 
 def _get_next_url(response: httpx.Response) -> Optional[str]:

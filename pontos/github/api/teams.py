@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, AsyncIterator, Dict, Iterable, Optional
+from typing import Any, AsyncIterator, Dict, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import (
@@ -26,6 +26,7 @@ from pontos.github.models.base import (
     User,
 )
 from pontos.github.models.organization import Repository
+from pontos.helper import enum_or_value
 
 
 class GitHubAsyncRESTTeams(GitHubAsyncREST):
@@ -39,7 +40,19 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             organization: GitHub organization to use
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding teams
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for team in api.teams.get_all("foo"):
+                        print(team)
         """
         api = f"/orgs/{organization}/teams"
         params = {
@@ -60,9 +73,10 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         description: Optional[str] = None,
         maintainers: Optional[Iterable[str]] = None,
         repo_names: Optional[Iterable[str]] = None,
-        privacy: Optional[TeamPrivacy] = None,
+        privacy: Union[TeamPrivacy, str, None] = None,
         parent_team_id: Optional[str] = None,
     ) -> Team:
+        # pylint: disable=line-too-long
         """
         Create a new team in an organization
 
@@ -78,19 +92,31 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                 ) of repositories to add the team to.
             privacy: The level of privacy this team should have. The options
                 are:
-                For a non-nested team:
-                    * secret - only visible to organization owners and members
-                        of this team.
-                    * closed - visible to all members of this organization.
-                Default: secret
+                    For a non-nested team:
+                        * secret - only visible to organization owners and members
+                            of this team.
+                        * closed - visible to all members of this organization.
+                    Default: secret
 
-                For a parent or child team:
-                    * closed - visible to all members of this organization.
-                Default for child team: closed
+                    For a parent or child team:
+                        * closed - visible to all members of this organization.
+                    Default for child team: closed
             parent_team_id: The ID of a team to set as the parent team.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            A new team
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    team = await api.teams.create("foo", "devops")
+                    print(team)
         """
         api = f"/orgs/{organization}/teams"
         data: Dict[str, Any] = {"name": name}
@@ -101,7 +127,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         if repo_names:
             data["repo_names"] = list(repo_names)
         if privacy:
-            data["privacy"] = privacy.value
+            data["privacy"] = enum_or_value(privacy)
         if parent_team_id:
             data["parent_team_id"] = parent_team_id
 
@@ -125,7 +151,19 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The team slug of the team.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            Information about the team
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    team = await api.teams.get("foo", "devops")
+                    print(team)
         """
         api = f"/orgs/{organization}/teams/{team}"
         response = await self._client.get(api)
@@ -139,9 +177,10 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         *,
         name: str,
         description: Optional[str] = None,
-        privacy: Optional[TeamPrivacy] = None,
+        privacy: Union[TeamPrivacy, str, None] = None,
         parent_team_id: Optional[str] = None,
     ) -> Team:
+        # pylint: disable=line-too-long
         """
         Update team information in an organization
 
@@ -154,19 +193,32 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             description: The description of the team.
             privacy: The level of privacy this team should have. The options
                 are:
-                For a non-nested team:
-                    * secret - only visible to organization owners and members
-                        of this team.
-                    * closed - visible to all members of this organization.
-                Default: secret
+                    For a non-nested team:
+                        * secret - only visible to organization owners and members
+                            of this team.
+                        * closed - visible to all members of this organization.
+                    Default: secret
 
-                For a parent or child team:
-                    * closed - visible to all members of this organization.
-                Default for child team: closed
+                    For a parent or child team:
+                        * closed - visible to all members of this organization.
+                    Default for child team: closed
             parent_team_id: The ID of a team to set as the parent team.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            The updated team
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    team = await api.teams.update(
+                        "foo", "devops", name="DevSecOps"
+                    )
         """
         api = f"/orgs/{organization}/teams/{team}"
         data: Dict[str, Any] = {}
@@ -175,7 +227,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         if description:
             data["description"] = description
         if privacy:
-            data["privacy"] = privacy.value
+            data["privacy"] = enum_or_value(privacy)
         if parent_team_id:
             data["parent_team_id"] = parent_team_id
 
@@ -198,7 +250,15 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.teams.delete("foo", "bar")
         """
         api = f"/orgs/{organization}/teams/{team}"
         response = await self._client.delete(api)
@@ -220,7 +280,19 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding users
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for user in api.teams.members("foo", "bar):
+                        print(user)
         """
         api = f"/orgs/{organization}/teams/{team}/members"
         params = {
@@ -239,7 +311,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         team: str,
         username: str,
         *,
-        role: TeamRole = TeamRole.MEMBER,
+        role: Union[TeamRole, str] = TeamRole.MEMBER,
     ) -> None:
         """
         Add or update a member of a team.
@@ -254,10 +326,24 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                 Default: member. Can be one of: member, maintainer.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models import TeamRole
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.teams.update_member(
+                        "foo",
+                        "bar",
+                        "a_user",
+                        role=TeamRole.MAINTAINER,
+                    )
         """
         api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
-        data: Dict[str, Any] = {"role": role.value}
+        data: Dict[str, Any] = {"role": enum_or_value(role)}
         response = await self._client.put(api, data=data)
         response.raise_for_status()
 
@@ -281,7 +367,20 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             username: The handle for the GitHub user account.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models import TeamRole
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.teams.remove_member(
+                        "foo",
+                        "bar",
+                        "a_user",
+                    )
         """
         api = f"/orgs/{organization}/teams/{team}/memberships/{username}"
         response = await self._client.delete(api)
@@ -302,7 +401,19 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding repositories
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for repo in api.teams.repositories("foo", "bar"):
+                        print(repo)
         """
         api = f"/orgs/{organization}/teams/{team}/repos"
         params = {
@@ -320,7 +431,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
         organization: str,
         team: str,
         repository: str,
-        permission: Permission,
+        permission: Union[Permission, str],
     ) -> None:
         """
         Add or update team repository permissions
@@ -333,13 +444,27 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             permission: The permission to grant the team on the repository.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models import Permission
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.teams.update_permission(
+                        "foo",
+                        "bar",
+                        "baz",
+                        Permission.MAINTAIN,
+                    )
         """
         api = (
             f"/orgs/{organization}/teams/{team}/repos/{organization}/"
             f"{repository}"
         )
-        data: Dict[str, Any] = {"permission": permission.value}
+        data: Dict[str, Any] = {"permission": enum_or_value(permission)}
         response = await self._client.put(api, data=data)
         response.raise_for_status()
 

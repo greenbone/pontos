@@ -16,9 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .__version__ import __version__
+from .errors import VersionError
 from .main import main
+from .version import Version, VersionCommand, VersionUpdate, parse_version
 
 __all__ = (
-    "main",
     "__version__",
+    "VersionError",
+    "parse_version",
+    "Version",
+    "VersionCommand",
+    "VersionUpdate",
 )

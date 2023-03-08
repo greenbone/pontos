@@ -42,7 +42,16 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the workflows as an iterable of dicts
+            An async iterator yielding workflows
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for workflow in api.workflows.get_all("foo/bar"):
+                        print(workflow)
         """
         api = f"/repos/{repo}/actions/workflows"
         return self._get_paged_items(api, "workflows", Workflow)  # type: ignore
@@ -63,7 +72,16 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the workflows as a dict
+            Information about the workflow
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    workflow = await api.workflows.get("foo/bar", "ci.yml")
+                    print(workflow)
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}"
         response = await self._client.get(api)
@@ -93,6 +111,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             inputs: Input keys and values configured in the workflow file. Any
                 default properties configured in the workflow file will be used
                 when inputs are omitted.
+
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
@@ -100,10 +119,12 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         Example:
             .. code-block:: python
 
-            with GitHubAsyncRESTApi("...") as api:
-                api.workflows.create_workflow_dispatch(
-                    "foo/bar", "ci.yml", ref="main"
-                )
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                with GitHubAsyncRESTApi(token) as api:
+                    await api.workflows.create_workflow_dispatch(
+                        "foo/bar", "ci.yml", ref="main"
+                    )
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
         data: Dict[str, Any] = {"ref": ref}
@@ -159,7 +180,19 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the workflow runs as an iterable of dicts
+            An async iterator yielding workflow runs
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for run in api.workflows.get_workflow_runs(
+                        "foo/bar",
+                        "ci.yml"
+                    ):
+                        print(run)
         """
 
         api = (
@@ -202,7 +235,16 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the workflow runs as a dict
+            Information about the workflow run
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    run = await api.workflows.get_workflow_run("foo/bar", 123)
+                    print(run)
         """
         api = f"/repos/{repo}/actions/runs/{run}"
         response = await self._client.get(api)

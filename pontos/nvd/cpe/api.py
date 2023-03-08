@@ -43,8 +43,10 @@ class CPEApi(NVDApi):
     Example:
         .. code-block:: python
 
-        async with CPEApi() as api:
-            cpe = await api.cpe("")
+            from pontos.nvd.cpe import CPEApi
+
+            async with CPEApi() as api:
+                cpe = await api.cpe(...)
     """
 
     def __init__(
@@ -77,7 +79,7 @@ class CPEApi(NVDApi):
 
     async def cpe(self, cpe_name_id: str) -> CPE:
         """
-        Returns a single CPE matching the CPE ID.
+        Query for a CPE matching the CPE UUID.
 
         Args:
             cpe_name_id: Returns a specific CPE record identified by a Universal
@@ -86,9 +88,17 @@ class CPEApi(NVDApi):
         Example:
             .. code-block:: python
 
-            async with CPEApi() as api:
-                cpe = await api.cpe("87316812-5F2C-4286-94FE-CC98B9EAEF53"):
+                from pontos.nvd.cpe import CPEApi
+
+                async with CPEApi() as api:
+                    cpe = await api.cpe("87316812-5F2C-4286-94FE-CC98B9EAEF53")
                     print(cpe)
+
+        Returns:
+            A single CPE matching the CPE UUID
+
+        Raises:
+            PontosError: If a CPE with the CPE UUID couldn't be found.
         """
         if not cpe_name_id:
             raise PontosError("Missing CPE Name ID.")
@@ -129,12 +139,17 @@ class CPEApi(NVDApi):
             match_criteria_id: Returns all CPE records associated with a match
                 string identified by its UUID.
 
+        Returns:
+            An async iterator of CPE model instances.
+
         Example:
             .. code-block:: python
 
-            async with CPEApi() as api:
-                async for cpe in api.cpes(keywords=["Mac OS X"]):
-                    print(cpe.cpe_name, cpe.cpe_name_id)
+                from pontos.nvd.cpe import CPEApi
+
+                async with CPEApi() as api:
+                    async for cpe in api.cpes(keywords=["Mac OS X"]):
+                        print(cpe.cpe_name, cpe.cpe_name_id)
         """
         total_results = None
 

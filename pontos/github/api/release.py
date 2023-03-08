@@ -61,7 +61,20 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             prerelease: If the release is a pre release. False by default.
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            httpx.HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.releases.create(
+                        "foo/bar",
+                        "v1.2.3",
+                        body="A new release",
+                        name="Bar Release 1.2.3",
+                    )
         """
         data: JSON_OBJECT = {
             "tag_name": tag,
@@ -90,6 +103,14 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         Returns:
             True if the release exists
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    exists = await = api.releases.exists("foo/bar", "v1.2.3")
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = await self._client.get(api)
@@ -106,7 +127,19 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            httpx.HTTPStatusError: If the request was invalid
+
+        Returns:
+            Information about the release
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    release = await api.releases.get("foo/bar", "v1.2.3)
+                    print(release)
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = await self._client.get(api)
@@ -116,6 +149,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
     def download_release_tarball(
         self, repo: str, tag: str
     ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
+        # pylint: disable=line-too-long
         """
         Download a release tarball (tar.gz) file
 
@@ -124,19 +158,21 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
 
-            async with api.download_release_tarball(
-                "foo/bar", "v1.0.0"
-            ) as download:
-                file_path = Path("a.file.tar.gz")
-                with file_path.open("wb") as f:
-                    async for content, progress in download:
-                        f.write(content)
-                        print(progress)
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api, async with api.releases.download_release_tarball(
+                    "foo/bar", "v1.0.0"
+                ) as download:
+                    file_path = Path("a.file.tar.gz")
+                    with file_path.open("wb") as f:
+                        async for content, progress in download:
+                            f.write(content)
+                            print(progress)
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
         return download_async(self._client.stream(api))
@@ -146,6 +182,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         repo: str,
         tag: str,
     ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
+        # pylint: disable=line-too-long
         """
         Download a release zip file
 
@@ -154,19 +191,21 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
 
-            async with api.download_release_zip(
-                "foo/bar", "v1.0.0"
-            ) as download:
-                file_path = Path("a.file.zip")
-                with file_path.open("wb") as f:
-                    async for content, progress in download:
-                        f.write(content)
-                        print(progress)
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api, async with api.releases.download_release_zip(
+                    "foo/bar", "v1.0.0"
+                ) as download:
+                    file_path = Path("a.file.zip")
+                    with file_path.open("wb") as f:
+                        async for content, progress in download:
+                            f.write(content)
+                            print(progress)
         """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download_async(self._client.stream(api))
@@ -180,6 +219,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
     ) -> AsyncIterator[
         Tuple[str, AsyncContextManager[AsyncDownloadProgressIterable[bytes]]]
     ]:
+        # pylint: disable=line-too-long
         """
         Download release assets
 
@@ -191,31 +231,33 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                 only specific artifacts.
 
         Raises:
-            HTTPError if the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
 
-            async def download_asset(name: str, download_cm) -> Path:
-                async with download_cm as iterator:
-                    file_path = Path(name)
-                    with file_path.open("wb") as f:
-                        async for content, progress in iterator:
-                            f.write(content)
-                            print(name, progress)
-                    return file_path
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async def download_asset(name: str, download_cm) -> Path:
+                        async with download_cm as iterator:
+                            file_path = Path(name)
+                            with file_path.open("wb") as f:
+                                async for content, progress in iterator:
+                                    f.write(content)
+                                    print(name, progress)
+                            return file_path
 
 
-            tasks = []
-            async for name, download_cm in api.download_release_assets(
-                "foo/bar, "v1.2.3",
-            ):
-                tasks.append(asyncio.create_task(
-                    download_asset(name, download_cm)
-                )
+                    tasks = []
+                    async for name, download_cm in api.releases.download_release_assets(
+                        "foo/bar, "v1.2.3",
+                    ):
+                        tasks.append(asyncio.create_task(
+                            download_asset(name, download_cm)
+                        )
 
-            file_paths = await asyncio.gather(*tasks)
-
+                    file_paths = await asyncio.gather(*tasks)
         """
         release = await self.get(repo, tag)
         assets_url = release.assets_url
@@ -241,6 +283,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         tag: str,
         files: Iterable[Union[Path, Tuple[Path, str]]],
     ) -> AsyncIterator[Path]:
+        # pylint: disable=line-too-long
         """
         Upload release assets asynchronously
 
@@ -254,25 +297,29 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             yields each file after its upload is finished
 
         Raises:
-            HTTPError if an upload request was invalid
+            HTTPStatusError: If an upload request was invalid
 
         Example:
             .. code-block:: python
 
-            files = (Path("foo.txt"), Path("bar.txt"),)
-            async for uploaded_file in api.upload_release_assets(
-                "foo/bar", "1.2.3", files
-            ):
-                print(f"Uploaded: {uploaded_file}")
+                from pontos.github.api import GitHubAsyncRESTApi
 
-            files = [
-                (Path("foo.txt"), "text/ascii"),
-                (Path("bar.pdf"), "application/pdf"),
-            ]
-            async for uploaded_file in api.upload_release_assets(
-                "foo/bar", "1.2.3", files
-            ):
-               print(f"Uploaded: {uploaded_file}")
+                async with GitHubAsyncRESTApi(token) as api:
+
+                    files = (Path("foo.txt"), Path("bar.txt"),)
+                    async for uploaded_file in api.releases.upload_release_assets(
+                        "foo/bar", "1.2.3", files
+                    ):
+                        print(f"Uploaded: {uploaded_file}")
+
+                    files = [
+                        (Path("foo.txt"), "text/ascii"),
+                        (Path("bar.pdf"), "application/pdf"),
+                    ]
+                    async for uploaded_file in api.releases.upload_release_assets(
+                        "foo/bar", "1.2.3", files
+                    ):
+                        print(f"Uploaded: {uploaded_file}")
         """
         release = await self.get(repo, tag)
         asset_url = release.upload_url.replace("{?name,label}", "")

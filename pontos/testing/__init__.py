@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+A module containing classes and functions mostly useful for creating unit tests
+"""
+
 import os
 import tempfile
 from contextlib import contextmanager
@@ -26,12 +30,12 @@ from pontos.helper import add_sys_path, ensure_unload_module, unload_module
 
 __all__ = (
     "AsyncIteratorMock",
-    "temp_directory",
-    "temp_git_repository",
-    "temp_file",
-    "temp_python_module",
     "add_sys_path",
     "ensure_unload_module",
+    "temp_directory",
+    "temp_file",
+    "temp_git_repository",
+    "temp_python_module",
     "unload_module",
 )
 
@@ -55,6 +59,8 @@ def temp_directory(
 
     Example:
         .. code-block:: python
+
+            from pontos.testing import temp_directory
 
             with temp_directory(change_into=True) as tmp:
                 new_file = tmp / "test.txt"
@@ -109,6 +115,8 @@ def temp_git_repository(
     Example:
         .. code-block:: python
 
+            from pontos.testing import temp_git_repository
+
             with temp_git_repository() as repo:
                 new_file = repo / "foo.txt"
                 new_file.write_text("Lorem Ipsum")
@@ -162,6 +170,8 @@ def temp_file(
     Example:
         .. code-block:: python
 
+            from pontos.testing import temp_file
+
             with temp_file("Lorem Ipsum", name="foo.txt") as fpath:
 
     """
@@ -197,6 +207,8 @@ def temp_python_module(
     Example:
         .. code-block:: python
 
+            from pontos.testing import temp_python_module
+
             with temp_python_module(
                 "def hello(value):\\n  print(f'Hello {value}')", name="world"
             ) as python_module_path:
@@ -214,6 +226,23 @@ def temp_python_module(
 
 
 class AsyncIteratorMock(AsyncIterator):
+    """
+    A class to mock an async iterator from an iterable like a list
+
+    Args:
+        iterable: Iterable to return values from
+
+    Example:
+        .. code-block:: python
+
+            from pontos.testing import AsyncIteratorMock
+
+            values = [1, 2, 3]
+            mock = AsyncIteratorMock(values)
+            async for value in mock:
+                print(value)
+    """
+
     def __init__(self, iterable: Iterable[Any]) -> None:
         self.iterator = iter(iterable)
 

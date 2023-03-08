@@ -36,11 +36,29 @@ from enum import Enum
 
 
 class SortOrder(Enum):
+    """
+    Sort order: asc or desc
+
+    Attributes:
+        ASC: Use ascending sort order
+        DESC: Use descending sort order
+    """
+
     ASC = "asc"
     DESC = "desc"
 
 
 class RepositorySort(Enum):
+    """
+    Sort repositories by
+
+    Attributes:
+        STARS: GitHub starts
+        FORKS: GitHub forks
+        HELP_WANTED_ISSUES: Number of issues with help wanted label
+        UPDATED: Last updated
+    """
+
     STARS = "stars"
     FORKS = "forks"
     HELP_WANTED_ISSUES = "help-wanted-issues"
@@ -48,6 +66,14 @@ class RepositorySort(Enum):
 
 
 class Qualifier(ABC):
+    """
+    An abstract base class for search qualifiers
+
+    Attributes:
+        operator: The search operator
+        term: The search term
+    """
+
     operator: str
     term: str
 
@@ -57,6 +83,20 @@ class Qualifier(ABC):
 
 
 class NotQualifier(Qualifier):
+    """
+    Qualifier for negating another qualifier
+
+    Example:
+
+        Exclude a repository from a search
+
+        .. code-block:: python
+
+            from pontos.github.models import NotQualifier, RepositoryQualifier
+
+            qualifier = NotQualifier(RepositoryQualifier("foo/bar"))
+    """
+
     def __init__(self, qualifier: Qualifier) -> None:
         self.qualifier = qualifier
 
@@ -69,22 +109,42 @@ class InQualifier(Qualifier):
 
 
 class InNameQualifier(InQualifier):
+    """
+    Qualifier for searching in repository names
+    """
+
     term = "name"
 
 
 class InDescriptionQualifier(InQualifier):
+    """
+    Qualifier for searching in repository descriptions
+    """
+
     term = "description"
 
 
 class InTopicsQualifier(InQualifier):
+    """
+    Qualifier for searching in repository topics
+    """
+
     term = "topics"
 
 
 class InReadmeQualifier(InQualifier):
+    """
+    Qualifier for searching in repository READMEs
+    """
+
     term = "readme"
 
 
 class RepositoryQualifier(Qualifier):
+    """
+    Qualifier for searching within a specific repository
+    """
+
     operator = "repo"
 
     def __init__(self, repository: str) -> None:
@@ -98,6 +158,10 @@ class RepositoryQualifier(Qualifier):
 
 
 class OrganizationQualifier(Qualifier):
+    """
+    Qualifier for searching within a specific organization
+    """
+
     operator = "org"
 
     def __init__(self, organization: str) -> None:
@@ -111,6 +175,10 @@ class OrganizationQualifier(Qualifier):
 
 
 class UserQualifier(Qualifier):
+    """
+    Qualifier for searching within a specific user space
+    """
+
     operator = "user"
 
     def __init__(self, user: str) -> None:
@@ -124,10 +192,18 @@ class UserQualifier(Qualifier):
 
 
 class IsPublicQualifier(Qualifier):
+    """
+    Qualifier for searching for public repositories
+    """
+
     operator = "is"
     term = "public"
 
 
 class IsPrivateQualifier(Qualifier):
+    """
+    Qualifier for searching for private repositories
+    """
+
     operator = "is"
     term = "private"

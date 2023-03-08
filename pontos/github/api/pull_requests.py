@@ -17,27 +17,41 @@
 
 from collections import defaultdict
 from pathlib import Path
-from typing import AsyncIterator, Dict, Iterable, List, Optional
+from typing import AsyncIterator, Dict, Iterable, List, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.helper import JSON_OBJECT, FileStatus
+from pontos.github.api.helper import JSON_OBJECT
+from pontos.github.models.base import FileStatus
 from pontos.github.models.pull_request import PullRequest, PullRequestCommit
 
 
 class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
-    async def exists(self, repo: str, pull_request: int) -> bool:
+    async def exists(self, repo: str, pull_request: Union[int, str]) -> bool:
         """
         Check if a single branch in a repository exists
 
         Args:
             repo: GitHub repository (owner/name) to use
             pull_request: Pull request number to check
+
+        Returns:
+            True if the pull requests exists
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    exists = await api.pull_request.exists("foo/bar", 123)
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
         response = await self._client.get(api)
         return response.is_success
 
-    async def get(self, repo: str, pull_request: int) -> PullRequest:
+    async def get(
+        self, repo: str, pull_request: Union[int, str]
+    ) -> PullRequest:
         """
         Get information about a pull request
 
@@ -51,7 +65,16 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             Information about the pull request
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            httpx.HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    pr = await api.pull_requests.get("foo/bar", 123)
+                    print(pr)
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
         response = await self._client.get(api)
@@ -59,7 +82,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return PullRequest.from_dict(response.json())
 
     async def commits(
-        self, repo: str, pull_request: int
+        self, repo: str, pull_request: Union[int, str]
     ) -> AsyncIterator[PullRequestCommit]:
         """
         Get all commit information of a pull request
@@ -73,7 +96,18 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             pull_request: Pull request number
 
         Returns:
-            Information about the commits in the pull request
+            An async iterator yielding pull request commits
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for commit in api.pull_requests.commits(
+                        "foo/bar", 123
+                    ):
+                        print(commit)
         """
         # per default github only shows 35 commits and at max it is only
         # possible to receive 100
@@ -107,6 +141,23 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
         Raises:
             httpx.HTTPStatusError if the request was invalid
+
+        Returns:
+            A new pull request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    pr = await api.pull_requests.create(
+                        "foo/bar",
+                        head_branch="a-new-feature",
+                        base_branch="main",
+                        title="A new Feature is ready",
+                        body="Created a new feature",
+                    )
         """
         api = f"/repos/{repo}/pulls"
         data: JSON_OBJECT = {
@@ -122,7 +173,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
     async def update(
         self,
         repo: str,
-        pull_request: int,
+        pull_request: Union[int, str],
         *,
         base_branch: Optional[str] = None,
         title: Optional[str] = None,
@@ -144,6 +195,21 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
                 Markdown. Leave empty for keeping the current one.
         Raises:
             httpx.HTTPStatusError if the request was invalid
+
+        Returns:
+            Updated pull request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    pr = await api.pull_requests.update(
+                        "foo/bar",
+                        123,
+                        title="Another new Feature",
+                    )
         """
         api = f"/repos/{repo}/pulls/{pull_request}"
 
@@ -160,7 +226,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return PullRequest.from_dict(response.json())
 
     async def add_comment(
-        self, repo: str, pull_request: int, comment: str
+        self, repo: str, pull_request: Union[int, str], comment: str
     ) -> None:
         """
         Add a comment to a pull request on GitHub
@@ -172,6 +238,18 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
         Raises:
             httpx.HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.pull_requests.add_comment(
+                        "foo/bar",
+                        123,
+                        "A new comment for the pull request",
+                    )
         """
         api = f"/repos/{repo}/issues/{pull_request}/comments"
         data: JSON_OBJECT = {"body": comment}
@@ -181,7 +259,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
     async def files(
         self,
         repo: str,
-        pull_request: int,
+        pull_request: Union[int, str],
         *,
         status_list: Optional[Iterable[FileStatus]] = None,
     ) -> Dict[FileStatus, Iterable[Path]]:
@@ -199,7 +277,18 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
                 included in the response
 
         Returns:
-            Information about the commits in the pull request as a dict
+            Information about the files in the pull request as a dict
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models import FileStatus
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    status = await api.pull_requests.files("foo/bar", 123)
+                    # list changed files
+                    print(status[FileStatus.MODIFIED])
         """
         # per default github only shows 35 files per page and at max it is only
         # possible to receive 100

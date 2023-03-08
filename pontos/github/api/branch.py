@@ -51,6 +51,8 @@ def update_from_applied_settings(
     required_signatures: Optional[bool] = None,
 ) -> Dict[str, Any]:
     """
+    Update branch protection rules from applied settings.
+
     Return keyword arguments for update_protection_rules by merging existing
     settings with desired updated values.
     """
@@ -283,6 +285,17 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         Args:
             repo: GitHub repository (owner/name) to use
             branch: Branch name to check
+
+        Returns:
+            True if the branch exists
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    exists = await api.branches.exists("foo/bar", "baz")
         """
         api = f"/repos/{repo}/branches/{branch}"
         response = await self._client.get(api)
@@ -297,7 +310,15 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Branch to be deleted
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.branches.delete("foo/bar", "baz")
         """
         api = f"/repos/{repo}/git/refs/{branch}"
         response = await self._client.delete(api)
@@ -317,7 +338,20 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Get protection rules for this branch
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Returns:
+            The currently applied branch protection rules
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    rules = await api.branches.protection_rules(
+                        "foo/bar", "baz"
+                    )
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
         response = await self._client.get(api)
@@ -419,7 +453,22 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             required_signature: True to require signed commits on a branch.
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Returns:
+            The new branch protection rules
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    rules = await api.branches.update_protection_rules(
+                        "foo/bar",
+                        "baz",
+                        enforce_admins=True,
+                    )
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
         data: Dict[str, Any] = {
@@ -634,7 +683,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Delete protection rules for this branch
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
         response = await self._client.delete(api)
@@ -653,7 +702,17 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             enforce_admins: True to enable. False do disable.
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.branches.set_enforce_admins(
+                        "foo/bar", "baz", enforce_admins=True,
+                    )
         """
         api = f"/repos/{repo}/branches/{branch}/protection/enforce_admins"
         if enforce_admins:
@@ -675,7 +734,17 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             required_signature: True to enable. False do disable.
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.branches.set_required_signatures(
+                        "foo/bar", "baz", required_signatures=True,
+                    )
         """
         api = f"/repos/{repo}/branches/{branch}/protection/required_signatures"
         if required_signatures:
@@ -709,7 +778,23 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 before merging.
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.branches.update_required_status_checks(
+                        "foo/bar",
+                        "baz",
+                        required_status_checks=[
+                            ("Unittest", None),
+                            ("Linting", None),
+                        ],
+                        require_branches_to_be_up_to_date=True,
+                    )
         """
         api = (
             f"/repos/{repo}/branches/{branch}/protection/required_status_checks"
@@ -743,7 +828,17 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             branch: Delete protection rules for this branch
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.branches.remove_required_status_checks(
+                        "foo/bar", "baz"
+                    )
         """
         api = (
             f"/repos/{repo}/branches/{branch}/protection/required_status_checks"

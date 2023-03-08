@@ -15,10 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .core import ActionIO, Console
+from .env import GitHubEnvironment
 from .errors import GitHubActionsError
+from .event import (
+    GitHubEvent,
+    GitHubPullRequestEvent,
+    Label,
+    PullRequestState,
+    Ref,
+)
 from .main import main
 
 __all__ = (
-    "main",
     "GitHubActionsError",
+    "ActionIO",
+    "Console",
+    "GitHubEnvironment",
+    "GitHubEvent",
+    "Label",
+    "Ref",
+    "PullRequestState",
+    "GitHubPullRequestEvent",
 )

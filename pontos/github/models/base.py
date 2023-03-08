@@ -24,6 +24,7 @@ from pontos.models import Model
 __all__ = (
     "App",
     "Event",
+    "FileStatus",
     "GitHubModel",
     "Permission",
     "Team",
@@ -31,6 +32,29 @@ __all__ = (
     "TeamRole",
     "User",
 )
+
+
+class FileStatus(Enum):
+    """
+    File status
+
+    Attributes:
+        ADDED: File is added
+        DELETED: File is deleted
+        MODIFIED: File is modified
+        RENAMED: File is renamed
+        COPIED: File is copied
+        CHANGED: File is changed
+        UNCHANGED: File is unchanged
+    """
+
+    ADDED = "added"
+    DELETED = "deleted"
+    MODIFIED = "modified"
+    RENAMED = "renamed"
+    COPIED = "copied"
+    CHANGED = "changed"
+    UNCHANGED = "unchanged"
 
 
 @dataclass(init=False)
@@ -42,6 +66,29 @@ class GitHubModel(Model):
 
 @dataclass
 class User(GitHubModel):
+    """
+    A GitHub user model
+
+    Attributes:
+        login: The user login name
+        id: The user ID
+        node_id: The user node ID
+        avatar_url: URL to the avatar image
+        gravatar_url: URL to the gravatar avatar image
+        html_url: URL to the users public profile
+        followers_url: URL to the followers
+        following_url: URL to users that the user if following
+        gists_url: URL to the user's gists
+        starred_url: URL to the starred repositories of the user
+        subscriptions_url: URL to the subscriptions
+        organizations_url: URL to the user's organizations
+        repos_url: URL to the user's repositories
+        events_url: URL to the events
+        received_events_url: URL to the received events
+        type: The user's type
+        site_admin: True if the user is a site admin
+    """
+
     login: str
     id: int
     node_id: str
@@ -63,16 +110,47 @@ class User(GitHubModel):
 
 
 class TeamPrivacy(Enum):
+    """
+    Team privacy
+
+    Attributes:
+        SECRET: A secret team
+        CLOSED: A closed team
+    """
+
     SECRET = "secret"
     CLOSED = "closed"
 
 
 class TeamRole(Enum):
+    """
+    A user's role withing a team
+
+
+    Attributes:
+        MEMBER: The user is a "normal" member
+        MAINTAINER: The user is an admin of the team
+    """
+
     MEMBER = "member"
     MAINTAINER = "maintainer"
 
 
 class Permission(Enum):
+    # pylint: disable=line-too-long
+    """
+    Permissions on a repository/project at GitHub
+
+    https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/repository-roles-for-an-organization
+
+    Attributes:
+        PULL: Read permissions
+        PUSH: Write permissions
+        TRIAGE: Triage permissions
+        MAINTAIN: Maintainer permissions
+        ADMIN: Admin permissions (full access to the project)
+    """
+
     PULL = "pull"
     PUSH = "push"
     TRIAGE = "triage"
@@ -82,6 +160,24 @@ class Permission(Enum):
 
 @dataclass
 class Team(GitHubModel):
+    """
+    A GitHub Team model
+
+    Attributes:
+        id: ID of the team
+        node_id: Node ID of the team
+        url: REST API URL for the team
+        html_url: Web URL for the team
+        name: Name of the team
+        slug: Slug of the team name
+        description: Description of the team
+        privacy: Privacy scope of the team
+        permission: Permissions of the teams
+        members_url: REST API URL to the members of the team
+        repositories_url: REST API URL to the repositories of the team
+        parent: An optional parent team
+    """
+
     id: int
     node_id: str
     url: str
@@ -98,6 +194,23 @@ class Team(GitHubModel):
 
 @dataclass
 class App(GitHubModel):
+    """
+    GitHub app
+
+    Attributes:
+        id: ID of the app
+        slug: Name slug of the app
+        node_id: Node ID of the app
+        owner: Owner (user) of the app
+        name: Name of the app
+        description: Description of the app
+        external_url: External URL
+        html_url: URL to the web page of the app
+        created_at: Creation date
+        updated_at: Last modification date
+        events: List of events
+    """
+
     id: int
     slug: str
     node_id: str
@@ -113,7 +226,47 @@ class App(GitHubModel):
 
 class Event(Enum):
     """
+    A GitHub event type
+
     https://docs.github.com/de/actions/using-workflows/events-that-trigger-workflows
+
+    Attributes:
+        BRANCH_PROTECTION_RULE:
+        CHECK_RUN:
+        CHECK_SUITE:
+        CREATE:
+        DELETE:
+        DEPLOYMENT:
+        DEPLOYMENT_STATUS:
+        DISCUSSION:
+        DISCUSSION_COMMENT:
+        FORK:
+        GOLLUM:
+        ISSUE_COMMENT:
+        ISSUES:
+        LABEL:
+        MERGE_GROUP:
+        MILESTONE:
+        PAGE_BUILD:
+        PROJECT:
+        PROJECT_CARD:
+        PROJECT_COLUMN:
+        PUBLIC:
+        PULL_REQUEST:
+        PULL_REQUEST_COMMENT:
+        PULL_REQUEST_REVIEW:
+        PULL_REQUEST_REVIEW_COMMENT:
+        PULL_REQUEST_TARGET:
+        PUSH:
+        REGISTRY_PACKAGE:
+        RELEASE:
+        REPOSITORY_DISPATCH:
+        SCHEDULE:
+        STATUS:
+        WATCH:
+        WORKFLOW_CALL:
+        WORKFLOW_DISPATCH:
+        WORKFLOW_RUN:
     """
 
     BRANCH_PROTECTION_RULE = "branch_protection_rule"

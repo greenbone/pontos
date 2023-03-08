@@ -20,6 +20,8 @@ from argparse import ArgumentParser, Namespace
 
 from pontos.nvd.cve.api import *
 
+__all__ = ("CVEApi",)
+
 
 async def query_cves(args: Namespace) -> None:
     async with CVEApi(token=args.token) as api:

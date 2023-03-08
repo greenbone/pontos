@@ -47,6 +47,15 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
 
         Returns:
             Information about the repository
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    repo = await api.repositories.get("foo/bar")
+                    print(repo)
         """
         api = f"/repos/{repo}"
         response = await self._client.get(api)
@@ -63,6 +72,14 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.repositories.delete("foo/bar")
         """
         api = f"/repos/{repo}"
         response = await self._client.delete(api)
@@ -186,6 +203,25 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    repo = await api.repositories.create(
+                        "foo/bar",
+                        "baz",
+                        description="A new baz repository",
+                        private=True,
+                        allow_squash_merge=True,
+                        allow_merge_commit=False,
+                        allow_rebase_merge=True,
+                        allow_auto_merge=True,
+                        allow_update_branch=True,
+                        delete_branch_on_merge=True,
+                    )
         """
         api = f"/orgs/{organization}/repos"
         data: JSON_OBJECT = {"name": name}
@@ -259,6 +295,14 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.repositories.archive("foo/bar")
         """
         api = f"/repos/{repo}"
 
@@ -375,6 +419,25 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
+
+        Returns:
+            The updated repository
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    repo = await api.repositories.update(
+                        "foo/bar",
+                        allow_squash_merge=True,
+                        allow_merge_commit=False,
+                        allow_rebase_merge=True,
+                        allow_auto_merge=True,
+                        allow_update_branch=True,
+                        delete_branch_on_merge=True,
+                    )
         """
         api = f"/repos/{repo}"
 
