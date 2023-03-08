@@ -21,7 +21,6 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
-from pontos.github.api import FileStatus
 from pontos.github.cmds import (
     create_pull_request,
     create_release,
@@ -31,6 +30,7 @@ from pontos.github.cmds import (
     repos,
     update_pull_request,
 )
+from pontos.github.models.base import FileStatus
 from pontos.github.models.organization import RepositoryType
 from pontos.testing import temp_file
 from tests import AsyncIteratorMock, IsolatedAsyncioTestCase
