@@ -22,8 +22,8 @@ from unittest.mock import MagicMock
 
 from httpx import HTTPStatusError
 
-from pontos.github.api.helper import FileStatus
 from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
+from pontos.github.models.base import FileStatus
 from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
