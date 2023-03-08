@@ -123,7 +123,7 @@ async def create_pull_request(terminal: Terminal, args: Namespace):
 
             terminal.ok(f"Target branch {args.target} exists.")
 
-            await api.pulls.create(
+            await api.pull_requests.create(
                 repo=args.repo,
                 head_branch=args.head,
                 base_branch=args.target,
@@ -154,7 +154,7 @@ async def update_pull_request(terminal: Terminal, args: Namespace):
 
                 terminal.ok(f"Target branch {args.target} exists.")
 
-            await api.pulls.update(
+            await api.pull_requests.update(
                 repo=args.repo,
                 pull_request=args.pull_request,
                 base_branch=args.target,
@@ -172,7 +172,7 @@ async def file_status(terminal: Terminal, args: Namespace):
     async with GitHubAsyncRESTApi(token=args.token) as api:
         try:
             # check if PR is existing
-            exists = await api.pulls.exists(
+            exists = await api.pull_requests.exists(
                 repo=args.repo, pull_request=args.pull_request
             )
             if not exists:
@@ -184,7 +184,7 @@ async def file_status(terminal: Terminal, args: Namespace):
 
             terminal.ok(f"PR {args.pull_request} exists.")
 
-            file_dict = await api.pulls.files(
+            file_dict = await api.pull_requests.files(
                 repo=args.repo,
                 pull_request=args.pull_request,
                 status_list=args.status,
@@ -208,7 +208,7 @@ async def labels(terminal: Terminal, args: Namespace):
     async with GitHubAsyncRESTApi(token=args.token) as api:
         try:
             # check if PR is existing
-            exists = await api.pulls.exists(
+            exists = await api.pull_requests.exists(
                 repo=args.repo, pull_request=args.issue
             )
             if not exists:
