@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, Iterable, List, Optional, Union
 
 from httpx import Timeout
 
@@ -24,6 +24,7 @@ from pontos.errors import PontosError
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
     NVDApi,
+    Params,
     convert_camel_case,
     format_date,
     now,
@@ -162,9 +163,9 @@ class CVEApi(NVDApi):
                     async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
                         print(cve.id)
         """
-        total_results = None
+        total_results: Optional[int] = None
 
-        params = {}
+        params: Params = {}
         if last_modified_start_date:
             params["lastModStartDate"] = format_date(last_modified_start_date)
             if not last_modified_end_date:
@@ -219,14 +220,10 @@ class CVEApi(NVDApi):
         if has_oval:
             params["hasOval"] = ""
 
-        start_index = 0
-        results_per_page = None
+        start_index: int = 0
 
         while total_results is None or start_index < total_results:
             params["startIndex"] = start_index
-
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
 
             response = await self._get(params=params)
             response.raise_for_status()
@@ -235,9 +232,14 @@ class CVEApi(NVDApi):
                 object_hook=convert_camel_case
             )
 
-            results_per_page: int = data["results_per_page"]
-            total_results: int = data["total_results"]
-            vulnerabilities = data.get("vulnerabilities", [])
+            results_per_page: int = data["results_per_page"]  # type: ignore
+            total_results = data["total_results"]  # type: ignore
+            vulnerabilities: Iterable = data.get(  # type: ignore
+                "vulnerabilities", []
+            )
+
+            if results_per_page is not None:
+                params["resultsPerPage"] = results_per_page
 
             for vulnerability in vulnerabilities:
                 yield CVE.from_dict(vulnerability["cve"])
@@ -280,3 +282,6 @@ class CVEApi(NVDApi):
 
         vulnerability = vulnerabilities[0]
         return CVE.from_dict(vulnerability["cve"])
+
+    async def __aenter__(self) -> "CVEApi":
+        return super().__aenter__()  # type: ignore

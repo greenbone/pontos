@@ -17,7 +17,7 @@
 
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, Iterable, List, Optional, Union
 
 from httpx import Timeout
 
@@ -153,7 +153,7 @@ class CPEApi(NVDApi):
         """
         total_results = None
 
-        params = {}
+        params: Dict[str, Union[str, int]] = {}
         if last_modified_start_date:
             params["lastModStartDate"] = format_date(last_modified_start_date)
             if not last_modified_end_date:
@@ -176,13 +176,9 @@ class CPEApi(NVDApi):
             params["matchCriteriaId"] = match_criteria_id
 
         start_index = 0
-        results_per_page = None
 
         while total_results is None or start_index < total_results:
             params["startIndex"] = start_index
-
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
 
             response = await self._get(params=params)
             response.raise_for_status()
@@ -191,11 +187,17 @@ class CPEApi(NVDApi):
                 object_hook=convert_camel_case
             )
 
-            results_per_page: int = data["results_per_page"]
-            total_results: int = data["total_results"]
-            products = data.get("products", [])
+            results_per_page: int = data["results_per_page"]  # type: ignore
+            total_results: int = data["total_results"]  # type: ignore
+            products: Iterable = data.get("products", [])  # type: ignore
+
+            if results_per_page is not None:
+                params["resultsPerPage"] = results_per_page
 
             for product in products:
                 yield CPE.from_dict(product["cpe"])
 
             start_index += results_per_page
+
+    async def __aenter__(self) -> "CPEApi":
+        return super().__aenter__()  # type: ignore
