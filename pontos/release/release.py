@@ -29,11 +29,10 @@ from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
-from pontos.version.calculator import VersionCalculator
-from pontos.version.errors import VersionError
+from pontos.version import Version, VersionCalculator, VersionError
 from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
-from pontos.version.version import Version
+from pontos.version.schemes import VersioningScheme
 
 from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
@@ -68,11 +67,11 @@ class ReleaseCommand:
     def _get_release_version(
         self,
         project: Project,
+        calculator: VersionCalculator,
         release_type: ReleaseType,
         release_version: Optional[Version],
     ) -> Version:
         current_version = project.get_current_version()
-        calculator = VersionCalculator()
         if release_type == ReleaseType.CALENDAR:
             return calculator.next_calendar_version(current_version)
 
@@ -142,6 +141,7 @@ class ReleaseCommand:
         token: str,
         space: str,
         project: Optional[str],
+        versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
         release_version: Optional[Version],
         next_version: Optional[str],
@@ -160,6 +160,8 @@ class ReleaseCommand:
                 links in the changelog.
             project: Name of the project to release. If not set it will be
                 gathered via the git remote url.
+            versioning_scheme: The versioning scheme to use for version parsing
+                and calculation
             release_type: Type of the release to prepare. Defines the release
                 version. PATCH increments the bugfix version. CALENDAR creates
                 a new CalVer release version. VERSION uses the provided
@@ -188,14 +190,16 @@ class ReleaseCommand:
         self.space = space
 
         try:
-            project = Project.gather_project()
+            project = Project(versioning_scheme)
         except PontosError as e:
             self.terminal.error(f"Unable to determine project settings. {e}")
             return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
+        calculator = versioning_scheme.calculator()
+
         try:
             release_version = self._get_release_version(
-                project, release_type, release_version
+                project, calculator, release_type, release_version
             )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
@@ -266,7 +270,7 @@ class ReleaseCommand:
                 return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
         if not next_version:
-            next_version = VersionCalculator().next_dev_version(release_version)
+            next_version = calculator.next_dev_version(release_version)
 
         try:
             updated = project.update_version(next_version)
@@ -318,6 +322,7 @@ def release(
             token=token,
             space=args.space,
             project=args.project,
+            versioning_scheme=args.versioning_scheme,
             release_type=args.release_type,
             release_version=args.release_version,
             next_version=args.next_version,

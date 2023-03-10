@@ -33,8 +33,9 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.terminal import Terminal
 from pontos.terminal.rich import RichTerminal
+from pontos.version import Version
 from pontos.version.helper import get_last_release_version
-from pontos.version.version import Version
+from pontos.version.schemes import VersioningScheme
 
 from .helper import get_git_repository_name
 
@@ -182,13 +183,33 @@ class SignCommand:
         *,
         token: str,
         dry_run: Optional[bool] = False,
-        project: Optional[str],
         space: str,
+        project: Optional[str],
+        versioning_scheme: VersioningScheme,
         git_tag_prefix: Optional[str],
         release_version: Optional[Version],
         signing_key: str,
         passphrase: str,
     ) -> SignReturnValue:
+        """
+        Sign a release
+
+        Args:
+            token: A token for creating a release on GitHub
+            dry_run: True to not upload the signature files
+            space: GitHub username or organization. Required for generating
+                links in the changelog.
+            project: Name of the project to release. If not set it will be
+                gathered via the git remote url.
+            versioning_scheme: The versioning scheme to use for version parsing
+                and calculation
+            git_tag_prefix: An optional prefix to use for handling a git tag
+                from the release version.
+            release_version: Optional release version to use. If not set the
+                current version will be determined from the project.
+            signing_key: A GPG key ID to use for creating signatures.
+            passphrase: Passphrase for the signing key
+        """
         if not token and not dry_run:
             # dry run doesn't upload assets. therefore a token MAY NOT be
             # required # for public repositories.
@@ -210,7 +231,10 @@ class SignCommand:
             release_version = (
                 release_version
                 if release_version is not None
-                else get_last_release_version(git_tag_prefix)
+                else get_last_release_version(
+                    versioning_scheme.parse_version,
+                    git_tag_prefix=git_tag_prefix,
+                )
             )
         except PontosError as e:
             self.terminal.error(f"Could not determine release version. {e}")
@@ -342,6 +366,7 @@ def sign(
             dry_run=args.dry_run,
             project=args.project,
             space=args.space,
+            versioning_scheme=args.versioning_scheme,
             git_tag_prefix=args.git_tag_prefix,
             release_version=args.release_version,
             signing_key=args.signing_key,
