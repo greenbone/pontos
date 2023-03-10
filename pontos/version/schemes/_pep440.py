@@ -86,12 +86,12 @@ class PEP440Version(Version):
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.pre is not None and self.pre[0] == "alpha"
+        return self.pre is not None and self.pre[0] == "a"
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.pre is not None and self.pre[0] == "beta"
+        return self.pre is not None and self.pre[0] == "b"
 
     @property
     def is_release_candidate(self) -> bool:
