@@ -16,16 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-from typing import Literal, Union
+from typing import List, Optional
 
-from pontos.version.version import Version, parse_version
-
-
-def verify_version_type(version: str) -> Union[Version, Literal["current"]]:
-    if version == "current":
-        return version
-
-    return parse_version(version)
+from pontos.errors import PontosError
+from pontos.version.schemes import (
+    VERSIONING_SCHEMES,
+    VersioningScheme,
+    versioning_scheme_argument_type,
+)
 
 
 def initialize_default_parser() -> argparse.ArgumentParser:
@@ -49,13 +47,41 @@ def initialize_default_parser() -> argparse.ArgumentParser:
 
     verify_parser = subparsers.add_parser("verify")
     verify_parser.add_argument(
-        "version", help="Version string to compare", type=verify_version_type
+        "version",
+        help="Version string to compare",
+        nargs="?",
     )
-    subparsers.add_parser("show")
+    verify_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
+
+    show_parser = subparsers.add_parser("show")
+    show_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
 
     update_parser = subparsers.add_parser("update")
     update_parser.add_argument(
-        "version", help="Version string to use", type=parse_version
+        "version",
+        help="Version string to use",
+    )
+    update_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
     )
     update_parser.add_argument(
         "--force",
@@ -64,3 +90,18 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         action="store_true",
     )
     return parser
+
+
+def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
+    parser = initialize_default_parser()
+
+    parsed_args = parser.parse_args(args)
+    scheme: VersioningScheme = parsed_args.versioning_scheme
+
+    version = getattr(parsed_args, "version", None)
+    if version and version != "current":
+        try:
+            parsed_args.version = scheme.parse_version(parsed_args.version)
+        except PontosError as e:
+            parser.error(str(e))
+    return parsed_args
