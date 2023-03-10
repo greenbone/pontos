@@ -5,11 +5,8 @@
 ```{toctree}
 :maxdepth: 1
 
-version/cmake
-version/go
-version/javascript
+version/commands
 version/project
-version/python
 version/schemes
 version/helper
 ```

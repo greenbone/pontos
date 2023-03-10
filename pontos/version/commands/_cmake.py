@@ -19,9 +19,10 @@
 import re
 from typing import Generator, Literal, Optional, Tuple, Union
 
-from pontos.version.errors import VersionError
-
-from .version import Version, VersionCommand, VersionUpdate, parse_version
+from ..errors import VersionError
+from ..schemes import PEP440VersioningScheme
+from ..version import Version, VersionUpdate
+from ._command import VersionCommand
 
 
 class CMakeVersionCommand(VersionCommand):
@@ -50,14 +51,15 @@ class CMakeVersionCommand(VersionCommand):
             raise VersionError(f"{self.project_file_path} not found.")
 
         content = self.project_file_path.read_text(encoding="utf-8")
-        return CMakeVersionParser(content).get_current_version()
+        current_version = CMakeVersionParser(content).get_current_version()
+        return self.versioning_scheme.from_version(current_version)
 
     def verify_version(
-        self, version: Union[Literal["current"], Version]
+        self, version: Union[Literal["current"], Version, None]
     ) -> None:
         current_version = self.get_current_version()
 
-        if version == "current":
+        if not version or version == "current":
             return
 
         if current_version != version:
@@ -94,17 +96,19 @@ class CMakeVersionParser:
 
     def get_current_version(self) -> Version:
         return (
-            parse_version(f"{self._current_version}.dev1")
+            PEP440VersioningScheme.parse_version(
+                f"{self._current_version}.dev1"
+            )
             if self.is_dev_version()
-            else parse_version(self._current_version)
+            else PEP440VersioningScheme.parse_version(self._current_version)
         )
 
     def update_version(self, new_version: Version) -> str:
-        if new_version.is_devrelease:
-            new_version = parse_version(
+        if new_version.is_dev_release:
+            new_version = PEP440VersioningScheme.parse_version(
                 f"{str(new_version.major)}."
                 f"{str(new_version.minor)}."
-                f"{str(new_version.micro)}"
+                f"{str(new_version.patch)}"
             )
             develop = True
         else:
