@@ -19,14 +19,13 @@ from .__version__ import __version__
 from ._calculator import VersionCalculator
 from .errors import VersionError
 from .main import main
-from .version import Version, VersionCommand, VersionUpdate, parse_version
+from .version import ParseVersionFuncType, Version, VersionUpdate
 
 __all__ = (
     "__version__",
     "VersionError",
-    "parse_version",
+    "ParseVersionFuncType",
     "Version",
-    "VersionCommand",
     "VersionCalculator",
     "VersionUpdate",
 )
