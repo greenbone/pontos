@@ -24,9 +24,12 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import tomlkit
 
 from pontos.testing import temp_directory, temp_file, temp_python_module
-from pontos.version.errors import VersionError
-from pontos.version.python import PythonVersionCommand
-from pontos.version.version import Version
+from pontos.version import VersionError
+from pontos.version.commands._python import PythonVersionCommand
+from pontos.version.schemes import (
+    PEP440VersioningScheme,
+    SemanticVersioningScheme,
+)
 
 
 class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
@@ -36,7 +39,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         ), self.assertRaisesRegex(
             VersionError, r"^\[tool\.pontos\.version\] section missing in .*\.$"
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_missing_version_module_file_key(self):
@@ -49,7 +52,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             r"^version-module-file key not set in \[tool\.pontos\.version\] "
             r"section .*\.$",
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_version_file_path(self):
@@ -58,7 +61,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             name="pyproject.toml",
             change_into=True,
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
 
             self.assertEqual(
                 cmd.version_file_path, Path("foo") / "__version__.py"
@@ -68,7 +71,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError, "pyproject.toml file not found."
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_no_version_module(self):
@@ -79,7 +82,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         ), self.assertRaisesRegex(
             VersionError, r"Could not load version from 'foo'\. .* not found."
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_get_current_version(self):
@@ -92,10 +95,30 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             version = cmd.get_current_version()
 
-            self.assertEqual(version, Version("1.2.3"))
+            self.assertEqual(
+                version, PEP440VersioningScheme.parse_version("1.2.3")
+            )
+
+    def test_get_current_semantic_version(self):
+        with temp_python_module(
+            "__version__ = '1.2.3a1'", name="foo", change_into=True
+        ) as tmp_module:
+            tmp_file = tmp_module.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3a1"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(SemanticVersioningScheme)
+            version = cmd.get_current_version()
+
+            self.assertEqual(
+                version, PEP440VersioningScheme.parse_version("1.2.3a1")
+            )
+            self.assertIsInstance(version, PEP440VersioningScheme.version_cls)
 
 
 class UpdatePythonVersionTestCase(unittest.TestCase):
@@ -109,11 +132,14 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 encoding="utf8",
             )
 
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("22.2"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("21.1")
 
-            self.assertEqual(updated.new, Version("22.2"))
-            self.assertEqual(updated.previous, Version("21.1"))
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = temp.read_text(encoding="utf8")
@@ -129,8 +155,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
             VersionError,
             r"Version information not found in .*pyproject\.toml file\.",
         ):
-            cmd = PythonVersionCommand()
-            cmd.update_version(Version("22.1.2"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.1.2")
+            cmd.update_version(new_version)
 
     def test_empty_tool_section(self):
         with temp_file(
@@ -139,8 +166,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
             VersionError,
             r"Version information not found in .*pyproject\.toml file\.",
         ):
-            cmd = PythonVersionCommand()
-            cmd.update_version(Version("22.1.2"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.1.2")
+            cmd.update_version(new_version)
 
     def test_empty_tool_poetry_section(self):
         content = "__version__ = '22.1'"
@@ -151,11 +179,13 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("22.2"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("22.1")
+            updated = cmd.update_version(new_version)
 
-            self.assertEqual(updated.new, Version("22.2"))
-            self.assertEqual(updated.previous, Version("22.1"))
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = tmp_file.read_text(encoding="utf8")
@@ -173,11 +203,13 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("22.2"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
 
-            self.assertEqual(updated.new, Version("22.2"))
-            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = tmp_file.read_text(encoding="utf8")
@@ -195,11 +227,13 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("22.2.dev1"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2.dev1")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
 
-            self.assertEqual(updated.new, Version("22.2.dev1"))
-            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = tmp_file.read_text(encoding="utf8")
@@ -217,11 +251,12 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("1.2.3"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
 
-            self.assertEqual(updated.new, Version("1.2.3"))
-            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, new_version)
             self.assertEqual(updated.changed_files, [])
 
     def test_forced_updated(self):
@@ -233,11 +268,12 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand()
-            updated = cmd.update_version(Version("1.2.3"), force=True)
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version, force=True)
 
-            self.assertEqual(updated.new, Version("1.2.3"))
-            self.assertEqual(updated.previous, Version("1.2.3"))
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, new_version)
             self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
 
             text = tmp_file.read_text(encoding="utf8")
@@ -253,7 +289,9 @@ class VerifyVersionTestCase(unittest.TestCase):
         with patch.object(
             PythonVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("1.2.3")),
+            MagicMock(
+                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+            ),
         ), patch.object(
             PythonVersionCommand,
             "version_file_path",
@@ -262,8 +300,9 @@ class VerifyVersionTestCase(unittest.TestCase):
             VersionError,
             "The version .* in .* doesn't match the current version .*.",
         ):
-            cmd = PythonVersionCommand()
-            cmd.verify_version(Version("1.2.3"))
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = PEP440VersioningScheme.parse_version("1.2.3")
+            cmd.verify_version(version)
 
     def test_current_version(self):
         fake_version_py = Path("foo.py")
@@ -277,13 +316,15 @@ class VerifyVersionTestCase(unittest.TestCase):
         ), patch.object(
             PythonVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("1.2.3")),
+            MagicMock(
+                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+            ),
         ), patch.object(
             PythonVersionCommand,
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
     def test_current_failure(self):
@@ -298,7 +339,9 @@ class VerifyVersionTestCase(unittest.TestCase):
         ), patch.object(
             PythonVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("1.2.3")),
+            MagicMock(
+                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+            ),
         ), patch.object(
             PythonVersionCommand,
             "version_file_path",
@@ -307,10 +350,10 @@ class VerifyVersionTestCase(unittest.TestCase):
             VersionError,
             "The version .* in .* doesn't match the current version .*.",
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
-    def test_provided_version_missmatch(self):
+    def test_provided_version_mismatch(self):
         fake_version_py = Path("foo.py")
         content = (
             '[tool.poetry]\nversion = "1.2.3"\n'
@@ -322,7 +365,9 @@ class VerifyVersionTestCase(unittest.TestCase):
         ), patch.object(
             PythonVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("1.2.3")),
+            MagicMock(
+                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+            ),
         ), patch.object(
             PythonVersionCommand,
             "version_file_path",
@@ -332,8 +377,9 @@ class VerifyVersionTestCase(unittest.TestCase):
                 VersionError,
                 "Provided version .* does not match the current version .*.",
             ):
-                cmd = PythonVersionCommand()
-                cmd.verify_version(Version("1.2.4"))
+                cmd = PythonVersionCommand(PEP440VersioningScheme)
+                version = PEP440VersioningScheme.parse_version("1.2.4")
+                cmd.verify_version(version)
 
     def test_verify_success(self):
         fake_version_py = Path("foo.py")
@@ -347,26 +393,29 @@ class VerifyVersionTestCase(unittest.TestCase):
         ), patch.object(
             PythonVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("1.2.3")),
+            MagicMock(
+                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+            ),
         ), patch.object(
             PythonVersionCommand,
             "version_file_path",
             new=PropertyMock(return_value=fake_version_py),
         ):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = PEP440VersioningScheme.parse_version("1.2.3")
 
-            cmd.verify_version(Version("1.2.3"))
+            cmd.verify_version(version)
 
 
 class ProjectFilePythonVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
         with temp_directory(change_into=True):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
 
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
         with temp_file(name="pyproject.toml", change_into=True):
-            cmd = PythonVersionCommand()
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
 
             self.assertTrue(cmd.project_found())
