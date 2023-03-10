@@ -91,7 +91,7 @@ pontos-update-header -d <dir1> <dir2>
 `GPL-2.0-or-later`
 `GPL-3.0-or-later`
 
-**Copyright header schema:** `Copyright (C) 2020-2022 Greenbone Networks GmbH`
+**Copyright header schema:** `Copyright (C) 2020-2022 Greenbone AG`
 
 ## pontos-changelog
 
