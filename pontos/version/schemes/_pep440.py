@@ -20,8 +20,7 @@ from typing import Any, Optional, Tuple
 from packaging.version import InvalidVersion
 from packaging.version import Version as PackagingVersion
 
-from pontos.version.calculator import VersionCalculator
-
+from .._calculator import VersionCalculator
 from ..errors import VersionError
 from ..version import Version
 from ._scheme import VersioningScheme

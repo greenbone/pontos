@@ -20,9 +20,8 @@ from typing import Any, Optional, Tuple
 
 from semver import VersionInfo
 
-from pontos.version.calculator import VersionCalculator
-from pontos.version.errors import VersionError
-
+from .._calculator import VersionCalculator
+from ..errors import VersionError
 from ..version import Version
 from ._scheme import VersioningScheme
 

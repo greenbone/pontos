@@ -18,7 +18,7 @@
 from abc import ABC
 from typing import Type
 
-from ..calculator import VersionCalculator
+from .._calculator import VersionCalculator
 from ..version import Version
 
 
