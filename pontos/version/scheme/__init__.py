@@ -15,7 +15,53 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from argparse import ArgumentTypeError
+
+from ._pep440 import PEP440VersioningScheme
 from ._scheme import VersioningScheme
 from ._semantic import SemanticVersioningScheme
 
-__all__ = ("VersioningScheme",)
+__all__ = (
+    "VERSIONING_SCHEMES",
+    "versioning_scheme_argument_type",
+    "VersioningScheme",
+    "PEP440VersioningScheme",
+    "SemanticVersioningScheme",
+)
+
+#: Dictionary with available versioning schemes
+VERSIONING_SCHEMES = {
+    "pep440": PEP440VersioningScheme,
+    "semver": SemanticVersioningScheme,
+}
+
+
+def versioning_scheme_argument_type(value: str) -> VersioningScheme:
+    """
+    Verifies if the passed value is a valid versioning scheme and returns
+    the corresponding versioning scheme.
+
+    Intended to be used as in `ArgumentParser.add_argument` as the type.
+
+    Raises:
+        ArgumentTypeError: If the passed value is not a valid versioning scheme
+
+    Example:
+        .. code-block:: python
+
+            from argparse import ArgumentParser
+            from pontos.version.scheme versioning_scheme_argument_type
+
+            parser = ArgumentParser()
+            parser.add_argument(
+                "--versioning-scheme",
+                type=versioning_scheme_argument_type,
+            )
+    """
+    try:
+        return VERSIONING_SCHEMES[value]
+    except KeyError:
+        raise ArgumentTypeError(
+            f"invalid value {value}. Expected one of "
+            f"{', '.join(VERSIONING_SCHEMES.keys())}."
+        ) from None
