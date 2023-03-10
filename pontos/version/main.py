@@ -22,7 +22,7 @@ from typing import List, NoReturn, Optional
 from pontos.errors import PontosError
 
 from .__version__ import __version__
-from .parser import initialize_default_parser
+from .parser import parse_args
 from .project import Project
 
 
@@ -32,15 +32,14 @@ class VersionExitCode(IntEnum):
     UPDATE_ERROR = auto()
     CURRENT_VERSION_ERROR = auto()
     VERIFY_ERROR = auto()
+    NEXT_VERSION_ERROR = auto()
 
 
 def main(args: Optional[List[str]] = None) -> NoReturn:
-    parser = initialize_default_parser()
-
-    parsed_args = parser.parse_args(args)
+    parsed_args = parse_args(args)
 
     try:
-        project = Project.gather_project()
+        project = Project(parsed_args.versioning_scheme)
     except PontosError:
         print("No project found.", file=sys.stderr)
         sys.exit(VersionExitCode.NO_PROJECT)
