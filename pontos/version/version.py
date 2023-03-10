@@ -33,6 +33,15 @@ class Version(PackagingVersion):
 
 
 def parse_version(version: str) -> Version:
+    """
+    Parse a Version from a string
+
+    Args:
+        version: Version string to convert into a Version instance
+
+    Raises:
+        VersionError if the version string is invalid.
+    """
     try:
         return Version(version)
     except InvalidVersion as e:
@@ -41,6 +50,25 @@ def parse_version(version: str) -> Version:
 
 @dataclass
 class VersionUpdate:
+    """
+    Represents a version update from a previous version to a new version.
+
+    If previous and new are equal the version was not updated and changed_files
+    should be empty.
+
+    Example:
+        .. code-block:: python
+
+            from pathlib import Path
+            from python.version import Version, VersionUpdate
+
+            update = VersionUpdate(
+                previous=Version("1.2.3"),
+                new=Version("2.0.0"),
+                changed_files=[Path("package.json"), Path("version.js")],
+            )
+    """
+
     previous: Version
     new: Version
     changed_files: list[Path] = field(default_factory=list)

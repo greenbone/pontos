@@ -65,9 +65,7 @@ class PaddingColumn(ProgressColumn):
 
 class RichTerminal(Terminal):
     """
-    A Terminal based on `rich`_
-
-    .. _rich: https://github.com/Textualize/rich/
+    A Terminal based on `rich <https://github.com/Textualize/rich/>`_.
     """
 
     def __init__(self) -> None:

@@ -46,6 +46,20 @@ import httpx
 
 from pontos.errors import PontosError
 
+__all__ = (
+    "AsyncDownloadProgressIterable",
+    "DownloadProgressIterable",
+    "add_sys_path",
+    "deprecated",
+    "download_async",
+    "download",
+    "ensure_unload_module",
+    "enum_or_value",
+    "parse_timedelta",
+    "snake_case",
+    "unload_module",
+)
+
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
 
@@ -62,6 +76,20 @@ T = TypeVar("T", str, bytes)
 
 
 class AsyncDownloadProgressIterable(Generic[T]):
+    """
+    An async iterator to iterate over a downloadable content and the progress.
+
+    Example:
+        .. code-block:: python
+
+            from pontos.helper import AsyncDownloadProgressIterable
+
+            it = AsyncDownloadProgressIterable(...)
+            async for content, progress in it:
+                file.write(content)
+                print(progress)
+    """
+
     def __init__(
         self,
         *,
@@ -70,22 +98,13 @@ class AsyncDownloadProgressIterable(Generic[T]):
         length: Optional[int],
     ):
         """
-        An async iterator to iterate over a downloadable content and the
-        progress.
+        Create a new AsyncDownloadProgressIterable instance
 
         Args:
             content_iterator: An async iterator to call for getting the content.
                 Should be a stream of bytes or strings.
             url: The URL where the content gets downloaded.
             length: Length of the content.
-
-        Example:
-            .. code-block:: python
-
-            it = AsyncDownloadProgressIterable(...)
-            async for content, progress in it:
-                file.write(content)
-                print(progress)
         """
         self._content_iterator: AsyncIterator[T] = content_iterator
         self._url = url
@@ -143,18 +162,21 @@ async def download_async(
         A context manager containing an AsyncDownloadProgressIterable
 
     Raises:
-        HTTPStatusError if the request was invalid
+        HTTPStatusError: If the request was invalid
 
     Example:
         .. code-block:: python
 
-        client = httpx.AsyncClient(...)
-        stream = client.stream("GET, "https://foo.bar/baz.zip)
+            import httpx
+            from pontos.helper import download_async
 
-        async with download_async(stream) as download:
-            async for content, progress in download:
-                file.write(content)
-                print(progress)
+            client = httpx.AsyncClient(...)
+            stream = client.stream("GET, "https://foo.bar/baz.zip)
+
+            async with download_async(stream) as download:
+                async for content, progress in download:
+                    file.write(content)
+                    print(progress)
     """
     async with stream as response:
         response.raise_for_status()
@@ -170,14 +192,36 @@ async def download_async(
 
 
 class DownloadProgressIterable:
+    """
+    An synchronous iterator to iterate over a download progress.
+
+    Example:
+        .. code-block:: python
+
+            from pontos.helper import DownloadProgressIterable
+
+            it = DownloadProgressIterable(...)
+            for progress in it:
+                print(progress)
+    """
+
     def __init__(
         self,
         *,
-        content_iterator: Iterator,
+        content_iterator: Iterator[bytes],
         url: str,
         destination: Path,
-        length: int,
-    ):
+        length: Optional[int],
+    ) -> None:
+        """
+        Create a new DownloadProgressIterable instance
+
+        Args:
+            content_iterator: An iterator of bytes to write to destination path
+            url: A URL where the content will be downloaded from
+            destination: Path to write the downloaded content to
+            length: Length of the content to be downloaded
+        """
         self._content_iterator = content_iterator
         self._url = url
         self._destination = destination
@@ -247,7 +291,7 @@ def download(
         timeout: Connection timeout
 
     Raises:
-        HTTPError if the request was invalid
+        HTTPStatusError: If the request was invalid
 
     Returns:
         A DownloadProgressIterator that yields the progress of the download in
@@ -257,9 +301,11 @@ def download(
     Example:
         .. code-block:: python
 
-        with download("https://example.com/some/file")) as progress_it:
-            for progress in progress_it:
-                print(progress)
+            from pontos.helper import download
+
+            with download("https://example.com/some/file") as progress_it:
+                for progress in progress_it:
+                    print(progress)
     """
     destination = (
         Path(url.split("/")[-1]) if not destination else Path(destination)
@@ -301,29 +347,31 @@ def deprecated(
     Examples:
         .. code-block:: python
 
-        @deprecated
-        def my_function(*args, **kwargs):
-            ...
+            from pontos.helper import deprecated
 
-        @deprecated("The function is obsolete. Please use my_func instead.")
-        def my_function(*args, **kwargs):
-            ...
-
-        @deprecated(
-            since="1.2.3",
-            reason="The function is obsolete. Please use my_func instead."
-        )
-        def my_function(*args, **kwargs):
-            ...
-
-        @deprecated(reason="The class will be removed in version 3.4.5")
-        class Foo:
-            ...
-
-        class Foo:
-            @deprecated(since="2.3.4")
-            def bar(self, *args, **kwargs):
+            @deprecated
+            def my_function(*args, **kwargs):
                 ...
+
+            @deprecated("The function is obsolete. Please use my_func instead.")
+            def my_function(*args, **kwargs):
+                ...
+
+            @deprecated(
+                since="1.2.3",
+                reason="The function is obsolete. Please use my_func instead."
+            )
+            def my_function(*args, **kwargs):
+                ...
+
+            @deprecated(reason="The class will be removed in version 3.4.5")
+            class Foo:
+                ...
+
+            class Foo:
+                @deprecated(since="2.3.4")
+                def bar(self, *args, **kwargs):
+                    ...
     """
     if isinstance(_func_or_cls, str):
         reason = _func_or_cls
@@ -370,6 +418,8 @@ def add_sys_path(
     Example:
         .. code-block:: python
 
+            from pontos.helper import add_sys_path
+
             with add_sys_path("/tmp/test-modules"):
                 import mymodule
     """
@@ -393,7 +443,7 @@ def unload_module(module: Union[str, ModuleType]) -> None:
     Unload a Python module
 
     Args:
-        name: Module instance or name of the Python module to unload.
+        module: Module instance or name of the Python module to unload.
             For example: foo.bar
     """
     name = module.__name__ if isinstance(module, ModuleType) else module
@@ -411,11 +461,13 @@ def ensure_unload_module(
     occurs
 
     Args:
-        name: Module instance or name of the Python module to unload.
+        module: Module instance or name of the Python module to unload.
             For example: foo.bar
 
     Example:
         .. code-block:: python
+
+            from pontos.helper import ensure_unload_module
 
             with ensure_unload_module("foo.bar"):
                 do_something()
@@ -430,8 +482,17 @@ def snake_case(value: str) -> str:
     """
     Convert a string to snake case/underscore naming scheme
 
+    Args:
+        value: String to convert into snake case
+
     Example:
-        snake_case("CamelCase") will return "camel_case"
+        .. code-block:: python
+
+            from pontos.helper import snake_case
+
+            snake_case("CamelCase")
+
+        will return "camel_case"
     """
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", value)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
@@ -460,8 +521,10 @@ def parse_timedelta(time_str: str) -> timedelta:
     Examples:
         .. code-block:: python
 
-        parse_timedelta("1.5h")
-        parse_timedelta("1w2d4h5m6s")
+            from pontos.helper import parse_timedelta
+
+            parse_timedelta("1.5h")
+            parse_timedelta("1w2d4h5m6s")
     """
     time_match = regex.match(time_str)
     if not time_match:

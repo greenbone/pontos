@@ -29,7 +29,11 @@ try:
 except ImportError:
     from typing_extensions import get_args, get_origin
 
-__all__ = ("Model",)
+__all__ = (
+    "Model",
+    "ModelError",
+    "dotted_attributes",
+)
 
 
 class ModelError(PontosError):
@@ -144,12 +148,12 @@ class Model:
         Example:
             .. code-block:: python
 
-            model = Model.from_dict({
-                "id": 123,
-                "node_id": "abcde",
-                "created_at": "2017-07-08T16:18:44-04:00",
-                "updated_at": "2017-07-08T16:18:44-04:00",
-            })
+                model = Model.from_dict({
+                    "id": 123,
+                    "node_id": "abcde",
+                    "created_at": "2017-07-08T16:18:44-04:00",
+                    "updated_at": "2017-07-08T16:18:44-04:00",
+                })
         """
         kwargs = {}
         additional_attrs = {}

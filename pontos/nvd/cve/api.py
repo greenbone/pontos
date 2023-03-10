@@ -46,8 +46,10 @@ class CVEApi(NVDApi):
     Example:
         .. code-block:: python
 
-        async with CVEApi() as api:
-            cve = await api.cve("CVE-2022-45536")
+            from pontos.nvd.cve import CVEApi
+
+            async with CVEApi() as api:
+                cve = await api.cve("CVE-2022-45536")
     """
 
     def __init__(
@@ -148,12 +150,17 @@ class CVEApi(NVDApi):
                 Open Vulnerability and Assessment Language (OVAL) before this
                 transitioned to the Center for Internet Security (CIS).
 
+        Returns:
+            An async iterator to iterate over CVE model instances
+
         Example:
             .. code-block:: python
 
-            async with CVEApi() as api:
-                async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
-                    print(cve.id)
+                from pontos.nvd.cve import CVEApi
+
+                async with CVEApi() as api:
+                    async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
+                        print(cve.id)
         """
         total_results = None
 
@@ -245,11 +252,20 @@ class CVEApi(NVDApi):
         Args:
             cve_id: Common Vulnerabilities and Exposures identifier
 
+        Returns:
+            A CVE matching the CVE ID
+
+        Raises:
+            PontosError: If CVE ID is empty or if no CVE with the CVE ID is
+                found.
+
         Example:
             .. code-block:: python
 
-            async with CVEApi() as api:
-                cve = await api.cve("CVE-2022-45536"):
+                from pontos.nvd.cve import CVEApi
+
+                async with CVEApi() as api:
+                    cve = await api.cve("CVE-2022-45536")
                     print(cve)
         """
         if not cve_id:

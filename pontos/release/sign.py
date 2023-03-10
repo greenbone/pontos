@@ -40,6 +40,10 @@ from .helper import get_git_repository_name
 
 
 class SignReturnValue(IntEnum):
+    """
+    Possible return values of SignCommand
+    """
+
     SUCCESS = 0
     TOKEN_MISSING = 1
     NO_PROJECT = 2
@@ -64,6 +68,13 @@ async def cmd_runner(*args: Iterable[str]) -> Process:
 
 
 class SignCommand:
+    """
+    A CLI command for signing a release
+
+    Args:
+        terminal: A Terminal for output
+    """
+
     def __init__(self, terminal: RichTerminal) -> None:
         self.terminal = terminal
 

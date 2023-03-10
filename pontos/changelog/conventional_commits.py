@@ -39,8 +39,20 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
 
 class ChangelogBuilder:
     """
-    Creates Changelog files from conventional commits using the git log,
+    Creates Changelog from conventional commits using the git log
     from the latest tag.
+
+    Example:
+        Create a changelog as a string from the changes between git tags
+        "v1.2.3" and "v2.0.0" using the default config settings.
+
+        .. code-block:: python
+
+            from pontos.changelog import ChangelogBuilder
+
+            builder = ChangelogBuilder(space="my-org", project="my-project)
+            changelog = builder.create_changelog
+                last_version="1.2.3", next_version="2.0.0")
     """
 
     def __init__(
@@ -50,7 +62,17 @@ class ChangelogBuilder:
         project: str,
         git_tag_prefix: Optional[str] = "v",
         config: Optional[Path] = None,
-    ):
+    ) -> None:
+        """
+        Create a new ChangelogBuilder instance.
+
+        Args:
+            space: GitHub space to use (organization or user name).
+            project: GitHub project to create a changelog for
+            git_tag_prefix: Git tag prefix to use when checking for git tags.
+                Default is "v".
+            config: TOML config for conventional commit parsing settings
+        """
         if config:
             if not config.exists():
                 raise ChangelogBuilderError(

@@ -78,6 +78,18 @@ def exec_git(
 
 
 class MergeStrategy(Enum):
+    """
+    Possible strategies for a merge
+
+    Attributes:
+        ORT:
+        ORT_OURS:
+        RECURSIVE:
+        OCTOPUS:
+        OURS:
+        SUBTREE:
+    """
+
     ORT = "ort"
     ORT_OURS = "ort-ours"
     RECURSIVE = "recursive"
@@ -88,6 +100,18 @@ class MergeStrategy(Enum):
 
 
 class ConfigScope(Enum):
+    """
+    Possible scopes for git settings
+
+    Attributes:
+        GLOBAL: Apply setting user wide (~/.gitconfig)
+        LOCAL: Apply setting to the local repository only (.git/config)
+        SYSTEM: Apply settings system wide (/etc/gitconfig)
+        WORKTREE: Similar to LOCAL except that $GIT_DIR/config.worktree is used
+            if extensions.worktreeConfig is enabled. If not it's the same as
+            LOCAL.
+    """
+
     GLOBAL = "global"
     LOCAL = "local"
     SYSTEM = "system"
@@ -95,6 +119,13 @@ class ConfigScope(Enum):
 
 
 class TagSort(Enum):
+    """
+    Sorting for git tags
+
+    Attributes:
+        VERSION: Sort tags by version number
+    """
+
     VERSION = "version:refname"
 
 
@@ -455,6 +486,9 @@ class Git:
         Get log of a git repository
 
         Args:
+            log_args: Additional arguments for git log
+            oneline: Print the abbreviated commit id and commit message in one
+                line per commit
         """
         args = ["log"]
         if oneline:
@@ -480,18 +514,25 @@ class Git:
                 object uniquely instead of the full commit ID.
 
         Examples:
+            This will "list all the commits which are reachable from foo or
+            bar, but not from baz".
+
             .. code-block:: python
 
-            git = Git()
-            git.rev_list("foo", "bar", "^baz")
+                from pontos.git import Git
 
-            This will "list all the commits which are reachable from foo or bar,
-            but not from baz".
-
-            git = Git()
-            git.rev_list("foo", max_parents=0)
+                git = Git()
+                git.rev_list("foo", "bar", "^baz")
 
             This will return the first commit of foo.
+
+            .. code-block:: python
+
+                from pontos.git import Git
+
+                git = Git()
+                git.rev_list("foo", max_parents=0)
+
         """
         args = ["rev-list"]
         if max_parents is not None:

@@ -37,6 +37,17 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
 
         Args:
             repo: GitHub repository (owner/name) to use
+
+        Returns:
+            True if the organization exists
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    exists = api.organizations.exists("foo")
         """
         api = f"/orgs/{organization}"
         response = await self._client.get(api)
@@ -58,7 +69,21 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             repository_type: Only list repositories of this type.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Return:
+            An async iterator yielding the repositories
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for repo in api.organizations.get_repositories(
+                        "foo"
+                    ):
+                        print(repo)
         """
         api = f"/orgs/{organization}/repos"
         params = {"type": enum_or_value(repository_type), "per_page": "100"}
@@ -86,7 +111,21 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             role: Filter members by their role.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding users
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for user in api.organizations.members(
+                        "foo"
+                    ):
+                        print(user)
         """
         api = f"/orgs/{organization}/members"
         params = {
@@ -122,18 +161,26 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             invitee_id: GitHub user ID for the person you are inviting. Either
                 an email or an invitee_id must be given.
             role: The role for the new member.
-                * admin - Organization owners with full administrative rights to
-                  the organization and complete access to all repositories and
-                  teams.
-                * direct_member - Non-owner organization members with ability to
-                  see other members and join teams by invitation.
-                * billing_manager - Non-owner organization members with ability
-                  to manage the billing settings of your organization.
+                admin - Organization owners with full administrative rights to
+                the organization and complete access to all repositories and
+                teams.
+                direct_member - Non-owner organization members with ability to
+                see other members and join teams by invitation.
+                billing_manager - Non-owner organization members with ability
+                to manage the billing settings of your organization.
             team_ids: Specify IDs for the teams you want to invite new members
                 to.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.organizations.invite("foo", email="john@doe.com")
         """
         if not email and not invitee_id:
             raise GitHubApiError("Either email or invitee_id must be provided")
@@ -167,7 +214,15 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
                 organization.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.organizations.remove_member("foo", "a_user")
         """
         api = f"/orgs/{organization}/memberships/{username}"
         response = await self._client.delete(api)
@@ -189,7 +244,21 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             member_filter: Filter the list of outside collaborators.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding users
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for user in api.organizations.outside_collaborators(
+                        "foo"
+                    ):
+                        print(user)
         """
         api = f"/orgs/{organization}/outside_collaborators"
         params = {
@@ -218,7 +287,17 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
                 organization.
 
         Raises:
-            `httpx.HTTPStatusError` if there was an error in the request
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.organizations.remove_outside_collaborator(
+                        "foo", "a_user"
+                    )
         """
         api = f"/orgs/{organization}/outside_collaborators/{username}"
         response = await self._client.delete(api)

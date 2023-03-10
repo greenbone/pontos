@@ -25,6 +25,20 @@ DEFAULT_CHUNK_SIZE = 4096
 
 
 class ReleaseType(Enum):
+    """
+    Type of the release. Used to determine the next release version.
+
+    Attributes:
+        PATCH: A patch version release (1.2.x)
+        CALENDAR: A calendar versioning release (year.month.X)
+        VERSION: The version is explicitly set
+        MAJOR: A major version release (x.0.0)
+        MINOR: A minor version release (1.x.0)
+        ALPHA: A alpha version release
+        BETA: A beta version release
+        RELEASE_CANDIDATE: A release candidate
+    """
+
     PATCH = "patch"
     CALENDAR = "calendar"
     VERSION = "version"
@@ -44,7 +58,7 @@ def get_git_repository_name(
         remote: the remote to look up the name (str) default: origin
 
     Returns:
-        project name
+        The git project name
     """
 
     ret = Git().remote_url(remote)

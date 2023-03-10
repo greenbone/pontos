@@ -38,16 +38,21 @@ from pontos.github.api.search import GitHubAsyncRESTSearch
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
+from pontos.helper import deprecated
 
 
 class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     """
-    A asynchronous GitHub REST API
+    A asynchronous GitHub REST API.
+
+    Should be used as an async context manager.
 
     Example:
         .. code-block:: python
 
-            with GitHubAsyncRESTApi(token) as api:
+            from pontos.github.api import GitHubAsyncRESTApi
+
+            async with GitHubAsyncRESTApi(token) as api:
                 repositories = await api.organizations.get_repositories("foo")
     """
 
@@ -58,6 +63,12 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         *,
         timeout: Optional[httpx.Timeout] = DEFAULT_TIMEOUT_CONFIG,
     ) -> None:
+        """
+        Args:
+            token: GitHub API token
+            url: GitHub URL
+            timeout: Timeout settings to use
+        """
         self._client = GitHubAsyncRESTClient(token, url, timeout=timeout)
 
     @property
@@ -78,7 +89,6 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def branches(self) -> GitHubAsyncRESTBranches:
         """
         Branches related API
-
         """
         return GitHubAsyncRESTBranches(self._client)
 
@@ -86,7 +96,6 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def contents(self) -> GitHubAsyncRESTContent:
         """
         Contents related API
-
         """
         return GitHubAsyncRESTContent(self._client)
 
@@ -94,15 +103,29 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def labels(self) -> GitHubAsyncRESTLabels:
         """
         Labels related API
-
         """
         return GitHubAsyncRESTLabels(self._client)
 
     @property
+    @deprecated(
+        since="23.3.4",
+        reason="The pulls property is obsolete. Please use pull_requests "
+        "instead.",
+    )
     def pulls(self) -> GitHubAsyncRESTPullRequests:
         """
         Pull Requests related API
 
+        .. deprecated:: 23.3.4
+
+            Use :py:attr:`pull_requests` instead.
+        """
+        return GitHubAsyncRESTPullRequests(self._client)
+
+    @property
+    def pull_requests(self) -> GitHubAsyncRESTPullRequests:
+        """
+        Pull Requests related API
         """
         return GitHubAsyncRESTPullRequests(self._client)
 
@@ -110,7 +133,6 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def releases(self) -> GitHubAsyncRESTReleases:
         """
         Releases related API
-
         """
         return GitHubAsyncRESTReleases(self._client)
 
@@ -118,7 +140,6 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def workflows(self) -> GitHubAsyncRESTWorkflows:
         """
         Workflows related API
-
         """
         return GitHubAsyncRESTWorkflows(self._client)
 
@@ -126,7 +147,6 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
     def repositories(self) -> GitHubAsyncRESTRepositories:
         """
         Repositories related API
-
         """
         return GitHubAsyncRESTRepositories(self._client)
 

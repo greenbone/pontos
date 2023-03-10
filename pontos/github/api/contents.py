@@ -35,6 +35,16 @@ class GitHubAsyncRESTContent(GitHubAsyncREST):
 
         Returns:
             True if existing, False else
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    exists = await api.contents.path_exists(
+                        "foo/bar", "src/utils.py"
+                    )
         """
         api = f"/repos/{repo}/contents/{path}"
         params = {}

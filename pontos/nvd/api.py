@@ -33,11 +33,10 @@ Headers = Dict[str, str]
 Params = Dict[str, str]
 
 __all__ = (
-    "now",
-    "format_date",
     "convert_camel_case",
+    "format_date",
+    "now",
     "NVDApi",
-    "DEFAULT_TIMEOUT_CONFIG",
 )
 
 
@@ -49,12 +48,27 @@ def now() -> datetime:
 
 
 def format_date(date: datetime) -> str:
+    """
+    Format date matching to NVD api
+
+    Args:
+        date: Date to format
+
+    Returns:
+        Formatted date as string
+    """
     return date.isoformat(timespec="seconds")
 
 
 def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert camel case keys into snake case keys
+
+    Args:
+        dct: dict to convert
+
+    Returns:
+        A dict with key names converted to snake case
     """
     converted = {}
     for key, value in dct.items():
@@ -68,10 +82,9 @@ async def sleep() -> None:
 
 class NVDApi(ABC):
     """
-    Base class for querying the NIST NVD API.
+    Abstract base class for querying the NIST NVD API.
 
     Should be used as an async context manager.
-
     """
 
     def __init__(

@@ -24,7 +24,6 @@ from contextlib import redirect_stderr
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from pontos.github.api import FileStatus
 from pontos.github.argparser import parse_args
 from pontos.github.cmds import (
     create_pull_request,
@@ -33,6 +32,7 @@ from pontos.github.cmds import (
     file_status,
     update_pull_request,
 )
+from pontos.github.models.base import FileStatus
 
 
 class TestArgparsing(unittest.TestCase):

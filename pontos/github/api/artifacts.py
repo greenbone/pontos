@@ -44,7 +44,16 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the artifacts in the repository as a dict
+            An async iterator for the received artifacts
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for artifact in api.artifacts.get_all("foo/bar"):
+                        print(artifact)
         """
         api = f"/repos/{repo}/actions/artifacts"
         return self._get_paged_artifacts(api)
@@ -64,7 +73,16 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the artifact as a dict
+            Information about the artifact
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    artifact = await api.artifacts.get("foo/bar", 123)
+                    print(artifact)
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = await self._client.get(api)
@@ -74,6 +92,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     def get_workflow_run_artifacts(
         self, repo: str, run: Union[str, int]
     ) -> AsyncIterator[Artifact]:
+        # pylint: disable=line-too-long
         """
         List all artifacts for a workflow run
 
@@ -88,12 +107,21 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
                 failed.
 
         Returns:
-            Information about the artifacts in the workflow as a dict
+            An async iterator for the received artifacts
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for artifact in api.artifacts.get_workflow_run_artifacts("foo/bar", 234):
+                        print(artifact)
         """
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def delete(self, repo: str, artifact: Union[str, int]):
+    async def delete(self, repo: str, artifact: Union[str, int]) -> None:
         """
         Delete an artifact of a repository
 
@@ -106,6 +134,14 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         Raises:
             HTTPStatusError: A httpx.HTTPStatusError is raised if the request
                 failed.
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.artifacts.delete("foo/bar", 123):
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}"
         response = await self._client.delete(api)
@@ -124,20 +160,23 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             artifact: ID of the artifact
 
         Raises:
-            HTTPStatusError if the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
 
-            api = GitHubAsyncRESTApi("...")
+            from pontos.github.api import GitHubAsyncRESTApi
 
-            print("Downloading", end="")
+            async with GitHubAsyncRESTApi("...") as api:
+                print("Downloading", end="")
 
-            with Path("foo.baz").open("wb") as f:
-                async with api.download("org/repo", "123") as download:
-                    async for content, progress in download:
-                        f.write(content)
-                        print(".", end="")
+                with Path("foo.baz").open("wb") as f:
+                    async with api.artifacts.download(
+                        "org/repo", "123"
+                    ) as download:
+                        async for content, progress in download:
+                            f.write(content)
+                            print(".", end="")
         """
         api = f"/repos/{repo}/actions/artifacts/{artifact}/zip"
         return download_async(self._client.stream(api))

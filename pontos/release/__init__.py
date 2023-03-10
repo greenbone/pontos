@@ -16,6 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .helper import ReleaseType, find_signing_key, get_git_repository_name
 from .main import main
+from .release import ReleaseCommand, ReleaseReturnValue
+from .sign import SignatureError, SignCommand, SignReturnValue
 
-__all__ = ["main"]
+__all__ = (
+    "ReleaseType",
+    "get_git_repository_name",
+    "find_signing_key",
+    "ReleaseCommand",
+    "ReleaseReturnValue",
+    "SignCommand",
+    "SignatureError",
+    "SignReturnValue",
+)

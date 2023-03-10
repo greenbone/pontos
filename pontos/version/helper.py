@@ -49,18 +49,17 @@ def check_develop(version: str) -> bool:
 
 def is_version_pep440_compliant(version: str) -> bool:
     """
-    Checks if the provided version is a PEP 440 compliant version string
+    Checks if the provided version is a
+    `PEP 440 <https://www.python.org/dev/peps/pep-0440>`_ compliant version
+    string
     """
     return version == safe_version(version)
 
 
 def safe_version(version: str) -> str:
     """
-    Returns the version as a string in `PEP440`_ compliant
-    format.
-
-    .. _PEP440:
-       https://www.python.org/dev/peps/pep-0440
+    Returns the version as a string in
+    `PEP 440 <https://www.python.org/dev/peps/pep-0440>`_ compliant format.
     """
     try:
         return str(Version(version))

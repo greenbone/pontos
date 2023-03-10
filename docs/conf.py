@@ -13,17 +13,19 @@
 
 # pylint: disable=invalid-name,redefined-builtin,wrong-import-position
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(".."))
+source_directory = str(Path(__file__).parent.absolute())
+
+sys.path.insert(0, source_directory)
 
 from pontos.version import __version__
 
 # -- Project information -----------------------------------------------------
 
 project = "pontos"
-copyright = "2022, Greenbone Networks GmbH <info@greenbone.net>"
+copyright = "2022-2023, Greenbone Networks GmbH <info@greenbone.net>"
 author = "Greenbone Networks GmbH <info@greenbone.net>"
 
 # The full version, including alpha/beta/rc tags
@@ -41,6 +43,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "myst_parser",
+    # "autodoc2",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -116,10 +119,15 @@ html_theme_options = {
     ],
 }
 
+# only shot type hints at the class and function descriptions
 autodoc_typehints = "description"
-autodoc_typehints_description_target = "documented"
-
-autodoc_class_signature = "separated"
+# parameter types will only be annotated if the parameter is documented. return
+# type is always annotated (except if it is None).
+autodoc_typehints_description_target = "documented_params"
+# sort members by order in __all__
+autodoc_member_order = "bysource"
+# use class docstring and __init__ together for class description
+autoclass_content = "both"
 
 pygments_style = "zenburn"
 
@@ -205,3 +213,8 @@ epub_exclude_files = ["search.html"]
 
 # -- Extension configuration -------------------------------------------------
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+
+myst_enable_extensions = ["colon_fence"]
+myst_heading_anchors = 3
+
+napoleon_use_admonition_for_examples = True

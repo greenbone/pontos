@@ -20,6 +20,8 @@ from argparse import ArgumentParser, Namespace
 
 from pontos.nvd.cpe.api import CPEApi
 
+__all__ = ("CPEApi",)
+
 
 async def query_cpe(args: Namespace) -> None:
     async with CPEApi(token=args.token) as api:
