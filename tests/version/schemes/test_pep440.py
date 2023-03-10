@@ -18,12 +18,44 @@
 import unittest
 from datetime import datetime
 
-from pontos.version.calculator import VersionCalculator
 from pontos.version.errors import VersionError
-from pontos.version.version import Version
+from pontos.version.schemes._pep440 import PEP440Version as Version
+from pontos.version.schemes._pep440 import (
+    PEP440VersionCalculator as VersionCalculator,
+)
 
 
-class VersionCalculatorTestCase(unittest.TestCase):
+class PEP440VersionTestCase(unittest.TestCase):
+    def test_parse_version(self):
+        versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3.post1",
+            "1.2.3a1",
+            "1.2.3b1",
+            "1.2.3rc1",
+            "1.2.3a1+dev1",
+            "22.4.1",
+            "22.4.1.dev1",
+            "22.4.1.dev3",
+        ]
+        for version in versions:
+            self.assertEqual(Version.from_string(version), Version(version))
+
+    def test_parse_error(self):
+        versions = [
+            "abc",
+            "1.2.3d",
+        ]
+
+        for version in versions:
+            with self.assertRaisesRegex(
+                VersionError, "^Invalid version: '.*'$"
+            ):
+                Version.from_string(version)
+
+
+class PEP440VersionCalculatorTestCase(unittest.TestCase):
     def test_next_patch_version(self):
         calculator = VersionCalculator()
 
@@ -56,10 +88,12 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_patch_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
 
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_calendar_versions(self):
         calculator = VersionCalculator()
@@ -83,9 +117,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_calendar_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_calendar_version_error(self):
         calculator = VersionCalculator()
@@ -93,11 +129,13 @@ class VersionCalculatorTestCase(unittest.TestCase):
         year_short = today.year % 100
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
-            calculator.next_calendar_version(Version(f"{year_short  + 1}.1.0"))
+            calculator.next_calendar_version(
+                Version.from_string(f"{year_short  + 1}.1.0")
+            )
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
             calculator.next_calendar_version(
-                Version(f"{year_short}.{today.month + 1}.0")
+                Version.from_string(f"{year_short}.{today.month + 1}.0")
             )
 
     def test_next_minor_version(self):
@@ -132,9 +170,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_minor_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_major_version(self):
         calculator = VersionCalculator()
@@ -168,9 +208,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_major_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_alpha_version(self):
         calculator = VersionCalculator()
@@ -204,9 +246,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_alpha_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_beta_version(self):
         calculator = VersionCalculator()
@@ -240,9 +284,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_beta_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_release_candidate_version(self):
         calculator = VersionCalculator()
@@ -276,9 +322,11 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_release_candidate_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
 
     def test_next_dev_version(self):
         calculator = VersionCalculator()
@@ -312,6 +360,8 @@ class VersionCalculatorTestCase(unittest.TestCase):
             current_versions, assert_versions
         ):
             release_version = calculator.next_dev_version(
-                Version(current_version)
+                Version.from_string(current_version)
             )
-            self.assertEqual(release_version, Version(assert_version))
+            self.assertEqual(
+                release_version, Version.from_string(assert_version)
+            )
