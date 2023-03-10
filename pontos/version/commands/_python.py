@@ -21,8 +21,10 @@ from typing import Literal, Union
 
 import tomlkit
 
-from .errors import VersionError
-from .version import Version, VersionCommand, VersionUpdate, parse_version
+from ..errors import VersionError
+from ..schemes import PEP440VersioningScheme
+from ..version import Version, VersionUpdate
+from ._command import VersionCommand
 
 TEMPLATE = """# pylint: disable=invalid-name
 
@@ -48,7 +50,7 @@ class PythonVersionCommand(VersionCommand):
             and "poetry" in self.pyproject_toml["tool"]  # type: ignore
             and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long
         ):
-            return parse_version(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore # pylint: disable=line-too-long
+            return self.versioning_scheme.parse_version(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore # pylint: disable=line-too-long
 
         raise VersionError(
             "Version information not found in "
@@ -145,7 +147,9 @@ class PythonVersionCommand(VersionCommand):
             )
             version_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(version_module)
-            return parse_version(version_module.__version__)
+            return PEP440VersioningScheme.parse_version(
+                version_module.__version__
+            )
         except FileNotFoundError:
             raise VersionError(
                 f"Could not load version from '{module_name}'. "
@@ -157,7 +161,7 @@ class PythonVersionCommand(VersionCommand):
             ) from None
 
     def verify_version(
-        self, version: Union[Literal["current"], Version]
+        self, version: Union[Literal["current"], Version, None]
     ) -> None:
         current_version = self.get_current_version()
         pyproject_version = self._get_version_from_pyproject_toml()
@@ -169,7 +173,7 @@ class PythonVersionCommand(VersionCommand):
                 f"version {current_version}."
             )
 
-        if version != "current":
+        if version and version != "current":
             if version != current_version:
                 raise VersionError(
                     f"Provided version {version} does not match the "
@@ -186,15 +190,22 @@ class PythonVersionCommand(VersionCommand):
             # pyproject.toml
             current_version = self._get_version_from_pyproject_toml()
 
-        if not force and new_version == current_version:
-            return VersionUpdate(previous=current_version, new=new_version)
+        new_pep440_version = PEP440VersioningScheme.from_version(new_version)
+        current_converted_version = self.versioning_scheme.from_version(
+            current_version
+        )
 
-        self._update_pyproject_version(new_version=new_version)
+        if not force and new_pep440_version == current_version:
+            return VersionUpdate(
+                previous=current_converted_version, new=new_version
+            )
 
-        self._update_version_file(new_version=new_version)
+        self._update_pyproject_version(new_version=new_pep440_version)
+
+        self._update_version_file(new_version=new_pep440_version)
 
         return VersionUpdate(
-            previous=current_version,
+            previous=current_converted_version,
             new=new_version,
             changed_files=[self.version_file_path, self.project_file_path],
         )

@@ -20,8 +20,9 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Union
 
-from .errors import VersionError
-from .version import Version, VersionCommand, VersionUpdate, parse_version
+from ..errors import VersionError
+from ..version import Version, VersionUpdate
+from ._command import VersionCommand
 
 
 # This class is used for JavaScript Version command(s)
@@ -70,21 +71,21 @@ class JavaScriptVersionCommand(VersionCommand):
         if not match:
             raise VersionError(f"VERSION variable not found in {version_file}")
 
-        return Version(match.group("version"))
+        return self.versioning_scheme.parse_version(match.group("version"))
 
     def get_current_version(self) -> Version:
         """Get the current version of this project
         In go the version is only defined within the repository
         tags, thus we need to check git, what tag is the latest"""
-        return parse_version(self.package["version"])
+        return self.versioning_scheme.parse_version(self.package["version"])
 
     def verify_version(
-        self, version: Union[Literal["current"], Version]
+        self, version: Union[Literal["current"], Version, None]
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
 
-        if version == "current":
+        if not version or version == "current":
             for version_file in self.version_file_paths:
                 file_version = self._get_current_file_version(version_file)
                 if file_version and file_version != current_version:

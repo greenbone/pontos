@@ -19,9 +19,10 @@ import re
 from pathlib import Path
 from typing import Literal, Union
 
-from .errors import VersionError
-from .helper import get_last_release_version
-from .version import Version, VersionCommand, VersionUpdate, parse_version
+from ..errors import VersionError
+from ..helper import get_last_release_version
+from ..version import Version, VersionUpdate
+from ._command import VersionCommand
 
 VERSION_MATCH = r'var [Vv]ersion = "(.+)"'
 TEMPLATE = """package main
@@ -60,7 +61,7 @@ class GoVersionCommand(VersionCommand):
             )
             match = re.search(VERSION_MATCH, version_file_text)
             if match:
-                return parse_version(match.group(1))
+                return self.versioning_scheme.parse_version(match.group(1))
             else:
                 raise VersionError(
                     f"No version found in the {self.version_file_path} file."
@@ -72,12 +73,12 @@ class GoVersionCommand(VersionCommand):
             )
 
     def verify_version(
-        self, version: Union[Literal["current"], Version]
+        self, version: Union[Literal["current"], Version, None]
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
 
-        if version == "current":
+        if not version or version == "current":
             return
 
         if current_version != version:
@@ -93,7 +94,9 @@ class GoVersionCommand(VersionCommand):
         try:
             current_version = self.get_current_version()
         except VersionError:
-            current_version = get_last_release_version("v")
+            current_version = get_last_release_version(
+                self.versioning_scheme.parse_version, git_tag_prefix="v"
+            )
 
         if not force and new_version == current_version:
             return VersionUpdate(previous=current_version, new=new_version)

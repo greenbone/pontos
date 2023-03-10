@@ -17,11 +17,20 @@
 
 from typing import Iterable, Tuple, Type
 
-from .cmake import CMakeVersionCommand
-from .go import GoVersionCommand
-from .javascript import JavaScriptVersionCommand
-from .python import PythonVersionCommand
-from .version import VersionCommand
+from ._cmake import CMakeVersionCommand
+from ._command import VersionCommand
+from ._go import GoVersionCommand
+from ._javascript import JavaScriptVersionCommand
+from ._python import PythonVersionCommand
+
+__all__ = (
+    "VersionCommand",
+    "CMakeVersionCommand",
+    "GoVersionCommand",
+    "JavaScriptVersionCommand",
+    "PythonVersionCommand",
+    "get_commands",
+)
 
 __COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
@@ -32,4 +41,7 @@ __COMMANDS: Tuple[Type[VersionCommand]] = (
 
 
 def get_commands() -> Iterable[Type[VersionCommand]]:
+    """
+    Returns the available VersionCommands
+    """
     return __COMMANDS
