@@ -17,9 +17,10 @@
 
 
 import re
+from abc import abstractmethod
 from datetime import date
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Protocol, Union, runtime_checkable
 
 import tomlkit
 
@@ -35,6 +36,13 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
     { message = "^fix", group = "Bug Fixes"},
 ]
 """
+
+
+@runtime_checkable
+class SupportsStr(Protocol):
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
 
 
 class ChangelogBuilder:
@@ -92,8 +100,8 @@ class ChangelogBuilder:
     def create_changelog(
         self,
         *,
-        last_version: Optional[str] = None,
-        next_version: Optional[str] = None,
+        last_version: Optional[SupportsStr] = None,
+        next_version: Optional[SupportsStr] = None,
     ) -> str:
         """
         Create a changelog
@@ -116,8 +124,8 @@ class ChangelogBuilder:
         self,
         output: Union[str, Path],
         *,
-        last_version: Optional[str] = None,
-        next_version: Optional[str] = None,
+        last_version: Optional[SupportsStr] = None,
+        next_version: Optional[SupportsStr] = None,
     ) -> None:
         """
         Create a changelog and write the changelog to a file
@@ -142,7 +150,7 @@ class ChangelogBuilder:
         git = Git()
         return git.rev_list("HEAD", max_parents=0, abbrev_commit=True)[0]
 
-    def _get_git_log(self, last_version: Optional[str]) -> List[str]:
+    def _get_git_log(self, last_version: Optional[SupportsStr]) -> List[str]:
         """Getting the git log for the next version.
 
         Requires the fitting branch to be checked out
@@ -209,8 +217,8 @@ class ChangelogBuilder:
 
     def _build_changelog(
         self,
-        last_version: Optional[str],
-        next_version: Optional[str],
+        last_version: Optional[SupportsStr],
+        next_version: Optional[SupportsStr],
         commit_dict: Dict[str, List[str]],
     ) -> str:
         """
