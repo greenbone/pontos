@@ -2,7 +2,7 @@
 name = "pontos"
 version = "23.3.4.dev1"
 description = "Common utilities and tools maintained by Greenbone Networks"
-authors = ["Greenbone Networks GmbH <info@greenbone.net>"]
+authors = ["Greenbone AG <info@greenbone.net>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 homepage = "https://github.com/greenbone/pontos/"

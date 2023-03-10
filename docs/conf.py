@@ -25,8 +25,8 @@ from pontos.version import __version__
 # -- Project information -----------------------------------------------------
 
 project = "pontos"
-copyright = "2022-2023, Greenbone Networks GmbH <info@greenbone.net>"
-author = "Greenbone Networks GmbH <info@greenbone.net>"
+copyright = "2022-2023, Greenbone AG <info@greenbone.net>"
+author = "Greenbone AG <info@greenbone.net>"
 
 # The full version, including alpha/beta/rc tags
 release = __version__
@@ -162,7 +162,7 @@ latex_documents = [
         master_doc,
         project + ".tex",
         project + " Documentation",
-        "Greenbone Networks GmbH",
+        "Greenbone AG",
         "manual",
     )
 ]

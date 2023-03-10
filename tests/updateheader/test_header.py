@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Greenbone Networks GmbH
+# Copyright (C) 2020-2022 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -39,7 +39,7 @@ from pontos.updateheader.updateheader import _parse_args as parse_args
 from pontos.updateheader.updateheader import _update_file as update_file
 from pontos.updateheader.updateheader import main
 
-HEADER = """# Copyright (C) {date} Greenbone Networks GmbH
+HEADER = """# Copyright (C) {date} Greenbone AG
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -66,7 +66,7 @@ class Terminal(ConsoleTerminal):
 class UpdateHeaderTestCase(TestCase):
     def setUp(self):
         self.args = Namespace()
-        self.args.company = "Greenbone Networks GmbH"
+        self.args.company = "Greenbone AG"
 
         self.path = Path(__file__).parent
 
@@ -108,8 +108,8 @@ class UpdateHeaderTestCase(TestCase):
             get_modified_year(f=test_file)
 
     def test_find_copyright(self):
-        test_line = "# Copyright (C) 1995-2021 Greenbone Networks GmbH"
-        test2_line = "# Copyright (C) 1995 Greenbone Networks GmbH"
+        test_line = "# Copyright (C) 1995-2021 Greenbone AG"
+        test2_line = "# Copyright (C) 1995 Greenbone AG"
         invalid_line = (
             "# This program is free software: "
             "you can redistribute it and/or modify"
@@ -358,7 +358,7 @@ class UpdateHeaderTestCase(TestCase):
             "Copyright Year None -> 2021\n",
         )
         self.assertIn(
-            "# Copyright (C) 2020-2021 Greenbone Networks GmbH",
+            "# Copyright (C) 2020-2021 Greenbone AG",
             test_file.read_text(encoding="utf-8"),
         )
 
@@ -391,7 +391,7 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Licence Header is ok.\n",
         )
         self.assertIn(
-            "# Copyright (C) 2021 Greenbone Networks GmbH",
+            "# Copyright (C) 2021 Greenbone AG",
             test_file.read_text(encoding="utf-8"),
         )
 

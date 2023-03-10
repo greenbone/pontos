@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022 Greenbone Networks GmbH
+# Copyright (C) 2019-2022 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -302,7 +302,7 @@ def _parse_args(args=None):
 
     parser.add_argument(
         "--company",
-        default="Greenbone Networks GmbH",
+        default="Greenbone AG",
         help=(
             "If a header will be added to file, "
             "it will be licenced by company."
