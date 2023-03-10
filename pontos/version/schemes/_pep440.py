@@ -149,6 +149,9 @@ class PEP440Version(Version):
         return cls.from_string(str(version))
 
     def __eq__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            # allow to compare against "current" for now
+            return False
         if not isinstance(other, Version):
             raise ValueError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
@@ -156,6 +159,9 @@ class PEP440Version(Version):
         return self._version == other._version
 
     def __ne__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            # allow to compare against "current" for now
+            return True
         if not isinstance(other, Version):
             raise ValueError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
