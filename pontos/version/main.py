@@ -24,6 +24,7 @@ from pontos.errors import PontosError
 from .__version__ import __version__
 from .parser import parse_args
 from .project import Project
+from .schemes import VersioningScheme
 
 
 class VersionExitCode(IntEnum):
@@ -69,5 +70,36 @@ def main(args: Optional[List[str]] = None) -> NoReturn:
         except PontosError as e:
             print(str(e), file=sys.stderr)
             sys.exit(VersionExitCode.VERIFY_ERROR)
+    elif parsed_args.command == "next":
+        scheme: VersioningScheme = parsed_args.versioning_scheme
+        calculator = scheme.calculator()
+        try:
+            current_version = project.get_current_version()
+        except PontosError as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(VersionExitCode.CURRENT_VERSION_ERROR)
+
+        try:
+            if parsed_args.type == "dev":
+                print(calculator.next_dev_version(current_version))
+            elif parsed_args.type == "calendar":
+                print(calculator.next_calendar_version(current_version))
+            elif parsed_args.type == "alpha":
+                print(calculator.next_alpha_version(current_version))
+            elif parsed_args.type == "beta":
+                print(calculator.next_beta_version(current_version))
+            elif parsed_args.type == "rc":
+                print(
+                    calculator.next_release_candidate_version(current_version)
+                )
+            elif parsed_args.type == "patch":
+                print(calculator.next_patch_version(current_version))
+            elif parsed_args.type == "minor":
+                print(calculator.next_minor_version(current_version))
+            elif parsed_args.type == "major":
+                print(calculator.next_major_version(current_version))
+        except PontosError as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(VersionExitCode.NEXT_VERSION_ERROR)
 
     sys.exit(VersionExitCode.SUCCESS)

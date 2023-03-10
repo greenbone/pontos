@@ -89,6 +89,32 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         "This will override existing version information!",
         action="store_true",
     )
+
+    next_parser = subparsers.add_parser(
+        "next", help="Calculate the next release version"
+    )
+    next_parser.add_argument(
+        "type",
+        help="Next version type",
+        choices=[
+            "dev",
+            "calendar",
+            "alpha",
+            "beta",
+            "rc",
+            "patch",
+            "minor",
+            "major",
+        ],
+    )
+    next_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
     return parser
 
 

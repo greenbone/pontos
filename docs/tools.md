@@ -48,6 +48,8 @@ pontos-version update 22.1.1
 pontos-version show
 # Verify the current version information
 pontos-version verify current
+# calculate the next minor release version
+pontos-version next minor
 ```
 
 **Supported config files:**
