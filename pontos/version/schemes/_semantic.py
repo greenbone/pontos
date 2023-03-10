@@ -116,6 +116,9 @@ class SemanticVersion(Version):
         return self._version_info.patch
 
     def __eq__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            # allow to compare against "current" for now
+            return False
         if not isinstance(other, Version):
             raise ValueError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
@@ -124,6 +127,9 @@ class SemanticVersion(Version):
         return self._version_info == other._version_info
 
     def __ne__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            # allow to compare against "current" for now
+            return True
         if not isinstance(other, Version):
             raise ValueError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
