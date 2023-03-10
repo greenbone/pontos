@@ -17,62 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re
 from typing import Optional
 
-from packaging.version import InvalidVersion
-
 from pontos.git import Git, TagSort
-from pontos.version.version import Version, parse_version
 
-
-def strip_version(version: str) -> str:
-    """
-    Strips a leading 'v' from a version string
-
-    E.g. v1.2.3 will be converted to 1.2.3
-    """
-    if version and version[0] == "v":
-        return version[1:]
-
-    return version
-
-
-def check_develop(version: str) -> bool:
-    """
-    Checks if the given Version is a develop version
-
-    Returns True if yes, False if not
-    """
-    return True if Version(version).dev is not None else False
-
-
-def is_version_pep440_compliant(version: str) -> bool:
-    """
-    Checks if the provided version is a
-    `PEP 440 <https://www.python.org/dev/peps/pep-0440>`_ compliant version
-    string
-    """
-    return version == safe_version(version)
-
-
-def safe_version(version: str) -> str:
-    """
-    Returns the version as a string in
-    `PEP 440 <https://www.python.org/dev/peps/pep-0440>`_ compliant format.
-    """
-    try:
-        return str(Version(version))
-    except InvalidVersion:
-        version = version.replace(" ", ".")
-        return re.sub("[^A-Za-z0-9.]+", "-", version)
-
-
-def versions_equal(new_version: str, old_version: str) -> bool:
-    """
-    Checks if new_version and old_version are equal
-    """
-    return safe_version(old_version) == safe_version(new_version)
+from .version import Version, parse_version
 
 
 def get_last_release_version(
