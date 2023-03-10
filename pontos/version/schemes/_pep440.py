@@ -206,7 +206,7 @@ class PEP440VersionCalculator(VersionCalculator):
         return cls.version_from_string(
             f"{current_version.major}."
             f"{current_version.minor}."
-            f"{current_version.micro + 1 }.dev1"
+            f"{current_version.patch + 1}.dev1"
         )
 
     @classmethod
