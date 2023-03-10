@@ -15,46 +15,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Type
 
-from .errors import VersionError
-from .version import Version, parse_version
+from pontos.version.errors import VersionError
+
+from .version import Version
 
 
-class VersionCalculator:
-    def next_patch_version(self, current_version: Version) -> Version:
+class VersionCalculator(ABC):
+    """
+    An abstract base class for calculating a next version from a version
+    """
+
+    version_cls: Type[Version]
+
+    @classmethod
+    def version_from_string(cls, version: str) -> Version:
         """
-        Get the next patch version from a valid version
+        Create a version from a version string
 
-        Examples:
-            "1.2.3" will return "1.2.4"
-            "1.2.3.dev1" will return "1.2.3"
+        Args:
+            version: Version string to parse
+
+        Raises:
+            VersionError: If the version string is invalid.
+
+        Returns:
+            A new version instance
         """
+        return cls.version_cls.from_string(version)
 
-        if current_version.is_prerelease:
-            next_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro}"
-            )
-        else:
-            next_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1}"
-            )
-
-        return next_version
-
-    def next_calendar_version(self, current_version: Version) -> Version:
+    @classmethod
+    def next_calendar_version(cls, current_version: Version) -> Version:
         """
         Find the correct next calendar version by checking latest version and
         the today's date
 
         Raises:
-            VersionError if version is invalid.
+            VersionError: If version is invalid.
         """
-
         today = datetime.today()
         current_year_short = today.year % 100
 
@@ -62,21 +63,23 @@ class VersionCalculator:
             current_version.major == current_year_short
             and current_version.minor < today.month
         ):
-            return parse_version(f"{current_year_short}.{today.month}.0")
+            return cls.version_from_string(
+                f"{current_year_short}.{today.month}.0"
+            )
 
         if (
             current_version.major == today.year % 100
             and current_version.minor == today.month
         ):
             if current_version.dev is None:
-                release_version = parse_version(
+                release_version = cls.version_from_string(
                     f"{current_year_short}.{today.month}."
-                    f"{current_version.micro + 1}"
+                    f"{current_version.patch + 1}"
                 )
             else:
-                release_version = parse_version(
+                release_version = cls.version_from_string(
                     f"{current_year_short}.{today.month}."
-                    f"{current_version.micro}"
+                    f"{current_version.patch}"
                 )
             return release_version
         else:
@@ -85,147 +88,81 @@ class VersionCalculator:
                 f"'{current_year_short}.{today.month}'."
             )
 
-    def next_minor_version(self, current_version: Version) -> Version:
-        """
-        Get the next minor version from a valid version
-
-        Examples:
-            "1.2.3" will return "1.3.0"
-            "1.2.3.dev1" will return "1.3.0"
-        """
-        return parse_version(
-            f"{current_version.major}.{current_version.minor + 1}.0"
-        )
-
-    def next_major_version(self, current_version: Version) -> Version:
+    @classmethod
+    def next_major_version(cls, current_version: Version) -> Version:
         """
         Get the next major version from a valid version
 
         Examples:
             "1.2.3" will return "2.0.0"
             "1.2.3.dev1" will return "2.0.0"
+            "1.2.3-alpha1" will return "2.0.0"
         """
-        return parse_version(f"{current_version.major + 1}.0.0")
+        return cls.version_from_string(f"{current_version.major + 1}.0.0")
 
-    def next_dev_version(self, current_version: Version) -> Version:
+    @classmethod
+    def next_minor_version(cls, current_version: Version) -> Version:
+        """
+        Get the next minor version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.3.0"
+            "1.2.3.dev1" will return "1.3.0"
+            "1.2.3-alpha1" will return "1.3.0"
+        """
+        return cls.version_from_string(
+            f"{current_version.major}.{current_version.minor + 1}.0"
+        )
+
+    @classmethod
+    def next_patch_version(cls, current_version: Version) -> Version:
+        """
+        Get the next patch version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.2.4"
+            "1.2.3.dev1" will return "1.2.4"
+            "1.2.3-alpha1" will return "1.2.4"
+        """
+        if current_version.is_pre_release:
+            next_version = cls.version_from_string(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.patch}"
+            )
+        else:
+            next_version = cls.version_from_string(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.patch + 1}"
+            )
+
+        return next_version
+
+    @staticmethod
+    @abstractmethod
+    def next_dev_version(current_version: Version) -> Version:
         """
         Get the next development version from a valid version
-
-        Examples:
-            "1.2.3" will return "1.2.4.dev1"
-            "1.2.3.dev1" will return "1.2.3.dev2"
         """
-        if current_version.is_devrelease:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }.dev{current_version.dev + 1}"
-            )
-        elif current_version.is_prerelease:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }{current_version.pre[0]}"
-                f"{current_version.pre[1]}+dev1"
-            )
-        else:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1 }.dev1"
-            )
 
-        return release_version
-
-    def next_alpha_version(self, current_version: Version) -> Version:
+    @staticmethod
+    @abstractmethod
+    def next_alpha_version(current_version: Version) -> Version:
         """
         Get the next alpha version from a valid version
-
-        Examples:
-            "1.2.3" will return "1.2.4a1"
-            "1.2.3.dev1" will return "1.2.3a1"
         """
-        if current_version.is_devrelease:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }a1"
-            )
-        elif current_version.is_prerelease and current_version.pre[0] == "a":
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }a{current_version.pre[1] + 1}"
-            )
-        else:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1 }a1"
-            )
 
-        return release_version
-
-    def next_beta_version(self, current_version: Version) -> Version:
+    @staticmethod
+    @abstractmethod
+    def next_beta_version(current_version: Version) -> Version:
         """
-        Get the next alpha version from a valid version
-
-        Examples:
-            "1.2.3" will return "1.2.4b1"
-            "1.2.3.dev1" will return "1.2.3b1"
+        Get the next beta version from a valid version
         """
-        if current_version.is_devrelease or (
-            current_version.is_prerelease and current_version.pre[0] == "a"
-        ):
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }b1"
-            )
-        elif current_version.is_prerelease and current_version.pre[0] == "b":
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }b{current_version.pre[1] + 1}"
-            )
-        else:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1 }b1"
-            )
 
-        return release_version
-
-    def next_release_candidate_version(
-        self, current_version: Version
-    ) -> Version:
+    @staticmethod
+    @abstractmethod
+    def next_release_candidate_version(current_version: Version) -> Version:
         """
-        Get the next alpha version from a valid version
-
-        Examples:
-            "1.2.3" will return "1.2.4rc1"
-            "1.2.3.dev1" will return "1.2.3rc1"
+        Get the next release candidate version from a valid version
         """
-        if current_version.is_devrelease or (
-            current_version.is_prerelease and current_version.pre[0] != "rc"
-        ):
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }rc1"
-            )
-        elif current_version.is_prerelease and current_version.pre[0] == "rc":
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro }rc{current_version.pre[1] + 1}"
-            )
-        else:
-            release_version = parse_version(
-                f"{current_version.major}."
-                f"{current_version.minor}."
-                f"{current_version.micro + 1 }rc1"
-            )
-
-        return release_version

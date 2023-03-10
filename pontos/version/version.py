@@ -18,34 +18,109 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Union
-
-from packaging.version import InvalidVersion
-from packaging.version import Version as PackagingVersion
-
-from .errors import VersionError
+from typing import Any, Callable, Optional, Tuple
 
 
-class Version(PackagingVersion):
+class Version(ABC):
     """
-    A class handling version information
+    An abstract base class for version information
     """
 
+    @property
+    @abstractmethod
+    def major(self) -> int:
+        """The first item of the version or ``0`` if unavailable."""
 
-def parse_version(version: str) -> Version:
-    """
-    Parse a Version from a string
+    @property
+    @abstractmethod
+    def minor(self) -> int:
+        """The second item of the version or ``0`` if unavailable."""
 
-    Args:
-        version: Version string to convert into a Version instance
+    @property
+    @abstractmethod
+    def patch(self) -> int:
+        """The third item of the version or ``0`` if unavailable."""
 
-    Raises:
-        VersionError if the version string is invalid.
-    """
-    try:
-        return Version(version)
-    except InvalidVersion as e:
-        raise VersionError(e) from None
+    @property
+    @abstractmethod
+    def pre(self) -> Optional[Tuple[str, int]]:
+        """The pre-release segment of the version."""
+
+    @property
+    @abstractmethod
+    def dev(self) -> Optional[int]:
+        """The development number of the version."""
+
+    @property
+    @abstractmethod
+    def local(self) -> Optional[str]:
+        """The local version segment of the version."""
+
+    @property
+    @abstractmethod
+    def is_pre_release(self) -> bool:
+        """Whether this version is a pre-release."""
+
+    @property
+    @abstractmethod
+    def is_dev_release(self) -> bool:
+        """Whether this version is a development release."""
+
+    @property
+    @abstractmethod
+    def is_alpha_release(self) -> bool:
+        """Whether this version is an alpha release."""
+
+    @property
+    @abstractmethod
+    def is_beta_release(self) -> bool:
+        """Whether this version is a beta release."""
+
+    @property
+    @abstractmethod
+    def is_release_candidate(self) -> bool:
+        """Whether this version is a release candidate."""
+
+    @classmethod
+    @abstractmethod
+    def from_string(cls, version: str) -> "Version":
+        """
+        Create a version from a version string
+
+        Args:
+            version: Version string to parse
+
+        Raises:
+            VersionError: If the version string is invalid.
+
+        Returns:
+            A new version instance
+        """
+
+    @classmethod
+    @abstractmethod
+    def from_version(cls, version: "Version") -> "Version":
+        """
+        Convert a version (if necessary)
+
+        This method can be used to convert version instances from different
+        versioning schemes.
+        """
+
+    @abstractmethod
+    def __eq__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
+    def __ne__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """A string representation of the version"""
+
+
+ParseVersionFuncType = Callable[[str], Version]
 
 
 @dataclass
@@ -72,43 +147,3 @@ class VersionUpdate:
     previous: Version
     new: Version
     changed_files: list[Path] = field(default_factory=list)
-
-
-class VersionCommand(ABC):
-    """Generic class usable to implement the
-    version commands for several programming languages"""
-
-    project_file_name: str
-
-    def __init__(self) -> None:
-        self.project_file_path = Path.cwd() / self.project_file_name
-
-    @abstractmethod
-    def get_current_version(self) -> Version:
-        """Get the current version of this project"""
-
-    @abstractmethod
-    def verify_version(
-        self, version: Union[Literal["current"], Version]
-    ) -> None:
-        """
-        Verify the current version of this project
-
-        Args:
-            version: Version to check against the current applied version of
-                this project. If version is "current" the command should verify
-                if all version information is consistent, for example if the
-                version information in several files is the same.
-        """
-
-    @abstractmethod
-    def update_version(
-        self, new_version: Version, *, force: bool = False
-    ) -> VersionUpdate:
-        """Update the current version of this project"""
-
-    def project_found(self) -> bool:
-        """
-        Returns True if a command has detected a corresponding project
-        """
-        return self.project_file_path.exists()
