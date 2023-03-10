@@ -23,9 +23,9 @@ from unittest.mock import MagicMock, patch
 
 from pontos.git.git import Git
 from pontos.testing import temp_directory, temp_file
-from pontos.version.errors import VersionError
-from pontos.version.go import GoVersionCommand
-from pontos.version.version import Version
+from pontos.version import VersionError
+from pontos.version.commands._go import GoVersionCommand
+from pontos.version.schemes import SemanticVersioningScheme
 
 
 @dataclass
@@ -53,9 +53,13 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
             version_file_path.write_text(
                 TEMPLATE.format("main", version), encoding="utf-8"
             )
-            result_version = GoVersionCommand().get_current_version()
+            result_version = GoVersionCommand(
+                SemanticVersioningScheme
+            ).get_current_version()
 
-            self.assertEqual(result_version, Version(version))
+            self.assertEqual(
+                result_version, SemanticVersioningScheme.parse_version(version)
+            )
             version_file_path.unlink()
 
     def test_no_version_found(self):
@@ -69,9 +73,7 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
         ):
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.touch()
-            GoVersionCommand().get_current_version()
-
-            version_file_path.unlink()
+            GoVersionCommand(SemanticVersioningScheme).get_current_version()
 
     def test_no_version_file(self):
         exp_err_msg = (
@@ -84,18 +86,20 @@ class GetCurrentGoVersionCommandTestCase(unittest.TestCase):
             VersionError,
             exp_err_msg,
         ):
-            GoVersionCommand().get_current_version()
+            GoVersionCommand(SemanticVersioningScheme).get_current_version()
 
     def test_invalid_version(self):
         with temp_file(
             name="go.mod",
             change_into=True,
-        ), self.assertRaisesRegex(VersionError, "^Invalid version: 'abc'"):
+        ), self.assertRaisesRegex(
+            VersionError, "abc is not valid SemVer string"
+        ):
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("main", "abc"), encoding="utf-8"
             )
-            GoVersionCommand().get_current_version()
+            GoVersionCommand(SemanticVersioningScheme).get_current_version()
 
 
 class VerifyGoVersionCommandTestCase(unittest.TestCase):
@@ -106,10 +110,12 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
         ), patch.object(
             GoVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("21.0.1")),
+            MagicMock(
+                return_value=SemanticVersioningScheme.parse_version("21.0.1")
+            ),
         ):
-            cmd = GoVersionCommand()
-            cmd.verify_version(Version("21.0.1"))
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            cmd.verify_version(SemanticVersioningScheme.parse_version("21.0.1"))
 
     def test_verify_branch_not_equal(self):
         with temp_file(
@@ -118,13 +124,16 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
         ), patch.object(
             GoVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("21.0.1")),
+            MagicMock(
+                return_value=SemanticVersioningScheme.parse_version("21.0.1")
+            ),
         ), self.assertRaisesRegex(
             VersionError,
-            "Provided version 21.2 does not match the current version 21.0.1.",
+            "Provided version 21.2.0 does not match the current version "
+            "21.0.1.",
         ):
-            cmd = GoVersionCommand()
-            cmd.verify_version(Version("21.2"))
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            cmd.verify_version(SemanticVersioningScheme.parse_version("21.2.0"))
 
     def test_verify_current(self):
         with temp_file(
@@ -133,21 +142,32 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
         ), patch.object(
             GoVersionCommand,
             "get_current_version",
-            MagicMock(return_value=Version("21.0.1")),
+            MagicMock(
+                return_value=SemanticVersioningScheme.parse_version("21.0.1")
+            ),
         ):
-            cmd = GoVersionCommand()
+            cmd = GoVersionCommand(SemanticVersioningScheme)
             cmd.verify_version("current")
+            cmd.verify_version(version=None)
 
     def test_verify_current_failure(self):
         with temp_file(
             name="go.mod",
             change_into=True,
-        ), self.assertRaisesRegex(
-            VersionError,
-            "^No version.go file found. This file is required for pontos",
         ):
-            cmd = GoVersionCommand()
-            cmd.verify_version("current")
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+
+            with self.assertRaisesRegex(
+                VersionError,
+                "^No version.go file found. This file is required for pontos",
+            ):
+                cmd.verify_version("current")
+
+            with self.assertRaisesRegex(
+                VersionError,
+                "^No version.go file found. This file is required for pontos",
+            ):
+                cmd.verify_version(version=None)
 
 
 class UpdateGoVersionCommandTestCase(unittest.TestCase):
@@ -160,15 +180,18 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 "list_tags",
                 MagicMock(return_value=["21.0.1"]),
             ):
-                version = Version("22.2.2")
-                updated_version_obj = GoVersionCommand().update_version(version)
+                version = SemanticVersioningScheme.parse_version("22.2.2")
+                updated_version_obj = GoVersionCommand(
+                    SemanticVersioningScheme
+                ).update_version(version)
                 version_file_path = Path(VERSION_FILE_PATH)
                 content = version_file_path.read_text(encoding="utf-8")
 
                 self.assertIn(str(version), content)
 
                 self.assertEqual(
-                    updated_version_obj.previous, Version("21.0.1")
+                    updated_version_obj.previous,
+                    SemanticVersioningScheme.parse_version("21.0.1"),
                 )
                 self.assertEqual(updated_version_obj.new, version)
                 self.assertEqual(
@@ -177,8 +200,8 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
 
     def test_update_version(self):
         with temp_file(name="go.mod", change_into=True):
-            cmd = GoVersionCommand()
-            version = Version("22.2.2")
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            version = SemanticVersioningScheme.parse_version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("foo", "0.0.1"), encoding="utf-8"
@@ -191,7 +214,10 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             version_file_path.unlink()
 
             self.assertEqual(updated.new, version)
-            self.assertEqual(updated.previous, Version("0.0.1"))
+            self.assertEqual(
+                updated.previous,
+                SemanticVersioningScheme.parse_version("0.0.1"),
+            )
             self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_create_file_update_version(self):
@@ -199,10 +225,14 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             with patch.object(
                 GoVersionCommand,
                 "get_current_version",
-                MagicMock(return_value=Version("21.0.1")),
+                MagicMock(
+                    return_value=SemanticVersioningScheme.parse_version(
+                        "21.0.1"
+                    )
+                ),
             ):
-                version = Version("22.2.2")
-                cmd = GoVersionCommand()
+                version = SemanticVersioningScheme.parse_version("22.2.2")
+                cmd = GoVersionCommand(SemanticVersioningScheme)
                 updated = cmd.update_version(version)
 
                 version_file_path = Path(VERSION_FILE_PATH)
@@ -212,13 +242,16 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                 version_file_path.unlink()
 
                 self.assertEqual(updated.new, version)
-                self.assertEqual(updated.previous, Version("21.0.1"))
+                self.assertEqual(
+                    updated.previous,
+                    SemanticVersioningScheme.parse_version("21.0.1"),
+                )
                 self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_no_update(self):
         with temp_file(name="go.mod", change_into=True):
-            cmd = GoVersionCommand()
-            version = Version("22.2.2")
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            version = SemanticVersioningScheme.parse_version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("main", "22.2.2"), encoding="utf-8"
@@ -234,8 +267,8 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
 
     def test_forced_update(self):
         with temp_file(name="go.mod", change_into=True):
-            cmd = GoVersionCommand()
-            version = Version("22.2.2")
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            version = SemanticVersioningScheme.parse_version("22.2.2")
             version_file_path = Path(VERSION_FILE_PATH)
             version_file_path.write_text(
                 TEMPLATE.format("main", "22.2.2"), encoding="utf-8"
@@ -253,12 +286,12 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
 class ProjectFileGoVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
         with temp_directory(change_into=True):
-            cmd = GoVersionCommand()
+            cmd = GoVersionCommand(SemanticVersioningScheme)
 
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
         with temp_file(name="go.mod", change_into=True):
-            cmd = GoVersionCommand()
+            cmd = GoVersionCommand(SemanticVersioningScheme)
 
             self.assertTrue(cmd.project_found())
