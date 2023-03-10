@@ -21,12 +21,13 @@ from typing import Optional
 
 from pontos.git import Git, TagSort
 
-from .version import Version, parse_version
+from .version import ParseVersionFuncType, Version
 
 
 def get_last_release_version(
-    git_tag_prefix: Optional[str] = "",
+    parse_version: ParseVersionFuncType,
     *,
+    git_tag_prefix: Optional[str] = "",
     ignore_pre_releases: Optional[bool] = False,
 ) -> Optional[Version]:
     """Get the last released Version from git.
@@ -48,7 +49,7 @@ def get_last_release_version(
         last_release_version = last_release_version.strip(git_tag_prefix)
 
         version = parse_version(last_release_version)
-        if not version.is_prerelease or not ignore_pre_releases:
+        if not version.is_pre_release or not ignore_pre_releases:
             return version
 
         tag_list = tag_list[:-1]
