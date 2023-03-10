@@ -23,7 +23,11 @@ from pathlib import Path
 from typing import Callable, Tuple, Type
 
 from pontos.release.helper import ReleaseType
-from pontos.version.version import parse_version
+from pontos.version.schemes import (
+    VERSIONING_SCHEMES,
+    VersioningScheme,
+    versioning_scheme_argument_type,
+)
 
 from .release import release
 from .sign import sign
@@ -82,6 +86,14 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     release_parser = subparsers.add_parser("release")
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
+    release_parser.add_argument(
         "--release-type",
         help="Select the release type for calculating the release version. "
         f"Possible choices are: {to_choices(ReleaseType)}.",
@@ -90,20 +102,18 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     release_parser.add_argument(
         "--release-version",
         help=(
-            "Will release changelog as version. Must be PEP 440 compliant. "
-            "default: lookup version in project definition."
+            "Will release changelog as version. "
+            "Default: lookup version in project definition."
         ),
-        type=parse_version,
         action=ReleaseVersionAction,
     )
 
     release_parser.add_argument(
         "--next-version",
         help=(
-            "Sets the next PEP 440 compliant version in project definition "
-            "after the release. default: set to next dev version"
+            "Sets the next version in project definition "
+            "after the release. Default: set to next dev version"
         ),
-        type=parse_version,
     )
 
     release_parser.add_argument(
@@ -150,9 +160,16 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         help="The key to sign zip, tarballs of a release. Default %(default)s.",
     )
     sign_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
+    sign_parser.add_argument(
         "--release-version",
         help="Will release changelog as version. Must be PEP 440 compliant.",
-        type=parse_version,
     )
     sign_parser.add_argument(
         "--git-tag-prefix",
@@ -181,13 +198,15 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     parsed_args = parser.parse_args(args)
 
+    scheme: VersioningScheme = getattr(parsed_args, "versioning_scheme", None)
+
     if parsed_args.func in (release,):
         # check for release-type
-        if not getattr(parsed_args, "release_type"):
+        if not getattr(parsed_args, "release_type", None):
             parser.error("--release-type is required.")
 
         if (
-            getattr(parsed_args, "release_version")
+            getattr(parsed_args, "release_version", None)
             and parsed_args.release_type != ReleaseType.VERSION
         ):
             parser.error(
@@ -196,12 +215,20 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
             )
 
         if parsed_args.release_type == ReleaseType.VERSION and not getattr(
-            parsed_args, "release_version"
+            parsed_args, "release_version", None
         ):
             parser.error(
                 f"--release-type {ReleaseType.VERSION.value} requires to set "
                 "--release-version"
             )
+
+        next_version = getattr(parsed_args, "next_version", None)
+        if next_version:
+            parsed_args.next_version = scheme.parse_version(next_version)
+
+    release_version = getattr(parsed_args, "release_version", None)
+    if release_version:
+        parsed_args.release_version = scheme.parse_version(release_version)
 
     token = os.environ.get("GITHUB_TOKEN")
     user = os.environ.get("GITHUB_USER")
