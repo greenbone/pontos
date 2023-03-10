@@ -25,6 +25,11 @@ from pontos.errors import PontosError
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
 from pontos.version.helper import get_last_release_version
+from pontos.version.schemes import (
+    VERSIONING_SCHEMES,
+    VersioningScheme,
+    versioning_scheme_argument_type,
+)
 
 
 def parse_args(args: Iterable[str] = None) -> ArgumentParser:
@@ -51,6 +56,15 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
         "--space",
         default="greenbone",
         help="User/Team name in github",
+    )
+
+    parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
     )
 
     parser.add_argument(
@@ -83,7 +97,18 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
         help="Don't print messages to the terminal",
     )
 
-    return parser.parse_args(args=args)
+    parsed_args = parser.parse_args(args=args)
+
+    scheme: VersioningScheme = parsed_args.versioning_scheme
+    current_version = getattr(parsed_args, "current_version", None)
+    if current_version:
+        parsed_args.current_version = scheme.parse_version(current_version)
+
+    next_version = getattr(parsed_args, "next_version", None)
+    if next_version:
+        parsed_args.next_version = scheme.parse_version(next_version)
+
+    return parsed_args
 
 
 def main(args: Iterable[str] = None) -> NoReturn:
@@ -94,7 +119,10 @@ def main(args: Iterable[str] = None) -> NoReturn:
     if parsed_args.current_version:
         last_version = parsed_args.current_version
     else:
-        last_version = get_last_release_version(parsed_args.git_tag_prefix)
+        last_version = get_last_release_version(
+            parsed_args.versioning_scheme.parse_version,
+            git_tag_prefix=parsed_args.git_tag_prefix,
+        )
 
     try:
         changelog_builder = ChangelogBuilder(
