@@ -119,6 +119,10 @@ class Version(ABC):
     def __str__(self) -> str:
         """A string representation of the version"""
 
+    def __repr__(self) -> str:
+        """A representation of the Version"""
+        return f"<{self.__class__.__name__}('{self}')>"
+
 
 ParseVersionFuncType = Callable[[str], Version]
 
