@@ -28,10 +28,9 @@ from pontos.release.main import parse_args
 from pontos.release.release import ReleaseReturnValue, release
 from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
-from pontos.version.errors import VersionError
-from pontos.version.go import GoVersionCommand
+from pontos.version import Version, VersionError, VersionUpdate
+from pontos.version.commands import GoVersionCommand
 from pontos.version.project import Project
-from pontos.version.version import Version, VersionUpdate
 
 
 def mock_terminal() -> MagicMock:
