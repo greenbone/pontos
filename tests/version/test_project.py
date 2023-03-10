@@ -20,7 +20,7 @@ import unittest
 from pontos.testing import temp_directory, temp_python_module
 from pontos.version.errors import ProjectError
 from pontos.version.project import Project
-from pontos.version.version import Version
+from pontos.version.schemes import PEP440VersioningScheme
 
 
 class ProjectTestCase(unittest.TestCase):
@@ -28,11 +28,11 @@ class ProjectTestCase(unittest.TestCase):
         with temp_directory(change_into=True), self.assertRaisesRegex(
             ProjectError, "No project settings file found"
         ):
-            Project.gather_project()
+            Project(PEP440VersioningScheme)
 
     def test_python_project(self):
-        current_version = Version("1.2.3")
-        new_version = Version("1.2.4")
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
 
         content = f"__version__ = '{current_version}'"
         with temp_python_module(
@@ -45,7 +45,7 @@ class ProjectTestCase(unittest.TestCase):
                 encoding="utf8",
             )
 
-            project = Project.gather_project()
+            project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
 
             update = project.update_version(new_version)
@@ -56,8 +56,8 @@ class ProjectTestCase(unittest.TestCase):
             self.assertEqual(len(update.changed_files), 2)
 
     def test_go_project(self):
-        current_version = Version("1.2.3")
-        new_version = Version("1.2.4")
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
 
         with temp_directory(change_into=True) as temp_dir:
             project_file = temp_dir / "go.mod"
@@ -65,7 +65,7 @@ class ProjectTestCase(unittest.TestCase):
             version_file = temp_dir / "version.go"
             version_file.write_text(f'var version = "{current_version}"')
 
-            project = Project.gather_project()
+            project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
 
             update = project.update_version(new_version)
@@ -76,8 +76,8 @@ class ProjectTestCase(unittest.TestCase):
             self.assertEqual(len(update.changed_files), 1)
 
     def test_javascript_project(self):
-        current_version = Version("1.2.3")
-        new_version = Version("1.2.4")
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
 
         with temp_directory(change_into=True) as temp_dir:
             version_file = temp_dir / "package.json"
@@ -86,7 +86,7 @@ class ProjectTestCase(unittest.TestCase):
                 encoding="utf8",
             )
 
-            project = Project.gather_project()
+            project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
 
             update = project.update_version(new_version)
@@ -97,14 +97,14 @@ class ProjectTestCase(unittest.TestCase):
             self.assertEqual(len(update.changed_files), 1)
 
     def test_cmake_project_version(self):
-        current_version = Version("1.2.3")
-        new_version = Version("1.2.4")
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
 
         with temp_directory(change_into=True) as temp_dir:
             version_file = temp_dir / "CMakeLists.txt"
             version_file.write_text("project(VERSION 1.2.3)", encoding="utf8")
 
-            project = Project.gather_project()
+            project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
 
             update = project.update_version(new_version)
@@ -115,8 +115,8 @@ class ProjectTestCase(unittest.TestCase):
             self.assertEqual(len(update.changed_files), 1)
 
     def test_all(self):
-        current_version = Version("1.2.3")
-        new_version = Version("1.2.4")
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
 
         content = f"__version__ = '{current_version}'"
         with temp_python_module(
@@ -146,7 +146,7 @@ class ProjectTestCase(unittest.TestCase):
                 "project(VERSION 1.2.3)", encoding="utf8"
             )
 
-            project = Project.gather_project()
+            project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
 
             update = project.update_version(new_version)
