@@ -17,7 +17,17 @@
 
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, Iterable, List, Optional, Union
+from types import TracebackType
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from httpx import Timeout
 
@@ -176,9 +186,13 @@ class CPEApi(NVDApi):
             params["matchCriteriaId"] = match_criteria_id
 
         start_index = 0
+        results_per_page = None
 
         while total_results is None or start_index < total_results:
             params["startIndex"] = start_index
+
+            if results_per_page is not None:
+                params["resultsPerPage"] = results_per_page
 
             response = await self._get(params=params)
             response.raise_for_status()
@@ -191,13 +205,22 @@ class CPEApi(NVDApi):
             total_results: int = data["total_results"]  # type: ignore
             products: Iterable = data.get("products", [])  # type: ignore
 
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
-
             for product in products:
                 yield CPE.from_dict(product["cpe"])
 
-            start_index += results_per_page
+            if results_per_page is not None:
+                start_index += results_per_page
 
     async def __aenter__(self) -> "CPEApi":
-        return super().__aenter__()  # type: ignore
+        await super().__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
+        return await super().__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )

@@ -16,7 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, Iterable, List, Optional, Union
+from types import TracebackType
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from httpx import Timeout
 
@@ -221,9 +231,13 @@ class CVEApi(NVDApi):
             params["hasOval"] = ""
 
         start_index: int = 0
+        results_per_page = None
 
         while total_results is None or start_index < total_results:
             params["startIndex"] = start_index
+
+            if results_per_page is not None:
+                params["resultsPerPage"] = results_per_page
 
             response = await self._get(params=params)
             response.raise_for_status()
@@ -232,19 +246,17 @@ class CVEApi(NVDApi):
                 object_hook=convert_camel_case
             )
 
-            results_per_page: int = data["results_per_page"]  # type: ignore
             total_results = data["total_results"]  # type: ignore
+            results_per_page: int = data["results_per_page"]  # type: ignore
             vulnerabilities: Iterable = data.get(  # type: ignore
                 "vulnerabilities", []
             )
 
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
-
             for vulnerability in vulnerabilities:
                 yield CVE.from_dict(vulnerability["cve"])
 
-            start_index += results_per_page
+            if results_per_page is not None:
+                start_index += results_per_page
 
     async def cve(self, cve_id: str) -> CVE:
         """
@@ -284,4 +296,15 @@ class CVEApi(NVDApi):
         return CVE.from_dict(vulnerability["cve"])
 
     async def __aenter__(self) -> "CVEApi":
-        return super().__aenter__()  # type: ignore
+        await super().__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
+        return await super().__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )
