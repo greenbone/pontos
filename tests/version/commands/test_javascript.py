@@ -79,7 +79,7 @@ class UpdateJavaScriptVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(
                 updated.new, SemanticVersioningScheme.parse_version("22.4.0")
             )
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)
@@ -116,7 +116,10 @@ const func = () => ();
             )
             self.assertEqual(
                 updated.changed_files,
-                [package_json, JavaScriptVersionCommand.version_file_paths[0]],
+                [
+                    package_json.resolve(),
+                    JavaScriptVersionCommand.version_file_paths[0],
+                ],
             )
 
             with package_json.open(mode="r", encoding="utf-8") as fp:
@@ -167,7 +170,7 @@ const func = () => ();
             self.assertEqual(
                 updated.changed_files,
                 [
-                    package_json,
+                    package_json.resolve(),
                     JavaScriptVersionCommand.version_file_paths[0],
                     JavaScriptVersionCommand.version_file_paths[1],
                 ],
@@ -197,7 +200,7 @@ const func = () => ();
                 SemanticVersioningScheme.parse_version("1.2.3"),
             )
             self.assertEqual(updated.new, new_version)
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)
@@ -243,7 +246,7 @@ const func = () => ();
             self.assertEqual(
                 updated.new, SemanticVersioningScheme.parse_version("1.2.3")
             )
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_package = json.load(fp)

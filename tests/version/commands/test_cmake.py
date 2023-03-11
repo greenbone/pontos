@@ -109,7 +109,7 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.new, new_version)
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
     def test_update_dev_version(self):
         with temp_file(
@@ -128,7 +128,7 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.new, new_version)
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
     def test_no_update(self):
         with temp_file(
@@ -166,7 +166,7 @@ class UpdateCMakeVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(updated.previous, previous_version)
             self.assertEqual(updated.new, new_version)
-            self.assertEqual(updated.changed_files, [temp])
+            self.assertEqual(updated.changed_files, [temp.resolve()])
 
 
 class ProjectFileCMakeVersionCommandTestCase(unittest.TestCase):
