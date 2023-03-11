@@ -140,7 +140,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, new_version)
             self.assertEqual(updated.previous, previous_version)
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
 
             text = temp.read_text(encoding="utf8")
 
@@ -186,7 +188,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, new_version)
             self.assertEqual(updated.previous, previous_version)
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
 
             text = tmp_file.read_text(encoding="utf8")
 
@@ -210,7 +214,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, new_version)
             self.assertEqual(updated.previous, previous_version)
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
 
             text = tmp_file.read_text(encoding="utf8")
 
@@ -234,7 +240,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, new_version)
             self.assertEqual(updated.previous, previous_version)
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
 
             text = tmp_file.read_text(encoding="utf8")
 
@@ -274,7 +282,9 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(updated.new, new_version)
             self.assertEqual(updated.previous, new_version)
-            self.assertEqual(updated.changed_files, [Path("foo.py"), tmp_file])
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
 
             text = tmp_file.read_text(encoding="utf8")
 

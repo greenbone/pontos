@@ -127,7 +127,7 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(
             out.getvalue(),
             "Provided version 1.2.4 does not match the current version "
-            f"1.2.3 in {version_file}.\n",
+            f"1.2.3 in {version_file.resolve()}.\n",
         )
 
         self.assertEqual(cm.exception.code, VersionExitCode.VERIFY_ERROR)
