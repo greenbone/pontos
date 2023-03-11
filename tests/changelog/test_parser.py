@@ -18,6 +18,7 @@ import unittest
 from pathlib import Path
 
 from pontos.changelog.main import parse_args
+from pontos.version.schemes._pep440 import PEP440Version
 
 
 class ParseArgsTestCase(unittest.TestCase):
@@ -46,7 +47,7 @@ class ParseArgsTestCase(unittest.TestCase):
         self.assertEqual(parsed_args.project, "urghs")
         self.assertEqual(parsed_args.space, "bla")
         self.assertEqual(parsed_args.config, Path("foo.toml"))
-        self.assertEqual(parsed_args.current_version, "1.2.3")
+        self.assertEqual(parsed_args.current_version, PEP440Version("1.2.3"))
         self.assertEqual(parsed_args.next_version, "2.3.4")
         self.assertEqual(parsed_args.git_tag_prefix, "a")
         self.assertEqual(parsed_args.output, Path("changelog.md"))

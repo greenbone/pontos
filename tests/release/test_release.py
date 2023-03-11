@@ -48,10 +48,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_version(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -60,7 +60,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -144,10 +144,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_patch(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -156,7 +156,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -241,10 +241,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_calendar(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         version_calculator_mock: MagicMock,
@@ -254,7 +254,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("23.2.0")
         next_version = PEP440Version("23.2.1.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -344,10 +344,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_minor(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -356,7 +356,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.1.0")
         next_version = PEP440Version("0.1.1.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -440,10 +440,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_major(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -452,7 +452,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("1.0.0")
         next_version = PEP440Version("1.0.1.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -536,10 +536,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_alpha(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -548,7 +548,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2a1")
         next_version = PEP440Version("0.0.2a1+dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -630,10 +630,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_beta(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -642,7 +642,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2b1")
         next_version = PEP440Version("0.0.2b1+dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -724,10 +724,10 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_release_candidate(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -736,7 +736,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2rc1")
         next_version = PEP440Version("0.0.2rc1+dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -854,10 +854,10 @@ class ReleaseTestCase(unittest.TestCase):
             released, ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
         )
 
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
-    def test_no_release_error(self, gather_project_mock: MagicMock):
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    def test_no_release_error(self, gather_commands_mock: MagicMock):
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.get_current_version.side_effect = VersionError("An error")
 
         _, token, args = parse_args(
@@ -882,14 +882,14 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
     @patch("pontos.release.release.VersionCalculator", autospec=True)
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_no_release(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         version_calculator_mock: MagicMock,
     ):
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.get_current_version.return_value = None
         version_calculator_mock.return_value.next_patch_version.return_value = (
             None
@@ -917,14 +917,14 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
     @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_has_tag(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         git_mock: MagicMock,
     ):
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
 
         _, token, args = parse_args(
@@ -954,15 +954,15 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_update_version_error(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = VersionError("An error")
 
         _, token, args = parse_args(
@@ -1007,10 +1007,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_github_create_release_failure(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -1019,7 +1019,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1085,10 +1085,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_update_version_after_release_error(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
@@ -1097,7 +1097,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
         project_mock.update_version.side_effect = [
             VersionUpdate(
@@ -1161,10 +1161,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_to_specific_git_remote(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock,
@@ -1173,7 +1173,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1247,10 +1247,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_without_git_prefix(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock,
@@ -1259,7 +1259,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1331,10 +1331,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_github_api(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         github_api_mock: AsyncMock,
         git_mock,
@@ -1343,7 +1343,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1422,10 +1422,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_github_api_pre_release(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         github_api_mock: AsyncMock,
         git_mock,
@@ -1434,7 +1434,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1a1")
         next_version = PEP440Version("0.0.1a1+dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1576,10 +1576,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_with_changelog(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
         get_last_release_version_mock: MagicMock,
         cc_git_mock: MagicMock,
@@ -1589,7 +1589,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1707,10 +1707,10 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_project", autospec=True)
+    @patch("pontos.release.release.Project.gather_commands", autospec=True)
     def test_release_local(
         self,
-        gather_project_mock: MagicMock,
+        gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock,
@@ -1719,7 +1719,7 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
-        gather_project_mock.return_value = project_mock
+        gather_commands_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
