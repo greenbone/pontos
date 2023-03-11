@@ -28,9 +28,10 @@ from pontos.release.main import parse_args
 from pontos.release.release import ReleaseReturnValue, release
 from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
-from pontos.version import Version, VersionError, VersionUpdate
+from pontos.version import VersionError, VersionUpdate
 from pontos.version.commands import GoVersionCommand
 from pontos.version.project import Project
+from pontos.version.schemes._pep440 import PEP440Version
 
 
 def mock_terminal() -> MagicMock:
@@ -55,9 +56,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2")
-        next_version = Version("1.0.0.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2")
+        next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -151,9 +152,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2")
-        next_version = Version("1.0.0.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2")
+        next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -249,9 +250,9 @@ class ReleaseTestCase(unittest.TestCase):
         version_calculator_mock: MagicMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("23.2.0")
-        next_version = Version("23.2.1.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("23.2.0")
+        next_version = PEP440Version("23.2.1.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -351,9 +352,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.1.0")
-        next_version = Version("0.1.1.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.1.0")
+        next_version = PEP440Version("0.1.1.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -447,9 +448,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("1.0.0")
-        next_version = Version("1.0.1.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("1.0.0")
+        next_version = PEP440Version("1.0.1.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -543,9 +544,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2a1")
-        next_version = Version("0.0.2a1+dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2a1")
+        next_version = PEP440Version("0.0.2a1+dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -637,9 +638,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2b1")
-        next_version = Version("0.0.2b1+dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2b1")
+        next_version = PEP440Version("0.0.2b1+dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -731,9 +732,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2rc1")
-        next_version = Version("0.0.2rc1+dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2rc1")
+        next_version = PEP440Version("0.0.2rc1+dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -987,7 +988,9 @@ class ReleaseTestCase(unittest.TestCase):
 
         git_mock.return_value.push.assert_not_called()
 
-        project_mock.update_version.assert_called_once_with(Version("0.0.1"))
+        project_mock.update_version.assert_called_once_with(
+            PEP440Version("0.0.1")
+        )
 
         create_release_mock.assert_not_awaited()
 
@@ -1012,9 +1015,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1090,9 +1093,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         create_changelog_mock.return_value = "A Changelog"
@@ -1166,9 +1169,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1252,9 +1255,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1336,9 +1339,9 @@ class ReleaseTestCase(unittest.TestCase):
         github_api_mock: AsyncMock,
         git_mock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1427,9 +1430,9 @@ class ReleaseTestCase(unittest.TestCase):
         github_api_mock: AsyncMock,
         git_mock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1a1")
-        next_version = Version("0.0.1a1+dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1a1")
+        next_version = PEP440Version("0.0.1a1+dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1521,7 +1524,7 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
-        release_version = Version("0.0.2")
+        release_version = PEP440Version("0.0.2")
 
         create_changelog_mock.return_value = "A Changelog"
         _, token, args = parse_args(["release", "--release-type", "patch"])
@@ -1582,9 +1585,9 @@ class ReleaseTestCase(unittest.TestCase):
         cc_git_mock: MagicMock,
         git_mock: MagicMock,
     ):
-        current_version = Version("0.0.1")
-        release_version = Version("0.0.2")
-        next_version = Version("1.0.0.dev1")
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2")
+        next_version = PEP440Version("1.0.0.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
@@ -1712,9 +1715,9 @@ class ReleaseTestCase(unittest.TestCase):
         create_release_mock: AsyncMock,
         git_mock,
     ):
-        current_version = Version("0.0.0")
-        release_version = Version("0.0.1")
-        next_version = Version("0.0.2.dev1")
+        current_version = PEP440Version("0.0.0")
+        release_version = PEP440Version("0.0.1")
+        next_version = PEP440Version("0.0.2.dev1")
         project_mock = MagicMock(spec=Project)
         gather_project_mock.return_value = project_mock
         project_mock.update_version.side_effect = [
