@@ -30,7 +30,6 @@ from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
 from pontos.version import VersionError, VersionUpdate
 from pontos.version.commands import GoVersionCommand
-from pontos.version.project import Project
 from pontos.version.schemes._pep440 import PEP440Version
 
 
@@ -239,7 +238,6 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
     @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.VersionCalculator", autospec=True)
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
@@ -253,12 +251,12 @@ class ReleaseTestCase(unittest.TestCase):
         gather_commands_mock: MagicMock,
         create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
-        version_calculator_mock: MagicMock,
         git_mock: MagicMock,
     ):
+        today = datetime.today()
         current_version = PEP440Version("0.0.1")
-        release_version = PEP440Version("23.2.0")
-        next_version = PEP440Version("23.2.1.dev1")
+        release_version = PEP440Version(f"{today.year % 100}.{today.month}.0")
+        next_version = PEP440Version(f"{today.year % 100}.{today.month}.1.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
@@ -275,9 +273,6 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         command_mock.get_current_version.return_value = current_version
-        version_calculator_mock.return_value.next_calendar_version.return_value = (
-            release_version
-        )
 
         _, token, args = parse_args(
             [
@@ -288,8 +283,6 @@ class ReleaseTestCase(unittest.TestCase):
                 "123",
                 "--release-type",
                 "calendar",
-                "--next-version",
-                "23.2.1.dev1",
             ]
         )
 
@@ -306,9 +299,7 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        version_calculator_mock.return_value.next_calendar_version.assert_called_once_with(
-            current_version
-        )
+
         command_mock.update_version.assert_has_calls(
             [
                 call(release_version, force=False),
@@ -327,20 +318,22 @@ class ReleaseTestCase(unittest.TestCase):
         git_mock.return_value.commit.assert_has_calls(
             [
                 call(
-                    "Automatic release to 23.2.0",
+                    f"Automatic release to {release_version}",
                     verify=False,
                     gpg_signing_key="123",
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 23.2.1.dev1\n",
+                    f"* Update to version {next_version}\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
             ]
         )
         git_mock.return_value.tag.assert_called_once_with(
-            "v23.2.0", gpg_key_id="123", message="Automatic release to 23.2.0"
+            f"v{release_version}",
+            gpg_key_id="123",
+            message=f"Automatic release to {release_version}",
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
@@ -905,14 +898,10 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
-    @patch(
-        "pontos.version.schemes._pep440.PEP440VersioningScheme", autospec=True
-    )
     @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_no_release(
         self,
         gather_commands_mock: MagicMock,
-        version_calculator_mock: MagicMock,
     ):
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
