@@ -48,7 +48,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_version(
         self,
         gather_commands_mock: MagicMock,
@@ -59,10 +59,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -103,8 +103,11 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)]
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
         )
 
         self.assertEqual(
@@ -144,7 +147,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_patch(
         self,
         gather_commands_mock: MagicMock,
@@ -155,10 +158,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -170,7 +173,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -199,8 +202,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -241,7 +247,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_calendar(
         self,
         gather_commands_mock: MagicMock,
@@ -253,10 +259,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("23.2.0")
         next_version = PEP440Version("23.2.1.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -268,7 +274,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
         version_calculator_mock.return_value.next_calendar_version.return_value = (
             release_version
         )
@@ -303,8 +309,11 @@ class ReleaseTestCase(unittest.TestCase):
         version_calculator_mock.return_value.next_calendar_version.assert_called_once_with(
             current_version
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)]
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
         )
 
         self.assertEqual(
@@ -344,7 +353,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_minor(
         self,
         gather_commands_mock: MagicMock,
@@ -355,10 +364,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.1.0")
         next_version = PEP440Version("0.1.1.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -370,7 +379,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -399,8 +408,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -440,7 +452,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_major(
         self,
         gather_commands_mock: MagicMock,
@@ -451,10 +463,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("1.0.0")
         next_version = PEP440Version("1.0.1.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -466,7 +478,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -495,8 +507,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -536,7 +551,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_alpha(
         self,
         gather_commands_mock: MagicMock,
@@ -547,10 +562,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2a1")
         next_version = PEP440Version("0.0.2a1+dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -562,7 +577,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -589,8 +604,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -630,7 +648,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_beta(
         self,
         gather_commands_mock: MagicMock,
@@ -641,10 +659,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2b1")
         next_version = PEP440Version("0.0.2b1+dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -656,7 +674,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -683,8 +701,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -724,7 +745,7 @@ class ReleaseTestCase(unittest.TestCase):
         "pontos.release.release.ReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_release_candidate(
         self,
         gather_commands_mock: MagicMock,
@@ -735,10 +756,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2rc1")
         next_version = PEP440Version("0.0.2rc1+dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -750,7 +771,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["MyProject.conf"],
             ),
         ]
-        project_mock.get_current_version.return_value = current_version
+        command_mock.get_current_version.return_value = current_version
 
         _, token, args = parse_args(
             [
@@ -777,8 +798,11 @@ class ReleaseTestCase(unittest.TestCase):
                 call(follow_tags=True, remote=None),
             ],
         )
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         self.assertEqual(
@@ -854,11 +878,11 @@ class ReleaseTestCase(unittest.TestCase):
             released, ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
         )
 
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_no_release_error(self, gather_commands_mock: MagicMock):
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.get_current_version.side_effect = VersionError("An error")
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.get_current_version.side_effect = VersionError("An error")
 
         _, token, args = parse_args(
             [
@@ -881,19 +905,18 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
-    @patch("pontos.release.release.VersionCalculator", autospec=True)
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch(
+        "pontos.version.schemes._pep440.PEP440VersioningScheme", autospec=True
+    )
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_no_release(
         self,
         gather_commands_mock: MagicMock,
         version_calculator_mock: MagicMock,
     ):
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.get_current_version.return_value = None
-        version_calculator_mock.return_value.next_patch_version.return_value = (
-            None
-        )
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.get_current_version.return_value = None
 
         _, token, args = parse_args(
             [
@@ -917,14 +940,14 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
 
     @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_has_tag(
         self,
         gather_commands_mock: MagicMock,
         git_mock: MagicMock,
     ):
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
 
         _, token, args = parse_args(
@@ -954,16 +977,16 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_update_version_error(
         self,
         gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
         git_mock: MagicMock,
     ):
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = VersionError("An error")
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = VersionError("An error")
 
         _, token, args = parse_args(
             [
@@ -988,8 +1011,8 @@ class ReleaseTestCase(unittest.TestCase):
 
         git_mock.return_value.push.assert_not_called()
 
-        project_mock.update_version.assert_called_once_with(
-            PEP440Version("0.0.1")
+        command_mock.update_version.assert_called_once_with(
+            PEP440Version("0.0.1"), force=False
         )
 
         create_release_mock.assert_not_awaited()
@@ -1007,7 +1030,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_github_create_release_failure(
         self,
         gather_commands_mock: MagicMock,
@@ -1018,9 +1041,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1085,7 +1108,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_update_version_after_release_error(
         self,
         gather_commands_mock: MagicMock,
@@ -1096,10 +1119,10 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
-        project_mock.update_version.side_effect = [
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1133,8 +1156,11 @@ class ReleaseTestCase(unittest.TestCase):
             follow_tags=True, remote=None
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)]
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
         )
 
         self.assertEqual(
@@ -1161,7 +1187,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_to_specific_git_remote(
         self,
         gather_commands_mock: MagicMock,
@@ -1172,9 +1198,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1223,8 +1249,11 @@ class ReleaseTestCase(unittest.TestCase):
             (release_version, "foo", "A Changelog"),
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1247,7 +1276,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_without_git_prefix(
         self,
         gather_commands_mock: MagicMock,
@@ -1258,9 +1287,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1309,8 +1338,11 @@ class ReleaseTestCase(unittest.TestCase):
             (release_version, "foo", "A Changelog"),
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1331,7 +1363,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_github_api(
         self,
         gather_commands_mock: MagicMock,
@@ -1342,9 +1374,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1400,8 +1432,11 @@ class ReleaseTestCase(unittest.TestCase):
             prerelease=False,
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1422,7 +1457,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_github_api_pre_release(
         self,
         gather_commands_mock: MagicMock,
@@ -1433,9 +1468,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1a1")
         next_version = PEP440Version("0.0.1a1+dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1491,8 +1526,11 @@ class ReleaseTestCase(unittest.TestCase):
             prerelease=True,
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)],
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ],
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")
@@ -1576,7 +1614,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_with_changelog(
         self,
         gather_commands_mock: MagicMock,
@@ -1588,9 +1626,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2")
         next_version = PEP440Version("1.0.0.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1667,8 +1705,11 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)]
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
         )
 
         self.assertEqual(
@@ -1707,7 +1748,7 @@ class ReleaseTestCase(unittest.TestCase):
     @patch(
         "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
     )
-    @patch("pontos.release.release.Project.gather_commands", autospec=True)
+    @patch("pontos.release.release.Project._gather_commands", autospec=True)
     def test_release_local(
         self,
         gather_commands_mock: MagicMock,
@@ -1718,9 +1759,9 @@ class ReleaseTestCase(unittest.TestCase):
         current_version = PEP440Version("0.0.0")
         release_version = PEP440Version("0.0.1")
         next_version = PEP440Version("0.0.2.dev1")
-        project_mock = MagicMock(spec=Project)
-        gather_commands_mock.return_value = project_mock
-        project_mock.update_version.side_effect = [
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
@@ -1760,8 +1801,11 @@ class ReleaseTestCase(unittest.TestCase):
 
         create_release_mock.assert_not_awaited()
 
-        project_mock.update_version.assert_has_calls(
-            [call(release_version), call(next_version)]
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
         )
 
         git_mock.return_value.add.assert_called_with("MyProject.conf")

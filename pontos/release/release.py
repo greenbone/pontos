@@ -132,7 +132,7 @@ class ReleaseCommand:
             git_version,
             name=f"{self.project} {release_version}",
             body=release_text,
-            prerelease=release_version.is_prerelease,
+            prerelease=release_version.is_pre_release,
         )
 
     async def run(
@@ -232,7 +232,7 @@ class ReleaseCommand:
 
         last_release_version = get_last_release_version(
             self.git_tag_prefix,
-            ignore_pre_releases=not release_version.is_prerelease,
+            ignore_pre_releases=not release_version.is_pre_release,
         )
 
         self.terminal.info(

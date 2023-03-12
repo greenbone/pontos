@@ -48,6 +48,6 @@ class ParseArgsTestCase(unittest.TestCase):
         self.assertEqual(parsed_args.space, "bla")
         self.assertEqual(parsed_args.config, Path("foo.toml"))
         self.assertEqual(parsed_args.current_version, PEP440Version("1.2.3"))
-        self.assertEqual(parsed_args.next_version, "2.3.4")
+        self.assertEqual(parsed_args.next_version, PEP440Version("2.3.4"))
         self.assertEqual(parsed_args.git_tag_prefix, "a")
         self.assertEqual(parsed_args.output, Path("changelog.md"))
