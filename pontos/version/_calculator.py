@@ -124,6 +124,8 @@ class VersionCalculator(ABC):
             "1.2.3.dev1" will return "1.2.4"
             "1.2.3-alpha1" will return "1.2.4"
         """
+        if not current_version:
+            raise VersionError("No current version passed.")
         if current_version.is_pre_release:
             next_version = cls.version_from_string(
                 f"{current_version.major}."
