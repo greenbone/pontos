@@ -42,6 +42,22 @@ class PEP440VersionTestCase(unittest.TestCase):
         for version in versions:
             self.assertEqual(Version.from_string(version), Version(version))
 
+    def test_parse_version_from_semver(self):
+        versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3-post1.dev1",
+            "1.2.3-a1",
+            "1.2.3-b1",
+            "1.2.3-rc1",
+            "1.2.3-a1+dev1",
+            "1.4.1",
+            "2.4.1-dev1",
+            "2.4.1-dev3",
+        ]
+        for version in versions:
+            self.assertEqual(Version.from_string(version), Version(version))
+
     def test_parse_error(self):
         versions = [
             "abc",

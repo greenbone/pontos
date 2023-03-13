@@ -25,7 +25,7 @@ from pontos.version.schemes._semantic import (
 )
 
 
-class PEP440VersionTestCase(unittest.TestCase):
+class SemanticVersionTestCase(unittest.TestCase):
     def test_parse_version(self):
         versions = [
             "0.0.1",
@@ -60,6 +60,17 @@ class PEP440VersionTestCase(unittest.TestCase):
         for version in versions:
             with self.assertRaisesRegex(
                 VersionError, "^.* is not valid SemVer string$"
+            ):
+                Version.from_string(version)
+
+    def test_parse_prerelease_error(self):
+        versions = [
+            "1.2.3-pos1t1",
+        ]
+
+        for version in versions:
+            with self.assertRaisesRegex(
+                VersionError, f"^Invalid prerelease [a-zA-Z0-9]* in {version}"
             ):
                 Version.from_string(version)
 
