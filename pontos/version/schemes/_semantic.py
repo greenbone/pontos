@@ -25,6 +25,8 @@ from ..errors import VersionError
 from ..version import Version
 from ._scheme import VersioningScheme
 
+# Note: This regex currently support any kind of
+# word-number combination for pre releases
 _PRE_RELEASE_REGEXP = re.compile(
     r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)$"
 )
