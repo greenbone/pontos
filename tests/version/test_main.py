@@ -159,6 +159,21 @@ class MainTestCase(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
+    def test_next_invalid_current(self):
+        with temp_directory(change_into=True) as temp_dir, self.assertRaises(
+            SystemExit
+        ) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.tt"}',
+                encoding="utf8",
+            )
+            main(["next", "dev", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(
+            cm.exception.code, VersionExitCode.CURRENT_VERSION_ERROR
+        )
+
     def test_next_dev(self):
         with temp_directory(change_into=True) as temp_dir, redirect_stdout(
             StringIO()
@@ -228,6 +243,34 @@ class MainTestCase(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
         self.assertEqual(out.getvalue(), "1.2.4-alpha1\n")
+
+    def test_next_beta(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "beta", "--versioning-scheme", "semver"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.2.4-beta1\n")
+
+    def test_next_rc(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "rc", "--versioning-scheme", "semver"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.2.4-rc1\n")
 
     def test_next_calendar(self):
         today = datetime.today()

@@ -79,27 +79,21 @@ def main(args: Optional[List[str]] = None) -> NoReturn:
             print(str(e), file=sys.stderr)
             sys.exit(VersionExitCode.CURRENT_VERSION_ERROR)
 
-        try:
-            if parsed_args.type == "dev":
-                print(calculator.next_dev_version(current_version))
-            elif parsed_args.type == "calendar":
-                print(calculator.next_calendar_version(current_version))
-            elif parsed_args.type == "alpha":
-                print(calculator.next_alpha_version(current_version))
-            elif parsed_args.type == "beta":
-                print(calculator.next_beta_version(current_version))
-            elif parsed_args.type == "rc":
-                print(
-                    calculator.next_release_candidate_version(current_version)
-                )
-            elif parsed_args.type == "patch":
-                print(calculator.next_patch_version(current_version))
-            elif parsed_args.type == "minor":
-                print(calculator.next_minor_version(current_version))
-            elif parsed_args.type == "major":
-                print(calculator.next_major_version(current_version))
-        except PontosError as e:
-            print(str(e), file=sys.stderr)
-            sys.exit(VersionExitCode.NEXT_VERSION_ERROR)
+        if parsed_args.type == "dev":
+            print(calculator.next_dev_version(current_version))
+        elif parsed_args.type == "calendar":
+            print(calculator.next_calendar_version(current_version))
+        elif parsed_args.type == "alpha":
+            print(calculator.next_alpha_version(current_version))
+        elif parsed_args.type == "beta":
+            print(calculator.next_beta_version(current_version))
+        elif parsed_args.type == "rc":
+            print(calculator.next_release_candidate_version(current_version))
+        elif parsed_args.type == "patch":
+            print(calculator.next_patch_version(current_version))
+        elif parsed_args.type == "minor":
+            print(calculator.next_minor_version(current_version))
+        elif parsed_args.type == "major":
+            print(calculator.next_major_version(current_version))
 
     sys.exit(VersionExitCode.SUCCESS)
