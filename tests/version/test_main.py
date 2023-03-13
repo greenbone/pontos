@@ -17,6 +17,7 @@
 
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime
 from io import StringIO
 
 from pontos.testing import temp_directory
@@ -157,3 +158,90 @@ class MainTestCase(unittest.TestCase):
             main(["verify", "current"])
 
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+
+    def test_next_dev(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "dev", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.2.4.dev1\n")
+
+    def test_next_patch(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "patch", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.2.4\n")
+
+    def test_next_minor(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "minor", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.3.0\n")
+
+    def test_next_major(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "major", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "2.0.0\n")
+
+    def test_next_alpha(self):
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "alpha", "--versioning-scheme", "semver"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(out.getvalue(), "1.2.4-alpha1\n")
+
+    def test_next_calendar(self):
+        today = datetime.today()
+        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
+            StringIO()
+        ) as out, self.assertRaises(SystemExit) as cm:
+            version_file = temp_dir / "package.json"
+            version_file.write_text(
+                '{"name": "foo", "version": "1.2.3"}',
+                encoding="utf8",
+            )
+            main(["next", "calendar", "--versioning-scheme", "pep440"])
+
+        self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
+        self.assertEqual(
+            out.getvalue(), f"{today.year % 100}.{today.month}.0\n"
+        )
