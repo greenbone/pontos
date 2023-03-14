@@ -97,7 +97,18 @@ class VersionCalculator(ABC):
             "1.2.3" will return "2.0.0"
             "1.2.3.dev1" will return "2.0.0"
             "1.2.3-alpha1" will return "2.0.0"
+            "0.5.0-a1" will return "0.5.0"
+            "0.5.0.dev1" will return "0.5.0"
         """
+        if (
+            (current_version.is_pre_release or current_version.is_dev_release)
+            and current_version.patch == 0
+            and current_version.minor == 0
+        ):
+            return cls.version_from_string(
+                f"{current_version.major}.{current_version.minor}."
+                f"{current_version.patch}"
+            )
         return cls.version_from_string(f"{current_version.major + 1}.0.0")
 
     @classmethod
@@ -109,7 +120,16 @@ class VersionCalculator(ABC):
             "1.2.3" will return "1.3.0"
             "1.2.3.dev1" will return "1.3.0"
             "1.2.3-alpha1" will return "1.3.0"
+            "1.0.0-a1" will return "1.0.0"
+            "1.0.0.dev1" will return "1.0.0"
         """
+        if (
+            current_version.is_pre_release or current_version.is_dev_release
+        ) and current_version.patch == 0:
+            return cls.version_from_string(
+                f"{current_version.major}.{current_version.minor}."
+                f"{current_version.patch}"
+            )
         return cls.version_from_string(
             f"{current_version.major}.{current_version.minor + 1}.0"
         )

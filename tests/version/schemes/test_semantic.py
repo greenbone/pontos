@@ -172,6 +172,10 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
             "22.4.1",
             "22.4.1-dev1",
             "22.4.1-dev3",
+            "1.0.0-a1",
+            "1.1.0-alpha1",
+            "1.0.0-dev1",
+            "1.1.0-dev1",
         ]
         assert_versions = [
             "0.1.0",
@@ -184,6 +188,10 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
             "22.5.0",
             "22.5.0",
             "22.5.0",
+            "1.0.0",
+            "1.1.0",
+            "1.0.0",
+            "1.1.0",
         ]
 
         for current_version, assert_version in zip(
@@ -210,6 +218,9 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
             "22.4.1",
             "22.4.1-dev1",
             "22.4.1-dev3",
+            "1.0.0-a1",
+            "1.0.0-beta1",
+            "1.0.0-dev1",
         ]
         assert_versions = [
             "1.0.0",
@@ -222,6 +233,9 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
             "23.0.0",
             "23.0.0",
             "23.0.0",
+            "1.0.0",
+            "1.0.0",
+            "1.0.0",
         ]
 
         for current_version, assert_version in zip(
