@@ -231,7 +231,8 @@ class ReleaseCommand:
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
         last_release_version = get_last_release_version(
-            self.git_tag_prefix,
+            calculator.version_from_string,
+            git_tag_prefix=self.git_tag_prefix,
             ignore_pre_releases=not release_version.is_pre_release,
         )
 
