@@ -140,8 +140,8 @@ class JavaScriptVersionCommand(VersionCommand):
 
         content = version_file.read_text(encoding="utf-8")
         content = re.sub(
-            pattern=r'VERSION = "(?P<version>.*)";',
-            repl=f'VERSION = "{new_version}";',
+            pattern=r'VERSION = "(?P<version>.*)"',
+            repl=f'VERSION = "{new_version}"',
             string=content,
         )
         version_file.write_text(content, encoding="utf-8")
