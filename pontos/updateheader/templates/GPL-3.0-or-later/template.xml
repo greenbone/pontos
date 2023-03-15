@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-Copyright (C) 2020 Greenbone AG
+SPDX-FileCopyrightText: <year> <company>
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
