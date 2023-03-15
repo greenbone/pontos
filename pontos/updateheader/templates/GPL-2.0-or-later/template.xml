@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-Copyright (C) <year> <company>
+SPDX-FileCopyrightText: <year> <company>
 
 SPDX-License-Identifier: GPL-2.0-or-later
 
