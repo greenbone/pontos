@@ -76,7 +76,9 @@ class CMakeVersionParser:
         )
         self._cmake_content_lines = cmake_content_lines.split("\n")
         self._version_line_number = line_no
-        self._current_version = current_version
+        self._current_version = PEP440VersioningScheme.parse_version(
+            current_version
+        )
         self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
@@ -97,10 +99,10 @@ class CMakeVersionParser:
     def get_current_version(self) -> Version:
         return (
             PEP440VersioningScheme.parse_version(
-                f"{self._current_version}.dev1"
+                f"{str(self._current_version)}.dev1"
             )
             if self.is_dev_version()
-            else PEP440VersioningScheme.parse_version(self._current_version)
+            else self._current_version
         )
 
     def update_version(self, new_version: Version) -> str:
@@ -115,7 +117,9 @@ class CMakeVersionParser:
             develop = False
 
         to_update = self._cmake_content_lines[self._version_line_number]
-        updated = to_update.replace(self._current_version, str(new_version))
+        updated = to_update.replace(
+            str(self._current_version), str(new_version)
+        )
         self._cmake_content_lines[self._version_line_number] = updated
         self._current_version = new_version
         if self._project_dev_version_line_number:

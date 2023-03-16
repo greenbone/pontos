@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import ArgumentTypeError
+from typing import Dict, Type
 
 from ._pep440 import PEP440VersioningScheme
 from ._scheme import VersioningScheme
@@ -30,13 +31,13 @@ __all__ = (
 )
 
 #: Dictionary with available versioning schemes
-VERSIONING_SCHEMES = {
+VERSIONING_SCHEMES: Dict[str, Type[VersioningScheme]] = {
     "pep440": PEP440VersioningScheme,
     "semver": SemanticVersioningScheme,
 }
 
 
-def versioning_scheme_argument_type(value: str) -> VersioningScheme:
+def versioning_scheme_argument_type(value: str) -> Type[VersioningScheme]:
     """
     Verifies if the passed value is a valid versioning scheme and returns
     the corresponding versioning scheme.

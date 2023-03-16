@@ -59,13 +59,13 @@ class PEP440Version(Version):
     def pre(self) -> Optional[Tuple[str, int]]:
         """The pre-release segment of the version."""
         if self.is_dev_release:
-            return ("dev", self._version.dev)
+            return ("dev", self._version.dev)  # type: ignore
         return self._version.pre
 
     @property
     def dev(self) -> Optional[int]:
         """The development number of the version."""
-        return self._version.dev
+        return self._version.dev  # type: ignore
 
     @property
     def local(self) -> Optional[str]:
@@ -117,7 +117,7 @@ class PEP440Version(Version):
             raise VersionError(e) from None
 
     @classmethod
-    def from_version(cls, version: "Version") -> "PEP440Version":
+    def from_version(cls, version: "Version") -> "Version":
         """
         Convert a version (if necessary)
 
@@ -141,7 +141,7 @@ class PEP440Version(Version):
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
-                f"-{version.pre[0]}{version.pre[1]}"
+                f"-{version.pre[0]}{version.pre[1]}"  # type: ignore
                 f"{'+' + version.local if version.local else ''}"
             )
 
@@ -189,9 +189,10 @@ class PEP440VersionCalculator(VersionCalculator):
         """
         if current_version.is_dev_release:
             return cls.version_from_string(
-                f"{current_version.major}."
+                f"{current_version.major}."  # type: ignore
                 f"{current_version.minor}."
-                f"{current_version.patch}.dev{current_version.dev + 1}"
+                f"{current_version.patch}."
+                f"dev{current_version.dev + 1}"
             )
 
         if current_version.is_pre_release:
@@ -199,7 +200,8 @@ class PEP440VersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"{current_version.pre[0]}{current_version.pre[1]}+dev1"
+                f"{current_version.pre[0]}"  # type: ignore
+                f"{current_version.pre[1]}+dev1"  # type: ignore
             )
 
         return cls.version_from_string(
@@ -228,7 +230,8 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}a{current_version.pre[1] + 1}"
+                f"{current_version.patch}a"
+                f"{current_version.pre[1] + 1}"  # type: ignore
             )
 
         return cls.version_from_string(
@@ -257,7 +260,8 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}b{current_version.pre[1] + 1}"
+                f"{current_version.patch}b"
+                f"{current_version.pre[1] + 1}"  # type: ignore
             )
         return cls.version_from_string(
             f"{current_version.major}."
@@ -291,7 +295,8 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}rc{current_version.pre[1] + 1}"
+                f"{current_version.patch}rc"
+                f"{current_version.pre[1] + 1}"  # type: ignore
             )
 
         return cls.version_from_string(

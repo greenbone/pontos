@@ -94,7 +94,7 @@ class GoVersionCommand(VersionCommand):
         try:
             current_version = self.get_current_version()
         except VersionError:
-            current_version = get_last_release_version(
+            current_version = get_last_release_version(  # type: ignore
                 self.versioning_scheme.parse_version, git_tag_prefix="v"
             )
 

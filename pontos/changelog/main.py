@@ -16,14 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Iterable, NoReturn
+from typing import NoReturn, Optional, Sequence
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+from pontos.terminal.terminal import Terminal
 from pontos.version.helper import get_last_release_version
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
@@ -32,7 +33,7 @@ from pontos.version.schemes import (
 )
 
 
-def parse_args(args: Iterable[str] = None) -> ArgumentParser:
+def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     parser = ArgumentParser(
         description="Conventional commits utility.",
         prog="pontos-changelog",
@@ -111,10 +112,10 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     return parsed_args
 
 
-def main(args: Iterable[str] = None) -> NoReturn:
+def main(args: Optional[Sequence[str]] = None) -> NoReturn:
     parsed_args = parse_args(args)
 
-    term = NullTerminal if parsed_args.quiet else RichTerminal()
+    term: Terminal = NullTerminal if parsed_args.quiet else RichTerminal()  # type: ignore # pylint: disable=line-too-long
 
     if parsed_args.current_version:
         last_version = parsed_args.current_version
