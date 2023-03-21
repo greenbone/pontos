@@ -28,7 +28,8 @@ from ._scheme import VersioningScheme
 # Note: This regex currently support any kind of
 # word-number combination for pre releases
 _PRE_RELEASE_REGEXP = re.compile(
-    r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)$"
+    r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)"
+    r"(?:-(?P<extra>[a-zA-Z]+)(?P<extra_version>0|[1-9][0-9]*))?$"
 )
 
 
@@ -43,9 +44,13 @@ class SemanticVersion(Version):
         version: str,
     ) -> None:
         self._version_info = VersionInfo.parse(version)
+        self._parse_build()
         self._parse_pre_release()
 
     def _parse_pre_release(self) -> None:
+        self._dev = None
+        self._pre_release = None
+
         if self._version_info.prerelease:
             match = _PRE_RELEASE_REGEXP.match(self._version_info.prerelease)
             if not match:
@@ -54,12 +59,35 @@ class SemanticVersion(Version):
                     f"{self._version_info}"
                 )
 
-            self._pre_release = (
-                match.group("name"),
-                int(match.group("version")),
-            )
-        else:
-            self._pre_release = None
+            name = match.group("name")
+            version = int(match.group("version"))
+
+            if name == "dev":
+                self._dev = version
+            else:
+                self._pre_release = (
+                    name,
+                    version,
+                )
+
+            extra = match.group("extra")
+            if extra == "dev":
+                if name == "dev":
+                    raise VersionError(
+                        f"Invalid prerelease {self._version_info.prerelease} "
+                        f"in {self._version_info}"
+                    )
+                self._dev = int(match.group("extra_version"))
+
+    def _parse_build(self) -> None:
+        self._build = None
+        if self._version_info.build:
+            match = _PRE_RELEASE_REGEXP.match(self._version_info.build)
+            if match:
+                self._build = (
+                    match.group("name"),
+                    int(match.group("version")),
+                )
 
     @property
     def pre(self) -> Optional[Tuple[str, int]]:
@@ -69,41 +97,39 @@ class SemanticVersion(Version):
     @property
     def dev(self) -> Optional[int]:
         """The development number of the version."""
-        return self.pre[1] if self.is_dev_release else None
+        return self._dev
 
     @property
-    def local(self) -> Optional[str]:
+    def local(self) -> Optional[Tuple[str, int]]:
         """The local version segment of the version."""
-        return self._version_info.build
+        return self._build
 
     @property
     def is_pre_release(self) -> bool:
-        """Whether this version is a pre-release."""
-        return self.pre is not None
+        """
+        Whether this version is a pre-release (alpha, beta, release candidate).
+        """
+        return self._pre_release is not None
 
     @property
     def is_dev_release(self) -> bool:
         """Whether this version is a development release."""
-        return self.pre and self.pre[0] == "dev"
+        return self._dev is not None
 
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.pre is not None and (
-            self.pre[0] == "alpha" or self.pre[0] == "a"
-        )
+        return self.is_pre_release and self.pre[0] == "alpha"
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.pre is not None and (
-            self.pre[0] == "beta" or self.pre[0] == "b"
-        )
+        return self.is_pre_release and self.pre[0] == "beta"
 
     @property
     def is_release_candidate(self) -> bool:
         """Whether this version is a release candidate."""
-        return self.pre is not None and self.pre[0] == "rc"
+        return self.is_pre_release and self.pre[0] == "rc"
 
     @property
     def major(self) -> int:
@@ -129,7 +155,10 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        return self._version_info == other._version_info
+        return (
+            self._version_info == other._version_info
+            and self._version_info.build == other._version_info.build
+        )
 
     def __ne__(self, other: Any) -> bool:
         if isinstance(other, str):
@@ -140,7 +169,10 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        return self._version_info != other._version_info
+        return (
+            self._version_info != other._version_info
+            or self._version_info.build != other._version_info.build
+        )
 
     def __str__(self) -> str:
         """A string representation of the version"""
@@ -177,13 +209,41 @@ class SemanticVersion(Version):
         if isinstance(version, cls):
             return version
 
+        version_local = (
+            f"+{version.local[0]}{version.local[1]}" if version.local else ""
+        )
         if version.is_dev_release:
+            if not version.pre:
+                return cls.from_string(
+                    f"{version.major}."
+                    f"{version.minor}."
+                    f"{version.patch}"
+                    f"-dev{version.dev}"
+                    f"{version_local}"
+                )
+
             return cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
+                f"-{version.pre[0]}{version.pre[1]}"
                 f"-dev{version.dev}"
-                f"{'+' + version.local if version.local else ''}"
+            )
+        if version.is_alpha_release:
+            return cls.from_string(
+                f"{version.major}."
+                f"{version.minor}."
+                f"{version.patch}"
+                f"-alpha{version.pre[1]}"
+                f"{version_local}"
+            )
+        if version.is_beta_release:
+            return cls.from_string(
+                f"{version.major}."
+                f"{version.minor}."
+                f"{version.patch}"
+                f"-beta{version.pre[1]}"
+                f"{version_local}"
             )
         if version.is_pre_release:
             return cls.from_string(
@@ -191,7 +251,7 @@ class SemanticVersion(Version):
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
-                f"{'+' + version.local if version.local else ''}"
+                f"{version_local}"
             )
 
         return cls.from_string(str(version))
@@ -207,11 +267,19 @@ class SemanticVersionCalculator(VersionCalculator):
         Get the next development version from a valid version
         """
         if current_version.is_dev_release:
+            if current_version.pre:
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"-{current_version.pre[0]}{current_version.pre[1]}"
+                    f"-dev{current_version.dev + 1}"
+                )
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"-dev{current_version.pre[1] + 1}"
+                f"-dev{current_version.dev + 1}"
             )
 
         if current_version.is_pre_release:
@@ -219,7 +287,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}-"
-                f"{current_version.pre[0]}{current_version.pre[1]}+dev1"
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}-dev1"
             )
 
         return cls.version_from_string(
@@ -235,11 +303,23 @@ class SemanticVersionCalculator(VersionCalculator):
         Get the next alpha version from a valid version
         """
         if current_version.is_dev_release:
+            if current_version.pre:
+                if current_version.pre[0] == "alpha":
+                    return cls.version_from_string(
+                        f"{current_version.major}."
+                        f"{current_version.minor}."
+                        f"{current_version.patch}"
+                        f"-alpha{current_version.pre[1] + 1}"
+                    )
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch + 1}-alpha1"
+                )
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}"
-                "-alpha1"
+                f"{current_version.patch}-alpha1"
             )
         if current_version.is_alpha_release:
             return cls.version_from_string(
@@ -260,6 +340,20 @@ class SemanticVersionCalculator(VersionCalculator):
         """
         Get the next alpha version from a valid version
         """
+        if current_version.is_dev_release and current_version.pre:
+            if current_version.pre[0] == "beta":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"-beta{current_version.pre[1] + 1}"
+                )
+            if current_version.pre[0] == "rc":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch + 1}-beta1"
+                )
         if current_version.is_dev_release or current_version.is_alpha_release:
             return cls.version_from_string(
                 f"{current_version.major}."
@@ -286,18 +380,26 @@ class SemanticVersionCalculator(VersionCalculator):
         cls, current_version: Version
     ) -> Version:
         """
-        Get the next alpha version from a valid version
+        Get the next release candidate version from a valid version
         """
-        if (
-            current_version.is_dev_release
-            or current_version.is_alpha_release
-            or current_version.is_beta_release
-        ):
+        if current_version.is_dev_release:
+            if current_version.pre and current_version.pre[0] == "rc":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"-rc{current_version.pre[1] + 1}"
+                )
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}"
-                "-rc1"
+                f"{current_version.patch}-rc1"
+            )
+        if current_version.is_alpha_release or current_version.is_beta_release:
+            return cls.version_from_string(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.patch}-rc1"
             )
         if current_version.is_release_candidate:
             return cls.version_from_string(

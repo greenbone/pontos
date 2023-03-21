@@ -24,6 +24,21 @@ from typing import Any, Callable, Optional, Tuple
 class Version(ABC):
     """
     An abstract base class for version information
+
+    A version implementation must consider the following constraints:
+
+    * Version strings containing `-dev`, and `.dev` are considered development
+      versions.
+    * Version strings containing `+dev` are not considered as development
+      versions.
+    * Development versions are are also pre releases. The following version
+      string is a development version and a pre release: `1.2.3-alpha1-dev1`
+    * A version must return a pre for development versions for version strings
+      containing a pre release version like `1.2.3-alpha1-dev1`
+    * A development version has no local part
+    * Alpha, Beta, Release Candidate and Development versions are pre releases
+    * Alpha, Beta and Release Candidate versions pre must return the following
+      names for the first value in the tuple: `alpha`, `beta`, `rc` and `dev`
     """
 
     @property
@@ -53,13 +68,15 @@ class Version(ABC):
 
     @property
     @abstractmethod
-    def local(self) -> Optional[str]:
+    def local(self) -> Optional[Tuple[str, int]]:
         """The local version segment of the version."""
 
     @property
     @abstractmethod
     def is_pre_release(self) -> bool:
-        """Whether this version is a pre-release."""
+        """
+        Whether this version is a pre-release (alpha, beta, release candidate).
+        """
 
     @property
     @abstractmethod

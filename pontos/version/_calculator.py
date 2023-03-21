@@ -95,10 +95,13 @@ class VersionCalculator(ABC):
 
         Examples:
             "1.2.3" will return "2.0.0"
-            "1.2.3.dev1" will return "2.0.0"
-            "1.2.3-alpha1" will return "2.0.0"
-            "0.5.0-a1" will return "0.5.0"
-            "0.5.0.dev1" will return "0.5.0"
+            "1.2.3.dev1" will return "1.2.3"
+            "1.2.3-alpha1" will return "1.2.3"
+            "1.0.0" will return "2.0.0"
+            "1.0.0-a1" will return "1.0.0"
+            "1.0.0.dev1" will return "1.0.0"
+            "0.5.0-a1" will return "1.0.0"
+            "0.5.0.dev1" will return "1.0.0"
         """
         if (
             (current_version.is_pre_release or current_version.is_dev_release)
@@ -120,8 +123,11 @@ class VersionCalculator(ABC):
             "1.2.3" will return "1.3.0"
             "1.2.3.dev1" will return "1.3.0"
             "1.2.3-alpha1" will return "1.3.0"
+            "1.0.0" will return "1.1.0"
             "1.0.0-a1" will return "1.0.0"
             "1.0.0.dev1" will return "1.0.0"
+            "0.5.0-a1" will return "0.5.0"
+            "0.5.0.dev1" will return "0.5.0"
         """
         if (
             current_version.is_pre_release or current_version.is_dev_release
@@ -141,12 +147,20 @@ class VersionCalculator(ABC):
 
         Examples:
             "1.2.3" will return "1.2.4"
-            "1.2.3.dev1" will return "1.2.4"
-            "1.2.3-alpha1" will return "1.2.4"
+            "1.2.3.dev1" will return "1.2.3"
+            "1.2.3-dev1" will return "1.2.3"
+            "1.2.3+dev1" will return "1.2.4"
+            "1.2.3-alpha1" will return "1.2.3"
+            "1.0.0" will return "1.0.1"
+            "1.0.0-a1" will return "1.0.0"
+            "1.0.0.dev1" will return "1.0.0"
+            "0.5.0-a1" will return "0.5.0"
+            "0.5.0.dev1" will return "0.5.0"
         """
         if not current_version:
             raise VersionError("No current version passed.")
-        if current_version.is_pre_release:
+
+        if current_version.is_dev_release or current_version.is_pre_release:
             next_version = cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
@@ -166,6 +180,18 @@ class VersionCalculator(ABC):
     def next_dev_version(current_version: Version) -> Version:
         """
         Get the next development version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.2.4-dev1"
+            "1.2.3.dev1" will return "1.2.3.dev2"
+            "1.2.3-dev1" will return "1.2.3-dev2"
+            "1.2.3+dev1" will return "1.2.4-dev1"
+            "1.2.3-alpha1" will return "1.2.3-alpha2-dev1"
+            "1.0.0" will return "1.0.1-dev1"
+            "1.0.0-a1" will return "1.0.0-a2-dev1"
+            "1.0.0.dev1" will return "1.0.0.dev2"
+            "0.5.0-a1" will return "0.5.0-a2-dev1"
+            "0.5.0.dev1" will return "0.5.0.dev2"
         """
 
     @staticmethod
@@ -173,6 +199,18 @@ class VersionCalculator(ABC):
     def next_alpha_version(current_version: Version) -> Version:
         """
         Get the next alpha version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.2.4-alpha1"
+            "1.2.3.dev1" will return "1.2.3-alpha1"
+            "1.2.3-dev1" will return "1.2.3-alpha1"
+            "1.2.3+dev1" will return "1.2.4-alpha1"
+            "1.2.3-alpha1" will return "1.2.3-alpha2"
+            "1.0.0" will return "1.0.1-alpha1"
+            "1.0.0-a1" will return "1.0.1-alpha1"
+            "1.0.0.dev1" will return "1.0.0-alpha1"
+            "0.5.0-a1" will return "0.5.1-alpha1"
+            "0.5.0.dev1" will return "0.5.0-alpha1"
         """
 
     @staticmethod
@@ -180,6 +218,18 @@ class VersionCalculator(ABC):
     def next_beta_version(current_version: Version) -> Version:
         """
         Get the next beta version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.2.4-beta1"
+            "1.2.3.dev1" will return "1.2.3-beta1"
+            "1.2.3-dev1" will return "1.2.3-beta1"
+            "1.2.3+dev1" will return "1.2.4-beta1"
+            "1.2.3-alpha1" will return "1.2.3-beta1"
+            "1.0.0" will return "1.0.1-beta1"
+            "1.0.0-a1" will return "1.0.1-beta1"
+            "1.0.0.dev1" will return "1.0.0-beta1"
+            "0.5.0-a1" will return "0.5.1-beta1"
+            "0.5.0.dev1" will return "0.5.0-beta1"
         """
 
     @staticmethod
@@ -187,4 +237,16 @@ class VersionCalculator(ABC):
     def next_release_candidate_version(current_version: Version) -> Version:
         """
         Get the next release candidate version from a valid version
+
+        Examples:
+            "1.2.3" will return "1.2.4-rc1"
+            "1.2.3.dev1" will return "1.2.3-rc1"
+            "1.2.3-dev1" will return "1.2.3-rc1"
+            "1.2.3+dev1" will return "1.2.4-rc1"
+            "1.2.3-alpha1" will return "1.2.3-rc1"
+            "1.0.0" will return "1.0.1-rc1"
+            "1.0.0-a1" will return "1.0.1-rc1"
+            "1.0.0.dev1" will return "1.0.0-rc1"
+            "0.5.0-a1" will return "0.5.1-rc1"
+            "0.5.0.dev1" will return "0.5.0-rc"
         """
