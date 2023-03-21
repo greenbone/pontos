@@ -554,7 +554,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2a1")
-        next_version = PEP440Version("0.0.2a1+dev1")
+        next_version = PEP440Version("0.0.2a2.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
@@ -621,7 +621,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.2a1+dev1\n",
+                    "* Update to version 0.0.2a2.dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
@@ -651,7 +651,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2b1")
-        next_version = PEP440Version("0.0.2b1+dev1")
+        next_version = PEP440Version("0.0.2b2.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
@@ -718,7 +718,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.2b1+dev1\n",
+                    "* Update to version 0.0.2b2.dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),
@@ -748,7 +748,7 @@ class ReleaseTestCase(unittest.TestCase):
     ):
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version("0.0.2rc1")
-        next_version = PEP440Version("0.0.2rc1+dev1")
+        next_version = PEP440Version("0.0.2rc2.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
         create_changelog_mock.return_value = "A Changelog"
@@ -815,7 +815,7 @@ class ReleaseTestCase(unittest.TestCase):
                 ),
                 call(
                     "Automatic adjustments after release\n\n"
-                    "* Update to version 0.0.2rc1+dev1\n",
+                    "* Update to version 0.0.2rc2.dev1\n",
                     verify=False,
                     gpg_signing_key="123",
                 ),

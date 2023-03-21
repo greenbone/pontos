@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from typing import Any, Optional, Tuple
 
 from packaging.version import InvalidVersion
@@ -31,6 +32,15 @@ __all__ = (
     "PEP440VersioningScheme",
 )
 
+_LOCAL_RELEASE_REGEXP = re.compile(
+    r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)$"
+)
+_PRE_RELEASE_NAME = {"a": "alpha", "b": "beta"}
+
+
+def _pre_release_name(name: str) -> str:
+    return _PRE_RELEASE_NAME.get(name, name)
+
 
 class PEP440Version(Version):
     """
@@ -39,6 +49,17 @@ class PEP440Version(Version):
 
     def __init__(self, version: str) -> None:
         self._version = PackagingVersion(version)
+        self._parse_local()
+
+    def _parse_local(self):
+        self._local = None
+        if self._version.local:
+            match = _LOCAL_RELEASE_REGEXP.match(self._version.local)
+            if match:
+                self._local = (
+                    match.group("name"),
+                    int(match.group("version")),
+                )
 
     @property
     def major(self) -> int:
@@ -58,9 +79,10 @@ class PEP440Version(Version):
     @property
     def pre(self) -> Optional[Tuple[str, int]]:
         """The pre-release segment of the version."""
-        if self.is_dev_release:
-            return ("dev", self._version.dev)
-        return self._version.pre
+        if not self._version.pre:
+            return None
+
+        return (_pre_release_name(self._version.pre[0]), self._version.pre[1])
 
     @property
     def dev(self) -> Optional[int]:
@@ -68,13 +90,16 @@ class PEP440Version(Version):
         return self._version.dev
 
     @property
-    def local(self) -> Optional[str]:
+    def local(self) -> Optional[Tuple[str, int]]:
         """The local version segment of the version."""
-        return self._version.local
+        return self._local
 
     @property
     def is_pre_release(self) -> bool:
-        """Whether this version is a pre-release."""
+        """
+        Whether this version is a pre-release (alpha, beta, release candidate
+        and development).
+        """
         return self._version.is_prerelease
 
     @property
@@ -85,17 +110,17 @@ class PEP440Version(Version):
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.pre is not None and self.pre[0] == "a"
+        return self.is_pre_release and self.pre and self.pre[0] == "alpha"
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.pre is not None and self.pre[0] == "b"
+        return self.is_pre_release and self.pre and self.pre[0] == "beta"
 
     @property
     def is_release_candidate(self) -> bool:
         """Whether this version is a release candidate."""
-        return self.pre is not None and self.pre[0] == "rc"
+        return self.is_pre_release and self.pre and self.pre[0] == "rc"
 
     @classmethod
     def from_string(cls, version: str) -> "Version":
@@ -128,13 +153,24 @@ class PEP440Version(Version):
         if isinstance(version, cls):
             return version
 
+        version_local = (
+            f"+{version.local[0]}{version.local[1]}" if version.local else ""
+        )
         if version.is_dev_release:
+            if not version.pre:
+                return cls.from_string(
+                    f"{version.major}."
+                    f"{version.minor}."
+                    f"{version.patch}"
+                    f".dev{version.dev}"
+                    f"{version_local}"
+                )
             return cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
+                f"-{version.pre[0]}{version.pre[1]}"
                 f".dev{version.dev}"
-                f"{'+' + version.local if version.local else ''}"
             )
         if version.is_pre_release:
             return cls.from_string(
@@ -142,7 +178,7 @@ class PEP440Version(Version):
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
-                f"{'+' + version.local if version.local else ''}"
+                f"{version_local}"
             )
 
         return cls.from_string(str(version))
@@ -188,10 +224,19 @@ class PEP440VersionCalculator(VersionCalculator):
             "1.2.3.dev1" will return "1.2.3.dev2"
         """
         if current_version.is_dev_release:
+            if current_version.pre:
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"-{current_version.pre[0]}{current_version.pre[1]}"
+                    f".dev{current_version.dev + 1}"
+                )
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}.dev{current_version.dev + 1}"
+                f"{current_version.patch}"
+                f".dev{current_version.dev + 1}"
             )
 
         if current_version.is_pre_release:
@@ -199,7 +244,7 @@ class PEP440VersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"{current_version.pre[0]}{current_version.pre[1]}+dev1"
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"
             )
 
         return cls.version_from_string(
@@ -218,6 +263,19 @@ class PEP440VersionCalculator(VersionCalculator):
             "1.2.3.dev1" will return "1.2.3a1"
         """
         if current_version.is_dev_release:
+            if current_version.pre:
+                if current_version.pre[0] == "alpha":
+                    return cls.version_from_string(
+                        f"{current_version.major}."
+                        f"{current_version.minor}."
+                        f"{current_version.patch}"
+                        f"a{current_version.pre[1] + 1}"
+                    )
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch + 1}a1"
+                )
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
@@ -246,6 +304,20 @@ class PEP440VersionCalculator(VersionCalculator):
             "1.2.3" will return "1.2.4b1"
             "1.2.3.dev1" will return "1.2.3b1"
         """
+        if current_version.is_dev_release and current_version.pre:
+            if current_version.pre[0] == "beta":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"b{current_version.pre[1] + 1}"
+                )
+            if current_version.pre[0] == "rc":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch + 1}b1"
+                )
         if current_version.is_dev_release or current_version.is_alpha_release:
             return cls.version_from_string(
                 f"{current_version.major}."
@@ -257,7 +329,8 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}b{current_version.pre[1] + 1}"
+                f"{current_version.patch}"
+                f"b{current_version.pre[1] + 1}"
             )
         return cls.version_from_string(
             f"{current_version.major}."
@@ -270,17 +343,27 @@ class PEP440VersionCalculator(VersionCalculator):
         cls, current_version: Version
     ) -> Version:
         """
-        Get the next alpha version from a valid version
+        Get the next release candidate version from a valid version
 
         Examples:
             "1.2.3" will return "1.2.4rc1"
             "1.2.3.dev1" will return "1.2.3rc1"
         """
-        if (
-            current_version.is_dev_release
-            or current_version.is_alpha_release
-            or current_version.is_beta_release
-        ):
+        if current_version.is_dev_release:
+            if current_version.pre and current_version.pre[0] == "rc":
+                return cls.version_from_string(
+                    f"{current_version.major}."
+                    f"{current_version.minor}."
+                    f"{current_version.patch}"
+                    f"rc{current_version.pre[1] + 1}"
+                )
+            return cls.version_from_string(
+                f"{current_version.major}."
+                f"{current_version.minor}."
+                f"{current_version.patch}rc1"
+            )
+
+        if current_version.is_alpha_release or current_version.is_beta_release:
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
