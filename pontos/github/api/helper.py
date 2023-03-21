@@ -23,7 +23,7 @@ DEFAULT_GITHUB_API_URL = "https://api.github.com"
 DEFAULT_TIMEOUT = 180.0  # three minutes
 DEFAULT_TIMEOUT_CONFIG = httpx.Timeout(DEFAULT_TIMEOUT)  # three minutes
 JSON_OBJECT = Dict[str, Union[str, bool, int]]  # pylint: disable=invalid-name
-JSON = Union[List[JSON_OBJECT], JSON_OBJECT]
+JSON = Union[List[JSON_OBJECT], JSON_OBJECT]  # pylint: disable=invalid-name
 
 
 def _get_next_url(response: httpx.Response) -> Optional[str]:
