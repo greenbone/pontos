@@ -27,6 +27,7 @@ jobs:
           packages: pontos tests scripts
           version: ${{ matrix.python-version }}
           poetry-version: ${{ env.POETRY_VERSION }}
+          cache: "true"
 
   test:
     name: Run all tests
@@ -44,6 +45,7 @@ jobs:
         with:
           version: ${{ matrix.python-version }}
           poetry-version: ${{ env.POETRY_VERSION }}
+          cache: "true"
       - name: Run unit tests
         run: poetry run python -m unittest
 
@@ -58,6 +60,7 @@ jobs:
         with:
           version: "3.10"
           poetry-version: ${{ env.POETRY_VERSION }}
+          cache: "true"
           token: ${{ secrets.CODECOV_TOKEN }}
 
   check-version:
@@ -69,6 +72,7 @@ jobs:
         uses: greenbone/actions/poetry@v2
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
+          cache: "true"
       - name: Check version
         run: |
           poetry run pontos-version verify current
