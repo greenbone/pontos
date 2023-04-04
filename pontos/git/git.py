@@ -329,13 +329,31 @@ class Git:
 
         self.exec(*args)
 
-    def list_tags(self, *, sort: Optional[TagSort] = None) -> List[str]:
+    def list_tags(
+        self, *, sort: Optional[TagSort] = None, tag_name: Optional[str] = None
+    ) -> List[str]:
         """
         List all available tags
+
+        Args:
+            sort: Apply a specific sort algorithm for the git tags. By default
+                git uses a lexicographic sorting.
+            tag_name: Filter list by the tagname pattern. For example: "22.4*"
         """
-        args = ["tag", "-l"]
+
         if sort:
+            args = []
+
+            if sort == TagSort.VERSION:
+                args.extend(["-c", "versionsort.suffix=-"])
+
+            args.extend(["tag", "-l"])
             args.append(f"--sort={sort.value}")
+        else:
+            args = ["tag", "-l"]
+
+        if tag_name:
+            args.append(tag_name)
 
         return self.exec(*args).splitlines()
 
