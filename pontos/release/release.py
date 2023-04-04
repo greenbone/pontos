@@ -230,10 +230,21 @@ class ReleaseCommand:
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
+        if release_type == ReleaseType.PATCH:
+            tag_name = (
+                f"{self.git_tag_prefix}"
+                f"{release_version.major}.{release_version.minor}.*"
+            )
+        elif release_type == ReleaseType.MINOR:
+            tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
+        else:
+            tag_name = None
+
         last_release_version = get_last_release_version(
             calculator.version_from_string,
             git_tag_prefix=self.git_tag_prefix,
             ignore_pre_releases=not release_version.is_pre_release,
+            tag_name=tag_name,
         )
 
         self.terminal.info(
