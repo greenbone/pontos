@@ -22,6 +22,7 @@ import subprocess
 import sys
 from typing import NoReturn
 
+from pontos.git import GitError
 from pontos.release.parser import parse_args
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -48,6 +49,11 @@ def main(
             )
             sys.exit(int(retval))
         except KeyboardInterrupt:
+            sys.exit(1)
+        except GitError as e:
+            term.error(f'Could not run git command "{e.cmd}".')
+            error = e.stderr if e.stderr else e.stdout
+            term.print(f"Output was: {error}")
             sys.exit(1)
         except subprocess.CalledProcessError as e:
             if not "--passphrase" in e.cmd:
