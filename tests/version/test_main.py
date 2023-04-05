@@ -160,9 +160,9 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_next_invalid_current(self):
-        with temp_directory(change_into=True) as temp_dir, self.assertRaises(
-            SystemExit
-        ) as cm:
+        with redirect_stderr(StringIO()), temp_directory(
+            change_into=True
+        ) as temp_dir, self.assertRaises(SystemExit) as cm:
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.tt"}',

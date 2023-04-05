@@ -16,13 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 
 from pontos.version.parser import parse_args
 
 
 class ParserTestCase(unittest.TestCase):
     def test_error_while_parsing(self):
-        with self.assertRaises(SystemExit) as cm:
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit) as cm:
             parse_args(["update", "foo"])
 
         # exception code in argparse
