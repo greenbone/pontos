@@ -23,6 +23,15 @@ from typing import List, Optional, Union
 
 from pontos.errors import PontosError
 
+DEFAULT_TAG_SORT_SUFFIX = [
+    "-alpha",
+    "a",
+    "-beta",
+    "b",
+    "-rc",
+    "rc",
+]
+
 
 class GitError(subprocess.CalledProcessError, PontosError):
     """
@@ -330,7 +339,11 @@ class Git:
         self.exec(*args)
 
     def list_tags(
-        self, *, sort: Optional[TagSort] = None, tag_name: Optional[str] = None
+        self,
+        *,
+        sort: Optional[TagSort] = None,
+        tag_name: Optional[str] = None,
+        sort_suffix: Optional[List[str]] = None,
     ) -> List[str]:
         """
         List all available tags
@@ -339,13 +352,15 @@ class Git:
             sort: Apply a specific sort algorithm for the git tags. By default
                 git uses a lexicographic sorting.
             tag_name: Filter list by the tagname pattern. For example: "22.4*"
+            sort_suffix: A list of version suffix to consider.
         """
 
         if sort:
             args = []
 
-            if sort == TagSort.VERSION:
-                args.extend(["-c", "versionsort.suffix=-"])
+            if sort_suffix:
+                for suffix in sort_suffix:
+                    args.extend(["-c", f"versionsort.suffix={suffix}"])
 
             args.extend(["tag", "-l"])
             args.append(f"--sort={sort.value}")

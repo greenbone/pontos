@@ -20,6 +20,7 @@
 from typing import Optional
 
 from pontos.git import Git, TagSort
+from pontos.git.git import DEFAULT_TAG_SORT_SUFFIX
 
 from .version import ParseVersionFuncType, Version
 
@@ -44,7 +45,11 @@ def get_last_release_version(
         or None
     """
 
-    tag_list = Git().list_tags(sort=TagSort.VERSION, tag_name=tag_name)
+    tag_list = Git().list_tags(
+        sort=TagSort.VERSION,
+        sort_suffix=DEFAULT_TAG_SORT_SUFFIX,
+        tag_name=tag_name,
+    )
 
     while tag_list:
         last_release_version = tag_list[-1]
