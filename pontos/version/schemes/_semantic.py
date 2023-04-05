@@ -309,7 +309,7 @@ class SemanticVersionCalculator(VersionCalculator):
                         f"{current_version.major}."
                         f"{current_version.minor}."
                         f"{current_version.patch}"
-                        f"-alpha{current_version.pre[1] + 1}"
+                        f"-alpha{current_version.pre[1]}"
                     )
                 return cls.version_from_string(
                     f"{current_version.major}."
@@ -346,7 +346,7 @@ class SemanticVersionCalculator(VersionCalculator):
                     f"{current_version.major}."
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"-beta{current_version.pre[1] + 1}"
+                    f"-beta{current_version.pre[1]}"
                 )
             if current_version.pre[0] == "rc":
                 return cls.version_from_string(
@@ -388,7 +388,7 @@ class SemanticVersionCalculator(VersionCalculator):
                     f"{current_version.major}."
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"-rc{current_version.pre[1] + 1}"
+                    f"-rc{current_version.pre[1]}"
                 )
             return cls.version_from_string(
                 f"{current_version.major}."

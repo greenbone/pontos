@@ -269,7 +269,7 @@ class PEP440VersionCalculator(VersionCalculator):
                         f"{current_version.major}."
                         f"{current_version.minor}."
                         f"{current_version.patch}"
-                        f"a{current_version.pre[1] + 1}"
+                        f"a{current_version.pre[1]}"
                     )
                 return cls.version_from_string(
                     f"{current_version.major}."
@@ -310,7 +310,7 @@ class PEP440VersionCalculator(VersionCalculator):
                     f"{current_version.major}."
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"b{current_version.pre[1] + 1}"
+                    f"b{current_version.pre[1]}"
                 )
             if current_version.pre[0] == "rc":
                 return cls.version_from_string(
@@ -355,7 +355,7 @@ class PEP440VersionCalculator(VersionCalculator):
                     f"{current_version.major}."
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"rc{current_version.pre[1] + 1}"
+                    f"rc{current_version.pre[1]}"
                 )
             return cls.version_from_string(
                 f"{current_version.major}."
