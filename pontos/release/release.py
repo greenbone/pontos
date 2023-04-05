@@ -66,12 +66,12 @@ class ReleaseCommand:
 
     def _get_release_version(
         self,
-        project: Project,
+        *,
+        current_version: Version,
         calculator: VersionCalculator,
         release_type: ReleaseType,
         release_version: Optional[Version],
     ) -> Version:
-        current_version = project.get_current_version()
         if release_type == ReleaseType.CALENDAR:
             return calculator.next_calendar_version(current_version)
 
@@ -198,8 +198,15 @@ class ReleaseCommand:
         calculator = versioning_scheme.calculator()
 
         try:
+            current_version = project.get_current_version()
+
+            self.terminal.info(f"Current version is {current_version}")
+
             release_version = self._get_release_version(
-                project, calculator, release_type, release_version
+                current_version=current_version,
+                calculator=calculator,
+                release_type=release_type,
+                release_version=release_version,
             )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
