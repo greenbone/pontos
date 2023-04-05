@@ -20,7 +20,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 from pontos.git import Git
-from pontos.git.git import ConfigScope, MergeStrategy, TagSort
+from pontos.git.git import (
+    DEFAULT_TAG_SORT_SUFFIX,
+    ConfigScope,
+    MergeStrategy,
+    TagSort,
+)
 from pontos.testing import temp_git_repository
 
 
@@ -284,7 +289,42 @@ class GitTestCase(unittest.TestCase):
         tags = git.list_tags(sort=TagSort.VERSION)
 
         exec_git_mock.assert_called_once_with(
-            "tag", "-l", "--sort=version:refname", cwd=None
+            "tag",
+            "-l",
+            "--sort=version:refname",
+            cwd=None,
+        )
+
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0], "v1.0")
+        self.assertEqual(tags[1], "v2.0")
+        self.assertEqual(tags[2], "v2.1")
+
+    @patch("pontos.git.git.exec_git")
+    def test_list_tags_with_version_suffix_sort(self, exec_git_mock):
+        exec_git_mock.return_value = "v1.0\nv2.0\nv2.1\n"
+        git = Git()
+        tags = git.list_tags(
+            sort=TagSort.VERSION, sort_suffix=DEFAULT_TAG_SORT_SUFFIX
+        )
+
+        exec_git_mock.assert_called_once_with(
+            "-c",
+            "versionsort.suffix=-alpha",
+            "-c",
+            "versionsort.suffix=a",
+            "-c",
+            "versionsort.suffix=-beta",
+            "-c",
+            "versionsort.suffix=b",
+            "-c",
+            "versionsort.suffix=-rc",
+            "-c",
+            "versionsort.suffix=rc",
+            "tag",
+            "-l",
+            "--sort=version:refname",
+            cwd=None,
         )
 
         self.assertEqual(len(tags), 3)
@@ -531,7 +571,7 @@ e6ea80d Update README
 
 
 class GitExtendedTestCase(unittest.TestCase):
-    def test_list_tags(self):
+    def test_semantic_list_tags(self):
         with temp_git_repository() as tmp_git:
             tags = [
                 "v0.6.5-alpha3",
@@ -547,6 +587,7 @@ class GitExtendedTestCase(unittest.TestCase):
             git = Git(tmp_git)
             git.config("commit.gpgSign", "false", scope=ConfigScope.LOCAL)
             git.config("tag.gpgSign", "false", scope=ConfigScope.LOCAL)
+            git.config("tag.sort", "refname", scope=ConfigScope.LOCAL)
 
             tmp_file = tmp_git / "foo.txt"
             tmp_file.touch()
@@ -558,37 +599,84 @@ class GitExtendedTestCase(unittest.TestCase):
             for tag in tags:
                 git.tag(tag)
 
+            tags = git.list_tags()
             self.assertEqual(
-                git.list_tags(),
+                tags,
                 [
-                    "v1.0.0",
-                    "v0.6.5-rc1",
-                    "v0.6.5-beta1",
-                    "v0.6.5-alpha3",
-                    "v0.6.5-alpha2",
-                    "v0.6.5-alpha1",
+                    "v0.6.3-alpha1",
+                    "v0.6.4",
                     "v0.6.5",
-                    "v0.6.4",
-                    "v0.6.3-alpha1",
-                ],
-            )
-            self.assertEqual(
-                git.list_tags(sort=TagSort.VERSION),
-                [
-                    "v0.6.3-alpha1",
-                    "v0.6.4",
                     "v0.6.5-alpha1",
                     "v0.6.5-alpha2",
                     "v0.6.5-alpha3",
                     "v0.6.5-beta1",
                     "v0.6.5-rc1",
-                    "v0.6.5",
                     "v1.0.0",
                 ],
             )
 
+            tags = git.list_tags(sort=TagSort.VERSION)
             self.assertEqual(
-                git.list_tags(sort=TagSort.VERSION, tag_name="v0.6*"),
+                tags,
+                [
+                    "v0.6.3-alpha1",
+                    "v0.6.4",
+                    "v0.6.5",
+                    "v0.6.5-alpha1",
+                    "v0.6.5-alpha2",
+                    "v0.6.5-alpha3",
+                    "v0.6.5-beta1",
+                    "v0.6.5-rc1",
+                    "v1.0.0",
+                ],
+            )
+
+            tags = git.list_tags(sort=TagSort.VERSION, tag_name="v0.6*")
+            self.assertEqual(
+                tags,
+                [
+                    "v0.6.3-alpha1",
+                    "v0.6.4",
+                    "v0.6.5",
+                    "v0.6.5-alpha1",
+                    "v0.6.5-alpha2",
+                    "v0.6.5-alpha3",
+                    "v0.6.5-beta1",
+                    "v0.6.5-rc1",
+                ],
+            )
+
+            tags = git.list_tags(sort=TagSort.VERSION, tag_name="v0.6.5*")
+            self.assertEqual(
+                tags,
+                [
+                    "v0.6.5",
+                    "v0.6.5-alpha1",
+                    "v0.6.5-alpha2",
+                    "v0.6.5-alpha3",
+                    "v0.6.5-beta1",
+                    "v0.6.5-rc1",
+                ],
+            )
+
+            tags = git.list_tags(tag_name="v0.6.5*")
+            self.assertEqual(
+                tags,
+                [
+                    "v0.6.5",
+                    "v0.6.5-alpha1",
+                    "v0.6.5-alpha2",
+                    "v0.6.5-alpha3",
+                    "v0.6.5-beta1",
+                    "v0.6.5-rc1",
+                ],
+            )
+
+            tags = git.list_tags(
+                sort=TagSort.VERSION, sort_suffix=DEFAULT_TAG_SORT_SUFFIX
+            )
+            self.assertEqual(
+                tags,
                 [
                     "v0.6.3-alpha1",
                     "v0.6.4",
@@ -598,29 +686,84 @@ class GitExtendedTestCase(unittest.TestCase):
                     "v0.6.5-beta1",
                     "v0.6.5-rc1",
                     "v0.6.5",
+                    "v1.0.0",
                 ],
             )
 
+    def test_pep440_list_tags(self):
+        with temp_git_repository() as tmp_git:
+            tags = [
+                "v0.6.5a3",
+                "v0.6.5b1",
+                "v0.6.5a2",
+                "v0.6.5rc1",
+                "v0.6.5a1",
+                "v0.6.5",
+                "v0.6.4",
+                "v0.6.3a1",
+                "v1.0.0",
+            ]
+            git = Git(tmp_git)
+            git.config("commit.gpgSign", "false", scope=ConfigScope.LOCAL)
+            git.config("tag.gpgSign", "false", scope=ConfigScope.LOCAL)
+            git.config("tag.sort", "refname", scope=ConfigScope.LOCAL)
+
+            tmp_file = tmp_git / "foo.txt"
+            tmp_file.touch()
+
+            git.add(tmp_file)
+
+            git.commit("some commit")
+
+            for tag in tags:
+                git.tag(tag)
+
+            tags = git.list_tags()
             self.assertEqual(
-                git.list_tags(sort=TagSort.VERSION, tag_name="v0.6.5*"),
+                tags,
                 [
-                    "v0.6.5-alpha1",
-                    "v0.6.5-alpha2",
-                    "v0.6.5-alpha3",
-                    "v0.6.5-beta1",
-                    "v0.6.5-rc1",
+                    "v0.6.3a1",
+                    "v0.6.4",
                     "v0.6.5",
+                    "v0.6.5a1",
+                    "v0.6.5a2",
+                    "v0.6.5a3",
+                    "v0.6.5b1",
+                    "v0.6.5rc1",
+                    "v1.0.0",
                 ],
             )
 
+            tags = git.list_tags(sort=TagSort.VERSION)
             self.assertEqual(
-                git.list_tags(tag_name="v0.6.5*"),
+                tags,
                 [
-                    "v0.6.5-rc1",
-                    "v0.6.5-beta1",
-                    "v0.6.5-alpha3",
-                    "v0.6.5-alpha2",
-                    "v0.6.5-alpha1",
+                    "v0.6.3a1",
+                    "v0.6.4",
                     "v0.6.5",
+                    "v0.6.5a1",
+                    "v0.6.5a2",
+                    "v0.6.5a3",
+                    "v0.6.5b1",
+                    "v0.6.5rc1",
+                    "v1.0.0",
+                ],
+            )
+
+            tags = git.list_tags(
+                sort=TagSort.VERSION, sort_suffix=DEFAULT_TAG_SORT_SUFFIX
+            )
+            self.assertEqual(
+                tags,
+                [
+                    "v0.6.3a1",
+                    "v0.6.4",
+                    "v0.6.5a1",
+                    "v0.6.5a2",
+                    "v0.6.5a3",
+                    "v0.6.5b1",
+                    "v0.6.5rc1",
+                    "v0.6.5",
+                    "v1.0.0",
                 ],
             )
