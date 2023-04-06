@@ -18,7 +18,9 @@
 # pylint: disable=too-many-lines, line-too-long
 
 import unittest
+from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
@@ -30,14 +32,44 @@ from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_git_repository
 from pontos.version import VersionError, VersionUpdate
 from pontos.version.commands import GoVersionCommand
-from pontos.version.schemes._pep440 import PEP440Version
+from pontos.version.schemes._pep440 import PEP440Version, PEP440VersioningScheme
 
 
 def mock_terminal() -> MagicMock:
     return MagicMock(spec=Terminal)
 
 
-@patch.dict("os.environ", {"GITHUB_TOKEN": "foo", "GITHUB_USER": "user"})
+@contextmanager
+def setup_go_project(*, current_version: str) -> Path:
+    with temp_git_repository() as tmp_git:
+        git = Git(tmp_git)
+
+        git.config("commit.gpgSign", "false", scope=ConfigScope.LOCAL)
+        git.config("tag.gpgSign", "false", scope=ConfigScope.LOCAL)
+        git.config("tag.sort", "refname", scope=ConfigScope.LOCAL)
+
+        git.add_remote("origin", "http://foo/bar.git")
+
+        go = GoVersionCommand(PEP440VersioningScheme)
+        go.project_file_path.touch()
+        update = go.update_version(new_version=PEP440Version(current_version))
+
+        git.add(update.changed_files)
+        git.add(go.project_file_path)
+        git.commit("Create initial release")
+        git.tag(f"v{current_version}")
+
+        yield tmp_git
+
+
+@patch.dict(
+    "os.environ",
+    {
+        "GITHUB_TOKEN": "foo",
+        "GITHUB_USER": "user",
+        "GPG_SIGNING_KEY": "1234",
+    },
+)
 class ReleaseTestCase(unittest.TestCase):
     @patch("pontos.release.release.Git", autospec=True)
     @patch(
@@ -1556,16 +1588,7 @@ class ReleaseTestCase(unittest.TestCase):
         create_changelog_mock.return_value = "A Changelog"
         _, token, args = parse_args(["release", "--release-type", "patch"])
 
-        with temp_git_repository() as temp_dir:
-            git = Git()
-            git.config("user.signingkey", "1234", scope=ConfigScope.LOCAL)
-            git.add_remote("origin", "http://foo/bar.git")
-
-            go_mod = temp_dir / GoVersionCommand.project_file_name
-            go_mod.touch()
-            version_file = temp_dir / GoVersionCommand.version_file_path
-            version_file.write_text('var version = "0.0.1"', encoding="utf8")
-
+        with setup_go_project(current_version="0.0.1"):
             released = release(
                 terminal=mock_terminal(),
                 args=args,
@@ -1809,3 +1832,51 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+
+
+@patch.dict(
+    "os.environ",
+    {"GITHUB_TOKEN": "foo", "GITHUB_USER": "user", "GPG_SIGNING_KEY": ""},
+)
+class ReleaseGoProjectTestCase(unittest.TestCase):
+    @patch("pontos.release.release.Git.push", autospec=True)
+    @patch(
+        "pontos.release.release.GitHubAsyncRESTApi",
+        autospec=True,
+    )
+    def test_release(
+        self, github_api_mock: AsyncMock, _git_push_mock: MagicMock
+    ):
+        create_api_mock = AsyncMock()
+        github_api_mock.return_value.releases.create = create_api_mock
+
+        release_types = [
+            ("major", "1.0.0", "2.0.0"),
+            ("minor", "1.0.0", "1.1.0"),
+            ("patch", "1.0.0", "1.0.1"),
+            ("patch", "1.0.5", "1.0.6"),
+            ("alpha", "1.0.0", "1.0.1a1"),
+            ("alpha", "1.0.0a3", "1.0.0a4"),
+            ("beta", "1.0.0", "1.0.1b1"),
+            ("beta", "1.0.0b2", "1.0.0b3"),
+            ("release-candidate", "1.0.0", "1.0.1rc1"),
+            ("release-candidate", "1.0.0rc1", "1.0.0rc2"),
+        ]
+
+        for release_type, current_version, expected_version in release_types:
+            with setup_go_project(current_version=current_version):
+                _, token, args = parse_args(
+                    ["release", "--release-type", release_type]
+                )
+                released = release(
+                    terminal=mock_terminal(),
+                    args=args,
+                    token=token,
+                )
+
+            self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+            self.assertEqual(
+                create_api_mock.call_args.args[1], f"v{expected_version}"
+            )
+
+            create_api_mock.reset_mock()
