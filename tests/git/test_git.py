@@ -569,6 +569,29 @@ e6ea80d Update README
             cwd=None,
         )
 
+    @patch("pontos.git.git.exec_git")
+    def test_move(self, exec_git_mock):
+        git = Git()
+        git.move("foo", "bar")
+
+        exec_git_mock.assert_called_once_with(
+            "mv",
+            "foo",
+            "bar",
+            cwd=None,
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_remove(self, exec_git_mock):
+        git = Git()
+        git.remove("foo")
+
+        exec_git_mock.assert_called_once_with(
+            "rm",
+            "foo",
+            cwd=None,
+        )
+
 
 class GitExtendedTestCase(unittest.TestCase):
     def test_semantic_list_tags(self):

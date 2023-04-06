@@ -575,3 +575,15 @@ class Git:
 
         args.extend(commit)
         return self.exec(*args).splitlines()
+
+    def move(self, old: PathLike, new: PathLike) -> None:
+        """
+        Move a file from old to new
+        """
+        return self.exec("mv", fspath(old), fspath(new))
+
+    def remove(self, to_remove: PathLike) -> None:
+        """
+        Remove a file from git
+        """
+        return self.exec("rm", fspath(to_remove))
