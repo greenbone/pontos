@@ -505,3 +505,32 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         git_mock.return_value.log.assert_called_once_with(
             "v0.0.1..HEAD", oneline=True
         )
+
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
+    def test_get_commits(self, git_mock: MagicMock):
+        git_mock.return_value.list_tags.return_value = ["v0.0.1"]
+        git_mock.return_value.log.return_value = [
+            "1234567 Add: foo bar",
+            "8abcdef Add: bar baz",
+            "8abcd3f Add bar baz",
+            "8abcd3d Adding bar baz",
+            "1337abc Change: bar to baz",
+            "42a42a4 Remove: foo bar again",
+            "fedcba8 Test: bar baz testing",
+            "dead901 Refactor: bar baz ref",
+            "fedcba8 Fix: bar baz fixing",
+            "d0c4d0c Doc: bar baz documenting",
+        ]
+
+        changelog_builder = ChangelogBuilder(
+            space="foo",
+            project="bar",
+        )
+        commits = changelog_builder.get_commits(last_version="0.0.1")
+
+        self.assertEqual(len(commits), 4)  # four commit types
+
+        self.assertEqual(len(commits["Added"]), 2)
+        self.assertEqual(len(commits["Changed"]), 1)
+        self.assertEqual(len(commits["Removed"]), 1)
+        self.assertEqual(len(commits["Bug Fixes"]), 1)
