@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Literal, Union
 
 from ..errors import VersionError
-from ..helper import get_last_release_version
 from ..version import Version, VersionUpdate
 from ._command import VersionCommand
 
@@ -94,9 +93,8 @@ class GoVersionCommand(VersionCommand):
         try:
             current_version = self.get_current_version()
         except VersionError:
-            current_version = get_last_release_version(
-                self.versioning_scheme.parse_version, git_tag_prefix="v"
-            )
+            # likely the initial release
+            current_version = None
 
         if not force and new_version == current_version:
             return VersionUpdate(previous=current_version, new=new_version)
