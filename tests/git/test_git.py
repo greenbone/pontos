@@ -26,6 +26,7 @@ from pontos.git.git import (
     MergeStrategy,
     TagSort,
 )
+from pontos.git.status import Status
 from pontos.testing import temp_git_repository
 
 
@@ -592,6 +593,36 @@ e6ea80d Update README
             cwd=None,
         )
 
+    @patch("pontos.git.git.exec_git")
+    def test_status(self, exec_git_mock):
+        git = Git()
+        git.status()
+
+        exec_git_mock.assert_called_once_with(
+            "status",
+            "-z",
+            "--ignore-submodules",
+            "--untracked-files=no",
+            cwd=None,
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_status_with_files(self, exec_git_mock):
+        git = Git()
+        git.status(["foo", "bar", "baz"])
+
+        exec_git_mock.assert_called_once_with(
+            "status",
+            "-z",
+            "--ignore-submodules",
+            "--untracked-files=no",
+            "--",
+            "foo",
+            "bar",
+            "baz",
+            cwd=None,
+        )
+
 
 class GitExtendedTestCase(unittest.TestCase):
     def test_semantic_list_tags(self):
@@ -790,3 +821,90 @@ class GitExtendedTestCase(unittest.TestCase):
                     "v1.0.0",
                 ],
             )
+
+    def test_git_status(self):
+        with temp_git_repository() as tmp_git:
+            tracked_file = tmp_git / "foo.json"
+            tracked_file.write_text("sed diam nonumy eirmod", encoding="utf8")
+            changed_file = tmp_git / "bar.json"
+            changed_file.touch()
+            staged_changed_file = tmp_git / "ipsum.json"
+            staged_changed_file.write_text("tempor invidunt ut labore")
+            removed_file = tmp_git / "lorem.json"
+            removed_file.write_text(
+                "consetetur sadipscing elitr", encoding="utf8"
+            )
+            renamed_file = tmp_git / "foo.md"
+            renamed_file.write_text(
+                "et dolore magna aliquyam erat", encoding="utf8"
+            )
+
+            git = Git(tmp_git)
+            git.config("commit.gpgSign", "false", scope=ConfigScope.LOCAL)
+            git.add(
+                [
+                    tracked_file,
+                    changed_file,
+                    staged_changed_file,
+                    removed_file,
+                    renamed_file,
+                ]
+            )
+            git.commit("Some commit")
+
+            changed_file.write_text("Lorem Ipsum", encoding="utf8")
+            staged_changed_file.write_text("Lorem Ipsum", encoding="utf8")
+
+            added_file = tmp_git / "foo.txt"
+            added_file.touch()
+
+            added_modified_file = tmp_git / "ipsum.txt"
+            added_modified_file.touch()
+
+            git.add([added_file, staged_changed_file, added_modified_file])
+
+            staged_changed_file.write_text("Dolor sit", encoding="utf8")
+
+            added_modified_file.write_text("Lorem Ipsum", encoding="utf8")
+
+            git.move(renamed_file, "foo.rst")
+            git.remove(removed_file)
+
+            untracked_file = tmp_git / "bar.txt"
+            untracked_file.touch()
+
+            it = git.status()
+
+            status = next(it)
+            self.assertEqual(status.index, Status.UNMODIFIED)
+            self.assertEqual(status.working_tree, Status.MODIFIED)
+            self.assertEqual(status.path, Path("bar.json"))
+
+            status = next(it)
+            self.assertEqual(status.index, Status.RENAMED)
+            self.assertEqual(status.working_tree, Status.UNMODIFIED)
+            self.assertEqual(status.path, Path("foo.rst"))
+            self.assertEqual(status.old_path, Path("foo.md"))
+
+            status = next(it)
+            self.assertEqual(status.index, Status.ADDED)
+            self.assertEqual(status.working_tree, Status.UNMODIFIED)
+            self.assertEqual(status.path, Path("foo.txt"))
+
+            status = next(it)
+            self.assertEqual(status.index, Status.MODIFIED)
+            self.assertEqual(status.working_tree, Status.MODIFIED)
+            self.assertEqual(status.path, Path("ipsum.json"))
+
+            status = next(it)
+            self.assertEqual(status.index, Status.ADDED)
+            self.assertEqual(status.working_tree, Status.MODIFIED)
+            self.assertEqual(status.path, Path("ipsum.txt"))
+
+            status = next(it)
+            self.assertEqual(status.index, Status.DELETED)
+            self.assertEqual(status.working_tree, Status.UNMODIFIED)
+            self.assertEqual(status.path, Path("lorem.json"))
+
+            with self.assertRaises(StopIteration):
+                next(it)
