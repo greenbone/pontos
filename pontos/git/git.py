@@ -19,9 +19,10 @@ import subprocess
 from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Iterable, Iterator, List, Optional, Union
 
 from pontos.errors import PontosError
+from pontos.git.status import StatusEntry, parse_git_status
 
 DEFAULT_TAG_SORT_SUFFIX = [
     "-alpha",
@@ -587,3 +588,31 @@ class Git:
         Remove a file from git
         """
         return self.exec("rm", fspath(to_remove))
+
+    def status(
+        self,
+        files: Optional[Iterable[PathLike]] = None,
+    ) -> Iterator[StatusEntry]:
+        """Get information about the current git status.
+
+        Args:
+            files: specify an iterable of :py:class:`os.PathLike` and
+                exclude all other paths for the status.
+
+        Returns:
+            An iterator of :py:class:`StatusEntry` instances that contain the
+            status of the specific files.
+        """
+        args = [
+            "status",
+            "-z",
+            "--ignore-submodules",
+            "--untracked-files=no",
+        ]
+
+        if files:
+            args.append("--")
+            args.extend([fspath(f) for f in files])
+
+        output = self.exec(*args)
+        return parse_git_status(output)
