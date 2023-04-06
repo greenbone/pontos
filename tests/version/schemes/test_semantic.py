@@ -105,7 +105,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", "1.0.0-alpha1"),
             ("1.0.0", "1.0.0-alpha1"),
             ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0+dev1", "1.0.0-dev1"),  # maybe both should be equal
+            ("1.0.0+dev1", "1.0.0-dev1"),
             ("1.0.0+dev1", "1.0.0+dev2"),
             ("1.0.0-alpha1", "1.0.0-beta1"),
             ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
@@ -120,6 +120,9 @@ class SemanticVersionTestCase(unittest.TestCase):
                 Version.from_string(version1) == Version.from_string(version2),
                 f"{version1} equals {version2}",
             )
+
+        other = None
+        self.assertFalse(Version.from_string("1.0.0") == other)
 
         versions = [
             ("1.0.0", object()),
@@ -193,6 +196,7 @@ class SemanticVersionTestCase(unittest.TestCase):
 
         versions = [
             ("1.0.0", "abc"),
+            ("1.0.0", None),
         ]
         for version1, version2 in versions:
             self.assertTrue(Version.from_string(version1) != version2)
