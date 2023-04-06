@@ -135,6 +135,41 @@ class ReleaseCommand:
             prerelease=release_version.is_pre_release,
         )
 
+    def _get_last_release(
+        self,
+        release_type: ReleaseType,
+        release_version: Version,
+        calculator: VersionCalculator,
+    ) -> Version:
+        # try to get last tag for the matching release series
+        if release_type == ReleaseType.PATCH:
+            tag_name = (
+                f"{self.git_tag_prefix}"
+                f"{release_version.major}.{release_version.minor}.*"
+            )
+        elif release_type == ReleaseType.MINOR:
+            tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
+        else:
+            tag_name = None
+
+        last_release_version = get_last_release_version(
+            calculator.version_from_string,
+            git_tag_prefix=self.git_tag_prefix,
+            ignore_pre_releases=not release_version.is_pre_release,
+            tag_name=tag_name,
+        )
+
+        if tag_name and not last_release_version:
+            # could be the initial patch or minor release of the release series
+            # try to get last release without tag_name filter
+            last_release_version = get_last_release_version(
+                calculator.version_from_string,
+                git_tag_prefix=self.git_tag_prefix,
+                ignore_pre_releases=not release_version.is_pre_release,
+            )
+
+        return last_release_version
+
     async def run(
         self,
         *,
@@ -239,21 +274,10 @@ class ReleaseCommand:
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
-        if release_type == ReleaseType.PATCH:
-            tag_name = (
-                f"{self.git_tag_prefix}"
-                f"{release_version.major}.{release_version.minor}.*"
-            )
-        elif release_type == ReleaseType.MINOR:
-            tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
-        else:
-            tag_name = None
-
-        last_release_version = get_last_release_version(
-            calculator.version_from_string,
-            git_tag_prefix=self.git_tag_prefix,
-            ignore_pre_releases=not release_version.is_pre_release,
-            tag_name=tag_name,
+        last_release_version = self._get_last_release(
+            release_type=release_type,
+            release_version=release_version,
+            calculator=calculator,
         )
 
         if not last_release_version:
