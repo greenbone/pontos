@@ -116,8 +116,7 @@ class ChangelogBuilder:
         Returns:
             The created changelog content.
         """
-        commit_list = self._get_git_log(last_version)
-        commit_dict = self._sort_commits(commit_list)
+        commit_dict = self.get_commits(last_version)
         return self._build_changelog(last_version, next_version, commit_dict)
 
     def create_changelog_file(
@@ -142,6 +141,23 @@ class ChangelogBuilder:
             last_version=last_version, next_version=next_version
         )
         self._write_changelog_file(changelog, output)
+
+    def get_commits(
+        self,
+        last_version: Optional[SupportsStr] = None,
+    ) -> Dict[str, List[str]]:
+        """
+        Get all commits by conventional commit type
+
+        Args:
+            last_version: Version of the last release. If None it is considered
+                as the first release.
+
+        Returns:
+            A dict containing the grouped commit messages
+        """
+        commit_list = self._get_git_log(last_version)
+        return self._sort_commits(commit_list)
 
     def _get_first_commit(self) -> str:
         """
@@ -185,7 +201,8 @@ class ChangelogBuilder:
         ```
 
         Returns
-            The dict containing the commit messages"""
+            The dict containing the commit messages
+        """
         # get the commit types from the toml
         commit_types = self.config.get("commit_types")
 
