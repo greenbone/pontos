@@ -152,6 +152,9 @@ class VersionUpdate:
     If previous and new are equal the version was not updated and changed_files
     should be empty.
 
+    If there is no previous version for example in an initial release previous
+    should be None.
+
     Example:
         .. code-block:: python
 
@@ -165,6 +168,10 @@ class VersionUpdate:
             )
     """
 
-    previous: Version
+    previous: Optional[Version]
     new: Version
     changed_files: list[Path] = field(default_factory=list)
+
+    @property
+    def is_update(self) -> bool:
+        return self.previous != self.new
