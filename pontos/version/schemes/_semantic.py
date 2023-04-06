@@ -147,6 +147,8 @@ class SemanticVersion(Version):
         return self._version_info.patch
 
     def __eq__(self, other: Any) -> bool:
+        if other is None:
+            return False
         if isinstance(other, str):
             # allow to compare against "current" for now
             return False
@@ -161,6 +163,8 @@ class SemanticVersion(Version):
         )
 
     def __ne__(self, other: Any) -> bool:
+        if other is None:
+            return True
         if isinstance(other, str):
             # allow to compare against "current" for now
             return True

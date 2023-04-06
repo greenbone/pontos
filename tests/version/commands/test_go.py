@@ -21,7 +21,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from pontos.git.git import Git
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
 from pontos.version.commands._go import GoVersionCommand
@@ -171,32 +170,25 @@ class VerifyGoVersionCommandTestCase(unittest.TestCase):
 
 
 class UpdateGoVersionCommandTestCase(unittest.TestCase):
-    def test_no_file_but_tag_update_version(self):
+    def test_no_file_update_version(self):
         with temp_directory(change_into=True) as temp:
             go_mod = temp / "go.mod"
             go_mod.touch()
-            with patch.object(
-                Git,
-                "list_tags",
-                MagicMock(return_value=["21.0.1"]),
-            ):
-                version = SemanticVersioningScheme.parse_version("22.2.2")
-                updated_version_obj = GoVersionCommand(
-                    SemanticVersioningScheme
-                ).update_version(version)
-                version_file_path = Path(VERSION_FILE_PATH)
-                content = version_file_path.read_text(encoding="utf-8")
 
-                self.assertIn(str(version), content)
+            version = SemanticVersioningScheme.parse_version("22.2.2")
+            updated_version_obj = GoVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(version)
+            version_file_path = Path(VERSION_FILE_PATH)
+            content = version_file_path.read_text(encoding="utf-8")
 
-                self.assertEqual(
-                    updated_version_obj.previous,
-                    SemanticVersioningScheme.parse_version("21.0.1"),
-                )
-                self.assertEqual(updated_version_obj.new, version)
-                self.assertEqual(
-                    updated_version_obj.changed_files, [version_file_path]
-                )
+            self.assertIn(str(version), content)
+
+            self.assertIsNone(updated_version_obj.previous)
+            self.assertEqual(updated_version_obj.new, version)
+            self.assertEqual(
+                updated_version_obj.changed_files, [version_file_path]
+            )
 
     def test_update_version(self):
         with temp_file(name="go.mod", change_into=True):

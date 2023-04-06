@@ -123,6 +123,7 @@ class PEP440VersionTestCase(unittest.TestCase):
 
         versions = [
             ("1.0.0", "abc"),
+            ("1.0.0", None),
         ]
         for version1, version2 in versions:
             self.assertFalse(Version.from_string(version1) == version2)
@@ -219,6 +220,7 @@ class PEP440VersionTestCase(unittest.TestCase):
 
         versions = [
             ("1.0.0", "abc"),
+            ("1.0.0", None),
         ]
         for version1, version2 in versions:
             self.assertTrue(Version.from_string(version1) != version2)
