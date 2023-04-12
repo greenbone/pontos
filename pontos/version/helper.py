@@ -25,6 +25,46 @@ from pontos.git.git import DEFAULT_TAG_SORT_SUFFIX
 from .version import ParseVersionFuncType, Version
 
 
+def get_last_release_versions(
+    parse_version: ParseVersionFuncType,
+    *,
+    git_tag_prefix: Optional[str] = "",
+    ignore_pre_releases: Optional[bool] = False,
+    tag_name: Optional[str] = None,
+) -> list[Version]:
+    """Get the last released Versions from git.
+
+    Args:
+        git_tag_prefix: Git tag prefix to consider
+        ignore_pre_release: Ignore pre releases and only consider non pre
+            releases. Default is False.
+        tag_name: A pattern for filtering the tags. For example: "1.2.*"
+
+    Returns:
+        List of released versions
+    """
+
+    tag_list = Git().list_tags(
+        sort=TagSort.VERSION,
+        sort_suffix=DEFAULT_TAG_SORT_SUFFIX,
+        tag_name=tag_name,
+    )
+    tag_list.reverse()
+
+    tags = []
+
+    for tag in tag_list:
+        last_release_version = tag.strip(git_tag_prefix)
+
+        version = parse_version(last_release_version)
+        if version.is_pre_release and ignore_pre_releases:
+            continue
+
+        tags.append(version)
+
+    return tags
+
+
 def get_last_release_version(
     parse_version: ParseVersionFuncType,
     *,
@@ -45,20 +85,11 @@ def get_last_release_version(
         or None
     """
 
-    tag_list = Git().list_tags(
-        sort=TagSort.VERSION,
-        sort_suffix=DEFAULT_TAG_SORT_SUFFIX,
+    versions = get_last_release_versions(
+        parse_version=parse_version,
+        git_tag_prefix=git_tag_prefix,
+        ignore_pre_releases=ignore_pre_releases,
         tag_name=tag_name,
     )
 
-    while tag_list:
-        last_release_version = tag_list[-1]
-        last_release_version = last_release_version.strip(git_tag_prefix)
-
-        version = parse_version(last_release_version)
-        if not version.is_pre_release or not ignore_pre_releases:
-            return version
-
-        tag_list = tag_list[:-1]
-
-    return None
+    return versions[0] if versions else None

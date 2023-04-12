@@ -19,11 +19,70 @@ import unittest
 from unittest.mock import patch
 
 from pontos.git.git import Git
-from pontos.version.helper import get_last_release_version
+from pontos.version.helper import (
+    get_last_release_version,
+    get_last_release_versions,
+)
 from pontos.version.schemes import PEP440VersioningScheme
 
 parse_version = PEP440VersioningScheme.parse_version
 Version = PEP440VersioningScheme.version_cls
+
+
+class GetLastReleaseVersionsTestCase(unittest.TestCase):
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_versions(self, git_mock):
+        git_interface = git_mock.return_value
+        git_interface.list_tags.return_value = ["1", "2", "3.55"]
+        self.assertEqual(
+            get_last_release_versions(parse_version),
+            [Version("3.55"), Version("2"), Version("1")],
+        )
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_no_release_versions(self, git_mock):
+        git_interface = git_mock.return_value
+        git_interface.list_tags.return_value = []
+        self.assertEqual(get_last_release_versions(parse_version), [])
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_versions_with_git_prefix(self, git_mock):
+        git_interface = git_mock.return_value
+        git_interface.list_tags.return_value = ["v1", "v2", "v3.55"]
+        self.assertEqual(
+            get_last_release_versions(parse_version, git_tag_prefix="v"),
+            [Version("3.55"), Version("2"), Version("1")],
+        )
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_versions_ignore_pre_releases(self, git_mock):
+        git_interface = git_mock.return_value
+        git_interface.list_tags.return_value = [
+            "1",
+            "2",
+            "3.55a1",
+            "3.56.dev1",
+            "4.0.0rc1",
+            "4.0.1b1",
+        ]
+        self.assertEqual(
+            get_last_release_versions(parse_version, ignore_pre_releases=True),
+            [Version("2"), Version("1")],
+        )
+
+    @patch("pontos.version.helper.Git", spec=Git)
+    def test_get_last_release_versions_no_non_pre_release(self, git_mock):
+        git_interface = git_mock.return_value
+        git_interface.list_tags.return_value = [
+            "3.55a1",
+            "3.56.dev1",
+            "4.0.0rc1",
+            "4.0.1b1",
+        ]
+        self.assertEqual(
+            get_last_release_versions(parse_version, ignore_pre_releases=True),
+            [],
+        )
 
 
 class GetLastReleaseVersionTestCase(unittest.TestCase):
