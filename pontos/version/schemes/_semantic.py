@@ -219,7 +219,7 @@ class SemanticVersion(Version):
         if other.is_dev_release or other.is_pre_release:
             return True
 
-        # bot are equal
+        # both are equal
         return False
 
     def __str__(self) -> str:
