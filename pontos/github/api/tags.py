@@ -16,10 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, AsyncIterator, Dict, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.models.tag import GitObjectType, Tag
+from pontos.github.models.tag import GitObjectType, RepositoryTag, Tag
 from pontos.helper import enum_or_value
 
 
@@ -154,10 +154,39 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
                 from pontos.github.api import GitHubAsyncRESTApi
 
                 async with GitHubAsyncRESTApi(token) as api:
-                    tag = await api.tags.get("foo/bar", e746420)
+                    tag = await api.tags.get("foo/bar", "e746420")
                     print(tag)
         """
         api = f"/repos/{repo}/git/tags/{tag_sha}"
         response = await self._client.get(api)
         response.raise_for_status()
         return Tag.from_dict(response.json())
+
+    async def get_all(self, repo: str) -> AsyncIterator[RepositoryTag]:
+        """
+        Get information about all git tags
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+
+        Raises:
+            HTTPStatusError: If the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for tag in api.tags.get_all(
+                        "foo/bar"
+                    ):
+                        print(tag)
+        """
+        api = f"/repos/{repo}/git/tags"
+        params = {"per_page": "100"}
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+            for tag in response.json():
+                yield RepositoryTag.from_dict(tag)

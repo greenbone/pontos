@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=line-too-long
+# pylint: disable=too-many-lines, redefined-builtin, line-too-long
 
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
@@ -24,6 +24,7 @@ import httpx
 
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.models.tag import GitObjectType, Tag, VerificationReason
+from tests import AsyncIteratorMock, aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 TAG_JSON = {
@@ -49,6 +50,30 @@ TAG_JSON = {
         "payload": None,
     },
 }
+
+
+TAGS_JSON = [
+    {
+        "name": "v0.1.0",
+        "zipball_url": "https://api.github.com/repos/foo/ui/zipball/refs/tags/v0.1.0",
+        "tarball_url": "https://api.github.com/repos/foo/ui/tarball/refs/tags/v0.1.0",
+        "commit": {
+            "sha": "b55408280162c20cf0ffef155618270d26fe7352",
+            "url": "https://api.github.com/repos/foo/ui/commits/b55408280162c20cf0ffef155618270d26fe7352",
+        },
+        "node_id": "REF_kwDOHeuT1rByZWZzL3RhZ3MvdjAuMS4w",
+    },
+    {
+        "name": "0.0.72",
+        "zipball_url": "https://api.github.com/repos/foo/ui/zipball/refs/tags/0.0.72",
+        "tarball_url": "https://api.github.com/repos/foo/ui/tarball/refs/tags/0.0.72",
+        "commit": {
+            "sha": "fd54097278df75332917d9d1a2d940083513a6b2",
+            "url": "https://api.github.com/repos/foo/ui/commits/fd54097278df75332917d9d1a2d940083513a6b2",
+        },
+        "node_id": "REF_kwDOHeuT1rByZWZzL3RhZ3MvMC4wLjcy",
+    },
+]
 
 
 class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
@@ -210,3 +235,31 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with(
             "/repos/octocat/Hello-World/git/tags/v0.0.1"
         )
+
+    async def test_get_all(self):
+        response = create_response()
+        response.json.return_value = TAGS_JSON
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.get_all("foo"))
+
+        tag = await anext(async_it)
+        self.assertEqual(tag.name, "v0.1.0")
+        self.assertEqual(
+            tag.commit.sha, "b55408280162c20cf0ffef155618270d26fe7352"
+        )
+        self.assertEqual(
+            tag.commit.url,
+            "https://api.github.com/repos/foo/ui/commits/b55408280162c20cf0ffef155618270d26fe7352",
+        )
+        self.assertEqual(
+            tag.zipball_url,
+            "https://api.github.com/repos/foo/ui/zipball/refs/tags/v0.1.0",
+        )
+        self.assertEqual(
+            tag.tarball_url,
+            "https://api.github.com/repos/foo/ui/tarball/refs/tags/v0.1.0",
+        )
+        self.assertEqual(tag.node_id, "REF_kwDOHeuT1rByZWZzL3RhZ3MvdjAuMS4w")
+        tag2 = await anext(async_it)
+        self.assertEqual(tag2.name, "0.0.72")
