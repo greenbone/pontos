@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=too-many-lines, line-too-long
+# pylint: disable=too-many-lines, line-too-long, invalid-name
 
 import unittest
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
@@ -40,7 +42,7 @@ def mock_terminal() -> MagicMock:
 
 
 @contextmanager
-def setup_go_project(*, current_version: str) -> Path:
+def setup_go_project(*, current_version: str, tags: list[str] = None) -> Path:
     with temp_git_repository() as tmp_git:
         git = Git(tmp_git)
 
@@ -57,7 +59,10 @@ def setup_go_project(*, current_version: str) -> Path:
         git.add(update.changed_files)
         git.add(go.project_file_path)
         git.commit("Create initial release")
-        git.tag(f"v{current_version}")
+
+        if tags:
+            for tag in tags:
+                git.tag(f"v{tag}")
 
         yield tmp_git
 
@@ -1104,6 +1109,8 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
+        self.assertEqual(released, ReleaseReturnValue.CREATE_RELEASE_ERROR)
+
         git_mock.return_value.push.assert_called_once_with(
             follow_tags=True, remote=None
         )
@@ -1119,8 +1126,6 @@ class ReleaseTestCase(unittest.TestCase):
             create_release_mock.await_args.args[1:],
             (release_version, "foo", "A Changelog"),
         )
-
-        self.assertEqual(released, ReleaseReturnValue.CREATE_RELEASE_ERROR)
 
     @patch("pontos.release.release.Git", autospec=True)
     @patch(
@@ -1622,7 +1627,7 @@ class ReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.release.Git", autospec=True)
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.release.get_last_release_versions", autospec=True)
     @patch(
         "pontos.release.release.ReleaseCommand._create_release", autospec=True
     )
@@ -1631,7 +1636,7 @@ class ReleaseTestCase(unittest.TestCase):
         self,
         gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
-        get_last_release_version_mock: MagicMock,
+        get_last_release_versions_mock: MagicMock,
         cc_git_mock: MagicMock,
         git_mock: MagicMock,
     ):
@@ -1652,7 +1657,7 @@ class ReleaseTestCase(unittest.TestCase):
                 changed_files=["project.conf", "version.lang"],
             ),
         ]
-        get_last_release_version_mock.return_value = current_version
+        get_last_release_versions_mock.return_value = [current_version]
         cc_git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
             "8abcdef Add: bar baz",
@@ -1834,6 +1839,15 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
 
+@dataclass
+class Release:
+    release_type: str
+    current_version: str
+    expected_release_version: str
+    expected_last_release_version: Optional[str] = None
+    tags: list[str] = field(default_factory=list)
+
+
 @patch.dict(
     "os.environ",
     {"GITHUB_TOKEN": "foo", "GITHUB_USER": "user", "GPG_SIGNING_KEY": ""},
@@ -1850,23 +1864,23 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
         create_api_mock = AsyncMock()
         github_api_mock.return_value.releases.create = create_api_mock
 
-        release_types = [
-            ("major", "1.0.0", "2.0.0"),
-            ("minor", "1.0.0", "1.1.0"),
-            ("patch", "1.0.0", "1.0.1"),
-            ("patch", "1.0.5", "1.0.6"),
-            ("alpha", "1.0.0", "1.0.1a1"),
-            ("alpha", "1.0.0a3", "1.0.0a4"),
-            ("beta", "1.0.0", "1.0.1b1"),
-            ("beta", "1.0.0b2", "1.0.0b3"),
-            ("release-candidate", "1.0.0", "1.0.1rc1"),
-            ("release-candidate", "1.0.0rc1", "1.0.0rc2"),
+        releases = [
+            Release("major", "1.0.0", "2.0.0"),
+            Release("minor", "1.0.0", "1.1.0"),
+            Release("patch", "1.0.0", "1.0.1"),
+            Release("patch", "1.0.5", "1.0.6"),
+            Release("alpha", "1.0.0", "1.0.1a1"),
+            Release("alpha", "1.0.0a3", "1.0.0a4"),
+            Release("beta", "1.0.0", "1.0.1b1"),
+            Release("beta", "1.0.0b2", "1.0.0b3"),
+            Release("release-candidate", "1.0.0", "1.0.1rc1"),
+            Release("release-candidate", "1.0.0rc1", "1.0.0rc2"),
         ]
 
-        for release_type, current_version, expected_version in release_types:
-            with setup_go_project(current_version=current_version):
+        for r in releases:
+            with setup_go_project(current_version=r.current_version):
                 _, token, args = parse_args(
-                    ["release", "--release-type", release_type]
+                    ["release", "--release-type", r.release_type]
                 )
                 released = release(
                     terminal=mock_terminal(),
@@ -1876,7 +1890,132 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
 
             self.assertEqual(released, ReleaseReturnValue.SUCCESS)
             self.assertEqual(
-                create_api_mock.call_args.args[1], f"v{expected_version}"
+                create_api_mock.call_args.args[1],
+                f"v{r.expected_release_version}",
             )
 
             create_api_mock.reset_mock()
+
+    @patch(
+        "pontos.release.release.ReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.release.Git.push", autospec=True)
+    @patch(
+        "pontos.release.release.GitHubAsyncRESTApi",
+        autospec=True,
+    )
+    def test_release_series(
+        self,
+        github_api_mock: AsyncMock,
+        _git_push_mock: MagicMock,
+        create_changelog_mock: MagicMock,
+    ):
+        create_api_mock = AsyncMock()
+        github_api_mock.return_value.releases.create = create_api_mock
+
+        create_changelog_mock.return_value = "A Changelog"
+
+        releases = [
+            Release("major", "1.0.0", "2.0.0", "1.0.0", ["1.0.0", "3.0.0"]),
+            Release("major", "1.0.0rc1", "1.0.0", None, ["3.0.0"]),
+            Release("minor", "1.0.0", "1.1.0", "1.0.0", ["1.0.0", "2.0.0"]),
+            Release(
+                "minor", "1.1.0", "1.2.0", "1.1.0", ["1.0.0", "1.1.0", "2.0.0"]
+            ),
+            Release(
+                "patch", "1.0.0", "1.0.1", "1.0.0", ["1.0.0", "1.1.0", "2.0.0"]
+            ),
+            Release(
+                "patch", "1.0.5", "1.0.6", "1.0.5", ["1.0.5", "1.1.0", "2.0.0"]
+            ),
+            Release(
+                "patch", "1.0.5", "1.0.6", "1.0.3", ["1.0.3", "1.1.0", "2.0.0"]
+            ),
+            Release(
+                "patch",
+                "1.1.0rc1",
+                "1.1.0",
+                "1.0.0",
+                ["1.0.0", "1.2.0", "2.0.0"],
+            ),
+            Release(
+                "alpha",
+                "1.0.0",
+                "1.0.1a1",
+                "1.0.0",
+                ["1.0.0", "2.0.0", "1.1.0"],
+            ),
+            Release(
+                "alpha",
+                "1.0.0a3",
+                "1.0.0a4",
+                "1.0.0a3",
+                ["1.0.0a3", "2.0.0", "1.1.0"],
+            ),
+            Release(
+                "beta",
+                "1.0.0",
+                "1.0.1b1",
+                "1.0.0",
+                ["1.0.0", "2.0.0", "1.1.0"],
+            ),
+            Release(
+                "beta",
+                "1.0.0b2",
+                "1.0.0b3",
+                "1.0.0b2",
+                ["1.0.0b2", "2.0.0", "1.1.0"],
+            ),
+            Release(
+                "release-candidate",
+                "1.0.0",
+                "1.0.1rc1",
+                "1.0.0",
+                ["1.0.0", "2.0.0", "1.1.0"],
+            ),
+            Release(
+                "release-candidate",
+                "1.0.0rc1",
+                "1.0.0rc2",
+                "1.0.0rc1",
+                ["1.0.0rc1", "2.0.0", "1.1.0"],
+            ),
+        ]
+
+        for r in releases:
+            with setup_go_project(
+                current_version=r.current_version, tags=r.tags
+            ):
+                _, token, args = parse_args(
+                    ["release", "--release-type", r.release_type]
+                )
+                released = release(
+                    terminal=mock_terminal(),
+                    args=args,
+                    token=token,
+                )
+
+            self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+            self.assertEqual(
+                create_api_mock.call_args.args[1],
+                f"v{r.expected_release_version}",
+            )
+
+            self.assertEqual(
+                create_changelog_mock.call_args.args[1],
+                PEP440Version.from_string(r.expected_release_version),
+                f"Unexpected current release version {r}",
+            )
+
+            if r.expected_last_release_version is None:
+                self.assertIsNone(create_changelog_mock.call_args.args[2])
+            else:
+                self.assertEqual(
+                    create_changelog_mock.call_args.args[2],
+                    PEP440Version.from_string(r.expected_last_release_version),
+                    f"Unexpected last release version for {r}",
+                )
+
+            create_api_mock.reset_mock()
+            create_changelog_mock.reset_mock()

@@ -20,7 +20,7 @@ import asyncio
 from argparse import Namespace
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 import httpx
 
@@ -30,7 +30,7 @@ from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionCalculator, VersionError
-from pontos.version.helper import get_last_release_version
+from pontos.version.helper import get_last_release_versions
 from pontos.version.project import Project
 from pontos.version.schemes import VersioningScheme
 
@@ -50,6 +50,16 @@ class ReleaseReturnValue(IntEnum):
     CREATE_RELEASE_ERROR = auto()
     UPDATE_VERSION_ERROR = auto()
     UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
+
+
+def _get_version(
+    release_version: Version, last_release_versions: Iterable[Version]
+) -> Optional[Version]:
+    for version in last_release_versions:
+        if release_version > version:
+            return version
+
+    return None
 
 
 class ReleaseCommand:
@@ -142,7 +152,12 @@ class ReleaseCommand:
         calculator: VersionCalculator,
     ) -> Version:
         # try to get last tag for the matching release series
-        if release_type == ReleaseType.PATCH:
+        if release_type in [
+            ReleaseType.PATCH,
+            ReleaseType.ALPHA,
+            ReleaseType.BETA,
+            ReleaseType.RELEASE_CANDIDATE,
+        ]:
             tag_name = (
                 f"{self.git_tag_prefix}"
                 f"{release_version.major}.{release_version.minor}.*"
@@ -152,21 +167,49 @@ class ReleaseCommand:
         else:
             tag_name = None
 
-        last_release_version = get_last_release_version(
+        last_release_versions = get_last_release_versions(
             calculator.version_from_string,
             git_tag_prefix=self.git_tag_prefix,
             ignore_pre_releases=not release_version.is_pre_release,
             tag_name=tag_name,
         )
 
+        last_release_version = _get_version(
+            release_version, last_release_versions
+        )
+
         if tag_name and not last_release_version:
-            # could be the initial patch or minor release of the release series
-            # try to get last release without tag_name filter
-            last_release_version = get_last_release_version(
+            if release_type in [
+                ReleaseType.PATCH,
+                ReleaseType.ALPHA,
+                ReleaseType.BETA,
+                ReleaseType.RELEASE_CANDIDATE,
+            ]:
+                tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
+            else:
+                tag_name = None
+
+            last_release_versions = get_last_release_versions(
                 calculator.version_from_string,
                 git_tag_prefix=self.git_tag_prefix,
                 ignore_pre_releases=not release_version.is_pre_release,
+                tag_name=tag_name,
             )
+
+            last_release_version = _get_version(
+                release_version, last_release_versions
+            )
+
+            if not last_release_version:
+                last_release_versions = get_last_release_versions(
+                    calculator.version_from_string,
+                    git_tag_prefix=self.git_tag_prefix,
+                    ignore_pre_releases=not release_version.is_pre_release,
+                )
+
+                last_release_version = _get_version(
+                    release_version, last_release_versions
+                )
 
         return last_release_version
 
