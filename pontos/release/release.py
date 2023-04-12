@@ -195,6 +195,8 @@ class ReleaseCommand:
             self.terminal.error(f"Unable to determine project settings. {e}")
             return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
+        self.terminal.info(f"Using versioning scheme {versioning_scheme}")
+
         calculator = versioning_scheme.calculator()
 
         try:
@@ -254,10 +256,16 @@ class ReleaseCommand:
             tag_name=tag_name,
         )
 
-        self.terminal.info(
-            f"Creating changelog for {release_version} since "
-            f"{last_release_version}"
-        )
+        if not last_release_version:
+            self.terminal.info(
+                f"No last release found. Creating changelog for the initial "
+                f"release {release_version}"
+            )
+        else:
+            self.terminal.info(
+                f"Creating changelog for {release_version} since "
+                f"{last_release_version}"
+            )
 
         release_text = self._create_changelog(
             release_version, last_release_version, cc_config
