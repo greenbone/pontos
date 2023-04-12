@@ -178,6 +178,50 @@ class SemanticVersion(Version):
             or self._version_info.build != other._version_info.build
         )
 
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, Version):
+            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+        if not isinstance(other, type(self)):
+            other = self.from_version(other)
+
+        if self._version_info.to_tuple()[:3] > other._version_info[:3]:
+            return True
+        if self._version_info.to_tuple()[:3] < other._version_info[:3]:
+            return False
+
+        # major, minor and patch are equal
+        if self.is_dev_release:
+            if not other.is_pre_release and not other.is_dev_release:
+                return False
+            if not self.is_pre_release and other.is_pre_release:
+                return False
+            if not self.is_pre_release:
+                return self.dev > other.dev
+
+            if self.is_pre_release:
+                if other.is_dev_release and self.pre == other.pre:
+                    return self.dev > other.dev
+                return self.pre > other.pre
+
+        # not a dev release
+        if self.is_pre_release:
+            if not other.is_pre_release and not other.is_dev_release:
+                return False
+
+            if other.is_pre_release:
+                if other.is_dev_release:
+                    return self.pre >= other.pre
+                return self.pre > other.pre
+
+            # other is a dev release
+            return True
+
+        if other.is_dev_release or other.is_pre_release:
+            return True
+
+        # bot are equal
+        return False
+
     def __str__(self) -> str:
         """A string representation of the version"""
         return str(self._version_info)

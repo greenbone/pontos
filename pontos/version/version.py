@@ -133,6 +133,10 @@ class Version(ABC):
         pass
 
     @abstractmethod
+    def __gt__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
     def __str__(self) -> str:
         """A string representation of the version"""
 
