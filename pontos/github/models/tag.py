@@ -155,3 +155,37 @@ class Tag(GitHubModel):
     tagger: Tagger
     object: GitObject
     verification: Optional[Verification] = None
+
+
+@dataclass
+class Commit(GitHubModel):
+    """
+    A GitHub commit model, storing URL and SHA of a commit
+
+    Attributes:
+        sha: Commits SHA hash
+        url: Commits URL
+    """
+
+    sha: str
+    url: str
+
+
+@dataclass
+class RepositoryTag(GitHubModel):
+    """
+    A GitHub tag model, when accessing all tags of a repository
+
+    Attributes:
+        node_id: Node ID of the tag
+        name: The tag name
+        zipball_url: Link to the tags zip ball content
+        tarball_url: Link to the tags tar ball content
+        commit: SHA and URL to the commit the tag points to
+    """
+
+    node_id: str
+    name: str
+    zipball_url: str
+    tarball_url: str
+    commit: Commit
