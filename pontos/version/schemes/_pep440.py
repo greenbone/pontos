@@ -207,6 +207,13 @@ class PEP440Version(Version):
             other = self.from_version(other)
         return self._version != other._version
 
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, Version):
+            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+        if not isinstance(other, type(self)):
+            other = self.from_version(other)
+        return self._version > other._version
+
     def __str__(self) -> str:
         return str(self._version)
 
