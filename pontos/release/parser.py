@@ -128,6 +128,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     release_parser.add_argument(
         "--git-signing-key",
         help="The key to sign the commits and tag for a release",
+        default=os.environ.get("GPG_SIGNING_KEY"),
     )
     release_parser.add_argument(
         "--project",
