@@ -39,22 +39,9 @@ from pontos.updateheader.updateheader import _parse_args as parse_args
 from pontos.updateheader.updateheader import _update_file as update_file
 from pontos.updateheader.updateheader import main
 
-HEADER = """# Copyright (C) {date} Greenbone AG
+HEADER = """# SPDX-FileCopyrightText: {date} Greenbone AG
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>."""
+# SPDX-License-Identifier: AGPL-3.0-or-later"""
 
 
 class Terminal(ConsoleTerminal):
@@ -358,7 +345,7 @@ class UpdateHeaderTestCase(TestCase):
             "Copyright Year None -> 2021\n",
         )
         self.assertIn(
-            "# Copyright (C) 2020-2021 Greenbone AG",
+            "# SPDX-FileCopyrightText: 2020-2021 Greenbone AG",
             test_file.read_text(encoding="utf-8"),
         )
 
@@ -391,7 +378,7 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Licence Header is ok.\n",
         )
         self.assertIn(
-            "# Copyright (C) 2021 Greenbone AG",
+            "# SPDX-FileCopyrightText: 2021 Greenbone AG",
             test_file.read_text(encoding="utf-8"),
         )
 
