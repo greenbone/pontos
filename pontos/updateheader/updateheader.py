@@ -181,7 +181,8 @@ def _update_file(
                 and copyright_match["modification_year"] < parsed_args.year
             ):
                 copyright_term = (
-                    f'Copyright (C) {copyright_match["creation_year"]}'
+                    f"SPDX-FileCopyrightText: "
+                    f'{copyright_match["creation_year"]}'
                     f'-{parsed_args.year} {copyright_match["company"]}'
                 )
                 new_line = re.sub(regex, copyright_term, line)
