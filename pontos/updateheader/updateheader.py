@@ -376,7 +376,7 @@ def main() -> None:
         sys.exit(1)
 
     regex = re.compile(
-        "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+        "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
         f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({parsed_args.company})"
     )
 

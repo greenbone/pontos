@@ -71,7 +71,7 @@ class UpdateHeaderTestCase(TestCase):
         self.path = Path(__file__).parent
 
         self.regex = re.compile(
-            "[Cc]opyright.*?(19[0-9]{2}|20[0-9]{2}) "
+            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
             f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.args.company})"
         )
 
