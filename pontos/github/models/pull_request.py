@@ -26,6 +26,7 @@ from pontos.github.models.organization import Repository
 __all__ = (
     "AuthorAssociation",
     "AutoMerge",
+    "Comment",
     "DiffEntry",
     "Label",
     "MergeMethod",
@@ -347,6 +348,64 @@ class AuthorAssociation(Enum):
     MEMBER = "MEMBER"
     NONE = "NONE"
     OWNER = "OWNER"
+
+
+@dataclass
+class Reactions(GitHubModel):
+    """
+    Reaction Rollup
+
+    Attributes:
+        url: URL to the reactions
+        total_count: int
+        laugh: int
+        confused: int
+        heart: int
+        hooray: int
+        eyes: int
+        rocket: int
+    """
+
+    url: str
+    total_count: int
+    laugh: int
+    confused: int
+    heart: int
+    hooray: int
+    eyes: int
+    rocket: int
+
+
+@dataclass
+class Comment(GitHubModel):
+    """
+    A single comment of a pull request/issue
+
+    Attributes:
+        id: Unique identifier of the comment
+        node_id: Node ID of the comment
+        url: URL for the issue comment
+        body: Contents of the issue comment
+        html_url: URL to the web page of the comment
+        created_at: Creation date
+        updated_at: Last modification date
+        issue_url: URL to the pull request
+        author_association: How the author is associated with the repository
+        user: Author of the comment
+        reactions: Reactions to the comment
+    """
+
+    id: int
+    node_id: str
+    url: str
+    html_url: str
+    issue_url: str
+    created_at: datetime
+    updated_at: datetime
+    author_association: AuthorAssociation
+    body: Optional[str] = None
+    user: Optional[User] = None
+    reactions: Optional[Reactions] = None
 
 
 class MergeMethod(Enum):

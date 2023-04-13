@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Greenbone AG
+# Copyright (C) 2022-2023 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -553,6 +553,38 @@ PULL_REQUEST_JSON = {
     "changed_files": 5,
 }
 
+COMMENT_JSON = {
+    "id": 1,
+    "node_id": "MDEyOklzc3VlQ29tbWVudDE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/issues/comments/1",
+    "html_url": "https://github.com/octocat/Hello-World/issues/1347#issuecomment-1",
+    "body": "Me too",
+    "user": {
+        "login": "octocat",
+        "id": 1,
+        "node_id": "MDQ6VXNlcjE=",
+        "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/octocat",
+        "html_url": "https://github.com/octocat",
+        "followers_url": "https://api.github.com/users/octocat/followers",
+        "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+        "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+        "organizations_url": "https://api.github.com/users/octocat/orgs",
+        "repos_url": "https://api.github.com/users/octocat/repos",
+        "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/octocat/received_events",
+        "type": "User",
+        "site_admin": False,
+    },
+    "created_at": "2011-04-14T16:00:49Z",
+    "updated_at": "2011-04-14T16:00:49Z",
+    "issue_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+    "author_association": "COLLABORATOR",
+}
+
 
 class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTPullRequests
@@ -951,9 +983,10 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_add_comment(self):
         response = create_response()
+        response.json.return_value = COMMENT_JSON
         self.client.post.return_value = response
 
-        await self.api.add_comment(
+        comment = await self.api.add_comment(
             "foo/bar",
             123,
             "Lorem Ipsum",
@@ -965,6 +998,8 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
                 "body": "Lorem Ipsum",
             },
         )
+
+        self.assertEqual(comment.id, 1)
 
     async def test_add_comment_failure(self):
         response = create_response()
@@ -985,6 +1020,120 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
                 "body": "Lorem Ipsum",
             },
         )
+
+    async def test_update_comment(self):
+        response = create_response()
+        response.json.return_value = COMMENT_JSON
+        self.client.post.return_value = response
+
+        comment = await self.api.update_comment(
+            "foo/bar",
+            123,
+            "Lorem Ipsum",
+        )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/issues/comments/123",
+            data={
+                "body": "Lorem Ipsum",
+            },
+        )
+
+        self.assertEqual(comment.id, 1)
+
+    async def test_update_comment_failure(self):
+        response = create_response()
+        self.client.post.side_effect = HTTPStatusError(
+            "404", request=MagicMock(), response=response
+        )
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.update_comment(
+                "foo/bar",
+                123,
+                "Lorem Ipsum",
+            )
+
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/issues/comments/123",
+            data={
+                "body": "Lorem Ipsum",
+            },
+        )
+
+    async def test_comments(self):
+        response1 = create_response()
+        response1.json.return_value = [
+            {
+                "id": 1,
+                "node_id": "MDEyOklzc3VlQ29tbWVudDE=",
+                "url": "https://api.github.com/repos/octocat/Hello-World/issues/comments/1",
+                "html_url": "https://github.com/octocat/Hello-World/issues/1347#issuecomment-1",
+                "body": "Me too",
+                "created_at": "2011-04-14T16:00:49Z",
+                "updated_at": "2011-04-14T16:00:49Z",
+                "issue_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+                "author_association": "COLLABORATOR",
+            },
+            {
+                "id": 2,
+                "node_id": "MDEyOklzc3VlQ29tbWVudDE=",
+                "url": "https://api.github.com/repos/octocat/Hello-World/issues/comments/2",
+                "html_url": "https://github.com/octocat/Hello-World/issues/1347#issuecomment-2",
+                "body": "Me too",
+                "created_at": "2011-04-14T16:00:49Z",
+                "updated_at": "2011-04-14T16:00:49Z",
+                "issue_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+                "author_association": "COLLABORATOR",
+            },
+        ]
+        response2 = create_response()
+        response2.json.return_value = [
+            {
+                "id": 3,
+                "node_id": "MDEyOklzc3VlQ29tbWVudDE=",
+                "url": "https://api.github.com/repos/octocat/Hello-World/issues/comments/3",
+                "html_url": "https://github.com/octocat/Hello-World/issues/1347#issuecomment-3",
+                "body": "Me too",
+                "created_at": "2011-04-14T16:00:49Z",
+                "updated_at": "2011-04-14T16:00:49Z",
+                "issue_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+                "author_association": "COLLABORATOR",
+            },
+        ]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        it = aiter(self.api.comments("foo/bar", 123))
+
+        comment = await anext(it)
+        self.assertEqual(comment.id, 1)
+
+        comment = await anext(it)
+        self.assertEqual(comment.id, 2)
+
+        comment = await anext(it)
+        self.assertEqual(comment.id, 3)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/issues/123/comments",
+            params={"per_page": "100"},
+        )
+
+    async def test_comments_failure(self):
+        response = create_response()
+        self.client.get_all.side_effect = [
+            HTTPStatusError("404", request=MagicMock(), response=response)
+        ]
+
+        it = aiter(self.api.comments("foo/bar", 123))
+        with self.assertRaises(HTTPStatusError):
+            await anext(it)
 
     async def test_files(self):
         response1 = create_response()
@@ -1012,6 +1161,15 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/pulls/123/files",
             params={"per_page": "100"},
         )
+
+    async def test_files_failure(self):
+        response = create_response()
+        self.client.get_all.side_effect = [
+            HTTPStatusError("404", request=MagicMock(), response=response)
+        ]
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.files("foo/bar", 123)
 
     async def test_files_with_status_list(self):
         response1 = create_response()

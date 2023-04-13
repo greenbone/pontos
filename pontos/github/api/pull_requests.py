@@ -22,7 +22,11 @@ from typing import AsyncIterator, Dict, Iterable, List, Optional, Union
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
 from pontos.github.models.base import FileStatus
-from pontos.github.models.pull_request import PullRequest, PullRequestCommit
+from pontos.github.models.pull_request import (
+    Comment,
+    PullRequest,
+    PullRequestCommit,
+)
 
 
 class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
@@ -227,9 +231,11 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
     async def add_comment(
         self, repo: str, pull_request: Union[int, str], comment: str
-    ) -> None:
+    ) -> Comment:
         """
         Add a comment to a pull request on GitHub
+
+        https://docs.github.com/en/rest/issues/comments#create-an-issue-comment
 
         Args:
             repo: GitHub repository (owner/name) to use
@@ -255,6 +261,78 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         data: JSON_OBJECT = {"body": comment}
         response = await self._client.post(api, data=data)
         response.raise_for_status()
+        return Comment.from_dict(response.json())
+
+    async def update_comment(
+        self, repo: str, comment_id: Union[str, int], comment: str
+    ) -> Comment:
+        """
+        Update a comment to a pull request on GitHub
+
+        https://docs.github.com/en/rest/issues/comments#update-an-issue-comment
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            comment_id: The unique identifier of the comment
+            comment: The actual comment message. Can be formatted in Markdown.
+
+        Raises:
+            httpx.HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.pull_requests.update_comment(
+                        "foo/bar",
+                        123,
+                        "A new comment for the pull request",
+                    )
+        """
+        api = f"/repos/{repo}/issues/comments/{comment_id}"
+        data: JSON_OBJECT = {"body": comment}
+        response = await self._client.post(api, data=data)
+        response.raise_for_status()
+        return Comment.from_dict(response.json())
+
+    async def comments(
+        self, repo: str, pull_request: Union[int, str]
+    ) -> AsyncIterator[Comment]:
+        """
+        Get all comments of a pull request on GitHub
+
+        https://docs.github.com/en/rest/issues/comments#list-issue-comments
+
+        Args:
+            repo: GitHub repository (owner/name) to use
+            pull_request: Pull request number where to add a comment
+
+        Raises:
+            httpx.HTTPStatusError if the request was invalid
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for comment in api.pull_requests.comments(
+                        "foo/bar",
+                        123,
+                    ):
+                        print(comment)
+        """
+        params = {"per_page": "100"}
+        api = f"/repos/{repo}/issues/{pull_request}/comments"
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            for comment in response.json():
+                print(comment)
+                yield Comment.from_dict(comment)
 
     async def files(
         self,
@@ -297,6 +375,8 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         file_dict: Dict[FileStatus, List[Path]] = defaultdict(list)
 
         async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
             for f in response.json():
                 try:
                     status = FileStatus(f["status"])

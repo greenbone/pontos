@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from pontos.github.models.base import Permission, TeamPrivacy
 from pontos.github.models.pull_request import (
     AuthorAssociation,
+    Comment,
     MilestoneState,
     PullRequest,
     PullRequestState,
@@ -1609,3 +1610,105 @@ class PullRequestTestCase(unittest.TestCase):
         )
         self.assertEqual(user.type, "User")
         self.assertFalse(user.site_admin)
+
+
+class CommentTestCase(unittest.TestCase):
+    def test_from_dict(self):
+        data = {
+            "id": 1,
+            "node_id": "MDEyOklzc3VlQ29tbWVudDE=",
+            "url": "https://api.github.com/repos/octocat/Hello-World/issues/comments/1",
+            "html_url": "https://github.com/octocat/Hello-World/issues/1347#issuecomment-1",
+            "body": "Me too",
+            "user": {
+                "login": "octocat",
+                "id": 1,
+                "node_id": "MDQ6VXNlcjE=",
+                "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/octocat",
+                "html_url": "https://github.com/octocat",
+                "followers_url": "https://api.github.com/users/octocat/followers",
+                "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+                "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+                "organizations_url": "https://api.github.com/users/octocat/orgs",
+                "repos_url": "https://api.github.com/users/octocat/repos",
+                "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/octocat/received_events",
+                "type": "User",
+                "site_admin": False,
+            },
+            "created_at": "2011-04-14T16:00:49Z",
+            "updated_at": "2011-04-14T16:00:49Z",
+            "issue_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+            "author_association": "COLLABORATOR",
+        }
+        comment = Comment.from_dict(data)
+
+        self.assertEqual(comment.id, 1)
+        self.assertEqual(comment.node_id, "MDEyOklzc3VlQ29tbWVudDE=")
+        self.assertEqual(
+            comment.url,
+            "https://api.github.com/repos/octocat/Hello-World/issues/comments/1",
+        )
+        self.assertEqual(
+            comment.html_url,
+            "https://github.com/octocat/Hello-World/issues/1347#issuecomment-1",
+        )
+        self.assertEqual(comment.body, "Me too")
+
+        user = comment.user
+        self.assertEqual(user.login, "octocat")
+        self.assertEqual(user.id, 1)
+        self.assertEqual(user.node_id, "MDQ6VXNlcjE=")
+        self.assertEqual(
+            user.avatar_url, "https://github.com/images/error/octocat_happy.gif"
+        )
+        self.assertEqual(user.gravatar_id, "")
+        self.assertEqual(user.url, "https://api.github.com/users/octocat")
+        self.assertEqual(user.html_url, "https://github.com/octocat")
+        self.assertEqual(
+            user.followers_url, "https://api.github.com/users/octocat/followers"
+        )
+        self.assertEqual(
+            user.following_url,
+            "https://api.github.com/users/octocat/following{/other_user}",
+        )
+        self.assertEqual(
+            user.gists_url,
+            "https://api.github.com/users/octocat/gists{/gist_id}",
+        )
+        self.assertEqual(
+            user.starred_url,
+            "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+        )
+        self.assertEqual(
+            user.subscriptions_url,
+            "https://api.github.com/users/octocat/subscriptions",
+        )
+        self.assertEqual(
+            user.organizations_url, "https://api.github.com/users/octocat/orgs"
+        )
+        self.assertEqual(
+            user.repos_url, "https://api.github.com/users/octocat/repos"
+        )
+        self.assertEqual(
+            user.events_url,
+            "https://api.github.com/users/octocat/events{/privacy}",
+        )
+        self.assertEqual(
+            user.received_events_url,
+            "https://api.github.com/users/octocat/received_events",
+        )
+        self.assertEqual(user.type, "User")
+        self.assertFalse(user.site_admin)
+
+        self.assertEqual(
+            comment.issue_url,
+            "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+        )
+        self.assertEqual(
+            comment.author_association, AuthorAssociation.COLLABORATOR
+        )
