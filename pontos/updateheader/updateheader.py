@@ -81,9 +81,9 @@ def _find_copyright(
         return (
             True,
             {
-                "creation_year": copyright_match.group(1),
-                "modification_year": copyright_match.group(2),
-                "company": copyright_match.group(3),
+                "creation_year": copyright_match.group(2),
+                "modification_year": copyright_match.group(3),
+                "company": copyright_match.group(4),
             },
         )
     return False, None
