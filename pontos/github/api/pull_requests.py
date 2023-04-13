@@ -331,7 +331,6 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             response.raise_for_status()
 
             for comment in response.json():
-                print(comment)
                 yield Comment.from_dict(comment)
 
     async def files(
