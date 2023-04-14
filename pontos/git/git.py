@@ -77,6 +77,7 @@ def exec_git(
             cwd=fspath(cwd) if cwd else None,
             check=True,
             stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             encoding="utf8",
             errors="replace",
         )
