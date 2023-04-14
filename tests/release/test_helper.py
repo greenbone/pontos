@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import contextlib
+import os
 import subprocess
 import unittest
 from pathlib import Path
@@ -61,6 +62,7 @@ class FindSigningKeyTestCase(unittest.TestCase):
                 signing_key, "1234567890ABCEDEF1234567890ABCEDEF123456"
             )
 
+    @unittest.skipUnless(os.environ.get("CI"), "only run on CI")
     def test_find_no_signing_key(self):
         terminal = MagicMock()
         saved_key = None
