@@ -33,6 +33,7 @@ from pontos.github.cmds import (
     update_pull_request,
 )
 from pontos.github.models.base import FileStatus
+from pontos.testing import temp_directory
 
 
 class TestArgparsing(unittest.TestCase):
@@ -105,39 +106,44 @@ class TestArgparsing(unittest.TestCase):
             parse_args(argv)
 
     def test_fs_parse_args(self):
-        argv = [
-            "FS",
-            "foo/bar",
-            "8",
-            "-o",
-            "some.file",
-        ]
+        with temp_directory(change_into=True) as tmp_dir:
+            argv = [
+                "FS",
+                "foo/bar",
+                "8",
+                "-o",
+                "some.file",
+            ]
 
-        with patch.dict("os.environ", {}, clear=True):
-            parsed_args = parse_args(argv)
+            with patch.dict("os.environ", {}, clear=True):
+                parsed_args = parse_args(argv)
 
-        output = io.open(Path("some.file"), mode="w", encoding="utf-8")
+            output = open(tmp_dir / "some.file", mode="w", encoding="utf-8")
 
-        expected_args = Namespace(
-            command="FS",
-            func=file_status,
-            repo="foo/bar",
-            pull_request=8,
-            output=output,
-            status=[FileStatus.ADDED, FileStatus.MODIFIED],
-            token="GITHUB_TOKEN",
-        )
+            expected_args = Namespace(
+                command="FS",
+                func=file_status,
+                repo="foo/bar",
+                pull_request=8,
+                output=output,
+                status=[FileStatus.ADDED, FileStatus.MODIFIED],
+                token="GITHUB_TOKEN",
+            )
 
-        self.assertEqual(type(parsed_args.output), type(expected_args.output))
-        self.assertEqual(parsed_args.command, expected_args.command)
-        self.assertEqual(parsed_args.func, expected_args.func)
-        self.assertEqual(parsed_args.repo, expected_args.repo)
-        self.assertEqual(parsed_args.pull_request, expected_args.pull_request)
-        self.assertEqual(parsed_args.status, expected_args.status)
-        self.assertEqual(parsed_args.token, expected_args.token)
+            self.assertEqual(
+                type(parsed_args.output), type(expected_args.output)
+            )
+            self.assertEqual(parsed_args.command, expected_args.command)
+            self.assertEqual(parsed_args.func, expected_args.func)
+            self.assertEqual(parsed_args.repo, expected_args.repo)
+            self.assertEqual(
+                parsed_args.pull_request, expected_args.pull_request
+            )
+            self.assertEqual(parsed_args.status, expected_args.status)
+            self.assertEqual(parsed_args.token, expected_args.token)
 
-        output.close()
-        parsed_args.output.close()
+            output.close()
+            parsed_args.output.close()
 
     def test_create_release_parse_args(self):
         argv = [
