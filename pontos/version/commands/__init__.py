@@ -22,6 +22,7 @@ from ._command import VersionCommand
 from ._go import GoVersionCommand
 from ._javascript import JavaScriptVersionCommand
 from ._python import PythonVersionCommand
+from ._cargo import CargoVersionCommand
 
 __all__ = (
     "VersionCommand",
@@ -29,6 +30,7 @@ __all__ = (
     "GoVersionCommand",
     "JavaScriptVersionCommand",
     "PythonVersionCommand",
+    "CargoVersionCommand",
     "get_commands",
 )
 
@@ -37,6 +39,7 @@ __COMMANDS: Tuple[Type[VersionCommand]] = (
     GoVersionCommand,
     JavaScriptVersionCommand,
     PythonVersionCommand,
+    CargoVersionCommand,
 )
 
 
