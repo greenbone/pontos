@@ -123,6 +123,35 @@ class UpdateHeaderTestCase(TestCase):
         self.assertFalse(found)
         self.assertIsNone(match)
 
+    def test_find_spdx_copyright(self):
+        test_line = "# SPDX-FileCopyrightText: 1995-2021 Greenbone AG"
+        test2_line = "# SPDX-FileCopyrightText: 1995 Greenbone AG"
+        invalid_line = (
+            "# This program is free software: "
+            "you can redistribute it and/or modify"
+        )
+
+        # Full match
+        found, match = find_copyright(regex=self.regex, line=test_line)
+        self.assertTrue(found)
+        self.assertIsNotNone(match)
+        self.assertEqual(match["creation_year"], "1995")
+        self.assertEqual(match["modification_year"], "2021")
+        self.assertEqual(match["company"], self.args.company)
+
+        # No modification Date
+        found, match = find_copyright(regex=self.regex, line=test2_line)
+        self.assertTrue(found)
+        self.assertIsNotNone(match)
+        self.assertEqual(match["creation_year"], "1995")
+        self.assertEqual(match["modification_year"], None)
+        self.assertEqual(match["company"], self.args.company)
+
+        # No match
+        found, match = find_copyright(regex=self.regex, line=invalid_line)
+        self.assertFalse(found)
+        self.assertIsNone(match)
+
     def test_add_header(self):
         expected_header = HEADER.format(date="2021") + "\n"
 
