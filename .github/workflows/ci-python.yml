@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  POETRY_VERSION: "1.4.0"
-
 jobs:
   linting:
     name: Linting
@@ -26,7 +23,6 @@ jobs:
         with:
           packages: pontos tests scripts
           version: ${{ matrix.python-version }}
-          poetry-version: ${{ env.POETRY_VERSION }}
           cache: "true"
 
   test:
@@ -44,8 +40,8 @@ jobs:
         uses: greenbone/actions/poetry@v2
         with:
           version: ${{ matrix.python-version }}
-          poetry-version: ${{ env.POETRY_VERSION }}
           cache: "true"
+          cache-poetry-installation: "true"
       - name: Run unit tests
         run: poetry run python -m unittest
 
@@ -59,7 +55,6 @@ jobs:
         uses: greenbone/actions/coverage-python@v2
         with:
           version: "3.10"
-          poetry-version: ${{ env.POETRY_VERSION }}
           cache: "true"
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -71,8 +66,8 @@ jobs:
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v2
         with:
-          poetry-version: ${{ env.POETRY_VERSION }}
           cache: "true"
+          cache-poetry-installation: "true"
       - name: Check version
         run: |
           poetry run pontos-version verify current
