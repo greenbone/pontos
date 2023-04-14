@@ -22,4 +22,4 @@ from pontos.version.commands import get_commands
 
 class GetCommandsTestCase(unittest.TestCase):
     def test_available_commands(self):
-        self.assertEqual(len(get_commands()), 4)
+        self.assertEqual(len(get_commands()), 5)
