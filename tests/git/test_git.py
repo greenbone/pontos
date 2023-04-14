@@ -23,11 +23,12 @@ from pontos.git import Git
 from pontos.git.git import (
     DEFAULT_TAG_SORT_SUFFIX,
     ConfigScope,
+    GitError,
     MergeStrategy,
     TagSort,
 )
 from pontos.git.status import Status
-from pontos.testing import temp_git_repository
+from pontos.testing import temp_directory, temp_git_repository
 
 
 class GitTestCase(unittest.TestCase):
@@ -908,3 +909,18 @@ class GitExtendedTestCase(unittest.TestCase):
 
             with self.assertRaises(StopIteration):
                 next(it)
+
+    def test_git_error(self):
+        with temp_directory(change_into=True), self.assertRaises(
+            GitError
+        ) as cm:
+            Git().log()
+
+        self.assertEqual(cm.exception.returncode, 128)
+        self.assertEqual(
+            cm.exception.stderr,
+            "fatal: not a git repository (or any of the parent directories): "
+            ".git\n",
+        )
+        self.assertEqual(cm.exception.stdout, "")
+        self.assertEqual(cm.exception.cmd, ["git", "log"])
