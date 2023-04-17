@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Iterator
 import unittest
 
 from contextlib import contextmanager
@@ -36,7 +36,7 @@ members = [
 
 class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
     @contextmanager
-    def __create_cargo_layout(self) -> Generator[Path, Path, None]:
+    def __create_cargo_layout(self) -> Iterator[Path]:
         with temp_directory(change_into=True) as temporary_dir:
             workspace = temporary_dir / "Cargo.toml"
             workspace.write_text(WORKSPACE_EXAMPLE)
