@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generator, Tuple, Union, Literal
+from typing import Iterator, Tuple, Union, Literal
 
 import tomlkit
 
@@ -13,11 +13,7 @@ class CargoVersionCommand(VersionCommand):
 
     def __as_project_document(
         self, origin: Path
-    ) -> Generator[
-        Tuple[Path, tomlkit.TOMLDocument],
-        Tuple[Path, tomlkit.TOMLDocument],
-        None,
-    ]:
+    ) -> Iterator[Tuple[Path, tomlkit.TOMLDocument],]:
         """
         Parse the given origin and yields a tuple of path to a
         cargo toml that contains a version
