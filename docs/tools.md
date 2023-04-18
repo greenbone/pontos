@@ -60,7 +60,7 @@ pontos-version next minor
 
 ## pontos-update-header
 
-`pontos-update-header` - Handling Copyright header for various file types and licences
+`pontos-update-header` - Handling Copyright header for various file types and licenses
 
 :::{note}
 We also provide easy-to-use [GitHub Actions](https://github.com/greenbone/actions/#usage), that updates copyright year in header of files and creates a Pull Request.
