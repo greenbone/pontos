@@ -107,6 +107,12 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         ),
         action=ReleaseVersionAction,
     )
+    release_parser.add_argument(
+        "--release-series",
+        help="Create a release for a release series. Setting a release series "
+        "is required if the latest tag version is newer then the to be "
+        'released version. Examples: "1.2", "2", "22.4"',
+    )
 
     release_parser.add_argument(
         "--next-version",
@@ -171,6 +177,12 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     sign_parser.add_argument(
         "--release-version",
         help="Will release changelog as version. Must be PEP 440 compliant.",
+    )
+    sign_parser.add_argument(
+        "--release-series",
+        help="Sign release files for a release series. Setting a release "
+        "series is required if the latest tag version is newer then the to be "
+        'signed version. Examples: "1.2", "2", "22.4"',
     )
     sign_parser.add_argument(
         "--git-tag-prefix",

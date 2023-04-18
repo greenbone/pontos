@@ -20,7 +20,7 @@ import asyncio
 from argparse import Namespace
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Optional
 
 import httpx
 
@@ -30,7 +30,7 @@ from pontos.git import Git
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionCalculator, VersionError
-from pontos.version.helper import get_last_release_versions
+from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
 from pontos.version.schemes import VersioningScheme
 
@@ -45,21 +45,12 @@ class ReleaseReturnValue(IntEnum):
     SUCCESS = 0
     PROJECT_SETTINGS_NOT_FOUND = auto()
     TOKEN_MISSING = auto()
+    NO_LAST_RELEASE_VERSION = auto()
     NO_RELEASE_VERSION = auto()
     ALREADY_TAKEN = auto()
     CREATE_RELEASE_ERROR = auto()
     UPDATE_VERSION_ERROR = auto()
     UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
-
-
-def _get_version(
-    release_version: Version, last_release_versions: Iterable[Version]
-) -> Optional[Version]:
-    for version in last_release_versions:
-        if release_version > version:
-            return version
-
-    return None
 
 
 class ReleaseCommand:
@@ -74,34 +65,36 @@ class ReleaseCommand:
         self.git = Git()
         self.terminal = terminal
 
-    def _get_release_version(
+    def _get_next_release_version(
         self,
         *,
-        current_version: Version,
+        last_release_version: Version,
         calculator: VersionCalculator,
         release_type: ReleaseType,
         release_version: Optional[Version],
     ) -> Version:
         if release_type == ReleaseType.CALENDAR:
-            return calculator.next_calendar_version(current_version)
+            return calculator.next_calendar_version(last_release_version)
 
         if release_type == ReleaseType.PATCH:
-            return calculator.next_patch_version(current_version)
+            return calculator.next_patch_version(last_release_version)
 
         if release_type == ReleaseType.MINOR:
-            return calculator.next_minor_version(current_version)
+            return calculator.next_minor_version(last_release_version)
 
         if release_type == ReleaseType.MAJOR:
-            return calculator.next_major_version(current_version)
+            return calculator.next_major_version(last_release_version)
 
         if release_type == ReleaseType.ALPHA:
-            return calculator.next_alpha_version(current_version)
+            return calculator.next_alpha_version(last_release_version)
 
         if release_type == ReleaseType.BETA:
-            return calculator.next_beta_version(current_version)
+            return calculator.next_beta_version(last_release_version)
 
         if release_type == ReleaseType.RELEASE_CANDIDATE:
-            return calculator.next_release_candidate_version(current_version)
+            return calculator.next_release_candidate_version(
+                last_release_version
+            )
 
         if not release_version:
             raise VersionError(
@@ -145,74 +138,6 @@ class ReleaseCommand:
             prerelease=release_version.is_pre_release,
         )
 
-    def _get_last_release(
-        self,
-        release_type: ReleaseType,
-        release_version: Version,
-        calculator: VersionCalculator,
-    ) -> Version:
-        # try to get last tag for the matching release series
-        if release_type in [
-            ReleaseType.PATCH,
-            ReleaseType.ALPHA,
-            ReleaseType.BETA,
-            ReleaseType.RELEASE_CANDIDATE,
-        ]:
-            tag_name = (
-                f"{self.git_tag_prefix}"
-                f"{release_version.major}.{release_version.minor}.*"
-            )
-        elif release_type == ReleaseType.MINOR:
-            tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
-        else:
-            tag_name = None
-
-        last_release_versions = get_last_release_versions(
-            calculator.version_from_string,
-            git_tag_prefix=self.git_tag_prefix,
-            ignore_pre_releases=not release_version.is_pre_release,
-            tag_name=tag_name,
-        )
-
-        last_release_version = _get_version(
-            release_version, last_release_versions
-        )
-
-        if tag_name and not last_release_version:
-            if release_type in [
-                ReleaseType.PATCH,
-                ReleaseType.ALPHA,
-                ReleaseType.BETA,
-                ReleaseType.RELEASE_CANDIDATE,
-            ]:
-                tag_name = f"{self.git_tag_prefix}{release_version.major}.*"
-            else:
-                tag_name = None
-
-            last_release_versions = get_last_release_versions(
-                calculator.version_from_string,
-                git_tag_prefix=self.git_tag_prefix,
-                ignore_pre_releases=not release_version.is_pre_release,
-                tag_name=tag_name,
-            )
-
-            last_release_version = _get_version(
-                release_version, last_release_versions
-            )
-
-            if not last_release_version:
-                last_release_versions = get_last_release_versions(
-                    calculator.version_from_string,
-                    git_tag_prefix=self.git_tag_prefix,
-                    ignore_pre_releases=not release_version.is_pre_release,
-                )
-
-                last_release_version = _get_version(
-                    release_version, last_release_versions
-                )
-
-        return last_release_version
-
     async def run(
         self,
         *,
@@ -228,6 +153,7 @@ class ReleaseCommand:
         git_tag_prefix: Optional[str],
         cc_config: Optional[Path],
         local: Optional[bool] = False,
+        release_series: Optional[str] = None,
     ) -> ReleaseReturnValue:
         """
         Create a release
@@ -245,8 +171,9 @@ class ReleaseCommand:
                 a new CalVer release version. VERSION uses the provided
                 release_version.
             release_version: Optional release version to use. If not set the
-                current version will be determined from the project.
+                to be released version will be determined from the project.
             next_version: Optional version to set after the release.
+                If not set the next development version will be set.
             git_signing_key: A GPG key ID to use for creating signatures.
             git_remote_name: Name of the git remote to use.
             git_tag_prefix: An optional prefix to use for creating a git tag
@@ -255,6 +182,8 @@ class ReleaseCommand:
                 commits.
             local: Only create changes locally and don't push changes to
                 remote repository. Also don't create a GitHub release.
+            release_series: Optional release series to use.
+                For example: "1.2", "2", "23".
         """
         git_signing_key = (
             git_signing_key
@@ -267,32 +196,47 @@ class ReleaseCommand:
         )
         self.space = space
 
-        try:
-            project = Project(versioning_scheme)
-        except PontosError as e:
-            self.terminal.error(f"Unable to determine project settings. {e}")
-            return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
+        self.terminal.info(
+            f"Using versioning scheme {versioning_scheme.__class__.__name__}"
+        )
 
-        self.terminal.info(f"Using versioning scheme {versioning_scheme}")
+        try:
+            last_release_version = get_last_release_version(
+                parse_version=versioning_scheme.parse_version,
+                git_tag_prefix=self.git_tag_prefix,
+                tag_name=f"{self.git_tag_prefix}{release_series}.*"
+                if release_series
+                else None,
+            )
+        except PontosError as e:
+            self.terminal.error(
+                f"Could not determine last release version. {e}"
+            )
+            return ReleaseReturnValue.NO_LAST_RELEASE_VERSION
+
+        if not last_release_version:
+            if not release_version:
+                self.terminal.error("Unable to determine last release version.")
+                return ReleaseReturnValue.NO_LAST_RELEASE_VERSION
+            else:
+                self.terminal.info(
+                    f"Creating the initial release {release_version}"
+                )
+
+        else:
+            self.terminal.info(f"Last release was {last_release_version}")
 
         calculator = versioning_scheme.calculator()
 
         try:
-            current_version = project.get_current_version()
-
-            self.terminal.info(f"Current version is {current_version}")
-
-            release_version = self._get_release_version(
-                current_version=current_version,
+            release_version = self._get_next_release_version(
+                last_release_version=last_release_version,
                 calculator=calculator,
                 release_type=release_type,
                 release_version=release_version,
             )
         except VersionError as e:
             self.terminal.error(f"Unable to determine release version. {e}")
-            return ReleaseReturnValue.NO_RELEASE_VERSION
-
-        if not release_version:
             return ReleaseReturnValue.NO_RELEASE_VERSION
 
         self.terminal.info(f"Preparing the release {release_version}")
@@ -302,6 +246,12 @@ class ReleaseCommand:
         if self._has_tag(git_version):
             self.terminal.error(f"Git tag {git_version} already exists.")
             return ReleaseReturnValue.ALREADY_TAKEN
+
+        try:
+            project = Project(versioning_scheme)
+        except PontosError as e:
+            self.terminal.error(f"Unable to determine project settings. {e}")
+            return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
         try:
             updated = project.update_version(release_version)
@@ -317,22 +267,10 @@ class ReleaseCommand:
             )
             return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
-        last_release_version = self._get_last_release(
-            release_type=release_type,
-            release_version=release_version,
-            calculator=calculator,
+        self.terminal.info(
+            f"Creating changelog for {release_version} since "
+            f"{last_release_version}"
         )
-
-        if not last_release_version:
-            self.terminal.info(
-                f"No last release found. Creating changelog for the initial "
-                f"release {release_version}"
-            )
-        else:
-            self.terminal.info(
-                f"Creating changelog for {release_version} since "
-                f"{last_release_version}"
-            )
 
         release_text = self._create_changelog(
             release_version, last_release_version, cc_config
@@ -425,5 +363,6 @@ def release(
             git_tag_prefix=args.git_tag_prefix,
             cc_config=args.cc_config,
             local=args.local,
+            release_series=args.release_series,
         )
     )

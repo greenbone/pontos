@@ -212,6 +212,13 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.cc_config, Path("foo.toml"))
 
+    def test_release_series(self):
+        _, _, args = parse_args(
+            ["release", "--release-type", "patch", "--release-series", "22.4"]
+        )
+
+        self.assertEqual(args.release_series, "22.4")
+
 
 class SignParseArgsTestCase(unittest.TestCase):
     def test_sign_func(self):
@@ -255,3 +262,8 @@ class SignParseArgsTestCase(unittest.TestCase):
         _, _, args = parse_args(["sign", "--passphrase", "123"])
 
         self.assertEqual(args.passphrase, "123")
+
+    def test_release_series(self):
+        _, _, args = parse_args(["sign", "--release-series", "22.4"])
+
+        self.assertEqual(args.release_series, "22.4")
