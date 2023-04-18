@@ -157,7 +157,7 @@ class UpdateHeaderTestCase(TestCase):
 
         header = add_header(
             suffix=".py",
-            licence="AGPL-3.0-or-later",
+            license="AGPL-3.0-or-later",
             company=self.args.company,
             year="2021",
         )
@@ -168,16 +168,16 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(ValueError):
             add_header(
                 suffix=".prr",
-                licence="AGPL-3.0-or-later",
+                license="AGPL-3.0-or-later",
                 company=self.args.company,
                 year="2021",
             )
 
-    def test_add_header_licence_not_found(self):
+    def test_add_header_license_not_found(self):
         with self.assertRaises(FileNotFoundError):
             add_header(
                 suffix=".py",
-                licence="AAAGPL-3.0-or-later",
+                license="AAAGPL-3.0-or-later",
                 company=self.args.company,
                 year="2021",
             )
@@ -186,7 +186,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_file_not_existing(self, mock_stdout):
         self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -209,10 +209,10 @@ class UpdateHeaderTestCase(TestCase):
         )
 
     @patch("sys.stdout", new_callable=StringIO)
-    def test_update_file_wrong_licence(self, mock_stdout):
+    def test_update_file_wrong_license(self, mock_stdout):
         self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = "AAAGPL-3.0-or-later"
+        self.args.license = "AAAGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -227,7 +227,7 @@ class UpdateHeaderTestCase(TestCase):
         ret = mock_stdout.getvalue()
         self.assertEqual(
             ret,
-            f"{test_file}: Licence file for "
+            f"{test_file}: License file for "
             "AAAGPL-3.0-or-later is not existing.\n",
         )
 
@@ -237,7 +237,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_file_suffix_invalid(self, mock_stdout):
         self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -252,7 +252,7 @@ class UpdateHeaderTestCase(TestCase):
         ret = mock_stdout.getvalue()
         self.assertEqual(
             ret,
-            f"{test_file}: No licence header for the format .pppy found.\n",
+            f"{test_file}: No license header for the format .pppy found.\n",
         )
 
         test_file.unlink()
@@ -261,7 +261,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_file_binary_file(self, mock_stdout):
         self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -295,7 +295,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_file_changed(self, mock_stdout):
         self.args.year = "1995"
         self.args.changed = True
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -324,7 +324,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_create_header(self, mock_stdout):
         self.args.year = "1995"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -339,7 +339,7 @@ class UpdateHeaderTestCase(TestCase):
 
         ret = mock_stdout.getvalue()
         self.assertEqual(
-            f"{test_file}: Added licence header.\n",
+            f"{test_file}: Added license header.\n",
             ret,
         )
         self.assertEqual(code, 0)
@@ -350,7 +350,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_header_in_file(self, mock_stdout):
         self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -370,7 +370,7 @@ class UpdateHeaderTestCase(TestCase):
         ret = mock_stdout.getvalue()
         self.assertEqual(
             ret,
-            f"{test_file}: Changed Licence Header "
+            f"{test_file}: Changed License Header "
             "Copyright Year None -> 2021\n",
         )
         self.assertIn(
@@ -384,7 +384,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_update_header_ok_in_file(self, mock_stdout):
         self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         term = Terminal()
 
@@ -404,7 +404,7 @@ class UpdateHeaderTestCase(TestCase):
         ret = mock_stdout.getvalue()
         self.assertEqual(
             ret,
-            f"{test_file}: Licence Header is ok.\n",
+            f"{test_file}: License Header is ok.\n",
         )
         self.assertIn(
             "# SPDX-FileCopyrightText: 2021 Greenbone AG",
@@ -416,7 +416,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_argparser_files(self):
         self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         args = ["-f", "test.py", "-y", "2021", "-l", "AGPL-3.0-or-later"]
 
@@ -425,12 +425,12 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(args.company, self.args.company)
         self.assertEqual(args.files, ["test.py"])
         self.assertEqual(args.year, self.args.year)
-        self.assertEqual(args.licence, self.args.licence)
+        self.assertEqual(args.license, self.args.license)
 
     def test_argparser_dir(self):
         self.args.year = "2020"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
 
         args = ["-d", ".", "-c", "-l", "AGPL-3.0-or-later"]
 
@@ -440,7 +440,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(args.directories, ["."])
         self.assertTrue(args.changed)
         self.assertEqual(args.year, str(datetime.datetime.now().year))
-        self.assertEqual(args.licence, self.args.licence)
+        self.assertEqual(args.license, self.args.license)
 
     def test_get_exclude_list(self):
         # Try to find the current file from two directories up...
@@ -461,7 +461,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_main(self, argparser_mock):
         self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
         self.args.files = ["test.py"]
         self.args.directories = None
         self.args.verbose = 0
@@ -481,7 +481,7 @@ class UpdateHeaderTestCase(TestCase):
     def test_main_never_happen(self, argparser_mock, mock_stdout):
         self.args.year = "2021"
         self.args.changed = False
-        self.args.licence = "AGPL-3.0-or-later"
+        self.args.license = "AGPL-3.0-or-later"
         self.args.files = None
         self.args.directories = None
         self.args.verbose = 0

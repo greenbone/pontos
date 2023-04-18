@@ -90,19 +90,19 @@ def _find_copyright(
 
 
 def _add_header(
-    suffix: str, licence: str, company: str, year: str
+    suffix: str, license: str, company: str, year: str
 ) -> Union[str, None]:
     """Tries to add the header to the file.
     Requirements:
       - file type must be supported
-      - licence file must exist
+      - license file must exist
     """
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
-        licence_file = root / "templates" / licence / f"template{suffix}"
+        license_file = root / "templates" / license / f"template{suffix}"
         try:
             return (
-                licence_file.read_text(encoding="utf-8")
+                license_file.read_text(encoding="utf-8")
                 .replace("<company>", company)
                 .replace("<year>", year)
             )
@@ -149,7 +149,7 @@ def _update_file(
                 try:
                     header = _add_header(
                         file.suffix,
-                        parsed_args.licence,
+                        parsed_args.license,
                         parsed_args.company,
                         parsed_args.year,
                     )
@@ -160,16 +160,16 @@ def _update_file(
                         fp.write(header)
                         fp.write("\n")
                         fp.write(rest_of_file)
-                        print(f"{file}: Added licence header.")
+                        print(f"{file}: Added license header.")
                         return 0
                 except ValueError:
                     print(
-                        f"{file}: No licence header for the"
+                        f"{file}: No license header for the"
                         f" format {file.suffix} found.",
                     )
                 except FileNotFoundError:
                     print(
-                        f"{file}: Licence file for {parsed_args.licence} "
+                        f"{file}: License file for {parsed_args.license} "
                         "is not existing."
                     )
                 return 1
@@ -196,14 +196,14 @@ def _update_file(
                 # so we truncate the file, just in case!
                 fp.truncate()
                 print(
-                    f"{file}: Changed Licence Header Copyright Year "
+                    f"{file}: Changed License Header Copyright Year "
                     f'{copyright_match["modification_year"]} -> '
                     f"{parsed_args.year}"
                 )
 
                 return 0
             else:
-                print(f"{file}: Licence Header is ok.")
+                print(f"{file}: License Header is ok.")
                 return 0
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
@@ -295,10 +295,10 @@ def _parse_args(args=None):
 
     parser.add_argument(
         "-l",
-        "--licence",
+        "--license",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
-        help=("Use the passed licence type"),
+        help=("Use the passed license type"),
     )
 
     parser.add_argument(
@@ -306,7 +306,7 @@ def _parse_args(args=None):
         default="Greenbone AG",
         help=(
             "If a header will be added to file, "
-            "it will be licenced by company."
+            "it will be licensed by company."
         ),
     )
 
