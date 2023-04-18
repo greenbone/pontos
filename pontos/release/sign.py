@@ -182,14 +182,15 @@ class SignCommand:
         self,
         *,
         token: str,
-        dry_run: Optional[bool] = False,
         space: str,
-        project: Optional[str],
         versioning_scheme: VersioningScheme,
-        git_tag_prefix: Optional[str],
-        release_version: Optional[Version],
         signing_key: str,
         passphrase: str,
+        dry_run: Optional[bool] = False,
+        project: Optional[str],
+        git_tag_prefix: Optional[str],
+        release_version: Optional[Version],
+        release_series: Optional[str] = None,
     ) -> SignReturnValue:
         """
         Sign a release
@@ -209,6 +210,8 @@ class SignCommand:
                 current version will be determined from the project.
             signing_key: A GPG key ID to use for creating signatures.
             passphrase: Passphrase for the signing key
+            release_series: Optional release series to use.
+                For example: "1.2", "2", "23".
         """
         if not token and not dry_run:
             # dry run doesn't upload assets. therefore a token MAY NOT be
@@ -219,12 +222,16 @@ class SignCommand:
             )
             return SignReturnValue.TOKEN_MISSING
 
+        self.terminal.info(
+            f"Using versioning scheme {versioning_scheme.__class__.__name__}"
+        )
+
         try:
             project = (
                 project if project is not None else get_git_repository_name()
             )
-        except GitError:
-            self.terminal.error("Could not determine project. {e}")
+        except GitError as e:
+            self.terminal.error(f"Could not determine project. {e}")
             return SignReturnValue.NO_PROJECT
 
         try:
@@ -234,6 +241,9 @@ class SignCommand:
                 else get_last_release_version(
                     versioning_scheme.parse_version,
                     git_tag_prefix=git_tag_prefix,
+                    tag_name=f"{git_tag_prefix}{release_series}.*"
+                    if release_series
+                    else None,
                 )
             )
         except PontosError as e:
@@ -371,5 +381,6 @@ def sign(
             release_version=args.release_version,
             signing_key=args.signing_key,
             passphrase=args.passphrase,
+            release_series=args.release_series,
         )
     )
