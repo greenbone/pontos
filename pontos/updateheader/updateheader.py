@@ -90,7 +90,7 @@ def _find_copyright(
 
 
 def _add_header(
-    suffix: str, license: str, company: str, year: str
+    suffix: str, license_id: str, company: str, year: str
 ) -> Union[str, None]:
     """Tries to add the header to the file.
     Requirements:
@@ -99,7 +99,7 @@ def _add_header(
     """
     if suffix in SUPPORTED_FILE_TYPES:
         root = Path(__file__).parent
-        license_file = root / "templates" / license / f"template{suffix}"
+        license_file = root / "templates" / license_id / f"template{suffix}"
         try:
             return (
                 license_file.read_text(encoding="utf-8")
@@ -149,7 +149,7 @@ def _update_file(
                 try:
                     header = _add_header(
                         file.suffix,
-                        parsed_args.license,
+                        parsed_args.license_id,
                         parsed_args.company,
                         parsed_args.year,
                     )
@@ -169,7 +169,7 @@ def _update_file(
                     )
                 except FileNotFoundError:
                     print(
-                        f"{file}: License file for {parsed_args.license} "
+                        f"{file}: License file for {parsed_args.license_id} "
                         "is not existing."
                     )
                 return 1
