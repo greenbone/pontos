@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import Optional
+from typing import Iterator, Optional
 
 from pontos.git import Git, TagSort
 from pontos.git.git import DEFAULT_TAG_SORT_SUFFIX
@@ -31,7 +31,7 @@ def get_last_release_versions(
     git_tag_prefix: Optional[str] = "",
     ignore_pre_releases: Optional[bool] = False,
     tag_name: Optional[str] = None,
-) -> list[Version]:
+) -> Iterator[Version]:
     """Get the last released Versions from git.
 
     Args:
@@ -51,8 +51,6 @@ def get_last_release_versions(
     )
     tag_list.reverse()
 
-    tags = []
-
     for tag in tag_list:
         last_release_version = tag.strip(git_tag_prefix)
 
@@ -60,9 +58,7 @@ def get_last_release_versions(
         if version.is_pre_release and ignore_pre_releases:
             continue
 
-        tags.append(version)
-
-    return tags
+        yield version
 
 
 def get_last_release_version(
@@ -85,11 +81,14 @@ def get_last_release_version(
         or None
     """
 
-    versions = get_last_release_versions(
+    it = get_last_release_versions(
         parse_version=parse_version,
         git_tag_prefix=git_tag_prefix,
         ignore_pre_releases=ignore_pre_releases,
         tag_name=tag_name,
     )
 
-    return versions[0] if versions else None
+    try:
+        return next(it)
+    except StopIteration:
+        return None
