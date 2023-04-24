@@ -16,8 +16,8 @@ jobs:
           install-dependencies: "false"
           cache-poetry-installation: "true"
       - name: Build and publish
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
         run: |
           poetry build
-          poetry upload
+          poetry publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
