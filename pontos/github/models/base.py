@@ -278,6 +278,7 @@ class Event(Enum):
     DEPLOYMENT_STATUS = "deployment_status"
     DISCUSSION = "discussion"
     DISCUSSION_COMMENT = "discussion_comment"
+    DYNAMIC = "dynamic"
     FORK = "fork"
     GOLLUM = "gollum"
     ISSUE_COMMENT = "issue_comment"
