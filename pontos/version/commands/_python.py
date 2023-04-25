@@ -202,9 +202,21 @@ class PythonVersionCommand(VersionCommand):
                 previous=current_converted_version, new=new_version
             )
 
-        self._update_pyproject_version(new_version=new_pep440_version)
+        try:
+            self._update_pyproject_version(new_version=new_pep440_version)
+        except OSError as e:
+            raise VersionError(
+                "Unable to update version in "
+                f"{self.project_file_path.absolute()}. Error was {e}"
+            ) from e
 
-        self._update_version_file(new_version=new_pep440_version)
+        try:
+            self._update_version_file(new_version=new_pep440_version)
+        except OSError as e:
+            raise VersionError(
+                "Unable to update version in "
+                f"{self.version_file_path.absolute()}. Error was {e}"
+            ) from e
 
         return VersionUpdate(
             previous=current_converted_version,
