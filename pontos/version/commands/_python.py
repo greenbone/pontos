@@ -50,7 +50,9 @@ class PythonVersionCommand(VersionCommand):
             and "poetry" in self.pyproject_toml["tool"]  # type: ignore
             and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long
         ):
-            return self.versioning_scheme.parse_version(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore # pylint: disable=line-too-long
+            return PEP440VersioningScheme.parse_version(
+                self.pyproject_toml["tool"]["poetry"]["version"]
+            )  # type: ignore
 
         raise VersionError(
             "Version information not found in "
