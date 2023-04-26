@@ -18,6 +18,7 @@ the titan of the sea.
 - [Documentation](#documentation)
 - [Installation](#installation)
   - [Requirements](#requirements)
+  - [Install using pipx](#install-using-pipx)
   - [Install using pip](#install-using-pip)
   - [Install using poetry](#install-using-poetry)
 - [Development](#development)
@@ -35,7 +36,18 @@ The documentation for pontos can be found at https://greenbone.github.io/pontos/
 
 Python 3.9 and later is supported.
 
+### Install using pipx
+
+You can install the latest stable release of **pontos** from the Python
+Package Index (pypi) using [pipx]
+
+    python3 -m pipx install pontos
+
 ### Install using pip
+
+**NOTE:** The ‘pip install’ command does no longer work out-of-the-box in newer
+distributions like Ubuntu 23.04 because of [PEP 668](https://peps.python.org/pep-0668).
+Please use the [installation via pipx](#install-using-pipx) instead.
 
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pip]
@@ -58,9 +70,9 @@ a dependency for your current project using [poetry]
 **pontos** uses [poetry] for its own dependency management and build
 process.
 
-First install poetry via pip
+First install poetry via pipx
 
-    python3 -m pip install --user poetry
+    python3 -m pipx install poetry
 
 Afterwards run
 
@@ -100,4 +112,5 @@ Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 [Greenbone Networks]: https://www.greenbone.net/
 [poetry]: https://python-poetry.org/
 [pip]: https://pip.pypa.io/
+[pipx]: https://pypa.github.io/pipx/
 [autohooks]: https://github.com/greenbone/autohooks
