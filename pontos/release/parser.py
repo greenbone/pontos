@@ -17,7 +17,12 @@
 
 import argparse
 import os
-from argparse import ArgumentParser, ArgumentTypeError, Namespace
+from argparse import (
+    ArgumentParser,
+    ArgumentTypeError,
+    BooleanOptionalAction,
+    Namespace,
+)
 from enum import Enum
 from pathlib import Path
 from typing import Callable, Tuple, Type
@@ -157,6 +162,13 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         type=Path,
         help="Conventional commits config file (toml), including conventions."
         " If not set defaults are used.",
+    )
+    release_parser.add_argument(
+        "--update-project",
+        help="Update version in project files like pyproject.toml. By default "
+        "project files are updated.",
+        action=BooleanOptionalAction,
+        default=True,
     )
 
     sign_parser = subparsers.add_parser("sign")

@@ -1026,6 +1026,85 @@ class ReleaseTestCase(unittest.TestCase):
             released, ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
         )
 
+    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch(
+        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+    )
+    @patch(
+        "pontos.release.release.ReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.release.Project", autospec=True)
+    def test_no_update_project(
+        self,
+        project_mock: MagicMock,
+        create_changelog_mock: MagicMock,
+        create_release_mock: AsyncMock,
+        get_last_release_version_mock: MagicMock,
+        git_mock: MagicMock,
+    ):
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2")
+        create_changelog_mock.return_value = "A Changelog"
+        get_last_release_version_mock.return_value = current_version
+
+        _, token, args = parse_args(
+            [
+                "release",
+                "--project",
+                "foo",
+                "--release-version",
+                "0.0.2",
+                "--next-version",
+                "1.0.0.dev1",
+                "--no-update-project",
+            ]
+        )
+
+        with temp_git_repository():
+            released = release(
+                terminal=mock_terminal(),
+                args=args,
+                token=token,
+            )
+
+        git_mock.return_value.push.assert_has_calls(
+            [
+                call(follow_tags=True, remote=None),
+                call(follow_tags=True, remote=None),
+            ],
+        )
+
+        self.assertEqual(
+            create_release_mock.await_args.args[1:],
+            (release_version, "foo", "A Changelog"),
+        )
+
+        git_mock.return_value.add.assert_not_called()
+        git_mock.return_value.commit.assert_has_calls(
+            [
+                call(
+                    "Automatic release to 0.0.2",
+                    verify=False,
+                    gpg_signing_key="1234",
+                ),
+                call(
+                    "Automatic adjustments after release\n\n"
+                    "* Update to version 1.0.0.dev1\n",
+                    verify=False,
+                    gpg_signing_key="1234",
+                ),
+            ]
+        )
+        git_mock.return_value.tag.assert_called_once_with(
+            "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
+        )
+
+        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+
+        project_mock.assert_not_called()
+
     def test_last_release_version_error(self):
         _, token, args = parse_args(
             [
