@@ -40,6 +40,7 @@ class VersioningScheme(ABC):
 
     version_cls: Type[Version]
     version_calculator_cls: Type[VersionCalculator]
+    name: str
 
     @classmethod
     def parse_version(cls, version: str) -> Version:
