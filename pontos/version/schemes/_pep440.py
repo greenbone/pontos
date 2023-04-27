@@ -402,3 +402,4 @@ class PEP440VersioningScheme(VersioningScheme):
 
     version_calculator_cls = PEP440VersionCalculator
     version_cls = PEP440Version
+    name = "PEP440"

@@ -467,3 +467,4 @@ class SemanticVersionCalculator(VersionCalculator):
 class SemanticVersioningScheme(VersioningScheme):
     version_cls = SemanticVersion
     version_calculator_cls = SemanticVersionCalculator
+    name = "SemVer"

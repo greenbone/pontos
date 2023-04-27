@@ -198,9 +198,7 @@ class ReleaseCommand:
         )
         self.space = space
 
-        self.terminal.info(
-            f"Using versioning scheme {versioning_scheme.__class__.__name__}"
-        )
+        self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
         try:
             last_release_version = get_last_release_version(
