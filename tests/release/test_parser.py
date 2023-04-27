@@ -219,6 +219,23 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.release_series, "22.4")
 
+    def test_update_project(self):
+        _, _, args = parse_args(["release", "--release-type", "patch"])
+
+        self.assertTrue(args.update_project)
+
+        _, _, args = parse_args(
+            ["release", "--release-type", "patch", "--update-project"]
+        )
+
+        self.assertTrue(args.update_project)
+
+        _, _, args = parse_args(
+            ["release", "--release-type", "patch", "--no-update-project"]
+        )
+
+        self.assertFalse(args.update_project)
+
 
 class SignParseArgsTestCase(unittest.TestCase):
     def test_sign_func(self):

@@ -154,6 +154,7 @@ class ReleaseCommand:
         cc_config: Optional[Path],
         local: Optional[bool] = False,
         release_series: Optional[str] = None,
+        update_project: bool = True,
     ) -> ReleaseReturnValue:
         """
         Create a release
@@ -184,6 +185,7 @@ class ReleaseCommand:
                 remote repository. Also don't create a GitHub release.
             release_series: Optional release series to use.
                 For example: "1.2", "2", "23".
+            update_project: Update version in project files.
         """
         git_signing_key = (
             git_signing_key
@@ -247,25 +249,28 @@ class ReleaseCommand:
             self.terminal.error(f"Git tag {git_version} already exists.")
             return ReleaseReturnValue.ALREADY_TAKEN
 
-        try:
-            project = Project(versioning_scheme)
-        except PontosError as e:
-            self.terminal.error(f"Unable to determine project settings. {e}")
-            return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
+        if update_project:
+            try:
+                project = Project(versioning_scheme)
+            except PontosError as e:
+                self.terminal.error(
+                    f"Unable to determine project settings. {e}"
+                )
+                return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
-        try:
-            updated = project.update_version(release_version)
+            try:
+                updated = project.update_version(release_version)
 
-            self.terminal.ok(f"Updated version to {release_version}")
+                self.terminal.ok(f"Updated version to {release_version}")
 
-            for path in updated.changed_files:
-                self.terminal.info(f"Adding changes of {path}")
-                self.git.add(path)
-        except VersionError as e:
-            self.terminal.error(
-                f"Unable to update version to {release_version}. {e}"
-            )
-            return ReleaseReturnValue.UPDATE_VERSION_ERROR
+                for path in updated.changed_files:
+                    self.terminal.info(f"Adding changes of {path}")
+                    self.git.add(path)
+            except VersionError as e:
+                self.terminal.error(
+                    f"Unable to update version to {release_version}. {e}"
+                )
+                return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
         self.terminal.info(
             f"Creating changelog for {release_version} since "
@@ -304,18 +309,21 @@ class ReleaseCommand:
         if not next_version:
             next_version = calculator.next_dev_version(release_version)
 
-        try:
-            updated = project.update_version(next_version)
-            self.terminal.ok(f"Updated version after release to {next_version}")
-        except VersionError as e:
-            self.terminal.error(
-                f"Error while updating version after release. {e}"
-            )
-            return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
+        if update_project:
+            try:
+                updated = project.update_version(next_version)
+                self.terminal.ok(
+                    f"Updated version after release to {next_version}"
+                )
+            except VersionError as e:
+                self.terminal.error(
+                    f"Error while updating version after release. {e}"
+                )
+                return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
 
-        for f in updated.changed_files:
-            self.terminal.info(f"Adding changes of {f}")
-            self.git.add(f)
+            for f in updated.changed_files:
+                self.terminal.info(f"Adding changes of {f}")
+                self.git.add(f)
 
         commit_msg = f"""Automatic adjustments after release
 
@@ -364,5 +372,6 @@ def release(
             cc_config=args.cc_config,
             local=args.local,
             release_series=args.release_series,
+            update_project=args.update_project,
         )
     )
