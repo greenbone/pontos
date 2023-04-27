@@ -283,9 +283,13 @@ class ReleaseCommand:
 
         commit_msg = f"Automatic release to {release_version}"
 
-        self.git.commit(
-            commit_msg, verify=False, gpg_signing_key=git_signing_key
-        )
+        # check if files have been modified and create a commit
+        status = list(self.git.status())
+        if status:
+            self.git.commit(
+                commit_msg, verify=False, gpg_signing_key=git_signing_key
+            )
+
         self.git.tag(
             git_version, gpg_key_id=git_signing_key, message=commit_msg
         )
