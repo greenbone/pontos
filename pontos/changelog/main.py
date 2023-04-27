@@ -41,7 +41,6 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
     parser.add_argument(
         "--config",
         "-C",
-        default="changelog.toml",
         type=Path,
         help="Conventional commits config file (toml), including conventions.",
     )
