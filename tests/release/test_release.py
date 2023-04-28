@@ -1121,16 +1121,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         git_instance_mock.add.assert_not_called()
-        git_instance_mock.commit.assert_has_calls(
-            [
-                call(
-                    "Automatic adjustments after release\n\n"
-                    "* Update to version 1.0.0.dev1\n",
-                    verify=False,
-                    gpg_signing_key="1234",
-                ),
-            ]
-        )
+        git_instance_mock.commit.assert_not_called()
         git_instance_mock.tag.assert_called_once_with(
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
@@ -1505,6 +1496,10 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry("M  MyProject.conf")
+        ]
 
         _, token, args = parse_args(
             [
@@ -1529,7 +1524,7 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
-        git_mock.return_value.push.assert_has_calls(
+        git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote="upstream"),
                 call(follow_tags=True, remote="upstream"),
@@ -1548,14 +1543,14 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_mock.return_value.add.assert_called_with("MyProject.conf")
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
@@ -1597,6 +1592,10 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry("M  MyProject.conf")
+        ]
 
         _, token, args = parse_args(
             [
@@ -1619,7 +1618,7 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
-        git_mock.return_value.push.assert_has_calls(
+        git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote=None),
                 call(follow_tags=True, remote=None),
@@ -1638,14 +1637,14 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_mock.return_value.add.assert_called_with("MyProject.conf")
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
@@ -1687,6 +1686,10 @@ class ReleaseTestCase(unittest.TestCase):
         create_changelog_mock.return_value = "A Changelog"
         create_api_mock = AsyncMock()
         github_api_mock.return_value.releases.create = create_api_mock
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry("M  MyProject.conf")
+        ]
 
         _, token, args = parse_args(
             [
@@ -1711,7 +1714,7 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
-        git_mock.return_value.push.assert_has_calls(
+        git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote="upstream"),
                 call(follow_tags=True, remote="upstream"),
@@ -1733,14 +1736,14 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_mock.return_value.add.assert_called_with("MyProject.conf")
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
@@ -1782,6 +1785,10 @@ class ReleaseTestCase(unittest.TestCase):
         create_changelog_mock.return_value = "A Changelog"
         create_api_mock = AsyncMock()
         github_api_mock.return_value.releases.create = create_api_mock
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry("M  MyProject.conf")
+        ]
 
         _, token, args = parse_args(
             [
@@ -1806,7 +1813,7 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
-        git_mock.return_value.push.assert_has_calls(
+        git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote="upstream"),
                 call(follow_tags=True, remote="upstream"),
@@ -1828,14 +1835,14 @@ class ReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_mock.return_value.add.assert_called_with("MyProject.conf")
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.1a1+dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "v0.0.1a1",
             gpg_key_id="1234",
             message="Automatic release to 0.0.1a1",
@@ -1860,6 +1867,12 @@ class ReleaseTestCase(unittest.TestCase):
         release_version = PEP440Version("0.0.2")
 
         create_changelog_mock.return_value = "A Changelog"
+
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry(f"M  {GoVersionCommand.version_file_path}")
+        ]
+
         _, token, args = parse_args(["release", "--release-type", "patch"])
 
         with setup_go_project(current_version="0.0.1", tags=["0.0.1"]):
@@ -1871,19 +1884,17 @@ class ReleaseTestCase(unittest.TestCase):
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
 
-        git_mock.return_value.push.assert_called_with(
-            follow_tags=True, remote=None
-        )
-        git_mock.return_value.add.assert_called_with(
+        git_instance_mock.push.assert_called_with(follow_tags=True, remote=None)
+        git_instance_mock.add.assert_called_with(
             GoVersionCommand.version_file_path
         )
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.3.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
@@ -2063,6 +2074,10 @@ class ReleaseTestCase(unittest.TestCase):
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
+        git_instance_mock: MagicMock = git_mock.return_value
+        git_instance_mock.status.return_value = [
+            StatusEntry("M  MyProject.conf")
+        ]
 
         _, token, args = parse_args(
             [
@@ -2084,7 +2099,7 @@ class ReleaseTestCase(unittest.TestCase):
                 token=token,
             )
 
-        git_mock.return_value.push.assert_not_called()
+        git_instance_mock.push.assert_not_called()
 
         create_release_mock.assert_not_awaited()
 
@@ -2095,14 +2110,14 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
 
-        git_mock.return_value.add.assert_called_with("MyProject.conf")
-        git_mock.return_value.commit.assert_called_with(
+        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
         )
-        git_mock.return_value.tag.assert_called_once_with(
+        git_instance_mock.tag.assert_called_once_with(
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
