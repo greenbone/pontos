@@ -279,17 +279,18 @@ class ReleaseCommand:
             release_version, last_release_version, cc_config
         )
 
-        self.terminal.info("Committing changes")
-
         commit_msg = f"Automatic release to {release_version}"
 
         # check if files have been modified and create a commit
         status = list(self.git.status())
         if status:
+            self.terminal.info("Committing changes")
+
             self.git.commit(
                 commit_msg, verify=False, gpg_signing_key=git_signing_key
             )
 
+        self.terminal.info(f"Creating tag {git_version}")
         self.git.tag(
             git_version, gpg_key_id=git_signing_key, message=commit_msg
         )
@@ -327,15 +328,18 @@ class ReleaseCommand:
                 self.terminal.info(f"Adding changes of {f}")
                 self.git.add(f)
 
-        commit_msg = f"""Automatic adjustments after release
+        # check if files have been modified and create a commit
+        status = list(self.git.status())
+        if status:
+            commit_msg = f"""Automatic adjustments after release
 
 * Update to version {next_version}
 """
 
-        self.terminal.info("Committing changes")
-        self.git.commit(
-            commit_msg, verify=False, gpg_signing_key=git_signing_key
-        )
+            self.terminal.info("Committing changes after release")
+            self.git.commit(
+                commit_msg, verify=False, gpg_signing_key=git_signing_key
+            )
 
         if not local:
             self.terminal.info("Pushing changes")
