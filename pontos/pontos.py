@@ -16,11 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pontos.terminal.terminal import ConsoleTerminal
+import sys
+
+from pontos.terminal import RichTerminal
+from pontos.version import __version__
 
 
 def main() -> None:
-    term = ConsoleTerminal()
+    term = RichTerminal()
+
+    if len(sys.argv) > 1 and sys.argv[1] == "--version":
+        term.print(f"pontos version {__version__}")
+        return
 
     term.print()
     term.bold_info("pontos - Greenbone Python Utilities and Tools")
