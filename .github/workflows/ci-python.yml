@@ -22,7 +22,7 @@ jobs:
         uses: greenbone/actions/lint-python@v2
         with:
           packages: pontos tests scripts
-          version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: "true"
 
   test:
@@ -39,7 +39,7 @@ jobs:
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v2
         with:
-          version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: "true"
           cache-poetry-installation: "true"
       - name: Run unit tests
@@ -54,7 +54,7 @@ jobs:
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v2
         with:
-          version: "3.10"
+          python-version: "3.10"
           cache: "true"
           token: ${{ secrets.CODECOV_TOKEN }}
 
