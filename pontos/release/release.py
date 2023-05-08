@@ -18,6 +18,7 @@
 
 import asyncio
 from argparse import Namespace
+from dataclasses import dataclass
 from enum import IntEnum, auto
 from pathlib import Path
 from typing import Optional
@@ -27,6 +28,7 @@ import httpx
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.git import Git
+from pontos.github.actions.core import ActionIO
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionCalculator, VersionError
@@ -35,6 +37,21 @@ from pontos.version.project import Project
 from pontos.version.schemes import VersioningScheme
 
 from .helper import ReleaseType, find_signing_key, get_git_repository_name
+
+
+@dataclass
+class ReleaseInformation:
+    last_release_version: Version
+    release_version: Version
+    git_release_tag: str
+    next_version: Version
+
+    def write_github_output(self):
+        with ActionIO.out() as output:
+            output.write("last-release-version", self.last_release_version)
+            output.write("release-version", self.release_version)
+            output.write("git-release-tag", self.git_release_tag)
+            output.write("next-version", self.next_version)
 
 
 class ReleaseReturnValue(IntEnum):
@@ -344,6 +361,15 @@ class ReleaseCommand:
         if not local:
             self.terminal.info("Pushing changes")
             self.git.push(follow_tags=True, remote=git_remote_name)
+
+        self.release_information = ReleaseInformation(
+            last_release_version=last_release_version,
+            release_version=release_version,
+            git_release_tag=git_version,
+            next_version=next_version,
+        )
+        if ActionIO.has_output():
+            self.release_information.write_github_output()
 
         return ReleaseReturnValue.SUCCESS
 
