@@ -119,14 +119,45 @@ class ActionIOTestCase(unittest.TestCase):
 
                 self.assertEqual(output, "foo=bar\nlorem=ipsum\n")
 
+    @patch.dict("os.environ", {}, clear=True)
     def test_output_no_env(self):
-        with patch.dict("os.environ", {}, clear=True), self.assertRaises(
-            GitHubActionsError
-        ):
+        with self.assertRaises(GitHubActionsError):
             ActionIO.output("foo", "bar")
 
+    @patch.dict("os.environ", {"GITHUB_OUTPUT": ""}, clear=True)
     def test_output_empty_env(self):
-        with patch.dict(
-            "os.environ", {"GITHUB_OUTPUT": ""}, clear=True
-        ), self.assertRaises(GitHubActionsError):
+        with self.assertRaises(GitHubActionsError):
             ActionIO.output("foo", "bar")
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_no_github_output(self):
+        self.assertFalse(ActionIO.has_output())
+
+    @patch.dict(
+        "os.environ", {"GITHUB_OUTPUT": "/foo/github.output"}, clear=True
+    )
+    def test_has_github_output(self):
+        self.assertTrue(ActionIO.has_output())
+
+    def test_out(self):
+        with temp_directory() as temp_dir:
+            outfile = temp_dir / "github.output"
+            with patch.dict(
+                "os.environ",
+                {"GITHUB_OUTPUT": str(outfile.absolute())},
+                clear=True,
+            ):
+                with ActionIO.out() as output:
+                    output.write("foo", "bar")
+
+            self.assertEqual(outfile.read_text(encoding="utf8"), "foo=bar\n")
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_out_failure(self):
+        with self.assertRaisesRegex(
+            GitHubActionsError,
+            "GITHUB_OUTPUT environment variable not set. Can't write "
+            "action output.",
+        ):
+            with ActionIO.out():
+                pass

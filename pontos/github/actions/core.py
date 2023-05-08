@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import contextlib
 import os
+from contextlib import contextmanager
+from io import TextIOWrapper
 from pathlib import Path
-from typing import Optional
+from typing import Generator, Optional
 
 from pontos.github.actions.errors import GitHubActionsError
 
@@ -68,7 +69,7 @@ class Console:
     """
 
     @classmethod
-    @contextlib.contextmanager
+    @contextmanager
     def group(cls, title: str):
         """
         ContextManager to display a foldable group
@@ -199,7 +200,49 @@ class Console:
         print(f"::debug::{message}")
 
 
+class ActionOutput:
+    def __init__(self, file: TextIOWrapper) -> None:
+        self._file = file
+
+    def write(self, name: str, value: str):
+        """
+        Set action output
+
+        An action output can be consumed by another job
+
+        Args:
+            name: Name of the output variable
+            value: Value of the output variable
+        """
+        self._file.write(f"{name}={value}\n")
+
+
 class ActionIO:
+    @staticmethod
+    def has_output() -> bool:
+        """
+        Check if GITHUB_OUTPUT is set
+        """
+        return "GITHUB_OUTPUT" in os.environ
+
+    @staticmethod
+    @contextmanager
+    def out() -> Generator[ActionOutput, None, None]:
+        """
+        Create action output
+
+        An action output can be consumed by another job
+        """
+        output_filename = os.environ.get("GITHUB_OUTPUT")
+        if not output_filename:
+            raise GitHubActionsError(
+                "GITHUB_OUTPUT environment variable not set. Can't write "
+                "action output."
+            )
+
+        with Path(output_filename).open("a", encoding="utf8") as f:
+            yield ActionOutput(f)
+
     @staticmethod
     def output(name: str, value: str):
         """

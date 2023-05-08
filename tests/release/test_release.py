@@ -29,10 +29,15 @@ from httpx import HTTPStatusError, Request, Response
 
 from pontos.git.git import ConfigScope, Git
 from pontos.git.status import StatusEntry
+from pontos.github.actions.errors import GitHubActionsError
 from pontos.release.main import parse_args
-from pontos.release.release import ReleaseReturnValue, release
+from pontos.release.release import (
+    ReleaseInformation,
+    ReleaseReturnValue,
+    release,
+)
 from pontos.terminal.terminal import Terminal
-from pontos.testing import temp_git_repository
+from pontos.testing import temp_directory, temp_git_repository
 from pontos.version import VersionError, VersionUpdate
 from pontos.version.commands import GoVersionCommand
 from pontos.version.schemes._pep440 import PEP440Version, PEP440VersioningScheme
@@ -74,6 +79,68 @@ def setup_go_project(
                 git.tag(f"v{tag}")
 
         yield tmp_git
+
+
+class ReleaseInformationTestCase(unittest.TestCase):
+    def test_release_info(self):
+        release_info = ReleaseInformation(
+            last_release_version=PEP440Version.from_string("1.2.3"),
+            release_version=PEP440Version.from_string("2.0.0"),
+            git_release_tag="v2.0.0",
+            next_version=PEP440Version.from_string("2.0.1.dev1"),
+        )
+
+        self.assertEqual(
+            release_info.last_release_version,
+            PEP440Version.from_string("1.2.3"),
+        )
+        self.assertEqual(
+            release_info.release_version, PEP440Version.from_string("2.0.0")
+        )
+        self.assertEqual(release_info.git_release_tag, "v2.0.0")
+        self.assertEqual(
+            release_info.next_version, PEP440Version.from_string("2.0.1.dev1")
+        )
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_no_github_output(self):
+        release_info = ReleaseInformation(
+            last_release_version=PEP440Version.from_string("1.2.3"),
+            release_version=PEP440Version.from_string("2.0.0"),
+            git_release_tag="v2.0.0",
+            next_version=PEP440Version.from_string("2.0.1.dev1"),
+        )
+
+        with self.assertRaisesRegex(
+            GitHubActionsError,
+            "GITHUB_OUTPUT environment variable not set. Can't write "
+            "action output.",
+        ):
+            release_info.write_github_output()
+
+    def test_github_output(self):
+        expected = """last-release-version=1.2.3
+release-version=2.0.0
+git-release-tag=v2.0.0
+next-version=2.0.1.dev1
+"""
+        with temp_directory() as temp_dir:
+            out_file = temp_dir / "out.txt"
+            with patch.dict(
+                "os.environ", {"GITHUB_OUTPUT": str(out_file.absolute())}
+            ):
+                release_info = ReleaseInformation(
+                    last_release_version=PEP440Version.from_string("1.2.3"),
+                    release_version=PEP440Version.from_string("2.0.0"),
+                    git_release_tag="v2.0.0",
+                    next_version=PEP440Version.from_string("2.0.1.dev1"),
+                )
+
+                release_info.write_github_output()
+
+            self.assertTrue(out_file.exists())
+            actual = out_file.read_text(encoding="utf8")
+            self.assertEqual(actual, expected)
 
 
 @patch.dict(
