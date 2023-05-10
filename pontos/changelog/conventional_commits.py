@@ -34,6 +34,7 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
     { message = "^remove", group = "Removed"},
     { message = "^change", group = "Changed"},
     { message = "^fix", group = "Bug Fixes"},
+    { message = "^deps", group = "Dependencies"},
 ]
 """
 
@@ -59,8 +60,10 @@ class ChangelogBuilder:
             from pontos.changelog import ChangelogBuilder
 
             builder = ChangelogBuilder(space="my-org", project="my-project)
-            changelog = builder.create_changelog
-                last_version="1.2.3", next_version="2.0.0")
+            changelog = builder.create_changelog(
+                last_version="1.2.3",
+                next_version="2.0.0",
+            )
     """
 
     def __init__(
