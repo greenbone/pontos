@@ -38,7 +38,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
     maxDiff = None
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
-    def test_changelog_builder(self, git_mock: MagicMock):
+    def test_changelog_builder_with_config(self, git_mock: MagicMock):
         today = datetime.today().strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
@@ -360,6 +360,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "dead901 Refactor: bar baz ref",
             "fedcba8 Fix: bar baz fixing",
             "d0c4d0c Doc: bar baz documenting",
+            "a1c5a0b Deps: Update foo from 1.2.3 to 3.2.1",
         ]
 
         changelog_builder = ChangelogBuilder(
@@ -380,6 +381,9 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
 ## Bug Fixes
 * bar baz fixing [fedcba8](https://github.com/foo/bar/commit/fedcba8)
+
+## Dependencies
+* Update foo from 1.2.3 to 3.2.1 [a1c5a0b](https://github.com/foo/bar/commit/a1c5a0b)
 
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
