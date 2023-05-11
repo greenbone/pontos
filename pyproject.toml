@@ -44,6 +44,7 @@ rich = ">=12.4.4"
 typing-extensions = { version = "^4.4.0", python = "<3.8" }
 python-dateutil = "^2.8.2"
 semver = ">=2.13,<4.0"
+lxml = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
 autohooks = ">=22.7.0"
