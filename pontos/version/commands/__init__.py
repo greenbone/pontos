@@ -17,18 +17,20 @@
 
 from typing import Iterable, Tuple, Type
 
+from ._cargo import CargoVersionCommand
 from ._cmake import CMakeVersionCommand
 from ._command import VersionCommand
 from ._go import GoVersionCommand
+from ._java import JavaVersionCommand
 from ._javascript import JavaScriptVersionCommand
 from ._python import PythonVersionCommand
-from ._cargo import CargoVersionCommand
 
 __all__ = (
     "VersionCommand",
     "CMakeVersionCommand",
     "GoVersionCommand",
     "JavaScriptVersionCommand",
+    "JavaVersionCommand",
     "PythonVersionCommand",
     "CargoVersionCommand",
     "get_commands",
@@ -37,6 +39,7 @@ __all__ = (
 __COMMANDS: Tuple[Type[VersionCommand]] = (
     CMakeVersionCommand,
     GoVersionCommand,
+    JavaVersionCommand,
     JavaScriptVersionCommand,
     PythonVersionCommand,
     CargoVersionCommand,
