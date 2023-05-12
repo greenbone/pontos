@@ -40,6 +40,8 @@ class PEP440VersionTestCase(unittest.TestCase):
             "22.4.1",
             "22.4.1.dev1",
             "22.4.1.dev3",
+            "2022.4.1.dev3",
+            "2022.4.1",
         ]
         for version in versions:
             self.assertEqual(Version.from_string(version), Version(version))
@@ -477,6 +479,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
             ("22.4.1", "22.4.2"),
             ("22.4.1.dev1", "22.4.1"),
             ("22.4.1.dev3", "22.4.1"),
+            ("2022.4.1.dev3", "2022.4.1"),
         ]
 
         for current_version, assert_version in versions:
@@ -554,6 +557,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
             ("1.1.0a1", "1.1.0"),
             ("1.0.0.dev1", "1.0.0"),
             ("1.1.0.dev1", "1.1.0"),
+            ("2022.1.0.dev1", "2022.1.0"),
         ]
 
         for current_version, assert_version in versions:
