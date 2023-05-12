@@ -45,7 +45,7 @@ class JavaVersionCommand(VersionCommand):
         pom_xml: etree.Element = self.pom_xml
 
         version_element = pom_xml.find("{*}version")
-        if not version_element:
+        if version_element is None:
             raise VersionError("Version tag missing in pom.xml")
 
         return PEP440VersioningScheme.parse_version(version_element.text)
@@ -60,8 +60,8 @@ class JavaVersionCommand(VersionCommand):
         pom_xml: etree.Element = self.pom_xml
 
         version_element = pom_xml.find("{*}version")
-        if not version_element:
-            raise VersionError("Couldn't find <version> tag in pom.xml")
+        if version_element is None:
+            raise VersionError("Version tag missing in pom.xml")
         version_element.text = str(new_version)
 
         etree.ElementTree(pom_xml).write(
@@ -70,7 +70,7 @@ class JavaVersionCommand(VersionCommand):
 
     @property
     def pom_xml(self) -> etree.Element:
-        if self._pom_xml:
+        if self._pom_xml is not None:
             return self._pom_xml
 
         if not self.project_file_path.exists():
@@ -81,7 +81,9 @@ class JavaVersionCommand(VersionCommand):
         except etree.XMLSyntaxError as e:
             raise VersionError(e) from e
 
-        return pom_xml.getroot()
+        self._pom_xml = pom_xml.getroot()
+
+        return self._pom_xml
 
     def get_current_version(self) -> Version:
         """Get the current version of this project
