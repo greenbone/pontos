@@ -116,7 +116,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
         with temp_file(content, name="pom.xml", change_into=True) as temp:
             cmd = JavaVersionCommand(PEP440VersioningScheme)
-            new_version = PEP440VersioningScheme.parse_version("2023.6.0-dev1")
+            new_version = PEP440VersioningScheme.parse_version("2023.6.0.dev1")
             updated = cmd.update_version(new_version)
 
             self.assertEqual(
@@ -125,14 +125,14 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(
                 updated.new,
-                PEP440VersioningScheme.parse_version("2023.6.0-dev1"),
+                PEP440VersioningScheme.parse_version("2023.6.0.dev1"),
             )
             self.assertEqual(updated.changed_files, [temp.resolve()])
 
             with temp.open(mode="r", encoding="utf-8") as fp:
                 fake_pom = etree.parse(fp).getroot()
 
-            self.assertEqual(fake_pom.find("{*}version").text, "2023.6.0-dev1")
+            self.assertEqual(fake_pom.find("{*}version").text, "2023.6.0.dev1")
 
     def test_no_update(self):
         content = """<?xml version="1.0" encoding="UTF-8"?>
