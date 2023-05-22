@@ -55,7 +55,7 @@ rope = "^1.8.0"
 coverage = "^7.2"
 myst-parser = ">=0.19.1"
 Sphinx = "^6.2.1"
-furo = "^2023.3.27"
+furo = "^2023.5.20"
 sphinx-autobuild = "^2021.3.14"
 
 [tool.black]
