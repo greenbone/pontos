@@ -296,6 +296,7 @@ def _parse_args(args=None):
     parser.add_argument(
         "-l",
         "--license",
+        dest="license_id",
         choices=SUPPORTED_LICENCES,
         default="GPL-3.0-or-later",
         help=("Use the passed license type"),
