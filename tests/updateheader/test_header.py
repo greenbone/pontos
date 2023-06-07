@@ -425,7 +425,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(args.company, self.args.company)
         self.assertEqual(args.files, ["test.py"])
         self.assertEqual(args.year, self.args.year)
-        self.assertEqual(args.license, self.args.license_id)
+        self.assertEqual(args.license_id, self.args.license_id)
 
     def test_argparser_dir(self):
         self.args.year = "2020"
@@ -440,7 +440,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(args.directories, ["."])
         self.assertTrue(args.changed)
         self.assertEqual(args.year, str(datetime.datetime.now().year))
-        self.assertEqual(args.license, self.args.license_id)
+        self.assertEqual(args.license_id, self.args.license_id)
 
     def test_get_exclude_list(self):
         # Try to find the current file from two directories up...
