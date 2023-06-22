@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
+from pathlib import Path
 from typing import Literal, Optional, Union
 
 from lxml import etree
@@ -31,9 +33,47 @@ TEMPLATE = """# pylint: disable=invalid-name
 __version__ = "{}"\n"""
 
 
+def find_file(
+    filename: Path, search_path: str, search_glob: str
+) -> Optional[Path]:
+    """Find a file somewherre within an directory tree
+    Arguments:
+        filename (Path)     The file to look up
+        search_path (str)   The path to look for the file
+        search_glob (str)   The glob search pattern
+
+    Returns:
+    The file as Path object, if existing"""
+    search_path = Path(search_path).resolve()
+    for file_path in search_path.glob(search_glob):
+        if file_path.is_file() and file_path.name == filename.name:
+            return file_path
+    return None
+
+
+def replace_string_in_file(
+    file_path: Path, pattern: str, replacement: str
+) -> None:
+    # Read the content of the file
+    content = file_path.read_text(encoding="utf-8")
+
+    # Search for the pattern in the content
+    match = re.search(pattern, content)
+
+    # Replace the matched group (Group 1) with the replacement
+    if match:
+        # Write the updated content back to the file
+        file_path.write_text(
+            content.replace(match.group(1), replacement), encoding="utf-8"
+        )
+
+
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
     project_file_name = "pom.xml"
+    _properties_file_path = Path(
+        "src/main/resources/application-docker.properties"
+    )
     _pom_xml: Optional[etree.Element] = None
 
     def _get_version_from_pom_xml(self) -> Version:
@@ -66,6 +106,39 @@ class JavaVersionCommand(VersionCommand):
 
         etree.ElementTree(pom_xml).write(
             self.project_file_path, pretty_print=True, encoding="utf-8"
+        )
+
+    def _update_properties_file(
+        self,
+        new_version: Version,
+    ) -> None:
+        # update the java properties file version
+        if not self._properties_file_path.exists():
+            # skip if not existing
+            return
+        pattern = r"sentry\.release=([0-9]+\.[0-9]+\.[0-9]+)"
+        replace_string_in_file(
+            self._properties_file_path,
+            pattern=pattern,
+            replacement=str(new_version),
+        )
+
+    def _update_swagger_config(
+        self,
+        new_version: Version,
+    ) -> None:
+        # update swagger config file version
+        swagger_config_file = find_file(
+            filename="SwaggerConfig.java",
+            search_path="src",
+            search_glob="**/config/swagger/*",
+        )
+        if not swagger_config_file:
+            # skip if not existing
+            return
+        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        replace_string_in_file(
+            swagger_config_file, pattern=pattern, replacement=str(new_version)
         )
 
     @property
@@ -113,6 +186,8 @@ class JavaVersionCommand(VersionCommand):
 
         changed_files = [self.project_file_path]
         self._update_pom_version(new_version=new_version)
+        self._update_properties_file(new_version=new_version)
+        self._update_swagger_config(new_version=new_version)
 
         return VersionUpdate(
             previous=package_version,
