@@ -17,7 +17,17 @@
 
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from types import TracebackType
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from httpx import Timeout
 
@@ -153,7 +163,7 @@ class CPEApi(NVDApi):
         """
         total_results = None
 
-        params = {}
+        params: Dict[str, Union[str, int]] = {}
         if last_modified_start_date:
             params["lastModStartDate"] = format_date(last_modified_start_date)
             if not last_modified_end_date:
@@ -191,11 +201,26 @@ class CPEApi(NVDApi):
                 object_hook=convert_camel_case
             )
 
-            results_per_page: int = data["results_per_page"]
-            total_results: int = data["total_results"]
-            products = data.get("products", [])
+            results_per_page: int = data["results_per_page"]  # type: ignore
+            total_results: int = data["total_results"]  # type: ignore
+            products: Iterable = data.get("products", [])  # type: ignore
 
             for product in products:
                 yield CPE.from_dict(product["cpe"])
 
-            start_index += results_per_page
+            if results_per_page is not None:
+                start_index += results_per_page
+
+    async def __aenter__(self) -> "CPEApi":
+        await super().__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
+        return await super().__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )

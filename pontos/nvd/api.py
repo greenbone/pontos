@@ -19,7 +19,7 @@ import asyncio
 from abc import ABC
 from datetime import datetime, timezone
 from types import TracebackType
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, Union
 
 from httpx import AsyncClient, Response, Timeout
 
@@ -30,7 +30,7 @@ DEFAULT_TIMEOUT = 180.0  # three minutes
 DEFAULT_TIMEOUT_CONFIG = Timeout(DEFAULT_TIMEOUT)  # three minutes
 
 Headers = Dict[str, str]
-Params = Dict[str, str]
+Params = Dict[str, Union[str, int]]
 
 __all__ = (
     "convert_camel_case",
@@ -115,7 +115,7 @@ class NVDApi(ABC):
         self._client = AsyncClient(http2=True, timeout=timeout)
 
         if rate_limit:
-            self._rate_limit = 50 if token else 5
+            self._rate_limit: Optional[int] = 50 if token else 5
         else:
             self._rate_limit = None
 
@@ -170,4 +170,6 @@ class NVDApi(ABC):
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        return await self._client.__aexit__(exc_type, exc_value, traceback)
+        return await self._client.__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )

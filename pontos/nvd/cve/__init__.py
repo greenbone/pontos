@@ -17,6 +17,7 @@
 
 import asyncio
 from argparse import ArgumentParser, Namespace
+from typing import Callable
 
 from pontos.nvd.cve.api import *
 
@@ -77,7 +78,7 @@ def cve_main() -> None:
     main(parser, query_cve)
 
 
-def main(parser: ArgumentParser, func: callable) -> None:
+def main(parser: ArgumentParser, func: Callable) -> None:
     try:
         args = parser.parse_args()
         asyncio.run(func(args))
