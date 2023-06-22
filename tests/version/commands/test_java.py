@@ -18,13 +18,98 @@
 # pylint: disable=line-too-long
 
 import unittest
+from pathlib import Path
 
 from lxml import etree
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
 from pontos.version.commands import JavaVersionCommand
+from pontos.version.commands._java import find_file, replace_string_in_file
 from pontos.version.schemes import PEP440VersioningScheme
+
+
+class TestFindFile(unittest.TestCase):
+    def test_file_found(self):
+        with temp_directory() as temp_dir:
+            deep_path = Path(temp_dir / "foo/bat/config/swagger/")
+            deep_path.mkdir(parents=True)
+            Path(deep_path / "SwaggerConfig.java").touch()
+            self.assertTrue(
+                Path(
+                    temp_dir / "foo/bat/config/swagger/SwaggerConfig.java"
+                ).exists()
+            )
+            filename = Path("SwaggerConfig.java")
+            search_path = temp_dir  # Assuming 'config/swagger' is two levels up
+            search_glob = "**/config/swagger/*"
+
+            result = find_file(filename, search_path, search_glob)
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result.name, filename.name)
+
+    def test_file_not_found(self):
+        with temp_directory() as temp_dir:
+            Path(
+                temp_dir / "foo/bat/config/swagger/SwaggerConfig.java",
+                parents=True,
+            )
+            filename = Path("NonExistentFile.java")
+            search_path = temp_dir
+            search_glob = "**/config/swagger/*"
+
+            result = find_file(filename, search_path, search_glob)
+
+            self.assertIsNone(result)
+
+
+class TestReplaceString(unittest.TestCase):
+    def test_replace_string_in_file(self):
+        # Define the test parameters
+        content = """
+        Foo, bar
+        baz
+            .version("1.2.3")
+        glubb
+        """
+        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        replacement = "1.2.4"
+
+        with temp_file(content=content) as tmp:
+            replace_string_in_file(tmp, pattern, replacement)
+
+            updated_content = tmp.read_text(encoding="utf-8")
+
+            # Verify the replacement was performed correctly
+            self.assertNotRegex(
+                updated_content, "1.2.3"
+            )  # Pattern should not be present
+            self.assertIn(
+                replacement, updated_content
+            )  # Replacement should be present
+
+    def test_replace_string_in_file_no_match(self):
+        # Define the test parameters
+        content = """
+        Foo, bar
+        baz
+            .versio("1.2.3")
+        glubb
+        """
+        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        replacement = "1.2.4"
+
+        with temp_file(content=content) as tmp:
+            # Call the function under test
+            replace_string_in_file(tmp, pattern, replacement)
+
+            # Read the content of the unmodified file
+            updated_content = tmp.read_text(encoding="utf-8")
+
+            # Verify the content remains unchanged
+            self.assertNotRegex(updated_content, replacement)
+            self.assertEqual(updated_content, content)
 
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
