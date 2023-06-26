@@ -54,7 +54,7 @@ autohooks-plugin-isort = ">=22.3.0"
 rope = "^1.8.0"
 coverage = "^7.2"
 myst-parser = ">=0.19.1"
-Sphinx = "^6.2.1"
+Sphinx = "^7.0.1"
 furo = "^2023.5.20"
 sphinx-autobuild = "^2021.3.14"
 
