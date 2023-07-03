@@ -49,6 +49,36 @@ class SemanticVersionTestCase(unittest.TestCase):
         for version in versions:
             self.assertEqual(Version.from_string(version), Version(version))
 
+    def test_parsed_version(self):
+        versions = [
+            "0.0.1",
+            "1.2.3",
+            "1.2.3-foo1",
+            "1.2.3-a1",
+            "1.2.3-alpha1",
+            "1.2.3-alpha1-dev1",
+            "1.2.3-b1",
+            "1.2.3-beta1",
+            "1.2.3-beta1-dev1",
+            "1.2.3-rc1",
+            "1.2.3-rc1-dev1",
+            "1.2.3-dev1",
+            "1.2.3+foo1",
+            "22.4.1",
+            "22.4.1-dev1",
+            "22.4.1-dev3",
+        ]
+        for version in versions:
+            self.assertEqual(
+                Version.from_string(version).parsed_version, version
+            )
+
+        pep440_version = PEP440Version.from_string("22.4.1.dev1")
+        semver_version = Version.from_version(pep440_version)
+
+        self.assertEqual(str(semver_version), "22.4.1-dev1")
+        self.assertEqual(semver_version.parsed_version, "22.4.1.dev1")
+
     def test_parse_error(self):
         versions = [
             "abc",
