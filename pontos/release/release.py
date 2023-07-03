@@ -140,7 +140,9 @@ class ReleaseCommand:
         )
 
         return changelog_builder.create_changelog(
-            last_version=last_release_version,
+            last_version=last_release_version.parsed_version
+            if last_release_version
+            else None,
             next_version=release_version,
         )
 
