@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# ruff: noqa: F403
+
 from pontos.github.models.artifact import *
 from pontos.github.models.base import *
 from pontos.github.models.branch import *

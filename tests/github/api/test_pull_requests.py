@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=redefined-builtin, line-too-long, too-many-lines
+# ruff: noqa: E501
 
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -770,7 +771,7 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             {
                 "url": "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
                 "sha": "6dcb09b5b57875f334f61aebed695e2e4193db53",
-                "node_id": "MDY6Q29tbWl0NmRjYjA5YjViNTc4NzVmMzM0ZjYxYWViZWQ2OTVlMmU0MTkzZGI1ZQ==",
+                "node_id": "MDY6Q29tbWl0NmRjYjA5YjViNTc4NzVmMzM0ZjYxYWViZWQ2OTVlMmU0MTkzZGI1ZQ==",  # noqa: E501
                 "html_url": "https://github.com/octocat/Hello-World/commit/6dcb09b5b57875f334f61aebed695e2e4193db5e",
                 "comments_url": "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e/comments",
                 "commit": {

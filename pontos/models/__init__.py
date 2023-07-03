@@ -162,10 +162,10 @@ class Model:
             try:
                 if isinstance(value, list):
                     model_field_cls = type_hints.get(name)
-                    value = [cls._get_value(model_field_cls, v) for v in value]  # type: ignore # pylint: disable= line-too-long
+                    value = [cls._get_value(model_field_cls, v) for v in value]  # type: ignore # pylint: disable=line-too-long # noqa: E501
                 elif value is not None:
                     model_field_cls = type_hints.get(name)
-                    value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable= line-too-long
+                    value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501
             except TypeError as e:
                 raise ModelError(
                     f"Error while creating {cls.__name__}. Could not set value "

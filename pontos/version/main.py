@@ -21,7 +21,6 @@ from typing import List, NoReturn, Optional
 
 from pontos.errors import PontosError
 
-from .__version__ import __version__
 from .parser import parse_args
 from .project import Project
 from .schemes import VersioningScheme

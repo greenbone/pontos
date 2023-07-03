@@ -117,7 +117,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                 async with GitHubAsyncRESTApi(token) as api:
                     team = await api.teams.create("foo", "devops")
                     print(team)
-        """
+        """  # noqa: E501
         api = f"/orgs/{organization}/teams"
         data: Dict[str, Any] = {"name": name}
         if description:
@@ -219,7 +219,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                     team = await api.teams.update(
                         "foo", "devops", name="DevSecOps"
                     )
-        """
+        """  # noqa: E501
         api = f"/orgs/{organization}/teams/{team}"
         data: Dict[str, Any] = {}
         if name:

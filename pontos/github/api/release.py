@@ -173,7 +173,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         async for content, progress in download:
                             f.write(content)
                             print(progress)
-        """
+        """  # noqa: E501
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
         return download_async(self._client.stream(api))
 
@@ -206,7 +206,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         async for content, progress in download:
                             f.write(content)
                             print(progress)
-        """
+        """  # noqa: E501
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download_async(self._client.stream(api))
 
@@ -258,7 +258,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         )
 
                     file_paths = await asyncio.gather(*tasks)
-        """
+        """  # noqa: E501
         release = await self.get(repo, tag)
         assets_url = release.assets_url
         if not assets_url:
@@ -320,7 +320,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         "foo/bar", "1.2.3", files
                     ):
                         print(f"Uploaded: {uploaded_file}")
-        """
+        """  # noqa: E501
         release = await self.get(repo, tag)
         asset_url = release.upload_url.replace("{?name,label}", "")
 

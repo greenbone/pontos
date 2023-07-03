@@ -117,7 +117,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
                 async with GitHubAsyncRESTApi(token) as api:
                     async for artifact in api.artifacts.get_workflow_run_artifacts("foo/bar", 234):
                         print(artifact)
-        """
+        """  # noqa: E501
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return self._get_paged_artifacts(api)
 

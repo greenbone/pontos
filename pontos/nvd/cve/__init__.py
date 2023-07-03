@@ -19,7 +19,7 @@ import asyncio
 from argparse import ArgumentParser, Namespace
 from typing import Callable
 
-from pontos.nvd.cve.api import *
+from pontos.nvd.cve.api import CVEApi
 
 __all__ = ("CVEApi",)
 

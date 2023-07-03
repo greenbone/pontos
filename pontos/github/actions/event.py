@@ -97,7 +97,7 @@ class GitHubPullRequestEvent:
 
         self.draft = data.get("draft")
         self.number = data.get("number")
-        self.labels = [Label(label.get("name")) for label in data.get("labels")]  # type: ignore #pylint: disable=line-too-long
+        self.labels = [Label(label.get("name")) for label in data.get("labels")]  # type: ignore #pylint: disable=line-too-long # noqa: E501
         self.title = data.get("title")
         self.merged = data.get("merged")
         self.state = PullRequestState(data.get("state"))

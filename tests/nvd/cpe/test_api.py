@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
+# ruff: noqa: E501
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional

@@ -66,14 +66,14 @@ class TempDirectoryTestCase(unittest.TestCase):
     def test_temp_directory_add_to_sys_path(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule2
+            import mymodule2  # noqa: F401,F811
 
         with temp_directory(add_to_sys_path=True) as module_path:
             mymodule_file = module_path / "mymodule2.py"
             mymodule_file.touch()
 
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule2
+            import mymodule2  # noqa: F401,F811
 
         unload_module("mymodule")
 
@@ -170,31 +170,31 @@ class TempPythonModuleTestCase(unittest.TestCase):
     def test_temp_python_module(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import foo
+            import foo  # noqa: F401,F811
 
         with temp_python_module("def foo():\n  pass") as module_path:
             self.assertTrue(module_path.exists())
 
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import foo
+            import foo  # noqa: F401,F811
 
         self.assertFalse(module_path.exists())
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import foo
+            import foo  # noqa: F401,F811
 
     def test_temp_python_module_exception(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import foo
+            import foo  # noqa: F401,F811
 
         try:
             with temp_python_module("def foo():\n  pass") as module_path:
                 self.assertTrue(module_path.exists())
 
-                # pylint: disable=import-error,import-outside-toplevel,unused-import
-                import foo
+                # pylint: disable=import-error,import-outside-toplevel,unused-import # noqa: E501
+                import foo  # noqa: F401,F811
 
                 raise ValueError()
         except ValueError:
@@ -204,12 +204,12 @@ class TempPythonModuleTestCase(unittest.TestCase):
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import foo
+            import foo  # noqa: F401,F811
 
     def test_temp_python_module_name(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule3
+            import mymodule3  # noqa: F401,F811
 
         with temp_python_module(
             "def foo():\n  pass", name="mymodule3"
@@ -217,10 +217,10 @@ class TempPythonModuleTestCase(unittest.TestCase):
             self.assertTrue(module_path.exists())
 
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule3
+            import mymodule3  # noqa: F401,F811
 
         self.assertFalse(module_path.exists())
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule3
+            import mymodule3  # noqa: F401,F811

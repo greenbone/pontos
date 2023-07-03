@@ -28,4 +28,5 @@ __all__ = (
     "Version",
     "VersionCalculator",
     "VersionUpdate",
+    "main",
 )
