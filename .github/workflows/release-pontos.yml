@@ -13,17 +13,18 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Setting the Reference
+        id: release
         run: |
           if [[ "${{ github.event_name }}" = "workflow_dispatch" ]]; then
-            echo "RELEASE_REF=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else
-            echo "RELEASE_REF=${{ github.base_ref }}" >> $GITHUB_ENV
+            echo "ref=${{ github.base_ref }}" >> $GITHUB_OUTPUT
           fi
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ env.RELEASE_REF }}
+          ref: ${{ steps.release.outputs.ref }}
       - name: Set git name, mail and origin
         run: |
           git config --global user.name "${{ secrets.GREENBONE_BOT }}"
@@ -33,9 +34,9 @@ jobs:
         with:
           poetry-version: "1.4.0"
           cache: "true"
-      - name: Allow admin users bypassing protection on ${{ env.RELEASE_REF }} branch
+      - name: Allow admin users bypassing protection on ${{ steps.release.outputs.ref }} branch
         run: |
-          poetry run pontos-github-script scripts/github/enforce-admins.py ${{ github.repository }} ${{ env.RELEASE_REF }} --allow
+          poetry run pontos-github-script pontos.github.scripts.enforce-admins ${{ github.repository }} ${{ steps.release.outputs.ref }} --allow
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
@@ -45,9 +46,9 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
-      - name: Disable bypassing protection on ${{ env.RELEASE_REF }} branch for admin users
+      - name: Disable bypassing protection on ${{ steps.release.outputs.ref }} branch for admin users
         run: |
-          poetry run pontos-github-script scripts/github/enforce-admins.py ${{ github.repository }} ${{ env.RELEASE_REF }} --no-allow
+          poetry run pontos-github-script pontos.github.scripts.enforce-admins ${{ github.repository }} ${{ steps.release.outputs.ref }} --no-allow
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
