@@ -140,7 +140,7 @@ def main(args: Iterable[str] = None) -> NoReturn:
                 last_version=last_version,
                 next_version=parsed_args.next_version,
             )
-            print(changelog)
+            term.out(changelog)
     except PontosError as e:
         term.error(str(e))
         sys.exit(1)
