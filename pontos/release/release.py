@@ -41,14 +41,16 @@ from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
 @dataclass
 class ReleaseInformation:
-    last_release_version: Version
+    last_release_version: Version | None
     release_version: Version
     git_release_tag: str
     next_version: Version
 
     def write_github_output(self):
         with ActionIO.out() as output:
-            output.write("last-release-version", self.last_release_version)
+            output.write(
+                "last-release-version", self.last_release_version or ""
+            )
             output.write("release-version", self.release_version)
             output.write("git-release-tag", self.git_release_tag)
             output.write("next-version", self.next_version)
@@ -125,7 +127,10 @@ class ReleaseCommand:
         return git_version in git_tags
 
     def _create_changelog(
-        self, release_version: str, last_release_version: str, cc_config: Path
+        self,
+        release_version: Version,
+        last_release_version: Version | None,
+        cc_config: Path,
     ) -> str:
         changelog_builder = ChangelogBuilder(
             space=self.space,
@@ -226,10 +231,10 @@ class ReleaseCommand:
                 else None,
             )
         except PontosError as e:
-            self.terminal.error(
+            last_release_version = None
+            self.terminal.warning(
                 f"Could not determine last release version. {e}"
             )
-            return ReleaseReturnValue.NO_LAST_RELEASE_VERSION
 
         if not last_release_version:
             if not release_version:
@@ -287,10 +292,15 @@ class ReleaseCommand:
                 )
                 return ReleaseReturnValue.UPDATE_VERSION_ERROR
 
-        self.terminal.info(
-            f"Creating changelog for {release_version} since "
-            f"{last_release_version}"
-        )
+        if last_release_version:
+            self.terminal.info(
+                f"Creating changelog for {release_version} since "
+                f"{last_release_version}"
+            )
+        else:
+            self.terminal.info(
+                f"Creating changelog for {release_version} as initial release."
+            )
 
         release_text = self._create_changelog(
             release_version, last_release_version, cc_config
