@@ -30,4 +30,5 @@ __all__ = (
     "SignCommand",
     "SignatureError",
     "SignReturnValue",
+    "main",
 )

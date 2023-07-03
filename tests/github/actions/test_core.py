@@ -50,7 +50,7 @@ class ConsoleTestCase(unittest.TestCase):
             title="Foo Bar",
         )
         print_mock.assert_called_once_with(
-            "::warning file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long
+            "::warning file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long # noqa: E501
         )
 
     def test_error(self, print_mock):
@@ -64,7 +64,7 @@ class ConsoleTestCase(unittest.TestCase):
             title="Foo Bar",
         )
         print_mock.assert_called_once_with(
-            "::error file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long
+            "::error file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long # noqa: E501
         )
 
     def test_notice(self, print_mock):
@@ -78,7 +78,7 @@ class ConsoleTestCase(unittest.TestCase):
             title="Foo Bar",
         )
         print_mock.assert_called_once_with(
-            "::notice file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long
+            "::notice file=bar,line=123,endLine=234,col=1,endColumn=2,title=Foo Bar::foo"  # pylint: disable=line-too-long # noqa: E501
         )
 
     def test_log(self, print_mock):

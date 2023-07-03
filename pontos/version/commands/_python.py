@@ -48,7 +48,7 @@ class PythonVersionCommand(VersionCommand):
         if (
             "tool" in self.pyproject_toml
             and "poetry" in self.pyproject_toml["tool"]  # type: ignore
-            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long
+            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long # noqa: E501
         ):
             return PEP440VersioningScheme.parse_version(
                 self.pyproject_toml["tool"]["poetry"]["version"]
@@ -84,10 +84,10 @@ class PythonVersionCommand(VersionCommand):
 
         if "poetry" not in pyproject_toml["tool"]:  # type: ignore
             poetry_table = tomlkit.table()
-            # pylint: disable=line-too-long, no-member # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member)
+            # pylint: disable=line-too-long, no-member # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member) # noqa: E501
             pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
 
-        pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore # pylint: disable=line-too-long
+        pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore # pylint: disable=line-too-long # noqa: E501
 
         self.project_file_path.write_text(
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
@@ -115,14 +115,14 @@ class PythonVersionCommand(VersionCommand):
         if (
             "tool" not in self.pyproject_toml
             or "pontos" not in self.pyproject_toml["tool"]  # type: ignore
-            or "version" not in self.pyproject_toml["tool"]["pontos"]  # type: ignore # pylint: disable=line-too-long
+            or "version" not in self.pyproject_toml["tool"]["pontos"]  # type: ignore # pylint: disable=line-too-long # noqa: E501
         ):
             raise VersionError(
                 "[tool.pontos.version] section missing "
                 f"in {self.project_file_path}."
             )
 
-        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][  # type: ignore # pylint: disable=line-too-long
+        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][  # type: ignore # pylint: disable=line-too-long # noqa: E501
             "version"
         ]
 

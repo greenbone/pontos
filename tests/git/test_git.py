@@ -525,7 +525,7 @@ Author: Björn Ricks <bjoern.ricks@greenbone.net>
 Date:   Wed Apr 8 14:28:53 2020 +0200
 
     Initial commit
-"""
+"""  # noqa: E501
 
         git = Git()
         logs = git.log()

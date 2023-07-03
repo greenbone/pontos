@@ -20,8 +20,9 @@ from .conventional_commits import ChangelogBuilder
 from .errors import ChangelogBuilderError, ChangelogError
 from .main import main
 
-__all__ = [
+__all__ = (
     "ChangelogError",
     "ChangelogBuilderError",
     "ChangelogBuilder",
-]
+    "main",
+)

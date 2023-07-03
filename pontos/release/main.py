@@ -56,7 +56,7 @@ def main(
             term.print(f"Output was: {error}")
             sys.exit(1)
         except subprocess.CalledProcessError as e:
-            if not "--passphrase" in e.cmd:
+            if "--passphrase" not in e.cmd:
                 term.error(f'Could not run command "{e.cmd}".')
             else:
                 term.error("Headless signing failed.")

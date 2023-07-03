@@ -84,7 +84,7 @@ class Console:
     @staticmethod
     def start_group(title: str):
         """
-        Start a new folable group
+        Start a new foldable group
 
         Args:
             title: Title of the group
@@ -196,7 +196,7 @@ class Console:
 
         These messages are only shown if the secret ACTIONS_STEP_DEBUG is set to true.
         See https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging#enabling-step-debug-logging
-        """
+        """  # noqa: E501
         print(f"::debug::{message}")
 
 

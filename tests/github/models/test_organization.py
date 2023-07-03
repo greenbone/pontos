@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=line-too-long, redefined-builtin
+# ruff: noqa: E501
 
 import unittest
 from datetime import datetime, timezone

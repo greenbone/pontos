@@ -37,4 +37,5 @@ __all__ = (
     "Ref",
     "PullRequestState",
     "GitHubPullRequestEvent",
+    "main",
 )

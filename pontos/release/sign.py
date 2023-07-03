@@ -291,7 +291,7 @@ class SignCommand:
                 )
 
                 # pylint: disable=line-too-long
-                async for name, download_cm in github.releases.download_release_assets(
+                async for name, download_cm in github.releases.download_release_assets(  # noqa: E501
                     repo,
                     git_version,
                 ):
@@ -350,7 +350,7 @@ class SignCommand:
 
             try:
                 # pylint: disable=line-too-long
-                async for uploaded_file in github.releases.upload_release_assets(
+                async for uploaded_file in github.releases.upload_release_assets(  # noqa: E501
                     repo, git_version, upload_files
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")

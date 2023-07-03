@@ -24,7 +24,7 @@ from .cmds import actions_input, actions_output
 
 
 def split_pairs(value: str):
-    if not "=" in value:
+    if "=" not in value:
         raise ValueError(f"Must contain a 'name=value' pair not '{value}'.")
     return tuple(value.split("=", 1))
 
