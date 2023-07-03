@@ -185,22 +185,27 @@ class PythonVersionCommand(VersionCommand):
     def update_version(
         self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        try:
-            current_version = self.get_current_version()
-        except VersionError:
-            # maybe no version module exists yet. fallback to version from
-            # pyproject.toml
-            current_version = self._get_version_from_pyproject_toml()
-
         new_pep440_version = PEP440VersioningScheme.from_version(new_version)
-        current_converted_version = self.versioning_scheme.from_version(
-            current_version
-        )
 
-        if not force and new_pep440_version == current_version:
-            return VersionUpdate(
-                previous=current_converted_version, new=new_version
+        try:
+            try:
+                current_version = self.get_current_version()
+            except VersionError:
+                # maybe no version module exists yet. fallback to version from
+                # pyproject.toml
+                current_version = self._get_version_from_pyproject_toml()
+
+            current_converted_version = self.versioning_scheme.from_version(
+                current_version
             )
+
+            if not force and new_pep440_version == current_version:
+                return VersionUpdate(
+                    previous=current_converted_version, new=new_version
+                )
+        except VersionError:
+            # just ignore current version and override it
+            current_converted_version = None
 
         try:
             self._update_pyproject_version(new_version=new_pep440_version)

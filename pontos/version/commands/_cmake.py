@@ -33,10 +33,15 @@ class CMakeVersionCommand(VersionCommand):
     ) -> VersionUpdate:
         content = self.project_file_path.read_text(encoding="utf-8")
         cmake_version_parser = CMakeVersionParser(content)
-        previous_version = self.get_current_version()
 
-        if not force and new_version == previous_version:
-            return VersionUpdate(previous=previous_version, new=new_version)
+        try:
+            previous_version = self.get_current_version()
+
+            if not force and new_version == previous_version:
+                return VersionUpdate(previous=previous_version, new=new_version)
+        except VersionError:
+            # just ignore current version and override it
+            previous_version = None
 
         new_content = cmake_version_parser.update_version(new_version)
         self.project_file_path.write_text(new_content, encoding="utf-8")

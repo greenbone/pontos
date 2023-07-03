@@ -153,9 +153,13 @@ class JavaScriptVersionCommand(VersionCommand):
     def update_version(
         self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        package_version = self.get_current_version()
-        if not force and new_version == package_version:
-            return VersionUpdate(previous=package_version, new=new_version)
+        try:
+            package_version = self.get_current_version()
+            if not force and new_version == package_version:
+                return VersionUpdate(previous=package_version, new=new_version)
+        except VersionError:
+            # just ignore current version and override it
+            package_version = None
 
         changed_files = [self.project_file_path]
         self._update_package_json(new_version=new_version)

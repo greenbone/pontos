@@ -36,7 +36,7 @@ __version__ = "{}"\n"""
 def find_file(
     filename: Path, search_path: str, search_glob: str
 ) -> Optional[Path]:
-    """Find a file somewherre within an directory tree
+    """Find a file somewhere within an directory tree
     Arguments:
         filename (Path)     The file to look up
         search_path (str)   The path to look for the file
@@ -180,9 +180,13 @@ class JavaVersionCommand(VersionCommand):
     def update_version(
         self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        package_version = self.get_current_version()
-        if not force and new_version == package_version:
-            return VersionUpdate(previous=package_version, new=new_version)
+        try:
+            package_version = self.get_current_version()
+            if not force and new_version == package_version:
+                return VersionUpdate(previous=package_version, new=new_version)
+        except VersionError:
+            # just ignore current version and override it
+            package_version = None
 
         changed_files = [self.project_file_path]
         self._update_pom_version(new_version=new_version)
