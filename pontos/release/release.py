@@ -41,7 +41,7 @@ from .helper import ReleaseType, find_signing_key, get_git_repository_name
 
 @dataclass
 class ReleaseInformation:
-    last_release_version: Version | None
+    last_release_version: Optional[Version]
     release_version: Version
     git_release_tag: str
     next_version: Version
@@ -129,7 +129,7 @@ class ReleaseCommand:
     def _create_changelog(
         self,
         release_version: Version,
-        last_release_version: Version | None,
+        last_release_version: Optional[Version],
         cc_config: Path,
     ) -> str:
         changelog_builder = ChangelogBuilder(
