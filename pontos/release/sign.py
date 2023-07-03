@@ -222,9 +222,7 @@ class SignCommand:
             )
             return SignReturnValue.TOKEN_MISSING
 
-        self.terminal.info(
-            f"Using versioning scheme {versioning_scheme.__class__.__name__}"
-        )
+        self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
         try:
             project = (
