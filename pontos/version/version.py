@@ -41,6 +41,16 @@ class Version(ABC):
       names for the first value in the tuple: `alpha`, `beta`, `rc` and `dev`
     """
 
+    def __init__(self, original_version: str) -> None:
+        self._parsed_version = original_version
+
+    @property
+    def parsed_version(self) -> str:
+        """
+        Original version string from which the version has been parsed
+        """
+        return self._parsed_version
+
     @property
     @abstractmethod
     def major(self) -> int:

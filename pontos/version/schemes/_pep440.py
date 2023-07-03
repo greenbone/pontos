@@ -48,6 +48,7 @@ class PEP440Version(Version):
     """
 
     def __init__(self, version: str) -> None:
+        super().__init__(version)
         self._version = PackagingVersion(version)
         self._parse_local()
 
@@ -123,7 +124,7 @@ class PEP440Version(Version):
         return self.is_pre_release and self.pre and self.pre[0] == "rc"
 
     @classmethod
-    def from_string(cls, version: str) -> "Version":
+    def from_string(cls, version: str) -> "PEP440Version":
         """
         Create a version from a version string
 
@@ -153,35 +154,45 @@ class PEP440Version(Version):
         if isinstance(version, cls):
             return version
 
+        try:
+            # try to parse the original version string
+            return cls.from_string(version.parsed_version)
+        except VersionError:
+            pass
+
         version_local = (
             f"+{version.local[0]}{version.local[1]}" if version.local else ""
         )
         if version.is_dev_release:
             if not version.pre:
-                return cls.from_string(
+                new_version = cls.from_string(
                     f"{version.major}."
                     f"{version.minor}."
                     f"{version.patch}"
                     f".dev{version.dev}"
                     f"{version_local}"
                 )
-            return cls.from_string(
-                f"{version.major}."
-                f"{version.minor}."
-                f"{version.patch}"
-                f"-{version.pre[0]}{version.pre[1]}"
-                f".dev{version.dev}"
-            )
-        if version.is_pre_release:
-            return cls.from_string(
+            else:
+                new_version = cls.from_string(
+                    f"{version.major}."
+                    f"{version.minor}."
+                    f"{version.patch}"
+                    f"-{version.pre[0]}{version.pre[1]}"
+                    f".dev{version.dev}"
+                )
+        elif version.is_pre_release:
+            new_version = cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
                 f"{version_local}"
             )
+        else:
+            new_version = cls.from_string(str(version))
 
-        return cls.from_string(str(version))
+        new_version._parsed_version = version.parsed_version
+        return new_version
 
     def __eq__(self, other: Any) -> bool:
         if other is None:

@@ -43,6 +43,7 @@ class SemanticVersion(Version):
         self,
         version: str,
     ) -> None:
+        super().__init__(version)
         self._version_info = VersionInfo.parse(version)
         self._parse_build()
         self._parse_pre_release()
@@ -257,52 +258,61 @@ class SemanticVersion(Version):
         if isinstance(version, cls):
             return version
 
+        try:
+            # try to parse the original version string
+            return cls.from_string(version.parsed_version)
+        except VersionError:
+            pass
+
         version_local = (
             f"+{version.local[0]}{version.local[1]}" if version.local else ""
         )
         if version.is_dev_release:
             if not version.pre:
-                return cls.from_string(
+                new_version = cls.from_string(
                     f"{version.major}."
                     f"{version.minor}."
                     f"{version.patch}"
                     f"-dev{version.dev}"
                     f"{version_local}"
                 )
-
-            return cls.from_string(
-                f"{version.major}."
-                f"{version.minor}."
-                f"{version.patch}"
-                f"-{version.pre[0]}{version.pre[1]}"
-                f"-dev{version.dev}"
-            )
-        if version.is_alpha_release:
-            return cls.from_string(
+            else:
+                new_version = cls.from_string(
+                    f"{version.major}."
+                    f"{version.minor}."
+                    f"{version.patch}"
+                    f"-{version.pre[0]}{version.pre[1]}"
+                    f"-dev{version.dev}"
+                )
+        elif version.is_alpha_release:
+            new_version = cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-alpha{version.pre[1]}"
                 f"{version_local}"
             )
-        if version.is_beta_release:
-            return cls.from_string(
+        elif version.is_beta_release:
+            new_version = cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-beta{version.pre[1]}"
                 f"{version_local}"
             )
-        if version.is_pre_release:
-            return cls.from_string(
+        elif version.is_pre_release:
+            new_version = cls.from_string(
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
                 f"{version_local}"
             )
+        else:
+            new_version = cls.from_string(str(version))
 
-        return cls.from_string(str(version))
+        new_version._parsed_version = version.parsed_version
+        return new_version
 
 
 # pylint: disable=protected-access
