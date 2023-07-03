@@ -26,7 +26,7 @@ from pontos.github.script.load import (
     run_add_arguments_function,
     run_github_script_function,
 )
-from pontos.testing import temp_file
+from pontos.testing import temp_file, temp_python_module
 from tests import IsolatedAsyncioTestCase
 
 
@@ -35,6 +35,14 @@ class LoadScriptTestCase(unittest.TestCase):
         with temp_file(
             "def foo():\n\treturn 1", name="foo.py"
         ) as f, load_script(f) as module:
+            self.assertIsNotNone(module)
+            self.assertIsNotNone(module.foo)
+            self.assertEqual(module.foo(), 1)
+
+    def test_load_script_module(self):
+        with temp_python_module(
+            "def foo():\n\treturn 1", name="github-foo-script"
+        ), load_script("github-foo-script") as module:
             self.assertIsNotNone(module)
             self.assertIsNotNone(module.foo)
             self.assertEqual(module.foo(), 1)

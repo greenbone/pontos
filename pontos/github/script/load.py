@@ -53,14 +53,22 @@ def load_script(
 
             with load_script("path/to/script.py") as module:
                 module.func()
+
+            with load_script("some.python.module") as module:
+                module.func()
     """
     path = Path(script)
-    module_name = path.stem
+    if path.suffix == ".py":
+        module_name = path.stem
 
-    with add_sys_path(path.parent.absolute()), ensure_unload_module(
-        module_name
-    ):
-        yield importlib.import_module(module_name)
+        with add_sys_path(path.parent.absolute()), ensure_unload_module(
+            module_name
+        ):
+            yield importlib.import_module(module_name)
+    else:
+        module_name = str(path)
+        with ensure_unload_module(module_name):
+            yield importlib.import_module(module_name)
 
 
 def run_github_script_function(
@@ -91,6 +99,9 @@ def run_github_script_function(
             )
 
             with load_script("path/to/script.py") as module:
+                return run_github_script_function(module, token, 60.0, args)
+
+            with load_script("some.python.module") as module:
                 return run_github_script_function(module, token, 60.0, args)
     """
     if not hasattr(module, GITHUB_SCRIPT_FUNCTION_NAME):
@@ -151,6 +162,9 @@ def run_add_arguments_function(
             parser = ArgumentParser()
 
             with load_script("path/to/script.py") as module:
+                run_add_arguments_function(module, parser)
+
+            with load_script("some.python.module") as module:
                 run_add_arguments_function(module, parser)
     """
     func = getattr(module, GITHUB_SCRIPT_PARSER_FUNCTION_NAME, None)
