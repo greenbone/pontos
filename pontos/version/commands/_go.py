@@ -92,12 +92,11 @@ class GoVersionCommand(VersionCommand):
         """Update the current version of this project"""
         try:
             current_version = self.get_current_version()
+            if not force and new_version == current_version:
+                return VersionUpdate(previous=current_version, new=new_version)
         except VersionError:
-            # likely the initial release
+            # just ignore current version and override it
             current_version = None
-
-        if not force and new_version == current_version:
-            return VersionUpdate(previous=current_version, new=new_version)
 
         self._update_version_file(new_version=new_version)
 

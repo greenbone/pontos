@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Iterator, Tuple, Union, Literal
+from typing import Iterator, Literal, Tuple, Union
 
 import tomlkit
 
+from ..errors import VersionError
 from ..version import Version, VersionUpdate
 from ._command import VersionCommand
-from ..errors import VersionError
 
 
 class CargoVersionCommand(VersionCommand):
@@ -40,10 +40,14 @@ class CargoVersionCommand(VersionCommand):
     def update_version(
         self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
-        previous_version = self.get_current_version()
+        try:
+            previous_version = self.get_current_version()
 
-        if not force and new_version == previous_version:
-            return VersionUpdate(previous=previous_version, new=new_version)
+            if not force and new_version == previous_version:
+                return VersionUpdate(previous=previous_version, new=new_version)
+        except VersionError:
+            # just ignore current version and override it
+            previous_version = None
 
         changed_files = []
         for project_path, project in self.__as_project_document(

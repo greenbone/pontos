@@ -155,7 +155,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
             "", name="pyproject.toml", change_into=True
         ), self.assertRaisesRegex(
             VersionError,
-            r"Version information not found in .*pyproject\.toml file\.",
+            r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
@@ -166,7 +166,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
             "[tool]", name="pyproject.toml", change_into=True
         ), self.assertRaisesRegex(
             VersionError,
-            r"Version information not found in .*pyproject\.toml file\.",
+            r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
