@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable
+from typing import Any, Callable, Iterable, Optional
 
 from rich.console import Console, RenderableType
 from rich.padding import Padding
@@ -86,7 +86,7 @@ class RichTerminal(Terminal):
             self._indent_message(), color(status), *messages, **kwargs
         )
 
-    def get_progress_default_columns(self):
+    def get_progress_default_columns(self) -> Iterable[ProgressColumn]:
         return (
             PaddingColumn(self._indent),
             SpinnerColumn(),
@@ -95,10 +95,19 @@ class RichTerminal(Terminal):
             TaskProgressColumn(),
         )
 
-    def progress(self, **kwargs) -> Progress:
+    def progress(
+        self,
+        *,
+        columns: Optional[Iterable[ProgressColumn]] = None,
+        additional_columns: Optional[Iterable[ProgressColumn]] = None,
+        **kwargs,
+    ) -> Progress:
         kwargs["console"] = self._console
+        columns = columns or self.get_progress_default_columns()
+        if additional_columns:
+            columns = *columns, *additional_columns
         return Progress(
-            *self.get_progress_default_columns(),
+            *columns,
             **kwargs,
         )
 
