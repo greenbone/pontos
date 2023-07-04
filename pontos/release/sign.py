@@ -17,6 +17,7 @@
 #
 
 import asyncio
+import hashlib
 import subprocess
 from argparse import Namespace
 from asyncio.subprocess import Process
@@ -26,6 +27,7 @@ from typing import AsyncContextManager, Iterable, Optional
 
 import httpx
 from rich.progress import Progress as RichProgress
+from rich.progress import TextColumn
 
 from pontos.errors import PontosError
 from pontos.git.git import GitError
@@ -88,13 +90,19 @@ class SignCommand:
         with destination.open("wb") as f:
             task_description = f"Downloading [blue]{progress.url}"
             task_id = rich_progress.add_task(
-                task_description, total=progress.length
+                task_description,
+                total=progress.length,
+                sha256="",
             )
+            sha256 = hashlib.sha256()
             async for content, percent in progress:
                 rich_progress.advance(task_id, percent or 1)
                 f.write(content)
+                sha256.update(content)
 
-            rich_progress.update(task_id, total=1, completed=1)
+            rich_progress.update(
+                task_id, total=1, completed=1, sha256=sha256.hexdigest()
+            )
 
     async def download_zip(
         self,
@@ -266,7 +274,11 @@ class SignCommand:
             zip_destination = Path(f"{project}-{release_version}.zip")
             tarball_destination = Path(f"{project}-{release_version}.tar.gz")
 
-            with self.terminal.progress() as rich_progress:
+            with self.terminal.progress(
+                additional_columns=[
+                    TextColumn("[progress.description]{task.fields[sha256]}"),
+                ]
+            ) as rich_progress:
                 tasks.append(
                     asyncio.create_task(
                         self.download_zip(
