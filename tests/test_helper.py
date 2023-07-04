@@ -101,7 +101,7 @@ class AsyncDownloadProgressIterableTestCase(IsolatedAsyncioTestCase):
 
 class DownloadAsyncTestCase(IsolatedAsyncioTestCase):
     async def test_download_async(self):
-        response = create_response()
+        response = create_response(url="http://some.url")
         response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
         stream = AsyncMock()
         stream.__aenter__.return_value = response
@@ -109,6 +109,8 @@ class DownloadAsyncTestCase(IsolatedAsyncioTestCase):
         async with download_async(
             stream, content_length=2
         ) as download_iterable:
+            self.assertEqual(download_iterable.url, "http://some.url")
+
             it = aiter(download_iterable)
             content, progress = await anext(it)
 
@@ -120,13 +122,38 @@ class DownloadAsyncTestCase(IsolatedAsyncioTestCase):
             self.assertEqual(progress, 100)
 
     async def test_download_async_content_length(self):
-        response = create_response(headers=MagicMock())
+        response = create_response(headers=MagicMock(), url="http://some.url")
         response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
         response.headers.get.return_value = 2
         stream = AsyncMock()
         stream.__aenter__.return_value = response
 
         async with download_async(stream) as download_iterable:
+            self.assertEqual(download_iterable.url, "http://some.url")
+
+            it = aiter(download_iterable)
+            content, progress = await anext(it)
+
+            self.assertEqual(content, "1")
+            self.assertEqual(progress, 50)
+
+            content, progress = await anext(it)
+            self.assertEqual(content, "2")
+            self.assertEqual(progress, 100)
+
+    async def test_download_async_url(self):
+        response = create_response(url="http://some.url")
+        response.aiter_bytes.return_value = AsyncIteratorMock(["1", "2"])
+        stream = AsyncMock()
+        stream.__aenter__.return_value = response
+
+        async with download_async(
+            stream,
+            url="http://foo.bar",
+            content_length=2,
+        ) as download_iterable:
+            self.assertEqual(download_iterable.url, "http://foo.bar")
+
             it = aiter(download_iterable)
             content, progress = await anext(it)
 
