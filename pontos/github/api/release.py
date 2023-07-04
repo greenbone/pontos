@@ -269,7 +269,10 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         assets_json = response.json()
         for asset_json in assets_json:
-            asset_url: str = asset_json.get("url", "")
+            # use browser_download_url here because url doesn't response with
+            # exactly the same data on every request.
+            # not getting exactly the same data changes the hash sum.
+            asset_url: str = asset_json.get("browser_download_url", "")
             name: str = asset_json.get("name", "")
 
             if match_pattern and not Path(name).match(match_pattern):
