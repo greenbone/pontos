@@ -17,15 +17,15 @@
 
 
 import re
-from abc import abstractmethod
 from datetime import date
 from pathlib import Path
-from typing import Dict, List, Optional, Protocol, Union, runtime_checkable
+from typing import Dict, List, Optional, Union
 
 import tomlkit
 
 from pontos.changelog.errors import ChangelogBuilderError
 from pontos.git import Git
+from pontos.typing import SupportsStr
 
 ADDRESS = "https://github.com/"
 
@@ -37,13 +37,6 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
     { message = "^deps", group = "Dependencies"},
 ]
 """
-
-
-@runtime_checkable
-class SupportsStr(Protocol):
-    @abstractmethod
-    def __str__(self) -> str:
-        pass
 
 
 class ChangelogBuilder:
