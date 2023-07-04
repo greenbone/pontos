@@ -175,7 +175,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                             print(progress)
         """  # noqa: E501
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
-        return download_async(self._client.stream(api))
+        return download_async(self._client.stream(api), url=api)
 
     def download_release_zip(
         self,
@@ -208,7 +208,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                             print(progress)
         """  # noqa: E501
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
-        return download_async(self._client.stream(api))
+        return download_async(self._client.stream(api), url=api)
 
     async def download_release_assets(
         self,
@@ -275,7 +275,9 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             if match_pattern and not Path(name).match(match_pattern):
                 continue
 
-            yield name, download_async(self._client.stream(asset_url))
+            yield name, download_async(
+                self._client.stream(asset_url), url=asset_url
+            )
 
     async def upload_release_assets(
         self,
