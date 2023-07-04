@@ -23,6 +23,7 @@ jobs:
         with:
           packages: pontos tests
           python-version: ${{ matrix.python-version }}
+          linter: ruff
           cache: "true"
 
   test:
