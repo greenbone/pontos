@@ -45,6 +45,7 @@ from typing import (
 import httpx
 
 from pontos.errors import PontosError
+from pontos.typing import SupportsStr
 
 __all__ = (
     "AsyncDownloadProgressIterable",
@@ -94,7 +95,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
         self,
         *,
         content_iterator: AsyncIterator[T],
-        url: str,
+        url: SupportsStr,
         length: Optional[int],
     ):
         """
@@ -107,7 +108,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
             length: Length of the content.
         """
         self._content_iterator: AsyncIterator[T] = content_iterator
-        self._url = url
+        self._url = str(url)
         self._length = None if length is None else int(length)
 
     @property
@@ -146,6 +147,7 @@ async def download_async(
     *,
     content_length: Optional[int] = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
+    url: Optional[str] = None,
 ) -> AsyncIterator[AsyncDownloadProgressIterable[bytes]]:
     """
     An async context manager that returns an AsyncDownloadProgressIterable.
@@ -157,6 +159,7 @@ async def download_async(
         content_length: Optional length of the content to download. If now
             provided it is determined from the response if available.
         chunk_size: Download the content in chunks of this size.
+        url: Use a specific URL. If not set the URL of the response is used.
 
     Returns:
         A context manager containing an AsyncDownloadProgressIterable
@@ -185,7 +188,7 @@ async def download_async(
             content_length = response.headers.get("content-length")
 
         yield AsyncDownloadProgressIterable(
-            url=response.url,  # type: ignore
+            url=url if url else response.url,
             content_iterator=response.aiter_bytes(chunk_size=chunk_size),
             length=content_length,
         )
