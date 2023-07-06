@@ -90,7 +90,12 @@ def main():
         try:
             error = e.response.json()
             message = error.get("message")
-            print("Error:", message, file=sys.stderr)
+            print(
+                f"HTTP error while running script {known_args.script} and "
+                f"doing a {e.request.method} request to {e.request.url}. "
+                f"Error was: {message}. ",
+                file=sys.stderr,
+            )
         except json.JSONDecodeError:
             # not a json response
             print(e, file=sys.stderr)
