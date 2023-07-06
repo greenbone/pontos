@@ -129,7 +129,7 @@ class JavaVersionCommand(VersionCommand):
     ) -> None:
         # update swagger config file version
         swagger_config_file = find_file(
-            filename="SwaggerConfig.java",
+            filename=Path("SwaggerConfig.java"),
             search_path="src",
             search_glob="**/config/swagger/*",
         )
