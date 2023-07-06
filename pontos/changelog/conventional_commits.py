@@ -17,6 +17,7 @@
 
 
 import re
+from collections import defaultdict
 from datetime import date
 from pathlib import Path
 from typing import NamedTuple, Optional, TypedDict, Union
@@ -166,24 +167,25 @@ class ConventionalCommits:
         Returns
             The dict containing the commit messages
         """
-        commit_dict = {}
+        expressions = [
+            (
+                commit_type["group"],
+                re.compile(rf'{commit_type["message"]}\s?[:|-]', flags=re.I),
+            )
+            for commit_type in self.commit_types()
+        ]
+        commit_dict = defaultdict(list)
         if commits and len(commits) > 0:
             for commit in commits:
                 commit_id, message = commit.split(" ", maxsplit=1)
-                for commit_type in self.commit_types():
-                    reg = re.compile(
-                        rf'{commit_type["message"]}\s?[:|-]', flags=re.I
-                    )
+                for group, reg in expressions:
                     match = reg.match(message)
                     if match:
-                        if commit_type["group"] not in commit_dict:
-                            commit_dict[commit_type["group"]] = []
-
                         # remove the commit tag from commit message
                         cleaned_msg = message.replace(
                             match.group(0), ""
                         ).strip()
-                        commit_dict[commit_type["group"]].append(
+                        commit_dict[group].append(
                             CommitLogEntry(
                                 commit_id=commit_id, message=cleaned_msg
                             )
