@@ -25,6 +25,7 @@ from unittest.mock import MagicMock, patch
 from pontos.changelog.conventional_commits import (
     ChangelogBuilder,
     ChangelogBuilderError,
+    ConventionalCommits,
 )
 from pontos.testing import temp_directory
 
@@ -510,6 +511,8 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "v0.0.1..HEAD", oneline=True
         )
 
+
+class ConventionalCommitsTestCase(unittest.TestCase):
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_get_commits(self, git_mock: MagicMock):
         git_mock.return_value.list_tags.return_value = ["v0.0.1"]
@@ -526,15 +529,44 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        changelog_builder = ChangelogBuilder(
+        conventional_commits = ConventionalCommits(
             space="foo",
             project="bar",
         )
-        commits = changelog_builder.get_commits(last_version="0.0.1")
+        commits = conventional_commits.get_commits(from_ref="0.0.1")
 
         self.assertEqual(len(commits), 4)  # four commit types
-
         self.assertEqual(len(commits["Added"]), 2)
         self.assertEqual(len(commits["Changed"]), 1)
         self.assertEqual(len(commits["Removed"]), 1)
         self.assertEqual(len(commits["Bug Fixes"]), 1)
+
+    def test_default_config(self):
+        conventional_commits = ConventionalCommits(
+            space="foo",
+            project="bar",
+        )
+
+        categories = conventional_commits.commit_types()
+
+        self.assertEqual(len(categories), 5)
+
+        add = categories[0]
+        self.assertEqual(add["message"], "^add")
+        self.assertEqual(add["group"], "Added")
+
+        remove = categories[1]
+        self.assertEqual(remove["message"], "^remove")
+        self.assertEqual(remove["group"], "Removed")
+
+        change = categories[2]
+        self.assertEqual(change["message"], "^change")
+        self.assertEqual(change["group"], "Changed")
+
+        fix = categories[3]
+        self.assertEqual(fix["message"], "^fix")
+        self.assertEqual(fix["group"], "Bug Fixes")
+
+        deps = categories[4]
+        self.assertEqual(deps["message"], "^deps")
+        self.assertEqual(deps["group"], "Dependencies")

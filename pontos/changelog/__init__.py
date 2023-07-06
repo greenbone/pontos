@@ -24,5 +24,6 @@ __all__ = (
     "ChangelogError",
     "ChangelogBuilderError",
     "ChangelogBuilder",
+    "ConventionalCommits",
     "main",
 )
