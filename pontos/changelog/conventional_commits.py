@@ -19,7 +19,7 @@
 import re
 from datetime import date
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import NamedTuple, Optional, TypedDict, Union
 
 import tomlkit
 
@@ -38,12 +38,15 @@ DEFAULT_CHANGELOG_CONFIG = """commit_types = [
 ]
 """
 
-CommitID = str
-
 
 class CommitType(TypedDict):
     message: str
     group: str
+
+
+class CommitLogEntry(NamedTuple):
+    commit_id: str
+    message: str
 
 
 class ConventionalCommits:
@@ -69,8 +72,6 @@ class ConventionalCommits:
 
     def __init__(
         self,
-        space: str,
-        project: str,
         config: Optional[Path] = None,
     ) -> None:
         """
@@ -78,8 +79,6 @@ class ConventionalCommits:
         commits from a git log.
 
         Args:
-            space: GitHub space to use (organization or user name).
-            project: GitHub project to create a changelog for
             config: Optional TOML config for conventional commit parsing
                 settings.
         """
@@ -94,14 +93,11 @@ class ConventionalCommits:
         else:
             self._config = tomlkit.parse(DEFAULT_CHANGELOG_CONFIG)
 
-        self._space = space
-        self._project = project
-
     def get_commits(
         self,
         from_ref: Optional[SupportsStr] = None,
         to_ref: SupportsStr = "HEAD",
-    ) -> dict[str, list[str]]:
+    ) -> dict[str, list[CommitLogEntry]]:
         """
         Get all commits by conventional commit type between a range of git
         references.
@@ -114,7 +110,7 @@ class ConventionalCommits:
                 conventional commits. By default HEAD is used.
 
         Returns:
-            A dict containing the grouped commit messages
+            A dict containing the grouped log entries
         """
         commit_list = self._get_git_log(from_ref, to_ref)
         return self._sort_commits(commit_list)
@@ -149,14 +145,16 @@ class ConventionalCommits:
             oneline=True,
         )
 
-    def _sort_commits(self, commits: list[str]) -> dict[str, list[str]]:
+    def _sort_commits(
+        self, commits: list[str]
+    ) -> dict[str, list[CommitLogEntry]]:
         """Sort the commits by commit type and group them
         in a dict
         ```
         {
             'Added:': [
-                'commit 1 [1234567](..)',
-                'commit 2 [1234568](..)',
+                ('commit 1', 'message 1'),
+                ('commit 2', 'message 2'),
                 '...',
             ],
             'Fixed:': [
@@ -168,28 +166,27 @@ class ConventionalCommits:
         Returns
             The dict containing the commit messages
         """
-        commit_link = f"{ADDRESS}{self._space}/{self._project}/commit/"
-
         commit_dict = {}
         if commits and len(commits) > 0:
             for commit in commits:
-                commit = commit.split(" ", maxsplit=1)
+                commit_id, message = commit.split(" ", maxsplit=1)
                 for commit_type in self.commit_types():
                     reg = re.compile(
                         rf'{commit_type["message"]}\s?[:|-]', flags=re.I
                     )
-                    match = reg.match(commit[1])
+                    match = reg.match(message)
                     if match:
                         if commit_type["group"] not in commit_dict:
                             commit_dict[commit_type["group"]] = []
 
                         # remove the commit tag from commit message
-                        cleaned_msg = (
-                            commit[1].replace(match.group(0), "").strip()
-                        )
+                        cleaned_msg = message.replace(
+                            match.group(0), ""
+                        ).strip()
                         commit_dict[commit_type["group"]].append(
-                            f"{cleaned_msg} [{commit[0]}]"
-                            f"({commit_link}{commit[0]})"
+                            CommitLogEntry(
+                                commit_id=commit_id, message=cleaned_msg
+                            )
                         )
 
         return commit_dict
@@ -233,15 +230,11 @@ class ChangelogBuilder:
                 Default is "v".
             config: TOML config for conventional commit parsing settings
         """
-        self.project = project
-        self.space = space
+        self._project = project
+        self._space = space
 
-        self.git_tag_prefix = git_tag_prefix
-        self._conventional_commits = ConventionalCommits(
-            self.space,
-            self.project,
-            config,
-        )
+        self._git_tag_prefix = git_tag_prefix
+        self._conventional_commits = ConventionalCommits(config)
 
     def create_changelog(
         self,
@@ -263,7 +256,7 @@ class ChangelogBuilder:
             The created changelog content.
         """
         commit_dict = self._conventional_commits.get_commits(
-            f"{self.git_tag_prefix}{last_version}" if last_version else None
+            f"{self._git_tag_prefix}{last_version}" if last_version else None
         )
         return self._build_changelog(last_version, next_version, commit_dict)
 
@@ -301,7 +294,7 @@ class ChangelogBuilder:
         self,
         last_version: Optional[SupportsStr],
         next_version: Optional[SupportsStr],
-        commit_dict: Dict[str, List[str]],
+        commit_dict: dict[str, list[CommitLogEntry]],
     ) -> str:
         """
         Building the changelog from the passed commit information.
@@ -326,25 +319,31 @@ class ChangelogBuilder:
         for commit_type in self._conventional_commits.commit_types():
             if commit_type["group"] in commit_dict.keys():
                 changelog.append(f"\n## {commit_type['group']}")
-                for msg in commit_dict[commit_type["group"]]:
+                for log_entry in commit_dict[commit_type["group"]]:
+                    commit_id, commit_message = log_entry
+                    commit_link = (
+                        f"{ADDRESS}{self._space}/{self._project}/"
+                        f"commit/{commit_id}"
+                    )
+                    msg = f"{commit_message} [{commit_id}]({commit_link})"
                     changelog.append(f"* {msg}")
 
         # comparison line (footer)
         pre = "\n[Unreleased]: "
-        compare_link = f"{ADDRESS}{self.space}/{self.project}/compare/"
+        compare_link = f"{ADDRESS}{self._space}/{self._project}/compare/"
         if next_version and last_version:
             pre = f"\n[{next_version}]: "
             diff = (
-                f"{self.git_tag_prefix}{last_version}..."
-                f"{self.git_tag_prefix}{next_version}"
+                f"{self._git_tag_prefix}{last_version}..."
+                f"{self._git_tag_prefix}{next_version}"
             )
         elif next_version:
             first_commit = self._get_first_commit()
             pre = f"\n[{next_version}]: "
-            diff = f"{first_commit}...{self.git_tag_prefix}{next_version}"
+            diff = f"{first_commit}...{self._git_tag_prefix}{next_version}"
         elif last_version:
             # unreleased version
-            diff = f"{self.git_tag_prefix}{last_version}...HEAD"
+            diff = f"{self._git_tag_prefix}{last_version}...HEAD"
         else:
             # unreleased version
             first_commit = self._get_first_commit()

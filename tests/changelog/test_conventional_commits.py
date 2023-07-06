@@ -529,10 +529,7 @@ class ConventionalCommitsTestCase(unittest.TestCase):
             "d0c4d0c Doc: bar baz documenting",
         ]
 
-        conventional_commits = ConventionalCommits(
-            space="foo",
-            project="bar",
-        )
+        conventional_commits = ConventionalCommits()
         commits = conventional_commits.get_commits(from_ref="0.0.1")
 
         self.assertEqual(len(commits), 4)  # four commit types
@@ -541,11 +538,16 @@ class ConventionalCommitsTestCase(unittest.TestCase):
         self.assertEqual(len(commits["Removed"]), 1)
         self.assertEqual(len(commits["Bug Fixes"]), 1)
 
+        removed = commits["Removed"][0]
+        self.assertEqual(removed.commit_id, "42a42a4")
+        self.assertEqual(removed.message, "foo bar again")
+
+        commit_id, message = removed
+        self.assertEqual(commit_id, "42a42a4")
+        self.assertEqual(message, "foo bar again")
+
     def test_default_config(self):
-        conventional_commits = ConventionalCommits(
-            space="foo",
-            project="bar",
-        )
+        conventional_commits = ConventionalCommits()
 
         categories = conventional_commits.commit_types()
 
