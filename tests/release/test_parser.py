@@ -87,6 +87,12 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.git_tag_prefix, "")
 
+        _, _, args = parse_args(
+            ["release", "--git-tag-prefix", "--release-type", "patch"]
+        )
+
+        self.assertEqual(args.git_tag_prefix, "")
+
     def test_space(self):
         _, _, args = parse_args(
             ["release", "--space", "foo", "--release-type", "patch"]
