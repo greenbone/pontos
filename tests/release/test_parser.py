@@ -56,7 +56,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
     def test_default(self):
         _, _, args = parse_args(["release", "--release-type", "patch"])
 
-        self.assertEqual(args.git_tag_prefix, "v")
+        self.assertEqual(args.git_tag_prefix, "")
         self.assertEqual(args.space, "greenbone")
         self.assertFalse(args.local)
 
@@ -246,7 +246,7 @@ class SignParseArgsTestCase(unittest.TestCase):
     def test_default(self):
         _, _, args = parse_args(["sign"])
 
-        self.assertEqual(args.git_tag_prefix, "v")
+        self.assertEqual(args.git_tag_prefix, "")
         self.assertEqual(args.space, "greenbone")
         self.assertEqual(args.signing_key, DEFAULT_SIGNING_KEY)
 

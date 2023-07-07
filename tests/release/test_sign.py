@@ -44,6 +44,8 @@ class SignTestCase(unittest.TestCase):
                 "foo",
                 "--release-version",
                 "0.0.1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -78,6 +80,8 @@ class SignTestCase(unittest.TestCase):
                     "sign",
                     "--project",
                     "foo",
+                    "--git-tag-prefix",
+                    "v",
                 ]
             )
 
@@ -231,7 +235,7 @@ class SignTestCase(unittest.TestCase):
 
             github_releases_mock.upload_release_assets.assert_called_once_with(
                 "greenbone/foo",
-                "v1.2.3",
+                "1.2.3",
                 [
                     (Path("file.zip.asc"), "application/pgp-signature"),
                     (Path("file.tar.asc"), "application/pgp-signature"),
@@ -277,7 +281,7 @@ class SignTestCase(unittest.TestCase):
         process = AsyncMock(spec=Process, returncode=0)
         process.communicate.return_value = ("", "")
         cmd_runner_mock.return_value = process
-        git_mock.return_value.list_tags.return_value = ["v1.0.0", "v1.2.3"]
+        git_mock.return_value.list_tags.return_value = ["1.0.0", "1.2.3"]
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(
@@ -339,7 +343,7 @@ class SignTestCase(unittest.TestCase):
 
             github_releases_mock.upload_release_assets.assert_called_once_with(
                 "greenbone/foo",
-                "v1.2.3",
+                "1.2.3",
                 [
                     (Path("file.zip.asc"), "application/pgp-signature"),
                     (Path("file.tar.asc"), "application/pgp-signature"),
@@ -391,7 +395,15 @@ class SignTestCase(unittest.TestCase):
 
         with temp_directory(change_into=True):
             _, token, args = parse_args(
-                ["sign", "--project", "foo", "--release-series", "2"]
+                [
+                    "sign",
+                    "--project",
+                    "foo",
+                    "--release-series",
+                    "2",
+                    "--git-tag-prefix",
+                    "v",
+                ]
             )
 
             result = sign(
@@ -731,7 +743,7 @@ class SignTestCase(unittest.TestCase):
 
             github_releases_mock.upload_release_assets.assert_called_once_with(
                 "greenbone/foo",
-                "v1.2.3",
+                "1.2.3",
                 [
                     (Path("file.zip.asc"), "application/pgp-signature"),
                     (Path("file.tar.asc"), "application/pgp-signature"),

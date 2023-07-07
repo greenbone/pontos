@@ -203,6 +203,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.2",
                 "--next-version",
                 "1.0.0.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -305,6 +307,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "foo",
                 "--release-version",
                 "1.0.0",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -409,6 +413,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "patch",
                 "--next-version",
                 "1.0.0.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -511,6 +517,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "foo",
                 "--release-type",
                 "calendar",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -617,6 +625,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "minor",
                 "--next-version",
                 "0.1.1.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -720,6 +730,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "major",
                 "--next-version",
                 "1.0.1.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -821,6 +833,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "foo",
                 "--release-type",
                 "alpha",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -924,6 +938,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "foo",
                 "--release-type",
                 "beta",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1027,6 +1043,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "foo",
                 "--release-type",
                 "release-candidate",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1190,7 +1208,7 @@ class ReleaseTestCase(unittest.TestCase):
         git_instance_mock.add.assert_not_called()
         git_instance_mock.commit.assert_not_called()
         git_instance_mock.tag.assert_called_once_with(
-            "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
+            "0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
         self.assertEqual(released, ReleaseReturnValue.SUCCESS)
@@ -1282,7 +1300,7 @@ class ReleaseTestCase(unittest.TestCase):
         git_mock1: MagicMock,
         git_mock2: MagicMock,
     ):
-        tags = ["v1.0.0", "v1.0.1"]
+        tags = ["1.0.0", "1.0.1"]
         git_mock1.return_value.list_tags.return_value = tags
         git_mock2.return_value.list_tags.return_value = tags
 
@@ -1336,6 +1354,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.1",
                 "--next-version",
                 "0.0.2.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1415,6 +1435,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.1",
                 "--next-version",
                 "0.0.2.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1489,6 +1511,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.1",
                 "--next-version",
                 "0.0.2.dev1",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1581,6 +1605,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "upstream",
                 "--git-signing-key",
                 "1234",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1673,8 +1699,6 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.1",
                 "--next-version",
                 "0.0.2.dev1",
-                "--git-tag-prefix",
-                "",
             ]
         )
 
@@ -1771,6 +1795,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.2.dev1",
                 "--git-remote-name",
                 "upstream",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1870,6 +1896,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "0.0.1a1+dev1",
                 "--git-remote-name",
                 "upstream",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -1962,7 +1990,7 @@ class ReleaseTestCase(unittest.TestCase):
             gpg_signing_key="1234",
         )
         git_instance_mock.tag.assert_called_once_with(
-            "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
+            "0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
         self.assertEqual(
@@ -2035,7 +2063,7 @@ class ReleaseTestCase(unittest.TestCase):
 ## Bug Fixes
 * bar baz fixing [fedcba8](https://github.com/greenbone/foo/commit/fedcba8)
 
-[0.0.2]: https://github.com/greenbone/foo/compare/v0.0.1...v0.0.2"""
+[0.0.2]: https://github.com/greenbone/foo/compare/0.0.1...0.0.2"""
 
         _, token, args = parse_args(
             [
@@ -2059,7 +2087,7 @@ class ReleaseTestCase(unittest.TestCase):
         git_instance_mock.list_tags.assert_called_once_with()
 
         cc_git_mock.return_value.log.assert_called_once_with(
-            "v0.0.1..HEAD", oneline=True
+            "0.0.1..HEAD", oneline=True
         )
 
         git_instance_mock.push.assert_has_calls(
@@ -2082,7 +2110,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         git_instance_mock.tag.assert_called_once_with(
-            "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
+            "0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
         git_instance_mock.add.assert_has_calls(
             [call("project.conf"), call("project.conf"), call("version.lang")]
@@ -2156,6 +2184,8 @@ class ReleaseTestCase(unittest.TestCase):
                 "--next-version",
                 "0.0.2.dev1",
                 "--local",
+                "--git-tag-prefix",
+                "v",
             ]
         )
 
@@ -2296,11 +2326,11 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
             self.assertEqual(
                 released,
                 ReleaseReturnValue.SUCCESS,
-                f"v{r.expected_release_version}",
+                f"{r.expected_release_version}",
             )
             self.assertEqual(
                 create_api_mock.call_args.args[1],
-                f"v{r.expected_release_version}",
+                f"{r.expected_release_version}",
             )
 
             create_api_mock.reset_mock()
