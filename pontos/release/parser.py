@@ -133,7 +133,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     release_parser.add_argument(
         "--git-tag-prefix",
-        default="v",
+        default="",
         help="Prefix for git tag versions. Default: %(default)s",
     )
     release_parser.add_argument(
@@ -198,7 +198,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     )
     sign_parser.add_argument(
         "--git-tag-prefix",
-        default="v",
+        default="",
         help="Prefix for git tag versions. Default: %(default)s",
     )
     sign_parser.add_argument(
