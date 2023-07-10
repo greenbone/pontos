@@ -74,7 +74,7 @@ class TestReplaceString(unittest.TestCase):
             .version("1.2.3")
         glubb
         """
-        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
         replacement = "1.2.4"
 
         with temp_file(content=content) as tmp:
@@ -98,7 +98,7 @@ class TestReplaceString(unittest.TestCase):
             .versio("1.2.3")
         glubb
         """
-        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
         replacement = "1.2.4"
 
         with temp_file(content=content) as tmp:

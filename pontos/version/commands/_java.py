@@ -71,9 +71,7 @@ def replace_string_in_file(
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
     project_file_name = "pom.xml"
-    _properties_file_path = Path(
-        "src/main/resources/application-docker.properties"
-    )
+    _properties_file_path = Path("src/main/resources/application.properties")
     _pom_xml: Optional[etree.Element] = None
 
     def _get_version_from_pom_xml(self) -> Version:
@@ -136,7 +134,7 @@ class JavaVersionCommand(VersionCommand):
         if not swagger_config_file:
             # skip if not existing
             return
-        pattern = r'.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
         replace_string_in_file(
             swagger_config_file, pattern=pattern, replacement=str(new_version)
         )
