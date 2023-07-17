@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
-        uses: greenbone/actions/poetry@v2
+        uses: greenbone/actions/poetry@v3
         with:
           python-version: "3.10"
           install-dependencies: "false"
