@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import re
 from pathlib import Path
 from typing import Literal, Optional, Union
@@ -48,6 +49,7 @@ def find_file(
     for file_path in search_path.glob(search_glob):
         if file_path.is_file() and file_path.name == filename.name:
             return file_path
+    logging.warning("File %s not found in %s.", filename.name, search_path)
     return None
 
 
@@ -66,6 +68,11 @@ def replace_string_in_file(
         file_path.write_text(
             content.replace(match.group(1), replacement), encoding="utf-8"
         )
+    logging.warning(
+        "Couldn't match the pattern %s in the content of %s.",
+        pattern,
+        file_path,
+    )
 
 
 # This class is used for Java Version command(s)

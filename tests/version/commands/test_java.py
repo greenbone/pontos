@@ -59,8 +59,17 @@ class TestFindFile(unittest.TestCase):
             filename = Path("NonExistentFile.java")
             search_path = temp_dir
             search_glob = "**/config/swagger/*"
-
-            result = find_file(filename, search_path, search_glob)
+            with self.assertLogs("root", level="WARNING") as cm:
+                result = find_file(filename, search_path, search_glob)
+                self.assertEqual(
+                    cm.output,
+                    [
+                        (
+                            f"WARNING:root:File {filename.name} not "
+                            f"found in {search_path.resolve()}."
+                        )
+                    ],
+                )
 
             self.assertIsNone(result)
 
@@ -167,6 +176,8 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
 
 class UpdateJavaVersionCommandTestCase(unittest.TestCase):
+    swagger_file = "SwaggerConfig.java"
+
     def test_update_version_file(self):
         content = """<?xml version="1.0" encoding="UTF-8"?>
         <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -201,9 +212,20 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
         <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
 
         with temp_file(content, name="pom.xml", change_into=True) as temp:
+            swagger_search_path = Path("src").resolve()
             cmd = JavaVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("2023.6.0.dev1")
-            updated = cmd.update_version(new_version)
+            with self.assertLogs("root", level="WARNING") as cm:
+                updated = cmd.update_version(new_version)
+                self.assertEqual(
+                    cm.output,
+                    [
+                        (
+                            f"WARNING:root:File {self.swagger_file} not "
+                            f"found in {swagger_search_path.resolve()}."
+                        )
+                    ],
+                )
 
             self.assertEqual(
                 updated.previous,

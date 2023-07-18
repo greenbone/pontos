@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import logging
 import subprocess
 import sys
 from typing import NoReturn
@@ -32,6 +33,8 @@ def main(
     args=None,
 ) -> NoReturn:
     username, token, parsed_args = parse_args(args)
+    logging.basicConfig(format="%(levelname)s - %(name)s - %(message)s")
+
     if parsed_args.quiet:
         term = NullTerminal()
     else:
