@@ -524,16 +524,26 @@ class Git:
 
         self.exec(*args)
 
-    def log(self, *log_args: str, oneline: Optional[bool] = None) -> List[str]:
+    def log(
+        self,
+        *log_args: str,
+        oneline: Optional[bool] = None,
+        format: Optional[str] = None,
+    ) -> List[str]:
         """
         Get log of a git repository
 
         Args:
+            format: Pretty format the output.
             log_args: Additional arguments for git log
             oneline: Print the abbreviated commit id and commit message in one
                 line per commit
         """
         args = ["log"]
+
+        if format:
+            args.append(f"--format={format}")
+
         if oneline:
             args.append("--oneline")
 
