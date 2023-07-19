@@ -557,6 +557,25 @@ e6ea80d Update README
         self.assertEqual(logs[5], "464f24d Initial commit")
 
     @patch("pontos.git.git.exec_git")
+    def test_log_with_format(self, exec_git_mock):
+        exec_git_mock.return_value = """Add CircleCI config for pontos
+Rename to pontos only
+Update README for installation and development
+Update README
+Add a draft for a README.md document
+Initial commit"""
+
+        git = Git()
+        logs = git.log(format="format:%s")
+
+        exec_git_mock.assert_called_once_with(
+            "log", "--format=format:%s", cwd=None
+        )
+
+        self.assertEqual(logs[0], "Add CircleCI config for pontos")
+        self.assertEqual(logs[5], "Initial commit")
+
+    @patch("pontos.git.git.exec_git")
     def test_rev_list(self, exec_git_mock):
         git = Git()
         git.rev_list("foo", "bar", "baz", max_parents=123, abbrev_commit=True)
