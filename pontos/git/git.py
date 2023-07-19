@@ -168,6 +168,14 @@ class Git:
         """
         self._cwd = cwd.absolute()
 
+    @property
+    def version(self) -> str:
+        """
+        Get the version string of the installed git
+        """
+        # git --version returns "git version 2.3.4"
+        return self.exec("--version").strip().rsplit(" ", 1)[1]
+
     def exec(self, *args: str) -> str:
         return exec_git(*args, cwd=self._cwd)
 

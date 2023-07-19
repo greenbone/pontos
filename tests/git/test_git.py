@@ -17,7 +17,7 @@
 
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pontos.git import Git
 from pontos.git.git import (
@@ -623,6 +623,17 @@ e6ea80d Update README
             "baz",
             cwd=None,
         )
+
+    @patch("pontos.git.git.exec_git")
+    def test_version(self, exec_git_mock: MagicMock):
+        exec_git_mock.return_value = "git version 1.2.3"
+        git = Git()
+        self.assertEqual(git.version, "1.2.3")
+
+    def test_version_runs(self):
+        """Getting the git version should not raise an error"""
+        git = Git()
+        git.version
 
 
 class GitExtendedTestCase(unittest.TestCase):
