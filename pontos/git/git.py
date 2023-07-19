@@ -541,6 +541,55 @@ class Git:
 
         return self.exec(*args).splitlines()
 
+    def show(
+        self,
+        *show_args: str,
+        format: Optional[str] = None,
+        oneline: Optional[bool] = None,
+        patch: Optional[bool] = None,
+        objects: Union[str, Iterable[str], None] = None,
+    ) -> Union[str, list[str]]:
+        """
+        Show various types of git objects
+
+        Args:
+            format: Pretty format the output.
+            oneline: Print the abbreviated commit id and commit message in one
+                line per commit.
+            patch: True to generate patch output. False to suppress diff output.
+            show_args: Additional arguments for git show
+            objects: Git objects (commits, refs, ...) to get details for.
+
+        Returns:
+            A list of details about the passed object the object if more then
+            one object is passed. Otherwise a single details is returned.
+        """
+        args = ["show"]
+
+        if format:
+            args.append(f"--format={format}")
+
+        if oneline:
+            args.append("--oneline")
+
+        if patch is not None:
+            if patch:
+                args.append("--patch")
+            else:
+                args.append("--no-patch")
+
+        if objects:
+            if isinstance(objects, str):
+                objects = [objects]
+
+            args.extend(objects)
+
+        args.extend(show_args)
+
+        output = self.exec(*args).strip()
+
+        return output.splitlines() if objects and len(objects) > 1 else output
+
     def rev_list(
         self,
         *commit: str,

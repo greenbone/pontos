@@ -635,6 +635,103 @@ e6ea80d Update README
         git = Git()
         git.version
 
+    @patch("pontos.git.git.exec_git")
+    def test_show_with_online_and_objects(self, exec_git_mock: MagicMock):
+        exec_git_mock.return_value = """9a8feaa Rename to pontos only
+047cfae Update README for installation and development
+"""
+
+        git = Git()
+        show = git.show(oneline=True, objects=["9a8feaa", "047cfae"])
+
+        exec_git_mock.assert_called_once_with(
+            "show", "--oneline", "9a8feaa", "047cfae", cwd=None
+        )
+
+        self.assertEqual(show[0], "9a8feaa Rename to pontos only")
+        self.assertEqual(
+            show[1], "047cfae Update README for installation and development"
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_show_with_format(self, exec_git_mock: MagicMock):
+        exec_git_mock.return_value = """Rename to pontos only
+"""
+
+        git = Git()
+        show = git.show(format="format:%s")
+
+        exec_git_mock.assert_called_once_with(
+            "show", "--format=format:%s", cwd=None
+        )
+
+        self.assertEqual(show, "Rename to pontos only")
+
+    @patch("pontos.git.git.exec_git")
+    def test_show_with_single_object(self, exec_git_mock: MagicMock):
+        content = """commit a6956fb1398cae9426e7ced0396248a90dc1ff64
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Jul 19 15:07:03 2023 +0200
+
+    Add: Allow to get the git version string
+
+diff --git a/pontos/git/git.py b/pontos/git/git.py
+index a83eed8..09aed3d 100644
+--- a/pontos/git/git.py
++++ b/pontos/git/git.py
+@@ -168,6 +168,14 @@ class Git:
+...
+"""
+        exec_git_mock.return_value = content
+
+        git = Git()
+        show = git.show(objects="9a8feaa")
+
+        exec_git_mock.assert_called_once_with("show", "9a8feaa", cwd=None)
+
+        self.assertEqual(show, content.strip())
+
+    @patch("pontos.git.git.exec_git")
+    def test_show_with_patch(self, exec_git_mock: MagicMock):
+        content = """commit a6956fb1398cae9426e7ced0396248a90dc1ff64
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Jul 19 15:07:03 2023 +0200
+
+    Add: Allow to get the git version string
+
+diff --git a/pontos/git/git.py b/pontos/git/git.py
+index a83eed8..09aed3d 100644
+--- a/pontos/git/git.py
++++ b/pontos/git/git.py
+@@ -168,6 +168,14 @@ class Git:
+...
+"""
+        exec_git_mock.return_value = content
+
+        git = Git()
+        show = git.show(patch=True)
+
+        exec_git_mock.assert_called_once_with("show", "--patch", cwd=None)
+
+        self.assertEqual(show, content.strip())
+
+    @patch("pontos.git.git.exec_git")
+    def test_show_with_no_patch(self, exec_git_mock: MagicMock):
+        content = """commit a6956fb1398cae9426e7ced0396248a90dc1ff64
+Author: Björn Ricks <bjoern.ricks@greenbone.net>
+Date:   Wed Jul 19 15:07:03 2023 +0200
+
+    Add: Allow to get the git version string
+"""
+        exec_git_mock.return_value = content
+
+        git = Git()
+        show = git.show(patch=False)
+
+        exec_git_mock.assert_called_once_with("show", "--no-patch", cwd=None)
+
+        self.assertEqual(show, content.strip())
+
 
 class GitExtendedTestCase(unittest.TestCase):
     def test_semantic_list_tags(self):
