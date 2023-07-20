@@ -37,6 +37,7 @@ def main(
 
     if parsed_args.quiet:
         term = NullTerminal()
+        logging.disable()
     else:
         term = RichTerminal()
 
