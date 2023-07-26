@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       - name: Create release
         run: |
-          poetry run pontos-release release --release-type calendar
+          poetry run pontos-release create --release-type calendar
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
