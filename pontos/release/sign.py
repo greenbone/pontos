@@ -33,8 +33,8 @@ from pontos.errors import PontosError
 from pontos.git.git import GitError
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
+from pontos.release.command import AsyncCommand
 from pontos.terminal import Terminal
-from pontos.terminal.rich import RichTerminal
 from pontos.version import Version
 from pontos.version.helper import get_last_release_version
 from pontos.version.schemes import VersioningScheme
@@ -70,16 +70,13 @@ async def cmd_runner(*args: Iterable[str]) -> Process:
     )
 
 
-class SignCommand:
+class SignCommand(AsyncCommand):
     """
     A CLI command for signing a release
 
     Args:
         terminal: A Terminal for output
     """
-
-    def __init__(self, terminal: RichTerminal) -> None:
-        self.terminal = terminal
 
     async def _async_download_progress(
         self,
@@ -186,7 +183,7 @@ class SignCommand:
                 f"{stderr.decode(errors='replace')}"
             )
 
-    async def run(
+    async def async_run(
         self,
         *,
         token: str,
@@ -224,7 +221,7 @@ class SignCommand:
         if not token and not dry_run:
             # dry run doesn't upload assets. therefore a token MAY NOT be
             # required # for public repositories.
-            self.terminal.error(
+            self.print_error(
                 "Token is missing. The GitHub token is required to upload "
                 "signature files."
             )
@@ -237,7 +234,7 @@ class SignCommand:
                 project if project is not None else get_git_repository_name()
             )
         except GitError as e:
-            self.terminal.error(f"Could not determine project. {e}")
+            self.print_error(f"Could not determine project. {e}")
             return SignReturnValue.NO_PROJECT
 
         try:
@@ -253,7 +250,7 @@ class SignCommand:
                 )
             )
         except PontosError as e:
-            self.terminal.error(f"Could not determine release version. {e}")
+            self.print_error(f"Could not determine release version. {e}")
             return SignReturnValue.NO_RELEASE_VERSION
 
         if not release_version:
@@ -264,7 +261,7 @@ class SignCommand:
 
         async with GitHubAsyncRESTApi(token=token) as github:
             if not await github.releases.exists(repo, git_version):
-                self.terminal.error(
+                self.print_error(
                     f"Release version {git_version} does not exist."
                 )
                 return SignReturnValue.NO_RELEASE
@@ -335,7 +332,7 @@ class SignCommand:
                 except (asyncio.CancelledError, asyncio.InvalidStateError):
                     pass
                 except SignatureError as e:
-                    self.terminal.error(e)
+                    self.print_error(e)
                     has_error = True
 
             for task in pending:
@@ -367,30 +364,29 @@ class SignCommand:
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")
             except httpx.HTTPStatusError as e:
-                self.terminal.error(f"Failed uploading asset {e}.")
+                self.print_error(f"Failed uploading asset {e}.")
                 return SignReturnValue.UPLOAD_ASSET_ERROR
 
         return SignReturnValue.SUCCESS
 
 
 def sign(
-    terminal: Terminal,
     args: Namespace,
     *,
+    terminal: Terminal,
+    error_terminal: Terminal,
     token: str,
     **_kwargs,
 ) -> IntEnum:
-    return asyncio.run(
-        SignCommand(terminal).run(
-            token=token,
-            dry_run=args.dry_run,
-            project=args.project,
-            space=args.space,
-            versioning_scheme=args.versioning_scheme,
-            git_tag_prefix=args.git_tag_prefix,
-            release_version=args.release_version,
-            signing_key=args.signing_key,
-            passphrase=args.passphrase,
-            release_series=args.release_series,
-        )
+    return SignCommand(terminal=terminal, error_terminal=error_terminal).run(
+        token=token,
+        dry_run=args.dry_run,
+        project=args.project,
+        space=args.space,
+        versioning_scheme=args.versioning_scheme,
+        git_tag_prefix=args.git_tag_prefix,
+        release_version=args.release_version,
+        signing_key=args.signing_key,
+        passphrase=args.passphrase,
+        release_series=args.release_series,
     )

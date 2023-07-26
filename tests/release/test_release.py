@@ -209,6 +209,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -311,6 +312,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -415,6 +417,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -517,6 +520,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -623,6 +627,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -726,6 +731,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -827,6 +833,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -930,6 +937,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1033,6 +1041,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1096,6 +1105,7 @@ class ReleaseTestCase(unittest.TestCase):
 
         released = release(
             terminal=mock_terminal(),
+            error_terminal=mock_terminal(),
             args=args,
             token=None,
         )
@@ -1122,6 +1132,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1171,6 +1182,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1210,6 +1222,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1234,6 +1247,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1269,6 +1283,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1299,6 +1314,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 token=token,
                 args=args,
             )
@@ -1342,6 +1358,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1421,6 +1438,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1495,6 +1513,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1587,6 +1606,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1681,6 +1701,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1777,6 +1798,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1876,6 +1898,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -1945,6 +1968,7 @@ class ReleaseTestCase(unittest.TestCase):
         with setup_go_project(current_version="0.0.1", tags=["0.0.1"]):
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -2052,6 +2076,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -2162,6 +2187,7 @@ class ReleaseTestCase(unittest.TestCase):
         with temp_git_repository():
             released = release(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -2289,6 +2315,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                 )
                 released = release(
                     terminal=mock_terminal(),
+                    error_terminal=mock_terminal(),
                     args=args,
                     token=token,
                 )
@@ -2457,6 +2484,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                 _, token, args = parse_args(input_args)
                 released = release(
                     terminal=mock_terminal(),
+                    error_terminal=mock_terminal(),
                     args=args,
                     token=token,
                 )
