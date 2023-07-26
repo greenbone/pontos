@@ -48,8 +48,9 @@ def main(
     with term.indent():
         try:
             retval = parsed_args.func(
-                term,
                 parsed_args,
+                terminal=term,
+                error_terminal=error_terminal,
                 username=username,
                 token=token,
             )

@@ -49,6 +49,7 @@ class SignTestCase(unittest.TestCase):
 
         result = sign(
             terminal=mock_terminal(),
+            error_terminal=mock_terminal(),
             args=args,
             token=token,
         )
@@ -65,6 +66,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -83,6 +85,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -104,6 +107,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -127,6 +131,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -182,6 +187,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -290,6 +296,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -396,6 +403,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -504,6 +512,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -602,6 +611,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
@@ -682,6 +692,7 @@ class SignTestCase(unittest.TestCase):
 
             result = sign(
                 terminal=mock_terminal(),
+                error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )

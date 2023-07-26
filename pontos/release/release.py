@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import asyncio
 from argparse import Namespace
 from dataclasses import dataclass
 from enum import IntEnum, auto
@@ -30,6 +29,7 @@ from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.actions.core import ActionIO
 from pontos.github.api import GitHubAsyncRESTApi
+from pontos.release.command import AsyncCommand
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionCalculator, VersionError
 from pontos.version.helper import get_last_release_version
@@ -72,7 +72,7 @@ class ReleaseReturnValue(IntEnum):
     UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
 
 
-class ReleaseCommand:
+class ReleaseCommand(AsyncCommand):
     """
     A CLI command for creating a release
 
@@ -80,9 +80,9 @@ class ReleaseCommand:
         terminal: A Terminal for output
     """
 
-    def __init__(self, terminal: Terminal) -> None:
+    def __init__(self, *, terminal: Terminal, error_terminal: Terminal) -> None:
+        super().__init__(terminal=terminal, error_terminal=error_terminal)
         self.git = Git()
-        self.terminal = terminal
 
     def _get_next_release_version(
         self,
@@ -162,7 +162,7 @@ class ReleaseCommand:
             prerelease=release_version.is_pre_release,
         )
 
-    async def run(
+    async def async_run(
         self,
         *,
         token: str,
@@ -234,13 +234,11 @@ class ReleaseCommand:
             )
         except PontosError as e:
             last_release_version = None
-            self.terminal.warning(
-                f"Could not determine last release version. {e}"
-            )
+            self.print_warning(f"Could not determine last release version. {e}")
 
         if not last_release_version:
             if not release_version:
-                self.terminal.error("Unable to determine last release version.")
+                self.print_error("Unable to determine last release version.")
                 return ReleaseReturnValue.NO_LAST_RELEASE_VERSION
             else:
                 self.terminal.info(
@@ -260,7 +258,7 @@ class ReleaseCommand:
                 release_version=release_version,
             )
         except VersionError as e:
-            self.terminal.error(f"Unable to determine release version. {e}")
+            self.print_error(f"Unable to determine release version. {e}")
             return ReleaseReturnValue.NO_RELEASE_VERSION
 
         self.terminal.info(f"Preparing the release {release_version}")
@@ -268,16 +266,14 @@ class ReleaseCommand:
         git_version = f"{self.git_tag_prefix}{release_version}"
 
         if self._has_tag(git_version):
-            self.terminal.error(f"Git tag {git_version} already exists.")
+            self.print_error(f"Git tag {git_version} already exists.")
             return ReleaseReturnValue.ALREADY_TAKEN
 
         if update_project:
             try:
                 project = Project(versioning_scheme)
             except PontosError as e:
-                self.terminal.error(
-                    f"Unable to determine project settings. {e}"
-                )
+                self.print_error(f"Unable to determine project settings. {e}")
                 return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
             try:
@@ -335,7 +331,7 @@ class ReleaseCommand:
 
                 self.terminal.ok(f"Created release {release_version}")
             except httpx.HTTPStatusError as e:
-                self.terminal.error(str(e))
+                self.print_error(str(e))
                 return ReleaseReturnValue.CREATE_RELEASE_ERROR
 
         if not next_version:
@@ -348,7 +344,7 @@ class ReleaseCommand:
                     f"Updated version after release to {next_version}"
                 )
             except VersionError as e:
-                self.terminal.error(
+                self.print_error(
                     f"Error while updating version after release. {e}"
                 )
                 return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
@@ -387,35 +383,33 @@ class ReleaseCommand:
 
 
 def release(
-    terminal: Terminal,
     args: Namespace,
     *,
     token: str,
+    terminal: Terminal,
+    error_terminal: Terminal,
     **_kwargs,
 ) -> IntEnum:
     if not token:
-        terminal.error(
+        error_terminal.error(
             "Token is missing. The GitHub token is required to create a "
             "release."
         )
         return ReleaseReturnValue.TOKEN_MISSING
 
-    cmd = ReleaseCommand(terminal)
-    return asyncio.run(
-        cmd.run(
-            token=token,
-            space=args.space,
-            project=args.project,
-            versioning_scheme=args.versioning_scheme,
-            release_type=args.release_type,
-            release_version=args.release_version,
-            next_version=args.next_version,
-            git_remote_name=args.git_remote_name,
-            git_signing_key=args.git_signing_key,
-            git_tag_prefix=args.git_tag_prefix,
-            cc_config=args.cc_config,
-            local=args.local,
-            release_series=args.release_series,
-            update_project=args.update_project,
-        )
+    return ReleaseCommand(terminal=terminal, error_terminal=error_terminal).run(
+        token=token,
+        space=args.space,
+        project=args.project,
+        versioning_scheme=args.versioning_scheme,
+        release_type=args.release_type,
+        release_version=args.release_version,
+        next_version=args.next_version,
+        git_remote_name=args.git_remote_name,
+        git_signing_key=args.git_signing_key,
+        git_tag_prefix=args.git_tag_prefix,
+        cc_config=args.cc_config,
+        local=args.local,
+        release_series=args.release_series,
+        update_project=args.update_project,
     )
