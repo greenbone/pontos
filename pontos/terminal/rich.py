@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable, Iterable, Optional
+from typing import IO, Any, Callable, Iterable, Optional
 
 from rich.console import Console, RenderableType
 from rich.padding import Padding
@@ -68,9 +68,19 @@ class RichTerminal(Terminal):
     A Terminal based on `rich <https://github.com/Textualize/rich/>`_.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        file: Optional[IO[str]] = None,
+    ) -> None:
+        """
+        Create a new RichTerminal
+
+        Args:
+            file: A file object where the output should write to.
+                Default is stdout.
+        """
         super().__init__()
-        self._console = Console()
+        self._console = Console(file=file)
 
     def _indent_message(self):
         return " " * self._indent
