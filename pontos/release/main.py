@@ -37,9 +37,11 @@ def main(
 
     if parsed_args.quiet:
         term = NullTerminal()
+        error_terminal = NullTerminal()
         logging.disable()
     else:
         term = RichTerminal()
+        error_terminal = RichTerminal(file=sys.stderr)
 
     term.bold_info(f"pontos-release => {parsed_args.func.__name__}")
 
@@ -55,17 +57,17 @@ def main(
         except KeyboardInterrupt:
             sys.exit(1)
         except GitError as e:
-            term.error(f'Could not run git command "{e.cmd}".')
+            error_terminal.error(f'Could not run git command "{e.cmd}".')
             error = e.stderr if e.stderr else e.stdout
-            term.print(f"Output was: {error}")
+            error_terminal.print(f"Output was: {error}")
             sys.exit(1)
         except subprocess.CalledProcessError as e:
             if "--passphrase" not in e.cmd:
-                term.error(f'Could not run command "{e.cmd}".')
+                error_terminal.error(f'Could not run command "{e.cmd}".')
             else:
-                term.error("Headless signing failed.")
+                error_terminal.error("Headless signing failed.")
 
-            term.print(f"Error was: {e.stderr}")
+            error_terminal.print(f"Error was: {e.stderr}")
             sys.exit(1)
 
 
