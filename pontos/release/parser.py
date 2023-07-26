@@ -34,7 +34,7 @@ from pontos.version.schemes import (
     versioning_scheme_argument_type,
 )
 
-from .release import release
+from .create import create_release
 from .sign import sign
 
 DEFAULT_SIGNING_KEY = "0ED1E580"
@@ -88,11 +88,11 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         required=True,
     )
 
-    release_parser = subparsers.add_parser(
-        "release", help="Create a new release"
+    create_parser = subparsers.add_parser(
+        "create", help="Create a new release", aliases=["release"]
     )
-    release_parser.set_defaults(func=release)
-    release_parser.add_argument(
+    create_parser.set_defaults(func=create_release)
+    create_parser.add_argument(
         "--versioning-scheme",
         help="Versioning scheme to use for parsing and handling version "
         f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
@@ -100,13 +100,13 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         default="pep440",
         type=versioning_scheme_argument_type,
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--release-type",
         help="Select the release type for calculating the release version. "
         f"Possible choices are: {to_choices(ReleaseType)}.",
         type=enum_type(ReleaseType),
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--release-version",
         help=(
             "Will release changelog as version. "
@@ -114,14 +114,14 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         ),
         action=ReleaseVersionAction,
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--release-series",
         help="Create a release for a release series. Setting a release series "
         "is required if the latest tag version is newer then the to be "
         'released version. Examples: "1.2", "2", "22.4"',
     )
 
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--next-version",
         help=(
             "Sets the next version in project definition "
@@ -129,45 +129,45 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         ),
     )
 
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--git-remote-name",
         help="The git remote name to push the commits and tag to",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--git-tag-prefix",
         default="v",
         const="",
         nargs="?",
         help="Prefix for git tag versions. Default: %(default)s",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--git-signing-key",
         help="The key to sign the commits and tag for a release",
         default=os.environ.get("GPG_SIGNING_KEY"),
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--project",
         help="The github project",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--space",
         default="greenbone",
         help="User/Team name in github",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--local",
         action="store_true",
         help="Only create release changes locally and do not upload them to a "
         "remote repository. Also do not create a GitHub release.",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--conventional-commits-config",
         dest="cc_config",
         type=Path,
         help="Conventional commits config file (toml), including conventions."
         " If not set defaults are used.",
     )
-    release_parser.add_argument(
+    create_parser.add_argument(
         "--update-project",
         help="Update version in project files like pyproject.toml. By default "
         "project files are updated.",
@@ -233,7 +233,7 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
 
     scheme: VersioningScheme = getattr(parsed_args, "versioning_scheme", None)
 
-    if parsed_args.func in (release,):
+    if parsed_args.func in (create_release,):
         # check for release-type
         if not getattr(parsed_args, "release_type", None):
             parser.error("--release-type is required.")

@@ -56,7 +56,7 @@ class ReleaseInformation:
             output.write("next-version", self.next_version)
 
 
-class ReleaseReturnValue(IntEnum):
+class CreateReleaseReturnValue(IntEnum):
     """
     Possible return values of ReleaseCommand
     """
@@ -72,7 +72,7 @@ class ReleaseReturnValue(IntEnum):
     UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
 
 
-class ReleaseCommand(AsyncCommand):
+class CreateReleaseCommand(AsyncCommand):
     """
     A CLI command for creating a release
 
@@ -179,7 +179,7 @@ class ReleaseCommand(AsyncCommand):
         local: Optional[bool] = False,
         release_series: Optional[str] = None,
         update_project: bool = True,
-    ) -> ReleaseReturnValue:
+    ) -> CreateReleaseReturnValue:
         """
         Create a release
 
@@ -239,7 +239,7 @@ class ReleaseCommand(AsyncCommand):
         if not last_release_version:
             if not release_version:
                 self.print_error("Unable to determine last release version.")
-                return ReleaseReturnValue.NO_LAST_RELEASE_VERSION
+                return CreateReleaseReturnValue.NO_LAST_RELEASE_VERSION
             else:
                 self.terminal.info(
                     f"Creating the initial release {release_version}"
@@ -259,7 +259,7 @@ class ReleaseCommand(AsyncCommand):
             )
         except VersionError as e:
             self.print_error(f"Unable to determine release version. {e}")
-            return ReleaseReturnValue.NO_RELEASE_VERSION
+            return CreateReleaseReturnValue.NO_RELEASE_VERSION
 
         self.terminal.info(f"Preparing the release {release_version}")
 
@@ -267,14 +267,14 @@ class ReleaseCommand(AsyncCommand):
 
         if self._has_tag(git_version):
             self.print_error(f"Git tag {git_version} already exists.")
-            return ReleaseReturnValue.ALREADY_TAKEN
+            return CreateReleaseReturnValue.ALREADY_TAKEN
 
         if update_project:
             try:
                 project = Project(versioning_scheme)
             except PontosError as e:
                 self.print_error(f"Unable to determine project settings. {e}")
-                return ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
+                return CreateReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
 
             try:
                 updated = project.update_version(release_version)
@@ -288,7 +288,7 @@ class ReleaseCommand(AsyncCommand):
                 self.terminal.error(
                     f"Unable to update version to {release_version}. {e}"
                 )
-                return ReleaseReturnValue.UPDATE_VERSION_ERROR
+                return CreateReleaseReturnValue.UPDATE_VERSION_ERROR
 
         if last_release_version:
             self.terminal.info(
@@ -332,7 +332,7 @@ class ReleaseCommand(AsyncCommand):
                 self.terminal.ok(f"Created release {release_version}")
             except httpx.HTTPStatusError as e:
                 self.print_error(str(e))
-                return ReleaseReturnValue.CREATE_RELEASE_ERROR
+                return CreateReleaseReturnValue.CREATE_RELEASE_ERROR
 
         if not next_version:
             next_version = calculator.next_dev_version(release_version)
@@ -347,7 +347,9 @@ class ReleaseCommand(AsyncCommand):
                 self.print_error(
                     f"Error while updating version after release. {e}"
                 )
-                return ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
+                return (
+                    CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
+                )
 
             for f in updated.changed_files:
                 self.terminal.info(f"Adding changes of {f}")
@@ -379,10 +381,10 @@ class ReleaseCommand(AsyncCommand):
         if ActionIO.has_output():
             self.release_information.write_github_output()
 
-        return ReleaseReturnValue.SUCCESS
+        return CreateReleaseReturnValue.SUCCESS
 
 
-def release(
+def create_release(
     args: Namespace,
     *,
     token: str,
@@ -395,9 +397,11 @@ def release(
             "Token is missing. The GitHub token is required to create a "
             "release."
         )
-        return ReleaseReturnValue.TOKEN_MISSING
+        return CreateReleaseReturnValue.TOKEN_MISSING
 
-    return ReleaseCommand(terminal=terminal, error_terminal=error_terminal).run(
+    return CreateReleaseCommand(
+        terminal=terminal, error_terminal=error_terminal
+    ).run(
         token=token,
         space=args.space,
         project=args.project,
