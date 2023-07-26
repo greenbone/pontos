@@ -21,9 +21,9 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+from pontos.release.create import create_release
 from pontos.release.helper import ReleaseType
 from pontos.release.parser import DEFAULT_SIGNING_KEY, parse_args
-from pontos.release.release import release
 from pontos.release.sign import sign
 from pontos.version.schemes._pep440 import PEP440Version
 
@@ -51,7 +51,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
     def test_release_func(self):
         _, _, args = parse_args(["release", "--release-type", "patch"])
 
-        self.assertEqual(args.func, release)
+        self.assertEqual(args.func, create_release)
 
     def test_default(self):
         _, _, args = parse_args(["release", "--release-type", "patch"])

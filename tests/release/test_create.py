@@ -30,12 +30,12 @@ from httpx import HTTPStatusError, Request, Response
 from pontos.git.git import ConfigScope, Git
 from pontos.git.status import StatusEntry
 from pontos.github.actions.errors import GitHubActionsError
-from pontos.release.main import parse_args
-from pontos.release.release import (
+from pontos.release.create import (
+    CreateReleaseReturnValue,
     ReleaseInformation,
-    ReleaseReturnValue,
-    release,
+    create_release,
 )
+from pontos.release.main import parse_args
 from pontos.terminal.terminal import Terminal
 from pontos.testing import temp_directory, temp_git_repository
 from pontos.version import VersionError, VersionUpdate
@@ -151,17 +151,18 @@ next-version=2.0.1.dev1
         "GPG_SIGNING_KEY": "1234",
     },
 )
-class ReleaseTestCase(unittest.TestCase):
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+class CreateReleaseTestCase(unittest.TestCase):
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_version(
         self,
         gather_commands_mock: MagicMock,
@@ -207,7 +208,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -255,18 +256,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_initial_release_version(
         self,
         gather_commands_mock: MagicMock,
@@ -310,7 +312,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -358,18 +360,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v1.0.0", gpg_key_id="1234", message="Automatic release to 1.0.0"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_patch(
         self,
         gather_commands_mock: MagicMock,
@@ -415,7 +418,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -462,18 +465,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_calendar(
         self,
         gather_commands_mock: MagicMock,
@@ -518,7 +522,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -568,18 +572,19 @@ class ReleaseTestCase(unittest.TestCase):
             message=f"Automatic release to {release_version}",
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_minor(
         self,
         gather_commands_mock: MagicMock,
@@ -625,7 +630,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -672,18 +677,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.1.0", gpg_key_id="1234", message="Automatic release to 0.1.0"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_major(
         self,
         gather_commands_mock: MagicMock,
@@ -729,7 +735,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -776,18 +782,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v1.0.0", gpg_key_id="1234", message="Automatic release to 1.0.0"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_alpha(
         self,
         gather_commands_mock: MagicMock,
@@ -831,7 +838,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -880,18 +887,19 @@ class ReleaseTestCase(unittest.TestCase):
             message="Automatic release to 0.0.2a1",
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_beta(
         self,
         gather_commands_mock: MagicMock,
@@ -935,7 +943,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -984,18 +992,19 @@ class ReleaseTestCase(unittest.TestCase):
             message="Automatic release to 0.0.2b1",
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_release_candidate(
         self,
         gather_commands_mock: MagicMock,
@@ -1039,7 +1048,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1088,7 +1097,7 @@ class ReleaseTestCase(unittest.TestCase):
             message="Automatic release to 0.0.2rc1",
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
     def test_no_token(
         self,
@@ -1103,16 +1112,16 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
 
-        released = release(
+        released = create_release(
             terminal=mock_terminal(),
             error_terminal=mock_terminal(),
             args=args,
             token=None,
         )
 
-        self.assertEqual(released, ReleaseReturnValue.TOKEN_MISSING)
+        self.assertEqual(released, CreateReleaseReturnValue.TOKEN_MISSING)
 
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     def test_no_project_settings(
         self,
         get_last_release_version_mock: MagicMock,
@@ -1130,7 +1139,7 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1138,19 +1147,20 @@ class ReleaseTestCase(unittest.TestCase):
             )
 
         self.assertEqual(
-            released, ReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
+            released, CreateReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
         )
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
-    )
-    @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch("pontos.release.release.Project", autospec=True)
+    @patch(
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
+    )
+    @patch("pontos.release.create.Project", autospec=True)
     def test_no_update_project(
         self,
         project_mock: MagicMock,
@@ -1180,7 +1190,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1205,7 +1215,7 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
         project_mock.assert_not_called()
 
@@ -1220,16 +1230,18 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
 
-        self.assertEqual(released, ReleaseReturnValue.NO_LAST_RELEASE_VERSION)
+        self.assertEqual(
+            released, CreateReleaseReturnValue.NO_LAST_RELEASE_VERSION
+        )
 
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     def test_no_last_release_version(
         self,
         get_last_release_version_mock: MagicMock,
@@ -1245,18 +1257,20 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
 
-        self.assertEqual(released, ReleaseReturnValue.NO_LAST_RELEASE_VERSION)
+        self.assertEqual(
+            released, CreateReleaseReturnValue.NO_LAST_RELEASE_VERSION
+        )
 
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._get_next_release_version",
+        "pontos.release.create.CreateReleaseCommand._get_next_release_version",
         autospec=True,
     )
     def test_no_release_error(
@@ -1281,16 +1295,16 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
 
-        self.assertEqual(released, ReleaseReturnValue.NO_RELEASE_VERSION)
+        self.assertEqual(released, CreateReleaseReturnValue.NO_RELEASE_VERSION)
 
-    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
     @patch("pontos.version.helper.Git", autospec=True)
     def test_has_tag(
         self,
@@ -1312,24 +1326,25 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 token=token,
                 args=args,
             )
 
-            self.assertEqual(released, ReleaseReturnValue.ALREADY_TAKEN)
+            self.assertEqual(released, CreateReleaseReturnValue.ALREADY_TAKEN)
 
         git_mock1.return_value.list_tags.assert_called_once()
         git_mock2.return_value.list_tags.assert_called_once()
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_update_version_error(
         self,
         gather_commands_mock: MagicMock,
@@ -1356,7 +1371,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1375,17 +1390,21 @@ class ReleaseTestCase(unittest.TestCase):
         git_mock.return_value.commit.assert_not_called()
         git_mock.return_value.tag.assert_not_called()
 
-        self.assertEqual(released, ReleaseReturnValue.UPDATE_VERSION_ERROR)
+        self.assertEqual(
+            released, CreateReleaseReturnValue.UPDATE_VERSION_ERROR
+        )
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_github_create_release_failure(
         self,
         gather_commands_mock: MagicMock,
@@ -1436,14 +1455,16 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
 
-        self.assertEqual(released, ReleaseReturnValue.CREATE_RELEASE_ERROR)
+        self.assertEqual(
+            released, CreateReleaseReturnValue.CREATE_RELEASE_ERROR
+        )
 
         git_instance_mock.push.assert_called_once_with(
             follow_tags=True, remote=None
@@ -1461,15 +1482,17 @@ class ReleaseTestCase(unittest.TestCase):
             (release_version, "foo", "A Changelog"),
         )
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_update_version_after_release_error(
         self,
         gather_commands_mock: MagicMock,
@@ -1511,7 +1534,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1543,18 +1566,21 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            released, ReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
+            released,
+            CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR,
         )
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_to_specific_git_remote(
         self,
         gather_commands_mock: MagicMock,
@@ -1604,7 +1630,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1641,17 +1667,19 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_without_git_prefix(
         self,
         gather_commands_mock: MagicMock,
@@ -1699,7 +1727,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1736,15 +1764,16 @@ class ReleaseTestCase(unittest.TestCase):
             "0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
-    @patch("pontos.release.release.GitHubAsyncRESTApi", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.GitHubAsyncRESTApi", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_github_api(
         self,
         gather_commands_mock: MagicMock,
@@ -1796,7 +1825,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1836,15 +1865,16 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
-    @patch("pontos.release.release.GitHubAsyncRESTApi", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.GitHubAsyncRESTApi", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_github_api_pre_release(
         self,
         gather_commands_mock: MagicMock,
@@ -1896,7 +1926,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -1938,14 +1968,15 @@ class ReleaseTestCase(unittest.TestCase):
             message="Automatic release to 0.0.1a1",
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
         autospec=True,
     )
     def test_release_with_go_project(
@@ -1966,14 +1997,14 @@ class ReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(["release", "--release-type", "patch"])
 
         with setup_go_project(current_version="0.0.1", tags=["0.0.1"]):
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
                 token=token,
             )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
         git_instance_mock.push.assert_called_with(follow_tags=True, remote=None)
         git_instance_mock.add.assert_called_with(
@@ -1994,15 +2025,16 @@ class ReleaseTestCase(unittest.TestCase):
             (release_version, "foo", "A Changelog"),
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_with_changelog(
         self,
         gather_commands_mock: MagicMock,
@@ -2074,7 +2106,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -2128,17 +2160,19 @@ class ReleaseTestCase(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
-    @patch("pontos.release.release.Git", autospec=True)
-    @patch("pontos.release.release.get_last_release_version", autospec=True)
+    @patch("pontos.release.create.Git", autospec=True)
+    @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.release.ReleaseCommand._create_release", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_release",
+        autospec=True,
     )
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog", autospec=True
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        autospec=True,
     )
-    @patch("pontos.release.release.Project._gather_commands", autospec=True)
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_local(
         self,
         gather_commands_mock: MagicMock,
@@ -2185,7 +2219,7 @@ class ReleaseTestCase(unittest.TestCase):
         )
 
         with temp_git_repository():
-            released = release(
+            released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
@@ -2214,7 +2248,7 @@ class ReleaseTestCase(unittest.TestCase):
             "v0.0.1", gpg_key_id="1234", message="Automatic release to 0.0.1"
         )
 
-        self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
 
 @dataclass
@@ -2232,9 +2266,9 @@ class Release:
     {"GITHUB_TOKEN": "foo", "GITHUB_USER": "user", "GPG_SIGNING_KEY": ""},
 )
 class ReleaseGoProjectTestCase(unittest.TestCase):
-    @patch("pontos.release.release.Git.push", autospec=True)
+    @patch("pontos.release.create.Git.push", autospec=True)
     @patch(
-        "pontos.release.release.GitHubAsyncRESTApi",
+        "pontos.release.create.GitHubAsyncRESTApi",
         autospec=True,
     )
     def test_release(
@@ -2313,7 +2347,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                 _, token, args = parse_args(
                     ["release", "--release-type", r.release_type]
                 )
-                released = release(
+                released = create_release(
                     terminal=mock_terminal(),
                     error_terminal=mock_terminal(),
                     args=args,
@@ -2322,7 +2356,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
 
             self.assertEqual(
                 released,
-                ReleaseReturnValue.SUCCESS,
+                CreateReleaseReturnValue.SUCCESS,
                 f"v{r.expected_release_version}",
             )
             self.assertEqual(
@@ -2333,12 +2367,12 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
             create_api_mock.reset_mock()
 
     @patch(
-        "pontos.release.release.ReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_changelog",
         autospec=True,
     )
-    @patch("pontos.release.release.Git.push", autospec=True)
+    @patch("pontos.release.create.Git.push", autospec=True)
     @patch(
-        "pontos.release.release.GitHubAsyncRESTApi",
+        "pontos.release.create.GitHubAsyncRESTApi",
         autospec=True,
     )
     def test_release_series(
@@ -2482,14 +2516,14 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                     input_args.extend(["--release-series", r.release_series])
 
                 _, token, args = parse_args(input_args)
-                released = release(
+                released = create_release(
                     terminal=mock_terminal(),
                     error_terminal=mock_terminal(),
                     args=args,
                     token=token,
                 )
 
-            self.assertEqual(released, ReleaseReturnValue.SUCCESS)
+            self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
             self.assertEqual(
                 create_api_mock.call_args.args[1],
                 f"v{r.expected_release_version}",
