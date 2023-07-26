@@ -88,7 +88,9 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         required=True,
     )
 
-    release_parser = subparsers.add_parser("release")
+    release_parser = subparsers.add_parser(
+        "release", help="Create a new release"
+    )
     release_parser.set_defaults(func=release)
     release_parser.add_argument(
         "--versioning-scheme",
@@ -173,7 +175,9 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
         default=True,
     )
 
-    sign_parser = subparsers.add_parser("sign")
+    sign_parser = subparsers.add_parser(
+        "sign", help="Create signatures for an existing release"
+    )
     sign_parser.set_defaults(func=sign)
     sign_parser.add_argument(
         "--signing-key",
