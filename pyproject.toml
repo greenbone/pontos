@@ -63,9 +63,7 @@ target-version = ['py39', 'py310', 'py311']
 exclude = '''
 /(
     \.git
-  | \.hg
   | \.venv
-  | \.circleci
   | \.github
   | \.vscode
   | _build
