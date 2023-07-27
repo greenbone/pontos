@@ -4,7 +4,7 @@
 
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, SupportsInt
 
 from pontos.terminal import Terminal
 
@@ -25,14 +25,14 @@ class Command(ABC):
         self.error_terminal.warning(*messages, **kwargs)
 
     @abstractmethod
-    def run(self, **kwargs) -> int:
+    def run(self, **kwargs: Any) -> SupportsInt:
         """Run the command"""
 
 
 class AsyncCommand(Command):
     """Base class for release related commands using asyncio"""
 
-    def run(self, **kwargs) -> int:
+    def run(self, **kwargs: Any) -> SupportsInt:
         """
         Run the command using asyncio
 
@@ -41,7 +41,7 @@ class AsyncCommand(Command):
         return asyncio.run(self.async_run(**kwargs))
 
     @abstractmethod
-    async def async_run(self, **kwargs) -> int:
+    async def async_run(self, **kwargs: Any) -> SupportsInt:
         """
         Run the async command
 

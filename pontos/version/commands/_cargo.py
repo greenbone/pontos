@@ -53,7 +53,7 @@ class CargoVersionCommand(VersionCommand):
         for project_path, project in self.__as_project_document(
             self.project_file_path
         ):
-            project["package"]["version"] = str(new_version)
+            project["package"]["version"] = str(new_version)  # type: ignore[index] # noqa: E501
             project_path.write_text(tomlkit.dumps(project))
             changed_files.append(project_path)
         return VersionUpdate(
@@ -65,7 +65,7 @@ class CargoVersionCommand(VersionCommand):
     def get_current_version(self) -> Version:
         (_, document) = next(self.__as_project_document(self.project_file_path))
         current_version = self.versioning_scheme.parse_version(
-            document["package"]["version"]
+            document["package"]["version"]  # type: ignore[index, arg-type]
         )
         return self.versioning_scheme.from_version(current_version)
 

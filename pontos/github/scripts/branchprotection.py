@@ -34,8 +34,10 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     # switch required signatures enabled/disabled
     kwargs = update_from_applied_settings(
         branch_protection,
-        # pylint: disable=line-too-long
-        required_signatures=not branch_protection.required_signatures.enabled,
+        required_signatures=not (
+            branch_protection.required_signatures
+            and branch_protection.required_signatures.enabled
+        ),
     )
     await api.branches.update_protection_rules(
         args.repo,

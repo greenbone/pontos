@@ -121,8 +121,10 @@ class CMakeVersionParser:
 
         to_update = self._cmake_content_lines[self._version_line_number]
         updated = to_update.replace(self._current_version, str(new_version))
+
         self._cmake_content_lines[self._version_line_number] = updated
-        self._current_version = new_version
+        self._current_version = str(new_version)
+
         if self._project_dev_version_line_number:
             self._cmake_content_lines[
                 self._project_dev_version_line_number

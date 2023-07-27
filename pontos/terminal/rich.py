@@ -160,7 +160,7 @@ class RichTerminal(Terminal):
                     task_description, total=progress.length
                 )
                 for percent in progress:
-                    rich_progress.advance(task_id, percent)
+                    rich_progress.advance(task_id, percent)  # type: ignore[arg-type] # noqa: E501
             else:
                 task_id = rich_progress.add_task(task_description, total=None)
                 for _ in progress:

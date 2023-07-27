@@ -81,7 +81,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             run.event.value,
             run.conclusion,
             str(run.updated_at),
-            run.actor.login,
+            run.actor.login if run.actor else "",
         )
         count += 1
 

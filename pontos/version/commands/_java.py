@@ -38,13 +38,15 @@ def find_file(
     filename: Path, search_path: str, search_glob: str
 ) -> Optional[Path]:
     """Find a file somewhere within an directory tree
-    Arguments:
-        filename (Path)     The file to look up
-        search_path (str)   The path to look for the file
-        search_glob (str)   The glob search pattern
+
+    Arg:
+        filename: The file to look up
+        search_path: The path to look for the file
+        search_glob: The glob search pattern
 
     Returns:
-    The file as Path object, if existing"""
+        The file as Path object, if existing
+    """
     search_path = Path(search_path).resolve()
     for file_path in search_path.glob(search_glob):
         if file_path.is_file() and file_path.name == filename.name:

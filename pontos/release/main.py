@@ -40,36 +40,33 @@ def main(
         error_terminal = NullTerminal()
         logging.disable()
     else:
-        term = RichTerminal()
-        error_terminal = RichTerminal(file=sys.stderr)
+        term = RichTerminal()  # type: ignore[assignment]
+        error_terminal = RichTerminal(file=sys.stderr)  # type: ignore[assignment] # noqa: E501
 
-    term.bold_info(f"pontos-release => {parsed_args.func.__name__}")
+    try:
+        retval = parsed_args.func(
+            parsed_args,
+            terminal=term,
+            error_terminal=error_terminal,
+            username=username,
+            token=token,
+        )
+        sys.exit(int(retval))
+    except KeyboardInterrupt:
+        sys.exit(1)
+    except GitError as e:
+        error_terminal.error(f'Could not run git command "{e.cmd}".')
+        error = e.stderr if e.stderr else e.stdout
+        error_terminal.print(f"Output was: {error}")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        if "--passphrase" not in e.cmd:
+            error_terminal.error(f'Could not run command "{e.cmd}".')
+        else:
+            error_terminal.error("Headless signing failed.")
 
-    with term.indent():
-        try:
-            retval = parsed_args.func(
-                parsed_args,
-                terminal=term,
-                error_terminal=error_terminal,
-                username=username,
-                token=token,
-            )
-            sys.exit(int(retval))
-        except KeyboardInterrupt:
-            sys.exit(1)
-        except GitError as e:
-            error_terminal.error(f'Could not run git command "{e.cmd}".')
-            error = e.stderr if e.stderr else e.stdout
-            error_terminal.print(f"Output was: {error}")
-            sys.exit(1)
-        except subprocess.CalledProcessError as e:
-            if "--passphrase" not in e.cmd:
-                error_terminal.error(f'Could not run command "{e.cmd}".')
-            else:
-                error_terminal.error("Headless signing failed.")
-
-            error_terminal.print(f"Error was: {e.stderr}")
-            sys.exit(1)
+        error_terminal.print(f"Error was: {e.stderr}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
