@@ -113,7 +113,7 @@ def parse_args(args: Iterable[str] = None) -> ArgumentParser:
 def main(args: Iterable[str] = None) -> NoReturn:
     parsed_args = parse_args(args)
 
-    term = NullTerminal if parsed_args.quiet else RichTerminal()
+    term = NullTerminal() if parsed_args.quiet else RichTerminal()
 
     if parsed_args.current_version:
         last_version = parsed_args.current_version
