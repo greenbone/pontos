@@ -43,6 +43,23 @@ jobs:
       - name: Run unit tests
         run: poetry run python -m unittest
 
+  mypy:
+    name: Check type hints
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run mypy
+        uses: greenbone/actions/mypy-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+
   codecov:
     name: Upload coverage to codecov.io
     needs: test
