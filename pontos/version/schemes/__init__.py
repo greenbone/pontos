@@ -30,13 +30,13 @@ __all__ = (
 )
 
 #: Dictionary with available versioning schemes
-VERSIONING_SCHEMES = {
+VERSIONING_SCHEMES: dict[str, type[VersioningScheme]] = {
     "pep440": PEP440VersioningScheme,
     "semver": SemanticVersioningScheme,
 }
 
 
-def versioning_scheme_argument_type(value: str) -> VersioningScheme:
+def versioning_scheme_argument_type(value: str) -> type[VersioningScheme]:
     """
     Verifies if the passed value is a valid versioning scheme and returns
     the corresponding versioning scheme.

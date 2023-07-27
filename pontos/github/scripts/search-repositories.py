@@ -23,7 +23,7 @@ import csv
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
-from typing import Dict, Iterable, Union
+from typing import Collection, Optional, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -37,6 +37,7 @@ from pontos.github.models.search import (
     IsPrivateQualifier,
     IsPublicQualifier,
     OrganizationQualifier,
+    Qualifier,
     RepositorySort,
     SortOrder,
     UserQualifier,
@@ -137,11 +138,11 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 
 
 class Format(ABC):
-    def __init__(self, columns: Iterable[str]) -> None:
+    def __init__(self, columns: Collection[str]) -> None:
         self.columns = columns
 
     @abstractmethod
-    def add_row(self, **kwargs: Dict[str, str]) -> None:
+    def add_row(self, **kwargs: Optional[str]) -> None:
         pass
 
     def finish(self) -> None:
@@ -149,11 +150,11 @@ class Format(ABC):
 
 
 class CSVFormat(Format):
-    def __init__(self, columns: Iterable[str]) -> None:
+    def __init__(self, columns: Collection[str]) -> None:
         super().__init__(columns)
         self.csv_writer = csv.DictWriter(sys.stdout, fieldnames=self.columns)
 
-    def add_row(self, **kwargs: Dict[str, str]) -> None:
+    def add_row(self, **kwargs: Optional[str]) -> None:
         row = {}
         for column in self.columns:
             row[column] = kwargs[column]
@@ -162,14 +163,14 @@ class CSVFormat(Format):
 
 
 class ConsoleFormat(Format):
-    def __init__(self, columns: Iterable[str]) -> None:
+    def __init__(self, columns: Collection[str]) -> None:
         super().__init__(columns)
         self.table = Table()
 
         for column in self.columns:
             self.table.add_column(column)
 
-    def add_row(self, **kwargs: Dict[str, str]) -> None:
+    def add_row(self, **kwargs: Optional[str]) -> None:
         row = []
         for column in self.columns:
             value = kwargs[column]
@@ -188,11 +189,11 @@ class ConsoleFormat(Format):
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     if args.format == "console":
-        output = ConsoleFormat(args.columns)
+        output: Format = ConsoleFormat(args.columns)
     else:
         output = CSVFormat(args.columns)
 
-    qualifiers = []
+    qualifiers: list[Qualifier] = []
 
     if args.public:
         qualifiers.append(IsPublicQualifier())

@@ -29,6 +29,7 @@ from pontos.github.models.organization import (
     SquashMergeCommitTitle,
 )
 from pontos.helper import enum_or_value
+from pontos.typing import SupportsStr
 
 
 class GitHubAsyncRESTRepositories(GitHubAsyncREST):
@@ -98,7 +99,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         has_wiki: Optional[bool] = True,
         has_downloads: Optional[bool] = True,
         is_template: Optional[bool] = False,
-        team_id: Optional[str] = None,
+        team_id: Optional[SupportsStr] = None,
         auto_init: Optional[bool] = False,
         gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
         license_template: Optional[Union[LicenseType, str]] = None,
@@ -241,7 +242,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         if is_template is not None:
             data["is_template"] = is_template
         if team_id:
-            data["team_id"] = team_id
+            data["team_id"] = str(team_id)
         if has_downloads is not None:
             data["has_downloads"] = has_downloads
         if auto_init is not None:

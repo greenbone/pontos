@@ -36,7 +36,7 @@ __all__ = (
     "get_commands",
 )
 
-__COMMANDS: Tuple[Type[VersionCommand]] = (
+__COMMANDS: Tuple[Type[VersionCommand]] = (  # type: ignore[assignment]
     CMakeVersionCommand,
     GoVersionCommand,
     JavaVersionCommand,

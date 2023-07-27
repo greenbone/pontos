@@ -61,3 +61,5 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
                 f.write(content)
 
             rich_progress.update(task_id, total=1, completed=1)
+
+    return 0

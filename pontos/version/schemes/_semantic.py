@@ -120,17 +120,17 @@ class SemanticVersion(Version):
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.is_pre_release and self.pre[0] == "alpha"
+        return self.is_pre_release and self.pre[0] == "alpha"  # type: ignore[index] # noqa: E501
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.is_pre_release and self.pre[0] == "beta"
+        return self.is_pre_release and self.pre[0] == "beta"  # type: ignore[index] # noqa: E501
 
     @property
     def is_release_candidate(self) -> bool:
         """Whether this version is a release candidate."""
-        return self.is_pre_release and self.pre[0] == "rc"
+        return self.is_pre_release and self.pre[0] == "rc"  # type: ignore[index] # noqa: E501
 
     @property
     def major(self) -> int:
@@ -185,9 +185,9 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        if self._version_info.to_tuple()[:3] > other._version_info[:3]:
+        if self._version_info.to_tuple()[:3] > other._version_info[:3]:  # type: ignore[operator] # noqa: E501
             return True
-        if self._version_info.to_tuple()[:3] < other._version_info[:3]:
+        if self._version_info.to_tuple()[:3] < other._version_info[:3]:  # type: ignore[operator] # noqa: E501
             return False
 
         # major, minor and patch are equal
@@ -197,12 +197,12 @@ class SemanticVersion(Version):
             if not self.is_pre_release and other.is_pre_release:
                 return False
             if not self.is_pre_release:
-                return self.dev > other.dev
+                return self.dev > other.dev  # type: ignore[operator]
 
             if self.is_pre_release:
                 if other.is_dev_release and self.pre == other.pre:
-                    return self.dev > other.dev
-                return self.pre > other.pre
+                    return self.dev > other.dev  # type: ignore[operator]
+                return self.pre > other.pre  # type: ignore[operator]
 
         # not a dev release
         if self.is_pre_release:
@@ -211,8 +211,8 @@ class SemanticVersion(Version):
 
             if other.is_pre_release:
                 if other.is_dev_release:
-                    return self.pre >= other.pre
-                return self.pre > other.pre
+                    return self.pre >= other.pre  # type: ignore[operator]
+                return self.pre > other.pre  # type: ignore[operator]
 
             # other is a dev release
             return True
@@ -289,7 +289,7 @@ class SemanticVersion(Version):
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
-                f"-alpha{version.pre[1]}"
+                f"-alpha{version.pre[1]}"  # type: ignore[index]
                 f"{version_local}"
             )
         elif version.is_beta_release:
@@ -297,12 +297,12 @@ class SemanticVersion(Version):
                 f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
-                f"-beta{version.pre[1]}"
+                f"-beta{version.pre[1]}"  # type: ignore[index]
                 f"{version_local}"
             )
         elif version.is_pre_release:
             new_version = cls.from_string(
-                f"{version.major}."
+                f"{version.major}."  # type: ignore[index]
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
@@ -327,14 +327,14 @@ class SemanticVersionCalculator(VersionCalculator):
         if current_version.is_dev_release:
             if current_version.pre:
                 return cls.version_from_string(
-                    f"{current_version.major}."
+                    f"{current_version.major}."  # type: ignore[operator]
                     f"{current_version.minor}."
                     f"{current_version.patch}"
                     f"-{current_version.pre[0]}{current_version.pre[1]}"
                     f"-dev{current_version.dev + 1}"
                 )
             return cls.version_from_string(
-                f"{current_version.major}."
+                f"{current_version.major}."  # type: ignore[operator]
                 f"{current_version.minor}."
                 f"{current_version.patch}"
                 f"-dev{current_version.dev + 1}"
@@ -345,7 +345,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}-"
-                f"{current_version.pre[0]}{current_version.pre[1] + 1}-dev1"
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}-dev1"  # type: ignore[index] # noqa: E501
             )
 
         return cls.version_from_string(
@@ -384,7 +384,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"-alpha{current_version.pre[1] + 1}"
+                f"-alpha{current_version.pre[1] + 1}"  # type: ignore[index]
             )
         return cls.version_from_string(
             f"{current_version.major}."
@@ -424,7 +424,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"-beta{current_version.pre[1] + 1}"
+                f"-beta{current_version.pre[1] + 1}"  # type: ignore[index]
             )
         return cls.version_from_string(
             f"{current_version.major}."
@@ -464,7 +464,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"-rc{current_version.pre[1] + 1}"
+                f"-rc{current_version.pre[1] + 1}"  # type: ignore[index]
             )
         return cls.version_from_string(
             f"{current_version.major}."

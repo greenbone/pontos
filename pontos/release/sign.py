@@ -22,8 +22,9 @@ import subprocess
 from argparse import Namespace
 from asyncio.subprocess import Process
 from enum import IntEnum
+from os import PathLike
 from pathlib import Path
-from typing import AsyncContextManager, Iterable, Optional
+from typing import AsyncContextManager, Optional, SupportsInt, Union
 
 import httpx
 from rich.progress import Progress as RichProgress
@@ -62,7 +63,7 @@ class SignatureError(PontosError):
     """
 
 
-async def cmd_runner(*args: Iterable[str]) -> Process:
+async def cmd_runner(*args: Union[str, PathLike[str]]) -> Process:
     return await asyncio.create_subprocess_exec(
         *args,
         stdout=subprocess.PIPE,
@@ -183,7 +184,7 @@ class SignCommand(AsyncCommand):
                 f"{stderr.decode(errors='replace')}"
             )
 
-    async def async_run(
+    async def async_run(  # type: ignore[override]
         self,
         *,
         token: str,
@@ -271,7 +272,10 @@ class SignCommand(AsyncCommand):
             zip_destination = Path(f"{project}-{release_version}.zip")
             tarball_destination = Path(f"{project}-{release_version}.tar.gz")
 
-            with self.terminal.progress(
+            # terminal can be a NullTerminal here too that doesn't have a
+            # progress. this needs to be fixed and the type ignore removed
+            # afterwards
+            with self.terminal.progress(  # type: ignore[attr-defined]
                 additional_columns=[
                     TextColumn("[progress.description]{task.fields[sha256]}"),
                 ]
@@ -377,7 +381,7 @@ def sign(
     error_terminal: Terminal,
     token: str,
     **_kwargs,
-) -> IntEnum:
+) -> SupportsInt:
     return SignCommand(terminal=terminal, error_terminal=error_terminal).run(
         token=token,
         dry_run=args.dry_run,

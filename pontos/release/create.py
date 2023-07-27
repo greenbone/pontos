@@ -20,7 +20,7 @@ from argparse import Namespace
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Optional
+from typing import Optional, SupportsInt
 
 import httpx
 
@@ -97,7 +97,7 @@ class CreateReleaseCommand(AsyncCommand):
         self,
         release_version: Version,
         last_release_version: Optional[Version],
-        cc_config: Path,
+        cc_config: Optional[Path],
     ) -> str:
         changelog_builder = ChangelogBuilder(
             space=self.space,
@@ -129,16 +129,16 @@ class CreateReleaseCommand(AsyncCommand):
             prerelease=release_version.is_pre_release,
         )
 
-    async def async_run(
+    async def async_run(  # type: ignore[override]
         self,
         *,
         token: str,
         space: str,
-        project: Optional[str],
+        project_name: Optional[str],
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
         release_version: Optional[Version],
-        next_version: Optional[str],
+        next_version: Optional[Version],
         git_signing_key: str,
         git_remote_name: Optional[str],
         git_tag_prefix: Optional[str],
@@ -185,7 +185,9 @@ class CreateReleaseCommand(AsyncCommand):
         )
         self.git_tag_prefix = git_tag_prefix or ""
         self.project = (
-            project if project is not None else get_git_repository_name()
+            project_name
+            if project_name is not None
+            else get_git_repository_name()
         )
         self.space = space
 
@@ -358,7 +360,7 @@ def create_release(
     terminal: Terminal,
     error_terminal: Terminal,
     **_kwargs,
-) -> IntEnum:
+) -> SupportsInt:
     if not token:
         error_terminal.error(
             "Token is missing. The GitHub token is required to create a "
@@ -371,7 +373,7 @@ def create_release(
     ).run(
         token=token,
         space=args.space,
-        project=args.project,
+        project_name=args.project,
         versioning_scheme=args.versioning_scheme,
         release_type=args.release_type,
         release_version=args.release_version,

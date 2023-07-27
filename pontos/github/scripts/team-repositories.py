@@ -22,7 +22,7 @@ This script adds team(s) to a list of repositories of an organization
 import asyncio
 from argparse import ArgumentParser, FileType, Namespace
 from io import TextIOWrapper
-from typing import List, Set, Union
+from typing import Set, Union
 
 from httpx import HTTPStatusError
 
@@ -78,7 +78,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         file: TextIOWrapper = args.file
         repositories = [line.strip() for line in file.readlines()]
     else:
-        repositories: List[str] = args.repositories
+        repositories = args.repositories
 
     tasks = []
     for team in args.teams:

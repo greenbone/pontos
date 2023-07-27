@@ -27,6 +27,7 @@ from pontos.git import Git, MergeStrategy
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.repositories import GitIgnoreTemplate, LicenseType
 from pontos.github.models.base import Permission
+from pontos.github.script.errors import GitHubScriptError
 from pontos.testing import temp_directory
 
 TEMPLATES = {
@@ -136,6 +137,9 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
 
         repo_url = repo.ssh_url
 
+        if not repo_url:
+            raise GitHubScriptError("No ssh repository URL")
+
         git.add_remote("upstream", repo_url)
         git.fetch("upstream")
 
@@ -170,3 +174,5 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             allow_deletions=False,
             restrictions_users=[],
         )
+
+    return 0

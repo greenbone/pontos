@@ -111,17 +111,17 @@ class PEP440Version(Version):
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.is_pre_release and self.pre and self.pre[0] == "alpha"
+        return bool(self.is_pre_release and self.pre and self.pre[0] == "alpha")
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.is_pre_release and self.pre and self.pre[0] == "beta"
+        return bool(self.is_pre_release and self.pre and self.pre[0] == "beta")
 
     @property
     def is_release_candidate(self) -> bool:
         """Whether this version is a release candidate."""
-        return self.is_pre_release and self.pre and self.pre[0] == "rc"
+        return bool(self.is_pre_release and self.pre and self.pre[0] == "rc")
 
     @classmethod
     def from_string(cls, version: str) -> "PEP440Version":
@@ -182,7 +182,7 @@ class PEP440Version(Version):
                 )
         elif version.is_pre_release:
             new_version = cls.from_string(
-                f"{version.major}."
+                f"{version.major}."  # type: ignore[index]
                 f"{version.minor}."
                 f"{version.patch}"
                 f"-{version.pre[0]}{version.pre[1]}"
@@ -248,14 +248,14 @@ class PEP440VersionCalculator(VersionCalculator):
         if current_version.is_dev_release:
             if current_version.pre:
                 return cls.version_from_string(
-                    f"{current_version.major}."
+                    f"{current_version.major}."  # type: ignore[operator]
                     f"{current_version.minor}."
                     f"{current_version.patch}"
                     f"-{current_version.pre[0]}{current_version.pre[1]}"
                     f".dev{current_version.dev + 1}"
                 )
             return cls.version_from_string(
-                f"{current_version.major}."
+                f"{current_version.major}."  # type: ignore[operator]
                 f"{current_version.minor}."
                 f"{current_version.patch}"
                 f".dev{current_version.dev + 1}"
@@ -263,10 +263,10 @@ class PEP440VersionCalculator(VersionCalculator):
 
         if current_version.is_pre_release:
             return cls.version_from_string(
-                f"{current_version.major}."
+                f"{current_version.major}."  # type: ignore[index]
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"  # type: ignore[index] # noqa: E501
             )
 
         return cls.version_from_string(
@@ -308,7 +308,7 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}a{current_version.pre[1] + 1}"
+                f"{current_version.patch}a{current_version.pre[1] + 1}"  # type: ignore[index] # noqa: E501
             )
 
         return cls.version_from_string(
@@ -352,7 +352,7 @@ class PEP440VersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"b{current_version.pre[1] + 1}"
+                f"b{current_version.pre[1] + 1}"  # type: ignore[index]
             )
         return cls.version_from_string(
             f"{current_version.major}."
@@ -396,7 +396,7 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}rc{current_version.pre[1] + 1}"
+                f"{current_version.patch}rc{current_version.pre[1] + 1}"  # type: ignore[index] # noqa: E501
             )
 
         return cls.version_from_string(

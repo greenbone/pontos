@@ -19,7 +19,7 @@ import subprocess
 from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
-from typing import Iterable, Iterator, List, Optional, Union
+from typing import Collection, Iterable, Iterator, List, Optional, Union
 
 from pontos.errors import PontosError
 from pontos.git.status import StatusEntry, parse_git_status
@@ -382,14 +382,17 @@ class Git:
 
         return self.exec(*args).splitlines()
 
-    def add(self, files: Union[PathLike, List[PathLike]]) -> None:
+    def add(
+        self,
+        files: Union[str, PathLike[str], list[Union[PathLike[str], str]]],
+    ) -> None:
         """
         Add files to the git staging area
 
         Args:
             files: A single file or a list of files to add to the staging area
         """
-        if isinstance(files, (PathLike, str, bytes)):
+        if isinstance(files, (PathLike, str)):
             files = [files]
 
         args = ["add"]
@@ -557,7 +560,7 @@ class Git:
         format: Optional[str] = None,
         oneline: Optional[bool] = None,
         patch: Optional[bool] = None,
-        objects: Union[str, Iterable[str], None] = None,
+        objects: Union[str, Collection[str], None] = None,
     ) -> Union[str, list[str]]:
         """
         Show various types of git objects
@@ -649,13 +652,13 @@ class Git:
         """
         Move a file from old to new
         """
-        return self.exec("mv", fspath(old), fspath(new))
+        self.exec("mv", fspath(old), fspath(new))
 
     def remove(self, to_remove: PathLike) -> None:
         """
         Remove a file from git
         """
-        return self.exec("rm", fspath(to_remove))
+        self.exec("rm", fspath(to_remove))
 
     def status(
         self,

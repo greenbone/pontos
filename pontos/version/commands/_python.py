@@ -47,12 +47,12 @@ class PythonVersionCommand(VersionCommand):
 
         if (
             "tool" in self.pyproject_toml
-            and "poetry" in self.pyproject_toml["tool"]  # type: ignore
-            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore # pylint: disable=line-too-long # noqa: E501
+            and "poetry" in self.pyproject_toml["tool"]  # type: ignore[operator] # noqa: E501
+            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore[operator,index] # noqa: E501
         ):
             return PEP440VersioningScheme.parse_version(
-                self.pyproject_toml["tool"]["poetry"]["version"]
-            )  # type: ignore
+                str(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore[index] # noqa: E501
+            )
 
         raise VersionError(
             "Version information not found in "
@@ -147,8 +147,13 @@ class PythonVersionCommand(VersionCommand):
             spec = importlib.util.spec_from_file_location(
                 module_name, self.version_file_path
             )
+            if not spec:
+                raise VersionError(
+                    f"Could not load version from '{module_name}'. "
+                )
+
             version_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(version_module)
+            spec.loader.exec_module(version_module)  # type: ignore[union-attr]
             return PEP440VersioningScheme.parse_version(
                 version_module.__version__
             )

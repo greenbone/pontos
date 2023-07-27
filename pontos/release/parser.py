@@ -25,11 +25,12 @@ from argparse import (
 )
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Tuple, Type
+from typing import Callable, Optional, Tuple, Type
 
 from pontos.release.helper import ReleaseType
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
+    PEP440VersioningScheme,
     VersioningScheme,
     versioning_scheme_argument_type,
 )
@@ -40,7 +41,7 @@ from .sign import sign
 DEFAULT_SIGNING_KEY = "0ED1E580"
 
 
-def to_choices(enum: Type[Enum]) -> list[str]:
+def to_choices(enum: Type[Enum]) -> str:
     return ", ".join([t.value for t in enum])
 
 
@@ -64,7 +65,7 @@ class ReleaseVersionAction(
         setattr(namespace, self.dest, values)
 
 
-def parse_args(args) -> Tuple[str, str, Namespace]:
+def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
     """
     Return user, token, parsed arguments
     """
@@ -229,9 +230,12 @@ def parse_args(args) -> Tuple[str, str, Namespace]:
     sign_parser.add_argument(
         "--dry-run", action="store_true", help="Do not upload signed files."
     )
+
     parsed_args = parser.parse_args(args)
 
-    scheme: VersioningScheme = getattr(parsed_args, "versioning_scheme", None)
+    scheme: type[VersioningScheme] = getattr(
+        parsed_args, "versioning_scheme", PEP440VersioningScheme
+    )
 
     if parsed_args.func in (create_release,):
         # check for release-type
