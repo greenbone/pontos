@@ -44,11 +44,12 @@ python-dateutil = ">=2.8.2"
 semver = ">=2.13"
 lxml = ">=4.9.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 autohooks = ">=22.7.0"
 autohooks-plugin-black = ">=22.7.0"
 autohooks-plugin-isort = ">=22.3.0"
 autohooks-plugin-ruff = ">=23.6.1"
+autohooks-plugin-mypy = ">=23.3.0"
 rope = ">=1.9.0"
 coverage = ">=7.2"
 myst-parser = ">=0.19.1"
@@ -75,7 +76,7 @@ exclude = '''
 '''
 
 [tool.autohooks]
-pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.isort', 'autohooks.plugins.ruff']
+pre-commit = ['autohooks.plugins.black', 'autohooks.plugins.isort', 'autohooks.plugins.ruff', 'autohooks.plugins.mypy']
 mode = "poetry"
 
 [tool.isort]
@@ -85,6 +86,17 @@ line_length = 80
 [tool.ruff]
 line-length = 80
 target-version = "py39"
+
+[tool.mypy]
+files = "pontos"
+ignore_missing_imports = true
+explicit_package_bases = true
+allow_redefinition = true
+exclude = 'pontos/updateheader/templates/.*/*\.py'
+
+[[tool.mypy.overrides]]
+module = "dateutil"
+ignore_missing_imports = true
 
 [tool.pontos.version]
 version-module-file = "pontos/version/__version__.py"
