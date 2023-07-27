@@ -1270,7 +1270,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
     @patch("pontos.release.create.get_last_release_version", autospec=True)
     @patch(
-        "pontos.release.create.CreateReleaseCommand._get_next_release_version",
+        "pontos.release.create.get_next_release_version",
         autospec=True,
     )
     def test_no_release_error(

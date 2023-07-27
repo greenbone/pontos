@@ -31,12 +31,17 @@ from pontos.github.actions.core import ActionIO
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.command import AsyncCommand
 from pontos.terminal import Terminal
-from pontos.version import Version, VersionCalculator, VersionError
+from pontos.version import Version, VersionError
 from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
 from pontos.version.schemes import VersioningScheme
 
-from .helper import ReleaseType, find_signing_key, get_git_repository_name
+from .helper import (
+    ReleaseType,
+    find_signing_key,
+    get_git_repository_name,
+    get_next_release_version,
+)
 
 
 @dataclass
@@ -83,44 +88,6 @@ class CreateReleaseCommand(AsyncCommand):
     def __init__(self, *, terminal: Terminal, error_terminal: Terminal) -> None:
         super().__init__(terminal=terminal, error_terminal=error_terminal)
         self.git = Git()
-
-    def _get_next_release_version(
-        self,
-        *,
-        last_release_version: Version,
-        calculator: VersionCalculator,
-        release_type: ReleaseType,
-        release_version: Optional[Version],
-    ) -> Version:
-        if release_type == ReleaseType.CALENDAR:
-            return calculator.next_calendar_version(last_release_version)
-
-        if release_type == ReleaseType.PATCH:
-            return calculator.next_patch_version(last_release_version)
-
-        if release_type == ReleaseType.MINOR:
-            return calculator.next_minor_version(last_release_version)
-
-        if release_type == ReleaseType.MAJOR:
-            return calculator.next_major_version(last_release_version)
-
-        if release_type == ReleaseType.ALPHA:
-            return calculator.next_alpha_version(last_release_version)
-
-        if release_type == ReleaseType.BETA:
-            return calculator.next_beta_version(last_release_version)
-
-        if release_type == ReleaseType.RELEASE_CANDIDATE:
-            return calculator.next_release_candidate_version(
-                last_release_version
-            )
-
-        if not release_version:
-            raise VersionError(
-                "No release version provided. Either use a different release "
-                "strategy or provide a release version."
-            )
-        return release_version
 
     def _has_tag(self, git_version: str) -> bool:
         git_tags = self.git.list_tags()
@@ -251,7 +218,7 @@ class CreateReleaseCommand(AsyncCommand):
         calculator = versioning_scheme.calculator()
 
         try:
-            release_version = self._get_next_release_version(
+            release_version = get_next_release_version(
                 last_release_version=last_release_version,
                 calculator=calculator,
                 release_type=release_type,

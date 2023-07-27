@@ -16,9 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
+from typing import Optional
 
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
+from pontos.version import Version, VersionCalculator
+from pontos.version.errors import VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
@@ -84,3 +87,56 @@ def find_signing_key(terminal: Terminal) -> str:
         if e.returncode == 1:
             terminal.warning("No signing key found.")
         return ""
+
+
+def get_next_release_version(
+    *,
+    last_release_version: Optional[Version],
+    calculator: type[VersionCalculator],
+    release_type: ReleaseType,
+    release_version: Optional[Version],
+) -> Version:
+    if release_version:
+        if release_type and release_type != ReleaseType.VERSION:
+            raise VersionError(
+                f"Invalid release type {release_type.value} when setting "
+                "release version explicitly. Use release type version instead."
+            )
+
+        return release_version
+    else:
+        if not release_type or release_type == ReleaseType.VERSION:
+            raise VersionError(
+                "No release version provided. Either use a different release "
+                "type or provide a release version."
+            )
+
+    if not last_release_version:
+        raise VersionError(
+            "No last release version found for release type "
+            f"{release_type.value}. Either check the project setup or set a "
+            "release version explicitly."
+        )
+
+    if release_type == ReleaseType.CALENDAR:
+        return calculator.next_calendar_version(last_release_version)
+
+    if release_type == ReleaseType.PATCH:
+        return calculator.next_patch_version(last_release_version)
+
+    if release_type == ReleaseType.MINOR:
+        return calculator.next_minor_version(last_release_version)
+
+    if release_type == ReleaseType.MAJOR:
+        return calculator.next_major_version(last_release_version)
+
+    if release_type == ReleaseType.ALPHA:
+        return calculator.next_alpha_version(last_release_version)
+
+    if release_type == ReleaseType.BETA:
+        return calculator.next_beta_version(last_release_version)
+
+    if release_type == ReleaseType.RELEASE_CANDIDATE:
+        return calculator.next_release_candidate_version(last_release_version)
+
+    raise VersionError(f"Unsupported release type {release_type.value}.")
