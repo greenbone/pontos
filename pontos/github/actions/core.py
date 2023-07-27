@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Generator, Optional
 
 from pontos.github.actions.errors import GitHubActionsError
+from pontos.typing import SupportsStr
 
 
 def _to_options(
@@ -204,7 +205,7 @@ class ActionOutput:
     def __init__(self, file: TextIOWrapper) -> None:
         self._file = file
 
-    def write(self, name: str, value: str):
+    def write(self, name: str, value: SupportsStr):
         """
         Set action output
 
@@ -244,7 +245,7 @@ class ActionIO:
             yield ActionOutput(f)
 
     @staticmethod
-    def output(name: str, value: str):
+    def output(name: str, value: SupportsStr):
         """
         Set action output
 
@@ -265,7 +266,7 @@ class ActionIO:
             f.write(f"{name}={value}\n")
 
     @staticmethod
-    def input(name: str, default: Optional[str] = None) -> str:
+    def input(name: str, default: Optional[str] = None) -> Optional[str]:
         """
         Get the value of an action input
 
@@ -274,5 +275,5 @@ class ActionIO:
             default: Use as default if the is no value for the variable
         """
         return os.environ.get(
-            f"INPUT_{name.replace(' ', '_').upper()}", default  # type: ignore
+            f"INPUT_{name.replace(' ', '_').upper()}", default
         )
