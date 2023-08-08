@@ -24,8 +24,9 @@ from unittest.mock import patch
 from pontos.release.create import create_release
 from pontos.release.helper import ReleaseType
 from pontos.release.parser import DEFAULT_SIGNING_KEY, parse_args
+from pontos.release.show import OutputFormat, show
 from pontos.release.sign import sign
-from pontos.version.schemes._pep440 import PEP440Version
+from pontos.version.schemes._pep440 import PEP440Version, PEP440VersioningScheme
 
 
 class ParseArgsTestCase(unittest.TestCase):
@@ -290,3 +291,130 @@ class SignParseArgsTestCase(unittest.TestCase):
         _, _, args = parse_args(["sign", "--release-series", "22.4"])
 
         self.assertEqual(args.release_series, "22.4")
+
+
+class ShowParseArgsTestCase(unittest.TestCase):
+    def test_show_func(self):
+        _, _, args = parse_args(["show", "--release-type", "patch"])
+
+        self.assertEqual(args.func, show)
+
+    def test_defaults(self):
+        _, _, args = parse_args(["show", "--release-type", "patch"])
+
+        self.assertEqual(args.git_tag_prefix, "v")
+        self.assertEqual(args.versioning_scheme, PEP440VersioningScheme)
+
+    def test_release_series(self):
+        _, _, args = parse_args(
+            ["show", "--release-type", "patch", "--release-series", "1.2"]
+        )
+
+        self.assertEqual(args.release_series, "1.2")
+
+    def test_release_type(self):
+        _, _, args = parse_args(["show", "--release-type", "patch"])
+
+        self.assertEqual(args.release_type, ReleaseType.PATCH)
+
+        _, _, args = parse_args(["show", "--release-type", "calendar"])
+
+        self.assertEqual(args.release_type, ReleaseType.CALENDAR)
+
+        _, _, args = parse_args(["show", "--release-type", "minor"])
+
+        self.assertEqual(args.release_type, ReleaseType.MINOR)
+
+        _, _, args = parse_args(["show", "--release-type", "major"])
+
+        self.assertEqual(args.release_type, ReleaseType.MAJOR)
+
+        _, _, args = parse_args(["show", "--release-type", "alpha"])
+
+        self.assertEqual(args.release_type, ReleaseType.ALPHA)
+
+        _, _, args = parse_args(["show", "--release-type", "beta"])
+
+        self.assertEqual(args.release_type, ReleaseType.BETA)
+
+        _, _, args = parse_args(["show", "--release-type", "release-candidate"])
+
+        self.assertEqual(args.release_type, ReleaseType.RELEASE_CANDIDATE)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["show", "--release-type", "foo"])
+
+    def test_git_tag_prefix(self):
+        _, _, args = parse_args(
+            ["show", "--git-tag-prefix", "a", "--release-type", "patch"]
+        )
+
+        self.assertEqual(args.git_tag_prefix, "a")
+
+        _, _, args = parse_args(
+            ["show", "--git-tag-prefix", "", "--release-type", "patch"]
+        )
+
+        self.assertEqual(args.git_tag_prefix, "")
+
+        _, _, args = parse_args(
+            ["show", "--git-tag-prefix", "--release-type", "patch"]
+        )
+
+        self.assertEqual(args.git_tag_prefix, "")
+
+    def test_release_version(self):
+        _, _, args = parse_args(["show", "--release-version", "1.2.3"])
+
+        self.assertEqual(args.release_version, PEP440Version("1.2.3"))
+        self.assertEqual(args.release_type, ReleaseType.VERSION)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "show",
+                    "--release-version",
+                    "1.2.3",
+                    "--release-type",
+                    "patch",
+                ]
+            )
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "show",
+                    "--release-version",
+                    "1.2.3",
+                    "--release-type",
+                    "calendar",
+                ]
+            )
+
+    def test_output_format(self):
+        _, _, args = parse_args(
+            ["show", "--release-type", "patch", "--output-format", "env"]
+        )
+
+        self.assertEqual(args.output_format, OutputFormat.ENV)
+
+        _, _, args = parse_args(
+            ["show", "--release-type", "patch", "--output-format", "json"]
+        )
+
+        self.assertEqual(args.output_format, OutputFormat.JSON)
+
+        _, _, args = parse_args(
+            [
+                "show",
+                "--release-type",
+                "patch",
+                "--output-format",
+                "github-action",
+            ]
+        )
+
+        with patch.dict(
+            "os.environ", {"GITHUB_OUTPUT": "/tmp/output"}, clear=True
+        ):
+            self.assertEqual(args.output_format, OutputFormat.GITHUB_ACTION)
