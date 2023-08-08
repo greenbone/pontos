@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Callable, Optional, Tuple, Type
 
 from pontos.release.helper import ReleaseType
+from pontos.release.show import OutputFormat, show
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
     PEP440VersioningScheme,
@@ -231,13 +232,61 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         "--dry-run", action="store_true", help="Do not upload signed files."
     )
 
+    show_parser = subparsers.add_parser(
+        "show",
+        help="Show release information about the current release version and "
+        "determine the next release version",
+    )
+    show_parser.set_defaults(func=show)
+    show_parser.add_argument(
+        "--versioning-scheme",
+        help="Versioning scheme to use for parsing and handling version "
+        f"information. Choices are {', '.join(VERSIONING_SCHEMES.keys())}. "
+        "Default: %(default)s",
+        default="pep440",
+        type=versioning_scheme_argument_type,
+    )
+    show_parser.add_argument(
+        "--release-type",
+        help="Select the release type for calculating the release version. "
+        f"Possible choices are: {to_choices(ReleaseType)}.",
+        type=enum_type(ReleaseType),
+    )
+    show_parser.add_argument(
+        "--release-version",
+        help=(
+            "Will release changelog as version. "
+            "Default: lookup version in project definition."
+        ),
+        action=ReleaseVersionAction,
+    )
+    show_parser.add_argument(
+        "--release-series",
+        help="Create a release for a release series. Setting a release series "
+        "is required if the latest tag version is newer then the to be "
+        'released version. Examples: "1.2", "2", "22.4"',
+    )
+    show_parser.add_argument(
+        "--git-tag-prefix",
+        default="v",
+        const="",
+        nargs="?",
+        help="Prefix for git tag versions. Default: %(default)s",
+    )
+    show_parser.add_argument(
+        "--output-format",
+        help="Print in the desired output format. "
+        f"Possible choices are: {to_choices(OutputFormat)}.",
+        type=enum_type(OutputFormat),
+    )
+
     parsed_args = parser.parse_args(args)
 
     scheme: type[VersioningScheme] = getattr(
         parsed_args, "versioning_scheme", PEP440VersioningScheme
     )
 
-    if parsed_args.func in (create_release,):
+    if parsed_args.func in (create_release, show):
         # check for release-type
         if not getattr(parsed_args, "release_type", None):
             parser.error("--release-type is required.")
