@@ -405,6 +405,7 @@ class Git:
         message: str,
         *,
         verify: Optional[bool] = None,
+        gpg_sign: Optional[bool] = None,
         gpg_signing_key: Optional[str] = None,
     ) -> None:
         """
@@ -413,6 +414,7 @@ class Git:
         Args:
             message: Message of the commit
             verify: Set to False to skip git hooks
+            gpg_sign: Set to False to skip signing the commit via GPG
             gpg_signing_key: GPG Key ID to use to sign the commit
         """
         args = ["commit"]
@@ -420,6 +422,8 @@ class Git:
             args.append("--no-verify")
         if gpg_signing_key:
             args.append(f"-S{gpg_signing_key}")
+        if gpg_sign is False:
+            args.append("--no-gpg-sign")
 
         args.extend(["-m", message])
 
@@ -432,6 +436,7 @@ class Git:
         gpg_key_id: Optional[str] = None,
         message: Optional[str] = None,
         force: Optional[bool] = False,
+        sign: Optional[bool] = None,
     ) -> None:
         """
         Create a Tag
@@ -441,6 +446,7 @@ class Git:
             gpg_key_id: GPG Key to sign the tag.
             message: Use message to annotate the given tag.
             force: True to replace an existing tag.
+            sign: Set to False to deactivate signing of the tag.
         """
         args = ["tag"]
 
@@ -452,6 +458,9 @@ class Git:
 
         if force:
             args.append("--force")
+
+        if sign is False:
+            args.append("--no-sign")
 
         args.append(tag)
 

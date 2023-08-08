@@ -395,6 +395,15 @@ class GitTestCase(unittest.TestCase):
         )
 
     @patch("pontos.git.git.exec_git")
+    def test_commit_without_gpg_sign(self, exec_git_mock):
+        git = Git()
+        git.commit("Add foo", gpg_sign=False)
+
+        exec_git_mock.assert_called_once_with(
+            "commit", "--no-gpg-sign", "-m", "Add foo", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
     def test_tag(self, exec_git_mock):
         git = Git()
         git.tag(tag="test")
@@ -426,6 +435,15 @@ class GitTestCase(unittest.TestCase):
 
         exec_git_mock.assert_called_once_with(
             "tag", "--force", "test", cwd=None
+        )
+
+    @patch("pontos.git.git.exec_git")
+    def test_tag_without_sign(self, exec_git_mock):
+        git = Git()
+        git.tag("test", sign=False)
+
+        exec_git_mock.assert_called_once_with(
+            "tag", "--no-sign", "test", cwd=None
         )
 
     @patch("pontos.git.git.exec_git")
