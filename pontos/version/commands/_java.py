@@ -75,9 +75,7 @@ def replace_string_in_file(
         pattern,
         file_path,
     )
-    logging.warning(
-        "Content: %s", content
-    )
+    logging.warning("Content: %s", content)
 
 
 # This class is used for Java Version command(s)
