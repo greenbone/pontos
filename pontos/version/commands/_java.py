@@ -124,7 +124,7 @@ class JavaVersionCommand(VersionCommand):
         if not self._properties_file_path.exists():
             # skip if not existing
             return
-        pattern = r"sentry\.release=([0-9]+\.[0-9]+\.[0-9]+)"
+        pattern = r"sentry\.release=([0-9]+\.[0-9]+\.[0-9]+([ab][0-9]+)?)"
         replace_string_in_file(
             self._properties_file_path,
             pattern=pattern,
@@ -144,7 +144,7 @@ class JavaVersionCommand(VersionCommand):
         if not swagger_config_file:
             # skip if not existing
             return
-        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
+        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+([ab][0-9]+)?"\)'
         replace_string_in_file(
             swagger_config_file, pattern=pattern, replacement=str(new_version)
         )
