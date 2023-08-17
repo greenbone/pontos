@@ -149,7 +149,7 @@ class JavaVersionCommand(VersionCommand):
             return
         pattern = (
             r'\.version\("([0-9]+\.[0-9]+\.[0-9]+'
-            r'(-?([ab]|dev|rc|alpha|beta)[0-9]+)?"\)'
+            r'(-?([ab]|dev|rc|alpha|beta)[0-9]+)?)"\)'
         )
         replace_string_in_file(
             swagger_config_file, pattern=pattern, replacement=str(new_version)
