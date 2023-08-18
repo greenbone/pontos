@@ -126,7 +126,7 @@ pontos-github L <orga/repo> <issue/PR> label1 label2
 
 `pontos-github-script` - Run Python scripts for GitHub automation.
 
-A number of useful GitHub scripts are available in the [pontos repository](https://github.com/greenbone/pontos/tree/main/scripts/github).
+A number of useful GitHub scripts are available in the [pontos repository](https://github.com/greenbone/pontos/tree/main/pontos/github/scripts).
 
 ```sh
 # List all members of a GitHub Organization
