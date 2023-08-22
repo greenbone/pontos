@@ -538,12 +538,20 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
             f"19.{today.month}.1.dev3",
             f"{year_short}.{today.month}.1.dev3",
             f"{year_short}.{today.month}.1",
+            "2022.4.1",
+            "2023.5.1",
+            f"{today.year}.{today.month}.1.dev2",
+            f"{today.year}.{today.month}.1",
         ]
         assert_versions = [
             f"{year_short}.{today.month}.0",
             f"{year_short}.{today.month}.0",
             f"{year_short}.{today.month}.1",
             f"{year_short}.{today.month}.2",
+            f"{today.year}.{today.month}.0",
+            f"{today.year}.{today.month}.0",
+            f"{today.year}.{today.month}.1",
+            f"{today.year}.{today.month}.2",
         ]
 
         for current_version, assert_version in zip(
@@ -569,6 +577,11 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
             calculator.next_calendar_version(
                 Version.from_string(f"{year_short}.{today.month + 1}.0")
+            )
+
+        with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
+            calculator.next_calendar_version(
+                Version.from_string(f"{today.year + 1}.{today.month + 1}.0")
             )
 
     def test_next_minor_version(self):
