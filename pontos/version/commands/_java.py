@@ -129,7 +129,7 @@ class JavaVersionCommand(VersionCommand):
             # skip if not existing
             return
         pattern = (
-            rf"sentry\.release={version_pattern}"
+            rf"sentry\.release={VERSION_PATTERN}"
         )
         replace_string_in_file(
             self._properties_file_path,
