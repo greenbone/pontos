@@ -59,33 +59,37 @@ class VersionCalculator(ABC):
         today = datetime.today()
         current_year_short = today.year % 100
 
-        if current_version.major < current_year_short or (
-            current_version.major == current_year_short
+        if current_version.major > 2000:
+            # version expected to be YYYY.MM.P
+            current_year = today.year
+        else:
+            # version expected to be YY.MM.P
+            current_year = current_year_short
+
+        if current_version.major < current_year or (
+            current_version.major == current_year
             and current_version.minor < today.month
         ):
-            return cls.version_from_string(
-                f"{current_year_short}.{today.month}.0"
-            )
+            return cls.version_from_string(f"{current_year}.{today.month}.0")
 
         if (
-            current_version.major == today.year % 100
+            current_version.major == current_year
             and current_version.minor == today.month
         ):
             if current_version.dev is None:
                 release_version = cls.version_from_string(
-                    f"{current_year_short}.{today.month}."
+                    f"{current_year}.{today.month}."
                     f"{current_version.patch + 1}"
                 )
             else:
                 release_version = cls.version_from_string(
-                    f"{current_year_short}.{today.month}."
-                    f"{current_version.patch}"
+                    f"{current_year}.{today.month}." f"{current_version.patch}"
                 )
             return release_version
         else:
             raise VersionError(
                 f"'{current_version}' is higher than "
-                f"'{current_year_short}.{today.month}'."
+                f"'{current_year}.{today.month}'."
             )
 
     @classmethod
