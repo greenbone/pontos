@@ -33,6 +33,10 @@ TEMPLATE = """# pylint: disable=invalid-name
 
 __version__ = "{}"\n"""
 
+VERSION_PATTERN = (
+    r"([0-9]+\.[0-9]+\.[0-9]+(-?([ab]|rc|alpha|beta)[0-9]+(.dev[0-9]+)?)?)"
+)
+
 
 def find_file(
     filename: Path, search_path: str, search_glob: str
@@ -124,10 +128,7 @@ class JavaVersionCommand(VersionCommand):
         if not self._properties_file_path.exists():
             # skip if not existing
             return
-        pattern = (
-            r"sentry\.release=([0-9]+\.[0-9]+\.[0-9]+"
-            r"(-?([ab]|dev|rc|alpha|beta)[0-9]+)?)"
-        )
+        pattern = rf"sentry\.release={VERSION_PATTERN}"
         replace_string_in_file(
             self._properties_file_path,
             pattern=pattern,
@@ -147,10 +148,7 @@ class JavaVersionCommand(VersionCommand):
         if not swagger_config_file:
             # skip if not existing
             return
-        pattern = (
-            r'\.version\("([0-9]+\.[0-9]+\.[0-9]+'
-            r'(-?([ab]|dev|rc|alpha|beta)[0-9]+)?)"\)'
-        )
+        pattern = rf'\.version\("{VERSION_PATTERN}"\)'
         replace_string_in_file(
             swagger_config_file, pattern=pattern, replacement=str(new_version)
         )
