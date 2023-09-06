@@ -17,7 +17,7 @@ jobs:
           - "3.10"
           - "3.11"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install and check with black, pylint and pontos.version
         uses: greenbone/actions/lint-python@v3
         with:
@@ -35,7 +35,7 @@ jobs:
           - "3.10"
           - "3.11"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v3
         with:
@@ -53,7 +53,7 @@ jobs:
           - "3.10"
           - "3.11"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run mypy
         uses: greenbone/actions/mypy-python@v3
         with:
@@ -65,7 +65,7 @@ jobs:
     needs: test
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v3
         with:
@@ -76,7 +76,7 @@ jobs:
     name: Check versioning for consistency
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v3
       - name: Check version
