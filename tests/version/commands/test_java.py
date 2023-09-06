@@ -26,8 +26,92 @@ from lxml import etree
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
 from pontos.version.commands import JavaVersionCommand
-from pontos.version.commands._java import find_file, replace_string_in_file
+from pontos.version.commands._java import (
+    VERSION_PATTERN,
+    find_file,
+    replace_string_in_file,
+)
 from pontos.version.schemes import PEP440VersioningScheme
+
+
+class TestVersionPattern(unittest.TestCase):
+    def test_version_pattern_swagger(self):
+        # Define the test parameters
+        content = """
+@Configuration
+public class SwaggerConfig {{
+
+    @Bean
+    public OpenAPI metaData() {{
+        return new OpenAPI().info(new Info()
+                .title("Api Documentation")
+                .description("Api Documentation for billing service")
+                .version("{}"));
+    }}
+}}
+        """
+        versions = [
+            "2018.0.1",
+            "2023.1.2a1",
+            "2023.3.3-alpha1.dev1",
+            "2023.4.5-rc2",
+            "2023.1.1beta1",
+        ]
+        replacement = "2023.10.10"
+
+        for version in versions:
+            with temp_file(content=content.format(version)) as tmp:
+                replace_string_in_file(tmp, VERSION_PATTERN, replacement)
+
+                updated_content = tmp.read_text(encoding="utf-8")
+
+                # Verify the replacement was performed correctly
+                self.assertNotRegex(
+                    updated_content, version
+                )  # Pattern should not be present
+                self.assertIn(
+                    replacement, updated_content
+                )  # Replacement should be present
+
+    def test_version_pattern_properties(self):
+        # Define the test parameters
+        content = """
+# application
+spring.application.name=boo
+server.port=1elf
+app.stripe.enabled=false
+app.not.for.resale.keys=
+app.gmsp.booking.startOfHistory=2021
+# sentry
+sentry.release={}
+sentry.tags.service_name=boo
+# actuator
+management.health.db.enabled=false
+# spring
+spring.main.allow-bean-definition-overriding=true
+        """
+        versions = [
+            "2018.0.1",
+            "2023.1.2a1",
+            "2023.3.3-alpha1.dev1",
+            "2023.4.5-rc2",
+            "2023.1.1beta1",
+        ]
+        replacement = "2023.10.10"
+
+        for version in versions:
+            with temp_file(content=content.format(version)) as tmp:
+                replace_string_in_file(tmp, VERSION_PATTERN, replacement)
+
+                updated_content = tmp.read_text(encoding="utf-8")
+
+                # Verify the replacement was performed correctly
+                self.assertNotRegex(
+                    updated_content, version
+                )  # Pattern should not be present
+                self.assertIn(
+                    replacement, updated_content
+                )  # Replacement should be present
 
 
 class TestFindFile(unittest.TestCase):
