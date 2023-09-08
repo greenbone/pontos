@@ -74,12 +74,13 @@ def replace_string_in_file(
         file_path.write_text(
             content.replace(match.group(1), replacement), encoding="utf-8"
         )
-    logging.warning(
-        "Couldn't match the pattern %s in the content of %s.",
-        pattern,
-        file_path,
-    )
-    logging.warning("Content: %s", content)
+    else:
+        logging.warning(
+            "Couldn't match the pattern %s in the content of %s.",
+            pattern,
+            file_path,
+        )
+        logging.warning("Content: %s", content)
 
 
 # This class is used for Java Version command(s)
