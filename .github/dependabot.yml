@@ -12,7 +12,7 @@ updates:
     commit-message:
       prefix: "Deps"
     groups:
-      dependencies:
+      python-packages:
         patterns:
           - "*"
 
@@ -23,7 +23,7 @@ updates:
     commit-message:
       prefix: "Deps"
     groups:
-      dependencies:
+      actions:
         patterns:
           - "*"
 
