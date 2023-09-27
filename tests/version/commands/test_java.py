@@ -119,7 +119,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(updated_version_obj.previous, SemanticVersioningScheme.parse_version(version))
             self.assertEqual(updated_version_obj.new, SemanticVersioningScheme.parse_version(new_version))
             self.assertEqual(
-                updated_version_obj.changed_files, ["README.md"]
+                updated_version_obj.changed_files, [Path("README.md")]
             )
 
             content = readme_file_path.read_text(encoding="UTF-8")
