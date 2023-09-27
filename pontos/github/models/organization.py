@@ -267,12 +267,15 @@ class SecurityAndAnalysis(GitHubModel):
 
     Attributes:
         advanced_security: Status of GitHub Advanced Security is used
+        dependabot_security_updates: Status of Dependabot security updates are
+            used
         secret_scanning: Status of Secret Scanning is used
         secret_scanning_push_protection: Status of Secret Scanning Push
             Protection is used
     """
 
     advanced_security: Optional[SecurityAndAnalysisType] = None
+    dependabot_security_updates: Optional[SecurityAndAnalysisType] = None
     secret_scanning: Optional[SecurityAndAnalysisType] = None
     secret_scanning_push_protection: Optional[SecurityAndAnalysisType] = None
 
