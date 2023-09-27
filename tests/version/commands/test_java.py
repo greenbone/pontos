@@ -33,7 +33,7 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
 
 TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
-**task service**: Version 2023.9.3
+**task service**: Version {}
 
 ## starting the local 
 """
@@ -42,16 +42,18 @@ TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
         with temp_file(
-            name="go.mod",
+            name="upgradeVersion.json",
             change_into=True,
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
             )
+
+            version = "2023.9.3"
             readme_file_path = Path("README.md")
             readme_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_MARKDOWN, encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version), encoding="utf-8"
             )
 
             result_version = JavaVersionCommand(
@@ -59,8 +61,69 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             ).get_current_version()
 
             self.assertEqual(
-                result_version, SemanticVersioningScheme.parse_version("2023.9.3")
+                result_version,
+                SemanticVersioningScheme.parse_version(version)
             )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+
+class VerifyJavaVersionCommandTestCase(unittest.TestCase):
+    def test_verify_version(self):
+        with temp_file(
+            name="upgradeVersion.json",
+            change_into=True,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version), encoding="utf-8"
+            )
+
+            JavaVersionCommand(
+                SemanticVersioningScheme
+            ).verify_version(SemanticVersioningScheme.parse_version(version))
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+
+class UpdateJavaVersionCommandTestCase(unittest.TestCase):
+    def test_update_version(self):
+        with temp_file(
+            name="upgradeVersion.json",
+            change_into=True,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version), encoding="utf-8"
+            )
+
+            new_version = "2023.9.4"
+            updated_version_obj = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(SemanticVersioningScheme.parse_version(new_version))
+
+            self.assertEqual(updated_version_obj.previous, version)
+            self.assertEqual(updated_version_obj.new, new_version)
+            self.assertEqual(
+                updated_version_obj.changed_files, ["README.md"]
+            )
+
+            content = readme_file_path.read_text(encoding="UTF-8")
+            self.assertEqual(content, TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(new_version))
 
             version_file_path.unlink()
             readme_file_path.unlink()
