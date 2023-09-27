@@ -93,6 +93,19 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
             version_file_path.unlink()
 
+    def test_getting_version_without_version_config(self):
+        exp_err_msg = (
+                r"No /tmp/.*/upgradeVersion\.json config file found\. "
+                r"This file is required for pontos"
+        )
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            JavaVersionCommand(
+                SemanticVersioningScheme
+            ).get_current_version()
+
 
 class VerifyJavaVersionCommandTestCase(unittest.TestCase):
     def test_verify_version(self):
