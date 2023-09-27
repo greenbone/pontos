@@ -136,7 +136,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             ).update_version(SemanticVersioningScheme.parse_version(version))
 
             self.assertEqual(updated_version_obj.previous, SemanticVersioningScheme.parse_version(version))
-            self.assertEqual(updated_version_obj.new, SemanticVersioningScheme.parse_version(new_version))
+            self.assertEqual(updated_version_obj.new, SemanticVersioningScheme.parse_version(version))
             self.assertEqual(
                 updated_version_obj.changed_files, []
             )
