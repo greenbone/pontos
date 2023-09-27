@@ -67,6 +67,26 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             version_file_path.unlink()
             readme_file_path.unlink()
 
+    def test_getting_version_no_files_configured(self):
+        exp_err_msg = "no version found"
+        with temp_directory(
+                change_into=True
+        ), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                """{"files": []}""",
+                encoding="utf-8",
+            )
+
+            JavaVersionCommand(
+                SemanticVersioningScheme
+            ).get_current_version()
+
+            version_file_path.unlink()
+
 
 class VerifyJavaVersionCommandTestCase(unittest.TestCase):
     def test_verify_version(self):
@@ -122,26 +142,6 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
             version_file_path.unlink()
             readme_file_path.unlink()
-
-    def test_verify_version_no_files_configured(self):
-        exp_err_msg = "no version found"
-        with temp_directory(
-                change_into=True
-        ), self.assertRaisesRegex(
-            VersionError,
-            exp_err_msg,
-        ):
-            version_file_path = Path("upgradeVersion.json")
-            version_file_path.write_text(
-                """{"files": []}""",
-                encoding="utf-8",
-            )
-
-            JavaVersionCommand(SemanticVersioningScheme).verify_version(
-                SemanticVersioningScheme.parse_version("2023.9.3")
-            )
-
-            version_file_path.unlink()
 
 
 class UpdateJavaVersionCommandTestCase(unittest.TestCase):
