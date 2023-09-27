@@ -69,9 +69,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
     def test_getting_version_no_files_configured(self):
         exp_err_msg = "no version found"
-        with temp_directory(
-                change_into=True
-        ), self.assertRaisesRegex(
+        with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError,
             exp_err_msg,
         ):
@@ -117,9 +115,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             + r"in '/tmp/.*/upgradeVersion\.json'"
         )
 
-        with temp_directory(
-                change_into=True
-        ), self.assertRaisesRegex(
+        with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError,
             exp_err_msg,
         ):
