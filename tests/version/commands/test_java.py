@@ -49,6 +49,10 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
             )
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN, encoding="utf-8"
+            )
 
             result_version = JavaVersionCommand(
                 SemanticVersioningScheme
@@ -57,4 +61,6 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(
                 result_version, SemanticVersioningScheme.parse_version("2023.9.3")
             )
+
             version_file_path.unlink()
+            readme_file_path.unlink()
