@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from typing import Any, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -493,3 +493,32 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
         return Repository.from_dict(response.json())
+
+    async def topics(self, repo: str) -> Iterable[str]:
+        """
+        List all topics of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to list the topics for
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            An iterable of topics as string
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    topics = await api.repositories.topics("foo/bar")
+        """
+        api = f"/repos/{repo}/topics"
+        response = await self._client.get(api)
+        response.raise_for_status()
+
+        data: dict[str, Any] = response.json()
+        return data.get("names", [])

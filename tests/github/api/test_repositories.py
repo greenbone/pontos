@@ -773,3 +773,15 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
                 "web_commit_signoff_required": False,
             },
         )
+
+    async def test_get_topics(self):
+        response = create_response()
+        response.json.return_value = {"names": ["foo", "bar", "baz"]}
+        self.client.get.return_value = response
+
+        topics = await self.api.topics("foo/bar")
+
+        self.client.get.assert_awaited_once_with("/repos/foo/bar/topics")
+
+        self.assertEqual(len(topics), 3)
+        self.assertEqual(topics, ["foo", "bar", "baz"])
