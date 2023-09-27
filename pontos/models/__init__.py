@@ -163,8 +163,8 @@ class Model:
                     value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501
             except TypeError as e:
                 raise ModelError(
-                    f"Error while creating {cls.__name__}. Could not set value "
-                    f"for '{name}' from '{value}'."
+                    f"Error while creating {cls.__name__} model. Could not set "
+                    f"value for property '{name}' from '{value}'."
                 ) from e
 
             if name in type_hints:

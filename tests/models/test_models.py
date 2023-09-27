@@ -205,7 +205,7 @@ class DottedAttributesTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(
             ModelError,
-            "Error while creating ExampleModel. Could not set value for 'foo' "
-            "from '{'bar': 'baz'}'.",
+            "Error while creating ExampleModel model. Could not set value for "
+            "property 'foo' from '{'bar': 'baz'}'.",
         ):
             ExampleModel.from_dict({"foo": {"bar": "baz"}})
