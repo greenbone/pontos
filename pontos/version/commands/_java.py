@@ -24,13 +24,10 @@ from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
 
-VERSION_PATTERN = (
-    r"^(?P<pre>.*[^\d])(?P<version>\d+\.\d+\.\d+(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)(?P<post>.*$)"
-)
+VERSION_PATTERN = r"^(?P<pre>.*[^\d])(?P<version>\d+\.\d+\.\d+(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)(?P<post>.*$)"
 
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
-
     project_file_name = "upgradeVersion.json"
 
     def get_current_version(self) -> Version:
@@ -44,7 +41,7 @@ class JavaVersionCommand(VersionCommand):
         return self.versioning_scheme.parse_version(last_version)
 
     def verify_version(
-            self, version: Union[Literal["current"], Version, None]
+        self, version: Union[Literal["current"], Version, None]
     ) -> None:
         file_versions = self._read_versions_from_files()
 
@@ -58,7 +55,7 @@ class JavaVersionCommand(VersionCommand):
             )
 
     def update_version(
-            self, new_version: Version, *, force: bool = False
+        self, new_version: Version, *, force: bool = False
     ) -> VersionUpdate:
         try:
             current_version = self.get_current_version()
@@ -82,7 +79,7 @@ class JavaVersionCommand(VersionCommand):
         changed_files: List[Path] = []
         for file_config in config["files"]:
             file_path = file_config["path"]
-            with open(Path.cwd() / file_path, "r") as input_file_handle:
+            with ((open(Path.cwd() / file_path, "r") as input_file_handle)):
                 lines = input_file_handle.readlines()
                 line_number = file_config["line"]
                 version_line = lines[line_number - 1]
@@ -95,7 +92,11 @@ class JavaVersionCommand(VersionCommand):
                         f"lineNo:{line_number} "
                         f"content:'{version_line}'"
                     )
-                lines[line_number - 1] = matches.group("pre") + str(new_version) + matches.group("post")
+                lines[line_number - 1] = (
+                        matches.group("pre")
+                    + str(new_version)
+                    + matches.group("post")
+                )
 
                 content = "".join(lines)
                 with open(Path.cwd() / file_path, "w") as output_file_handle:
