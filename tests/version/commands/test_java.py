@@ -291,10 +291,10 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
     def test_update_version_upgrade_config_with_wrong_line_number(self):
         exp_err_msg = (
-            r"Line has no version, "
-            r"file:'README.md' "
-            r"lineNo:4 "
-            r"content:''"
+            "Line has no version, "
+            "file:'README.md' "
+            "lineNo:4 "
+            "content:'\n'"
         )
         with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError,
