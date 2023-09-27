@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from pathlib import Path
+from string import Template
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
@@ -32,15 +33,15 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
 }
 """
 
-TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = """{
+TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template("""{
   "files": [
     {
       "path": "README.md",
-      "line": {}
+      "line": ${LINE_NO}
     }
   ]
 }
-"""
+""")
 
 TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
@@ -301,7 +302,8 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON.format("4"), encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON.substitute(LINE_NO="4"),
+                encoding="utf-8",
             )
 
             version = "2023.9.3"
