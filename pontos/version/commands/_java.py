@@ -24,10 +24,12 @@ from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
 
-VERSION_PATTERN = (r"^(?P<pre>.*[^\d])"
-                   r"(?P<version>\d+\.\d+\.\d+"
-                   r"(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)"
-                   r"(?P<post>.*$)")
+VERSION_PATTERN = (
+    r"^(?P<pre>.*[^\d])"
+    r"(?P<version>\d+\.\d+\.\d+"
+    r"(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)"
+    r"(?P<post>.*$)"
+)
 
 
 # This class is used for Java Version command(s)
