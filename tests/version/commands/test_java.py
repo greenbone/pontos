@@ -18,6 +18,7 @@ import unittest
 from pathlib import Path
 
 from pontos.testing import temp_directory, temp_file
+from pontos.version import VersionError
 from pontos.version.commands import JavaVersionCommand
 from pontos.version.schemes import SemanticVersioningScheme
 
@@ -84,6 +85,34 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
             JavaVersionCommand(SemanticVersioningScheme).verify_version(
                 SemanticVersioningScheme.parse_version(version)
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+    def test_verify_version_does_not_match(self):
+        exp_err_msg = "No version found in the version.go file."
+        with temp_directory(
+                change_into=True
+        ), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            new_version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            JavaVersionCommand(SemanticVersioningScheme).verify_version(
+                SemanticVersioningScheme.parse_version(new_version)
             )
 
             version_file_path.unlink()
