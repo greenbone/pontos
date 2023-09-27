@@ -26,7 +26,7 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
     {
       "path": "README.md",
       "line": 3
-    },
+    }
   ]
 }
 """
