@@ -79,7 +79,7 @@ class JavaVersionCommand(VersionCommand):
         changed_files: List[Path] = []
         for file_config in config["files"]:
             file_path = file_config["path"]
-            with ((open(Path.cwd() / file_path, "r") as input_file_handle)):
+            with open(Path.cwd() / file_path, "r") as input_file_handle:
                 lines = input_file_handle.readlines()
                 line_number = file_config["line"]
                 version_line = lines[line_number - 1]
