@@ -119,6 +119,34 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             version_file_path.unlink()
             readme_file_path.unlink()
 
+    def test_no_update_version(self):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version), encoding="utf-8"
+            )
+
+            updated_version_obj = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(SemanticVersioningScheme.parse_version(version))
+
+            self.assertEqual(updated_version_obj.previous, SemanticVersioningScheme.parse_version(version))
+            self.assertEqual(updated_version_obj.new, SemanticVersioningScheme.parse_version(new_version))
+            self.assertEqual(
+                updated_version_obj.changed_files, []
+            )
+
+            content = readme_file_path.read_text(encoding="UTF-8")
+            self.assertEqual(content, TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version))
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
     def test_forced_update_version(self):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
