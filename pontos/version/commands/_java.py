@@ -26,6 +26,7 @@ from ..version import Version, VersionUpdate
 
 VERSION_PATTERN = r"^(?P<pre>.*[^\d])(?P<version>\d+\.\d+\.\d+(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)(?P<post>.*$)"
 
+
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
     project_file_name = "upgradeVersion.json"
