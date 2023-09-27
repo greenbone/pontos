@@ -93,7 +93,7 @@ class JavaVersionCommand(VersionCommand):
                         f"content:'{version_line}'"
                     )
                 lines[line_number - 1] = (
-                        matches.group("pre")
+                    matches.group("pre")
                     + str(new_version)
                     + matches.group("post")
                 )
@@ -165,4 +165,3 @@ class JavaVersionCommand(VersionCommand):
                     f"version:'{version}'"
                 )
         return last_version
-
