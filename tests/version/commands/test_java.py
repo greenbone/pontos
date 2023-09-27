@@ -292,7 +292,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
     def test_update_version_upgrade_config_with_wrong_line_number(self):
         exp_err_msg = (
             r"Line has no version, "
-            r"file:'README\.md' "
+            r"file:'README.md' "
             r"lineNo:4 "
             r"content:''"
         )
