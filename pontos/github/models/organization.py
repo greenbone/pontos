@@ -272,9 +272,9 @@ class SecurityAndAnalysis(GitHubModel):
             Protection is used
     """
 
-    advanced_security: SecurityAndAnalysisType
-    secret_scanning: SecurityAndAnalysisType
-    secret_scanning_push_protection: SecurityAndAnalysisType
+    advanced_security: Optional[SecurityAndAnalysisType] = None
+    secret_scanning: Optional[SecurityAndAnalysisType] = None
+    secret_scanning_push_protection: Optional[SecurityAndAnalysisType] = None
 
 
 @dataclass
