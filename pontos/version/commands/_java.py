@@ -24,7 +24,10 @@ from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
 
-VERSION_PATTERN = r"^(?P<pre>.*[^\d])(?P<version>\d+\.\d+\.\d+(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)(?P<post>.*$)"
+VERSION_PATTERN = (r"^(?P<pre>.*[^\d])"
+                   r"(?P<version>\d+\.\d+\.\d+"
+                   r"(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)"
+                   r"(?P<post>.*$)")
 
 
 # This class is used for Java Version command(s)
@@ -133,7 +136,8 @@ class JavaVersionCommand(VersionCommand):
                 readlines = f.readlines()
                 if line_number - 1 > len(readlines):
                     raise VersionError(
-                        f"Line number:{line_number} is beyond file lines:{len(readlines) + 1} "
+                        f"Line number:{line_number} "
+                        f"is beyond file lines:{len(readlines) + 1} "
                         f"file:'{file_path}'"
                     )
                 version_line = readlines[line_number - 1]
