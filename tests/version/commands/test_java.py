@@ -32,6 +32,16 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
 }
 """
 
+TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = """{
+  "files": [
+    {
+      "path": "README.md",
+      "line": {}
+    }
+  ]
+}
+"""
+
 TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
 **task service**: Version {}
@@ -260,6 +270,39 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(
                 content,
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+    def test_update_version_upgrade_config_with_wrong_line_number(self):
+        exp_err_msg = (
+            r"Line has no version, "
+            r"file:'/tmp/.*/README\.md' "
+            r"lineNo:4 "
+            r"content:''"
+        )
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON.format("4"), encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            new_version = "2023.9.4"
+            JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(
+                SemanticVersioningScheme.parse_version(new_version)
             )
 
             version_file_path.unlink()
