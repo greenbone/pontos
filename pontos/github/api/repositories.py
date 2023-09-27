@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from typing import Any, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -493,3 +493,67 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         response = await self._client.post(api, data=data)
         response.raise_for_status()
         return Repository.from_dict(response.json())
+
+    async def topics(self, repo: str) -> Iterable[str]:
+        """
+        List all topics of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to list the topics for
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            An iterable of topics as string
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    topics = await api.repositories.topics("foo/bar")
+        """
+        api = f"/repos/{repo}/topics"
+        response = await self._client.get(api)
+        response.raise_for_status()
+
+        data: dict[str, Any] = response.json()
+        return data.get("names", [])
+
+    async def update_topics(
+        self, repo: str, new_topics: Iterable[str]
+    ) -> Iterable[str]:
+        """
+        Replace all topics of a repository
+
+        Args:
+            repo: GitHub repository (owner/name) to update the topics for
+            new_topics: Iterable of new topics to set on the repository
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            An iterable of topics as string
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    topics = await api.repositories.update_topics(
+                        "foo/bar", ["foo", "bar"]
+                    )
+        """
+        api = f"/repos/{repo}/topics"
+        data = {"names": list(new_topics)}
+        response = await self._client.put(api, data=data)  # type: ignore[arg-type] # noqa: E501
+        response.raise_for_status()
+
+        data: dict[str, Any] = response.json()
+        return data.get("names", [])
