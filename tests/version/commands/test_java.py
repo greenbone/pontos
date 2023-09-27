@@ -79,9 +79,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            JavaVersionCommand(
-                SemanticVersioningScheme
-            ).get_current_version()
+            JavaVersionCommand(SemanticVersioningScheme).get_current_version()
 
             version_file_path.unlink()
 
