@@ -51,7 +51,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             readme_file_path = Path("README.md")
             readme_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
-                encoding="utf-8"
+                encoding="utf-8",
             )
 
             result_version = JavaVersionCommand(
@@ -59,8 +59,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             ).get_current_version()
 
             self.assertEqual(
-                result_version,
-                SemanticVersioningScheme.parse_version(version)
+                result_version, SemanticVersioningScheme.parse_version(version)
             )
 
             version_file_path.unlink()
@@ -79,12 +78,12 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             readme_file_path = Path("README.md")
             readme_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
-                encoding="utf-8"
+                encoding="utf-8",
             )
 
-            JavaVersionCommand(
-                SemanticVersioningScheme
-            ).verify_version(SemanticVersioningScheme.parse_version(version))
+            JavaVersionCommand(SemanticVersioningScheme).verify_version(
+                SemanticVersioningScheme.parse_version(version)
+            )
 
             version_file_path.unlink()
             readme_file_path.unlink()
@@ -103,7 +102,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             readme_file_path = Path("README.md")
             readme_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
-                encoding="utf-8"
+                encoding="utf-8",
             )
 
             new_version = "2023.9.4"
@@ -113,11 +112,11 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(
                 updated_version_obj.previous,
-                SemanticVersioningScheme.parse_version(version)
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
                 updated_version_obj.new,
-                SemanticVersioningScheme.parse_version(new_version)
+                SemanticVersioningScheme.parse_version(new_version),
             )
             self.assertEqual(
                 updated_version_obj.changed_files, [Path("README.md")]
@@ -126,7 +125,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             content = readme_file_path.read_text(encoding="UTF-8")
             self.assertEqual(
                 content,
-                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(new_version)
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(new_version),
             )
 
             version_file_path.unlink()
@@ -153,21 +152,21 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
             self.assertEqual(
                 updated_version_obj.previous,
-                SemanticVersioningScheme.parse_version(version)
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
                 updated_version_obj.new,
-                SemanticVersioningScheme.parse_version(version)
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
                 updated_version_obj.changed_files,
-                []
+                [],
             )
 
             content = readme_file_path.read_text(encoding="UTF-8")
             self.assertEqual(
                 content,
-                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version)
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
             )
 
             version_file_path.unlink()
@@ -190,22 +189,28 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
             updated_version_obj = JavaVersionCommand(
                 SemanticVersioningScheme
-            ).update_version(SemanticVersioningScheme.parse_version(version), force=True)
+            ).update_version(
+                SemanticVersioningScheme.parse_version(version), force=True
+            )
 
             self.assertEqual(
                 updated_version_obj.previous,
-                SemanticVersioningScheme.parse_version(version)
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
                 updated_version_obj.new,
-                SemanticVersioningScheme.parse_version(version)
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
-                updated_version_obj.changed_files, [Path("README.md")]
+                updated_version_obj.changed_files,
+                [Path("README.md")],
             )
 
             content = readme_file_path.read_text(encoding="UTF-8")
-            self.assertEqual(content, TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version))
+            self.assertEqual(
+                content,
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+            )
 
             version_file_path.unlink()
             readme_file_path.unlink()
