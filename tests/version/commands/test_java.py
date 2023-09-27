@@ -91,7 +91,12 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             readme_file_path.unlink()
 
     def test_verify_version_does_not_match(self):
-        exp_err_msg = "No version found in the version.go file."
+        exp_err_msg = (
+            "Provided version 2023.9.4 does not match the "
+            + "current version 2023.9.3 in "
+            + "upgradeVersion.json."
+        )
+
         with temp_directory(
                 change_into=True
         ), self.assertRaisesRegex(
@@ -104,7 +109,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             )
 
             version = "2023.9.3"
-            new_version = "2023.9.3"
+            new_version = "2023.9.4"
             readme_file_path = Path("README.md")
             readme_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
@@ -117,6 +122,26 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
             version_file_path.unlink()
             readme_file_path.unlink()
+
+    def test_verify_version_no_files_configured(self):
+        exp_err_msg = "no version found"
+        with temp_directory(
+                change_into=True
+        ), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                """{"files": []}""",
+                encoding="utf-8",
+            )
+
+            JavaVersionCommand(SemanticVersioningScheme).verify_version(
+                SemanticVersioningScheme.parse_version("2023.9.3")
+            )
+
+            version_file_path.unlink()
 
 
 class UpdateJavaVersionCommandTestCase(unittest.TestCase):
