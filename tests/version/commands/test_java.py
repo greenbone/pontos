@@ -112,9 +112,9 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
     def test_verify_version_does_not_match(self):
         exp_err_msg = (
-            "Provided version 2023.9.4 does not match the "
-            + "current version 2023.9.3 in "
-            + "upgradeVersion.json."
+            r"Provided version 2023\.9\.4 does not match the "
+            + r"current version 2023\.9\.3 "
+            + r"in '/tmp/.*/upgradeVersion\.json'"
         )
 
         with temp_directory(

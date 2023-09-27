@@ -56,8 +56,8 @@ class JavaVersionCommand(VersionCommand):
         if last_version != str(version):
             raise VersionError(
                 f"Provided version {version} does not match the "
-                f"current version {last_version} in "
-                f"{self.project_file_path}."
+                f"current version {last_version} "
+                f"in '{self.project_file_path}'"
             )
 
     def update_version(
