@@ -33,7 +33,8 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
 }
 """
 
-TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template("""{
+TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template(
+    """{
   "files": [
     {
       "path": "README.md",
@@ -41,7 +42,8 @@ TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template("""{
     }
   ]
 }
-""")
+"""
+)
 
 TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
@@ -96,16 +98,14 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
     def test_getting_version_without_version_config(self):
         exp_err_msg = (
-                r"No /tmp/.*/upgradeVersion\.json config file found\. "
-                r"This file is required for pontos"
+            r"No /tmp/.*/upgradeVersion\.json config file found\. "
+            r"This file is required for pontos"
         )
         with temp_directory(change_into=True), self.assertRaisesRegex(
             VersionError,
             exp_err_msg,
         ):
-            JavaVersionCommand(
-                SemanticVersioningScheme
-            ).get_current_version()
+            JavaVersionCommand(SemanticVersioningScheme).get_current_version()
 
 
 class VerifyJavaVersionCommandTestCase(unittest.TestCase):
@@ -292,7 +292,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
     def test_update_version_upgrade_config_with_wrong_line_number(self):
         exp_err_msg = (
             r"Line has no version, "
-            r"file:'/tmp/.*/README\.md' "
+            r"file:'README\.md' "
             r"lineNo:4 "
             r"content:''"
         )
@@ -314,9 +314,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             )
 
             new_version = "2023.9.4"
-            JavaVersionCommand(
-                SemanticVersioningScheme
-            ).update_version(
+            JavaVersionCommand(SemanticVersioningScheme).update_version(
                 SemanticVersioningScheme.parse_version(new_version)
             )
 
