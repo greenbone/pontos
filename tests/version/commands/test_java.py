@@ -44,7 +44,8 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_JSON,
+                encoding="utf-8",
             )
 
             version = "2023.9.3"
