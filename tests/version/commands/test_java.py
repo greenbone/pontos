@@ -17,7 +17,7 @@
 import unittest
 from pathlib import Path
 
-from pontos.testing import temp_file
+from pontos.testing import temp_directory, temp_file
 from pontos.version.commands import JavaVersionCommand
 from pontos.version.schemes import SemanticVersioningScheme
 
@@ -41,7 +41,7 @@ TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
-        with temp_file(name="upgradeVersion.json", change_into=True):
+        with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
@@ -68,7 +68,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
 class VerifyJavaVersionCommandTestCase(unittest.TestCase):
     def test_verify_version(self):
-        with temp_file(name="upgradeVersion.json", change_into=True):
+        with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
@@ -90,7 +90,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
 class UpdateJavaVersionCommandTestCase(unittest.TestCase):
     def test_update_version(self):
-        with temp_file(name="upgradeVersion.json", change_into=True):
+        with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
@@ -120,7 +120,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             readme_file_path.unlink()
 
     def test_forced_update_version(self):
-        with temp_file(name="upgradeVersion.json", change_into=True):
+        with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
@@ -147,3 +147,17 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
 
             version_file_path.unlink()
             readme_file_path.unlink()
+
+
+class ProjectFileJavaVersionCommandTestCase(unittest.TestCase):
+    def test_project_file_not_found(self):
+        with temp_directory(change_into=True):
+            cmd = JavaVersionCommand(SemanticVersioningScheme)
+
+            self.assertFalse(cmd.project_found())
+
+    def test_project_file_found(self):
+        with temp_file(name="upgradeVersion.json", change_into=True):
+            cmd = JavaVersionCommand(SemanticVersioningScheme)
+
+            self.assertTrue(cmd.project_found())
