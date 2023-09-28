@@ -23,7 +23,17 @@ from pontos.version import VersionError
 from pontos.version.commands import JavaVersionCommand
 from pontos.version.schemes import SemanticVersioningScheme
 
-TEMPLATE_UPGRADE_VERSION_JSON = """{
+TEMPLATE_UPGRADE_VERSION_SINGLE_JSON = """{
+  "files": [
+    {
+      "path": "README.md",
+      "line": 3
+    }
+  ]
+}
+"""
+
+TEMPLATE_UPGRADE_VERSION_MULTI_JSON = """{
   "files": [
     {
       "path": "README.md",
@@ -67,7 +77,7 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON,
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
                 encoding="utf-8",
             )
 
@@ -122,7 +132,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_MULTI_JSON, encoding="utf-8"
             )
 
             version = "2023.9.3"
@@ -138,6 +148,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
                 ),
                 encoding="latin-1",
             )
+
 
             JavaVersionCommand(SemanticVersioningScheme).verify_version(
                 SemanticVersioningScheme.parse_version(version)
@@ -160,7 +171,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON, encoding="utf-8"
             )
 
             version = "2023.9.3"
@@ -184,7 +195,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON, encoding="utf-8"
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON, encoding="utf-8"
             )
 
             version = "2023.9.3"
@@ -226,7 +237,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON,
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
                 encoding="utf-8",
             )
 
@@ -267,7 +278,7 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_JSON,
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
                 encoding="utf-8",
             )
 
