@@ -149,7 +149,6 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
                 encoding="latin-1",
             )
 
-
             JavaVersionCommand(SemanticVersioningScheme).verify_version(
                 SemanticVersioningScheme.parse_version(version)
             )
