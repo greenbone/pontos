@@ -132,7 +132,9 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             )
             properties_file_path = Path("src/application.properties")
             properties_file_path.write_text(
-                TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(version),
+                TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(
+                    version
+                ),
                 encoding="latin-1",
             )
 

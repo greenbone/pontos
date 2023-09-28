@@ -18,7 +18,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Literal, Union, Dict, List
+from typing import Literal, Union, Dict, List, Any
 
 from ._command import VersionCommand
 from ..errors import VersionError
