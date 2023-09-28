@@ -30,7 +30,7 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
       "line": 3
     },
     {
-      "path": "src/application.properties",
+      "path": "application.properties",
       "line": 2
     }
   ]
@@ -131,8 +131,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
                 encoding="utf-8",
             )
-            properties_file_path = Path("src/application.properties")
-            Path("src").mkdir(parents=True, exist_ok=True)
+            properties_file_path = Path("application.properties")
             properties_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(
                     version
