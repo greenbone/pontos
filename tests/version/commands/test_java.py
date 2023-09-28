@@ -14,366 +14,350 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# pylint: disable=line-too-long
-# ruff: noqa: E501
-
 import unittest
 from pathlib import Path
-
-from lxml import etree
+from string import Template
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
 from pontos.version.commands import JavaVersionCommand
-from pontos.version.commands._java import (
-    VERSION_PATTERN,
-    find_file,
-    replace_string_in_file,
+from pontos.version.schemes import SemanticVersioningScheme
+
+TEMPLATE_UPGRADE_VERSION_SINGLE_JSON = """{
+  "files": [
+    {
+      "path": "README.md",
+      "line": 3
+    }
+  ]
+}
+"""
+
+TEMPLATE_UPGRADE_VERSION_MULTI_JSON = """{
+  "files": [
+    {
+      "path": "README.md",
+      "line": 3
+    },
+    {
+      "path": "application.properties",
+      "line": 2
+    }
+  ]
+}
+"""
+
+TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template(
+    """{
+  "files": [
+    {
+      "path": "README.md",
+      "line": ${LINE_NO}
+    }
+  ]
+}
+"""
 )
-from pontos.version.schemes import PEP440VersioningScheme
 
+TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
-class TestVersionPattern(unittest.TestCase):
-    def test_version_pattern_swagger(self):
-        # Define the test parameters
-        content = """
-@Configuration
-public class SwaggerConfig {{
+**task service**: Version {}
 
-    @Bean
-    public OpenAPI metaData() {{
-        return new OpenAPI().info(new Info()
-                .title("Api Documentation")
-                .description("Api Documentation for billing service")
-                .version("{}"));
-    }}
-}}
-        """
-        versions = [
-            "2018.0.1",
-            "2023.1.2a1",
-            "2023.3.3-alpha1.dev1",
-            "2023.4.5-rc2",
-            "2023.1.1beta1",
-        ]
-        replacement = "2023.10.10"
+## starting the local 
+"""
 
-        for version in versions:
-            with temp_file(content=content.format(version)) as tmp:
-                replace_string_in_file(tmp, VERSION_PATTERN, replacement)
-
-                updated_content = tmp.read_text(encoding="utf-8")
-
-                # Verify the replacement was performed correctly
-                self.assertNotRegex(
-                    updated_content, version
-                )  # Pattern should not be present
-                self.assertIn(
-                    replacement, updated_content
-                )  # Replacement should be present
-
-    def test_version_pattern_properties(self):
-        # Define the test parameters
-        content = """
-# application
-spring.application.name=boo
-server.port=1elf
-app.stripe.enabled=false
-app.not.for.resale.keys=
-app.gmsp.booking.startOfHistory=2021
-# sentry
+TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES = """# application
 sentry.release={}
-sentry.tags.service_name=boo
-# actuator
-management.health.db.enabled=false
-# spring
-spring.main.allow-bean-definition-overriding=true
-        """
-        versions = [
-            "2018.0.1",
-            "2023.1.2a1",
-            "2023.3.3-alpha1.dev1",
-            "2023.4.5-rc2",
-            "2023.1.1beta1",
-        ]
-        replacement = "2023.10.10"
-
-        for version in versions:
-            with temp_file(content=content.format(version)) as tmp:
-                replace_string_in_file(tmp, VERSION_PATTERN, replacement)
-
-                updated_content = tmp.read_text(encoding="utf-8")
-
-                # Verify the replacement was performed correctly
-                self.assertNotRegex(
-                    updated_content, version
-                )  # Pattern should not be present
-                self.assertIn(
-                    replacement, updated_content
-                )  # Replacement should be present
-
-
-class TestFindFile(unittest.TestCase):
-    def test_file_found(self):
-        with temp_directory() as temp_dir:
-            deep_path = Path(temp_dir / "foo/bat/config/swagger/")
-            deep_path.mkdir(parents=True)
-            Path(deep_path / "SwaggerConfig.java").touch()
-            self.assertTrue(
-                Path(
-                    temp_dir / "foo/bat/config/swagger/SwaggerConfig.java"
-                ).exists()
-            )
-            filename = Path("SwaggerConfig.java")
-            search_path = temp_dir  # Assuming 'config/swagger' is two levels up
-            search_glob = "**/config/swagger/*"
-
-            result = find_file(filename, search_path, search_glob)
-
-            self.assertIsNotNone(result)
-            self.assertEqual(result.name, filename.name)
-
-    def test_file_not_found(self):
-        with temp_directory() as temp_dir:
-            Path(
-                temp_dir / "foo/bat/config/swagger/SwaggerConfig.java",
-                parents=True,
-            )
-            filename = Path("NonExistentFile.java")
-            search_path = temp_dir
-            search_glob = "**/config/swagger/*"
-            with self.assertLogs("root", level="WARNING") as cm:
-                result = find_file(filename, search_path, search_glob)
-                self.assertEqual(
-                    cm.output,
-                    [
-                        (
-                            f"WARNING:root:File {filename.name} not "
-                            f"found in {search_path.resolve()}."
-                        )
-                    ],
-                )
-
-            self.assertIsNone(result)
-
-
-class TestReplaceString(unittest.TestCase):
-    def test_replace_string_in_file(self):
-        # Define the test parameters
-        content = """
-        Foo, bar
-        baz
-            .version("1.2.3")
-        glubb
-        """
-        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
-        replacement = "1.2.4"
-
-        with temp_file(content=content) as tmp:
-            replace_string_in_file(tmp, pattern, replacement)
-
-            updated_content = tmp.read_text(encoding="utf-8")
-
-            # Verify the replacement was performed correctly
-            self.assertNotRegex(
-                updated_content, "1.2.3"
-            )  # Pattern should not be present
-            self.assertIn(
-                replacement, updated_content
-            )  # Replacement should be present
-
-    def test_replace_string_in_file_no_match(self):
-        # Define the test parameters
-        content = """
-        Foo, bar
-        baz
-            .versio("1.2.3")
-        glubb
-        """
-        pattern = r'\.version\("([0-9]+\.[0-9]+\.[0-9]+)"\)'
-        replacement = "1.2.4"
-
-        with temp_file(content=content) as tmp:
-            # Call the function under test
-            replace_string_in_file(tmp, pattern, replacement)
-
-            # Read the content of the unmodified file
-            updated_content = tmp.read_text(encoding="utf-8")
-
-            # Verify the content remains unchanged
-            self.assertNotRegex(updated_content, replacement)
-            self.assertEqual(updated_content, content)
+server.port=8080
+"""
 
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
-    def test_get_current_version(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-        <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
-        with temp_file(content, name="pom.xml", change_into=True):
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            version = cmd.get_current_version()
-
-            self.assertEqual(
-                version, PEP440VersioningScheme.parse_version("2023.5.3")
+    def test_getting_version(self):
+        with temp_directory(change_into=True):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
+                encoding="utf-8",
             )
 
-    def test_no_project_file(self):
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            result_version = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).get_current_version()
+
+            self.assertEqual(
+                result_version, SemanticVersioningScheme.parse_version(version)
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+    def test_getting_version_no_files_configured(self):
+        exp_err_msg = "no version found"
         with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError, ".* file not found."
+            VersionError,
+            exp_err_msg,
         ):
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            cmd.get_current_version()
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                """{"files": []}""",
+                encoding="utf-8",
+            )
 
-    def test_no_package_version(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-            <artifactId>msspadminservice</artifactId></project>"""
-        with temp_file(
-            content, name="pom.xml", change_into=True
-        ), self.assertRaisesRegex(VersionError, "Version tag missing in"):
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            cmd.get_current_version()
+            JavaVersionCommand(SemanticVersioningScheme).get_current_version()
 
-    def test_no_valid_xml_in_pom(self):
-        content = "<"
-        with temp_file(
-            content, name="pom.xml", change_into=True
-        ), self.assertRaisesRegex(
-            VersionError, "StartTag: invalid element name,"
+            version_file_path.unlink()
+
+    def test_getting_version_without_version_config(self):
+        exp_err_msg = (
+            r"No /tmp/.*/upgradeVersion\.json config file found\. "
+            r"This file is required for pontos"
+        )
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
         ):
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            cmd.get_current_version()
+            JavaVersionCommand(SemanticVersioningScheme).get_current_version()
 
-        content = "<foo><bar/>"
-        with temp_file(
-            content, name="pom.xml", change_into=True
-        ), self.assertRaisesRegex(
-            VersionError, "Premature end of data in tag foo"
+
+class VerifyJavaVersionCommandTestCase(unittest.TestCase):
+    def test_verify_version(self):
+        with temp_directory(change_into=True):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MULTI_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+            properties_file_path = Path("application.properties")
+            properties_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(
+                    version
+                ),
+                encoding="latin-1",
+            )
+
+            JavaVersionCommand(SemanticVersioningScheme).verify_version(
+                SemanticVersioningScheme.parse_version(version)
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+            properties_file_path.unlink()
+
+    def test_verify_version_does_not_match(self):
+        exp_err_msg = (
+            r"Provided version 2023\.9\.4 does not match the "
+            + r"current version 2023\.9\.3 "
+            + r"in '/tmp/.*/upgradeVersion\.json'"
+        )
+
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
         ):
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            cmd.get_current_version()
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON, encoding="utf-8"
+            )
+
+            version = "2023.9.3"
+            new_version = "2023.9.4"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            JavaVersionCommand(SemanticVersioningScheme).verify_version(
+                SemanticVersioningScheme.parse_version(new_version)
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
 
 
 class UpdateJavaVersionCommandTestCase(unittest.TestCase):
-    swagger_file = "SwaggerConfig.java"
+    def test_update_version(self):
+        with temp_directory(change_into=True):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON, encoding="utf-8"
+            )
 
-    def test_update_version_file(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-        <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
 
-        with temp_file(content, name="pom.xml", change_into=True) as temp:
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            cmd.get_current_version()
-            updated = cmd.update_version(
-                PEP440VersioningScheme.parse_version("2023.6.0")
+            new_version = "2023.9.4"
+            updated_version_obj = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(
+                SemanticVersioningScheme.parse_version(new_version)
             )
 
             self.assertEqual(
-                updated.previous,
-                PEP440VersioningScheme.parse_version("2023.5.3"),
+                updated_version_obj.previous,
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
-                updated.new, PEP440VersioningScheme.parse_version("2023.6.0")
-            )
-            self.assertEqual(updated.changed_files, [temp.resolve()])
-
-            with temp.open(mode="r", encoding="utf-8") as fp:
-                fake_pom = etree.parse(fp).getroot()
-
-            self.assertEqual(fake_pom.find("{*}version").text, "2023.6.0")
-
-    def test_update_version_develop(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-        <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
-
-        with temp_file(content, name="pom.xml", change_into=True) as temp:
-            swagger_search_path = Path("src").resolve()
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            new_version = PEP440VersioningScheme.parse_version("2023.6.0.dev1")
-            with self.assertLogs("root", level="WARNING") as cm:
-                updated = cmd.update_version(new_version)
-                self.assertEqual(
-                    cm.output,
-                    [
-                        (
-                            f"WARNING:root:File {self.swagger_file} not "
-                            f"found in {swagger_search_path.resolve()}."
-                        )
-                    ],
-                )
-
-            self.assertEqual(
-                updated.previous,
-                PEP440VersioningScheme.parse_version("2023.5.3"),
+                updated_version_obj.new,
+                SemanticVersioningScheme.parse_version(new_version),
             )
             self.assertEqual(
-                updated.new,
-                PEP440VersioningScheme.parse_version("2023.6.0.dev1"),
+                updated_version_obj.changed_files, [Path("README.md")]
             )
-            self.assertEqual(updated.changed_files, [temp.resolve()])
 
-            with temp.open(mode="r", encoding="utf-8") as fp:
-                fake_pom = etree.parse(fp).getroot()
-
-            self.assertEqual(fake_pom.find("{*}version").text, "2023.6.0.dev1")
-
-    def test_no_update(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-        <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
-
-        with temp_file(content, name="pom.xml", change_into=True) as temp:
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            updated = cmd.update_version(
-                PEP440VersioningScheme.parse_version("2023.5.3")
+            content = readme_file_path.read_text(encoding="UTF-8")
+            self.assertEqual(
+                content,
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(new_version),
             )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+    def test_no_update_version(self):
+        with temp_directory(change_into=True):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
+                encoding="utf-8",
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            updated_version_obj = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(SemanticVersioningScheme.parse_version(version))
 
             self.assertEqual(
-                updated.previous,
-                PEP440VersioningScheme.parse_version("2023.5.3"),
+                updated_version_obj.previous,
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
-                updated.new, PEP440VersioningScheme.parse_version("2023.5.3")
+                updated_version_obj.new,
+                SemanticVersioningScheme.parse_version(version),
             )
-            self.assertEqual(updated.changed_files, [])
+            self.assertEqual(
+                updated_version_obj.changed_files,
+                [],
+            )
 
-            with temp.open(mode="r", encoding="utf-8") as fp:
-                fake_pom = etree.parse(fp).getroot()
+            content = readme_file_path.read_text(encoding="UTF-8")
+            self.assertEqual(
+                content,
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+            )
 
-            self.assertEqual(fake_pom.find("{*}version").text, "2023.5.3")
+            version_file_path.unlink()
+            readme_file_path.unlink()
 
-    def test_forced_update(self):
-        content = """<?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        <modelVersion>4.0.0</modelVersion><groupId>net.greenbone.umbrella</groupId>
-        <artifactId>msspadminservice</artifactId><version>2023.5.3</version></project>"""
+    def test_forced_update_version(self):
+        with temp_directory(change_into=True):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_SINGLE_JSON,
+                encoding="utf-8",
+            )
 
-        with temp_file(content, name="pom.xml", change_into=True) as temp:
-            cmd = JavaVersionCommand(PEP440VersioningScheme)
-            updated = cmd.update_version(
-                PEP440VersioningScheme.parse_version("2023.5.3"), force=True
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            updated_version_obj = JavaVersionCommand(
+                SemanticVersioningScheme
+            ).update_version(
+                SemanticVersioningScheme.parse_version(version), force=True
             )
 
             self.assertEqual(
-                updated.previous,
-                PEP440VersioningScheme.parse_version("2023.5.3"),
+                updated_version_obj.previous,
+                SemanticVersioningScheme.parse_version(version),
             )
             self.assertEqual(
-                updated.new, PEP440VersioningScheme.parse_version("2023.5.3")
+                updated_version_obj.new,
+                SemanticVersioningScheme.parse_version(version),
             )
-            self.assertEqual(updated.changed_files, [temp.resolve()])
+            self.assertEqual(
+                updated_version_obj.changed_files,
+                [Path("README.md")],
+            )
 
-            with temp.open(mode="r", encoding="utf-8") as fp:
-                fake_pom = etree.parse(fp).getroot()
+            content = readme_file_path.read_text(encoding="UTF-8")
+            self.assertEqual(
+                content,
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+            )
 
-            self.assertEqual(fake_pom.find("{*}version").text, "2023.5.3")
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+    def test_update_version_upgrade_config_with_wrong_line_number(self):
+        exp_err_msg = (
+            "Line has no version, "
+            "file:'README.md' "
+            "lineNo:4 "
+            "content:'\n'"
+        )
+        with temp_directory(change_into=True), self.assertRaisesRegex(
+            VersionError,
+            exp_err_msg,
+        ):
+            version_file_path = Path("upgradeVersion.json")
+            version_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON.substitute(LINE_NO="4"),
+                encoding="utf-8",
+            )
+
+            version = "2023.9.3"
+            readme_file_path = Path("README.md")
+            readme_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
+                encoding="utf-8",
+            )
+
+            new_version = "2023.9.4"
+            JavaVersionCommand(SemanticVersioningScheme).update_version(
+                SemanticVersioningScheme.parse_version(new_version)
+            )
+
+            version_file_path.unlink()
+            readme_file_path.unlink()
+
+
+class ProjectFileJavaVersionCommandTestCase(unittest.TestCase):
+    def test_project_file_not_found(self):
+        with temp_directory(change_into=True):
+            cmd = JavaVersionCommand(SemanticVersioningScheme)
+
+            self.assertFalse(cmd.project_found())
+
+    def test_project_file_found(self):
+        with temp_file(name="upgradeVersion.json", change_into=True):
+            cmd = JavaVersionCommand(SemanticVersioningScheme)
+
+            self.assertTrue(cmd.project_found())
