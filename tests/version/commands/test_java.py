@@ -28,6 +28,10 @@ TEMPLATE_UPGRADE_VERSION_JSON = """{
     {
       "path": "README.md",
       "line": 3
+    },
+    {
+      "path": "src/application.properties",
+      "line": 2
     }
   ]
 }
@@ -52,6 +56,10 @@ TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 ## starting the local 
 """
 
+TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES = """# application
+sentry.release={}
+server.port=8080
+"""
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
@@ -122,6 +130,11 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
                 TEMPLATE_UPGRADE_VERSION_MARKDOWN.format(version),
                 encoding="utf-8",
             )
+            properties_file_path = Path("src/application.properties")
+            properties_file_path.write_text(
+                TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(version),
+                encoding="latin-1",
+            )
 
             JavaVersionCommand(SemanticVersioningScheme).verify_version(
                 SemanticVersioningScheme.parse_version(version)
@@ -129,6 +142,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
 
             version_file_path.unlink()
             readme_file_path.unlink()
+            properties_file_path.unlink()
 
     def test_verify_version_does_not_match(self):
         exp_err_msg = (

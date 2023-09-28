@@ -85,7 +85,7 @@ class JavaVersionCommand(VersionCommand):
         changed_files: List[Path] = []
         for file_config in config["files"]:
             file_path = file_config["path"]
-            with open(Path.cwd() / file_path, "r") as input_file_handle:
+            with (Path.cwd() / file_path).open("r") as input_file_handle:
                 lines = input_file_handle.readlines()
                 line_number = file_config["line"]
                 version_line = lines[line_number - 1]
@@ -110,7 +110,7 @@ class JavaVersionCommand(VersionCommand):
                 changed_files.append(Path(file_config["path"]))
         return changed_files
 
-    def _load_config(self) -> Dict:
+    def _load_config(self) -> Dict[str, Any]:
         version_config_file = Path.cwd() / "upgradeVersion.json"
         if not version_config_file.exists():
             raise VersionError(
@@ -118,12 +118,12 @@ class JavaVersionCommand(VersionCommand):
                 "This file is required for pontos"
             )
 
-        with open(version_config_file, "r") as f:
+        with version_config_file.open("r") as f:
             json_string = f.read()
             config = json.loads(json_string)
             return config
 
-    def _read_versions_from_files(self) -> Dict:
+    def _read_versions_from_files(self) -> Dict[str, str]:
         config = self._load_config()
 
         file_versions = {}
@@ -133,7 +133,7 @@ class JavaVersionCommand(VersionCommand):
             if not file.exists():
                 raise VersionError(f"No {file} file found.")
 
-            with open(file, "r") as f:
+            with file.open("r") as f:
                 line_number = file_config["line"]
                 readlines = f.readlines()
                 if line_number - 1 > len(readlines):
@@ -154,7 +154,7 @@ class JavaVersionCommand(VersionCommand):
                 file_versions[file_path] = matches.group("version")
         return file_versions
 
-    def _verify_version(self, file_versions: Dict) -> str:
+    def _verify_version(self, file_versions: Dict[str, str]) -> str:
         last_version = ""
         last_file_name = ""
         for file_name, version in file_versions.items():
