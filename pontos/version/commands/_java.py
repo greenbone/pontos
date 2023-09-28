@@ -105,7 +105,7 @@ class JavaVersionCommand(VersionCommand):
                 )
 
                 content = "".join(lines)
-                with open(Path.cwd() / file_path, "w") as output_file_handle:
+                with (Path.cwd() / file_path).open("w") as output_file_handle:
                     output_file_handle.write(content)
                 changed_files.append(Path(file_config["path"]))
         return changed_files
