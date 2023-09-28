@@ -61,6 +61,7 @@ sentry.release={}
 server.port=8080
 """
 
+
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
         with temp_directory(change_into=True):
@@ -131,6 +132,7 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
                 encoding="utf-8",
             )
             properties_file_path = Path("src/application.properties")
+            properties_file_path.mkdir(parents=True, exist_ok=True)
             properties_file_path.write_text(
                 TEMPLATE_UPGRADE_VERSION_WITH_VERSION_PROPERTIES.format(
                     version
