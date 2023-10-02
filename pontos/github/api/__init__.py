@@ -19,6 +19,7 @@ from .api import GitHubAsyncRESTApi
 from .artifacts import GitHubAsyncRESTArtifacts
 from .branch import GitHubAsyncRESTBranches, update_from_applied_settings
 from .contents import GitHubAsyncRESTContent
+from .dependabot import GitHubAsyncRESTDependabot
 from .errors import GitHubApiError
 from .helper import (
     DEFAULT_GITHUB_API_URL,
@@ -47,6 +48,7 @@ __all__ = [
     "GitHubAsyncRESTArtifacts",
     "GitHubAsyncRESTBranches",
     "GitHubAsyncRESTContent",
+    "GitHubAsyncRESTDependabot",
     "GitHubAsyncRESTLabels",
     "GitHubAsyncRESTOrganizations",
     "GitHubAsyncRESTPullRequests",

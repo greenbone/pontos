@@ -25,6 +25,7 @@ from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.github.api.branch import GitHubAsyncRESTBranches
 from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.contents import GitHubAsyncRESTContent
+from pontos.github.api.dependabot import GitHubAsyncRESTDependabot
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
     DEFAULT_TIMEOUT_CONFIG,
@@ -98,6 +99,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Contents related API
         """
         return GitHubAsyncRESTContent(self._client)
+
+    @property
+    def dependabot(self) -> GitHubAsyncRESTDependabot:
+        """
+        Dependabot related API
+        """
+        return GitHubAsyncRESTDependabot(self._client)
 
     @property
     def labels(self) -> GitHubAsyncRESTLabels:
