@@ -27,6 +27,7 @@ __all__ = (
     "FileStatus",
     "GitHubModel",
     "Permission",
+    "SortOrder",
     "Team",
     "TeamPrivacy",
     "TeamRole",
@@ -306,3 +307,16 @@ class Event(Enum):
     WORKFLOW_CALL = "workflow_call"
     WORKFLOW_DISPATCH = "workflow_dispatch"
     WORKFLOW_RUN = "workflow_run"
+
+
+class SortOrder(Enum):
+    """
+    Sort order: asc or desc
+
+    Attributes:
+        ASC: Use ascending sort order
+        DESC: Use descending sort order
+    """
+
+    ASC = "asc"
+    DESC = "desc"

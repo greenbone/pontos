@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from abc import ABC
+from enum import Enum
+
+from .base import SortOrder
+
 __all__ = (
     "InDescriptionQualifier",
     "InNameQualifier",
@@ -30,22 +36,6 @@ __all__ = (
     "SortOrder",
     "UserQualifier",
 )
-
-from abc import ABC
-from enum import Enum
-
-
-class SortOrder(Enum):
-    """
-    Sort order: asc or desc
-
-    Attributes:
-        ASC: Use ascending sort order
-        DESC: Use descending sort order
-    """
-
-    ASC = "asc"
-    DESC = "desc"
 
 
 class RepositorySort(Enum):
