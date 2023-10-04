@@ -36,6 +36,7 @@ from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
 from pontos.github.api.release import GitHubAsyncRESTReleases
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
 from pontos.github.api.search import GitHubAsyncRESTSearch
+from pontos.github.api.secret_scanning import GitHubAsyncRESTSecretScanning
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
@@ -157,6 +158,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Repositories related API
         """
         return GitHubAsyncRESTRepositories(self._client)
+
+    @property
+    def secret_scanning(self) -> GitHubAsyncRESTSecretScanning:
+        """
+        Secret scanning related API
+        """
+        return GitHubAsyncRESTSecretScanning(self._client)
 
     @property
     def teams(self) -> GitHubAsyncRESTTeams:
