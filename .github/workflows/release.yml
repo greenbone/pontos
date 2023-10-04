@@ -1,4 +1,4 @@
-name: Release Python package with pontos
+name: Release
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-release:
-    name: Create a new release with pontos
+  release:
+    name: Pontos
     # If the event is a workflow_dispatch or the label 'make release' is set and PR is closed because of a merge
     if: (github.event_name == 'workflow_dispatch') || (contains( github.event.pull_request.labels.*.name, 'make release') && github.event.pull_request.merged == true)
     runs-on: "ubuntu-latest"
