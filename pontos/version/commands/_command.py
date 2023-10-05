@@ -29,7 +29,9 @@ class VersionCommand(ABC):
 
     project_file_name: str
 
-    def __init__(self, versioning_scheme: VersioningScheme) -> None:
+    def __init__(
+        self, versioning_scheme: Union[VersioningScheme, type[VersioningScheme]]
+    ) -> None:
         self.project_file_path = Path.cwd() / self.project_file_name
         self.versioning_scheme = versioning_scheme
 

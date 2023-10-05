@@ -19,10 +19,10 @@
 
 import unittest
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Optional, Union
+from typing import Iterable, Iterator, Optional, Union
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
@@ -55,8 +55,8 @@ def str_or_list(values: Union[str, Iterable[str]]) -> Iterable[str]:
 
 @contextmanager
 def setup_go_project(
-    *, current_version: str, tags: Union[str, Iterable[str]] = None
-) -> Path:
+    *, current_version: str, tags: Union[str, Iterable[str], None] = None
+) -> Iterator[Path]:
     with temp_git_repository() as tmp_git:
         git = Git(tmp_git)
 
@@ -182,12 +182,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -212,7 +212,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -230,12 +230,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -288,12 +288,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -316,7 +316,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -334,12 +334,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -392,12 +392,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -422,7 +422,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -439,12 +439,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -498,12 +498,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -526,7 +526,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -544,12 +544,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -604,12 +604,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -634,7 +634,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -651,12 +651,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -709,12 +709,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -739,7 +739,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -756,12 +756,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -814,12 +814,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -842,7 +842,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -859,12 +859,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -919,12 +919,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -947,7 +947,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -964,12 +964,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -1024,12 +1024,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -1052,7 +1052,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1069,12 +1069,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -1143,7 +1143,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         self.assertEqual(
@@ -1194,7 +1194,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1205,7 +1205,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
@@ -1261,7 +1261,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         self.assertEqual(
@@ -1299,7 +1299,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         self.assertEqual(released, CreateReleaseReturnValue.NO_RELEASE_VERSION)
@@ -1329,7 +1329,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             released = create_release(
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
-                token=token,
+                token=token,  # type: ignore[arg-type]
                 args=args,
             )
 
@@ -1375,7 +1375,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_mock.return_value.push.assert_not_called()
@@ -1423,12 +1423,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -1459,7 +1459,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         self.assertEqual(
@@ -1469,7 +1469,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         git_instance_mock.push.assert_called_once_with(
             follow_tags=True, remote=None
         )
-        git_instance_mock.add.assert_called_once_with("MyProject.conf")
+        git_instance_mock.add.assert_called_once_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_once_with(
             "Automatic release to 0.0.1", verify=False, gpg_signing_key="1234"
         )
@@ -1478,7 +1478,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
@@ -1512,7 +1512,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionError("An error"),
         ]
@@ -1538,7 +1538,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_called_once_with(
@@ -1553,11 +1553,11 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
-        git_instance_mock.add.assert_called_once_with("MyProject.conf")
+        git_instance_mock.add.assert_called_once_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_once_with(
             "Automatic release to 0.0.1", verify=False, gpg_signing_key="1234"
         )
@@ -1599,12 +1599,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -1634,7 +1634,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1645,7 +1645,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
@@ -1656,7 +1656,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
@@ -1698,12 +1698,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -1731,7 +1731,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1742,7 +1742,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
@@ -1753,7 +1753,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
@@ -1792,12 +1792,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -1829,7 +1829,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1854,7 +1854,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
@@ -1893,12 +1893,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -1930,7 +1930,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -1955,7 +1955,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             ],
         )
 
-        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.1a1+dev1\n",
@@ -2001,7 +2001,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
@@ -2021,7 +2021,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", False),
         )
 
@@ -2053,12 +2053,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["project.conf"],
+                changed_files=[Path("project.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["project.conf", "version.lang"],
+                changed_files=[Path("project.conf"), Path("version.lang")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -2110,7 +2110,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.list_tags.assert_called_once_with()
@@ -2134,7 +2134,7 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", expected_changelog, False),
         )
 
@@ -2142,7 +2142,11 @@ class CreateReleaseTestCase(unittest.TestCase):
             "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
         )
         git_instance_mock.add.assert_has_calls(
-            [call("project.conf"), call("project.conf"), call("version.lang")]
+            [
+                call(Path("project.conf")),
+                call(Path("project.conf")),
+                call(Path("version.lang")),
+            ]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -2191,12 +2195,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         create_changelog_mock.return_value = "A Changelog"
@@ -2223,7 +2227,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_not_called()
@@ -2237,7 +2241,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             ]
         )
 
-        git_instance_mock.add.assert_called_with("MyProject.conf")
+        git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
             "Automatic adjustments after release\n\n"
             "* Update to version 0.0.2.dev1\n",
@@ -2280,12 +2284,12 @@ class CreateReleaseTestCase(unittest.TestCase):
             VersionUpdate(
                 previous=current_version,
                 new=release_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
             VersionUpdate(
                 previous=release_version,
                 new=next_version,
-                changed_files=["MyProject.conf"],
+                changed_files=[Path("MyProject.conf")],
             ),
         ]
         git_instance_mock: MagicMock = git_mock.return_value
@@ -2311,7 +2315,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                 terminal=mock_terminal(),
                 error_terminal=mock_terminal(),
                 args=args,
-                token=token,
+                token=token,  # type: ignore[arg-type]
             )
 
         git_instance_mock.push.assert_has_calls(
@@ -2328,12 +2332,12 @@ class CreateReleaseTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            create_release_mock.await_args.args[1:],
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
             (release_version, "foo", "A Changelog", True),
         )
 
         git_instance_mock.add.assert_has_calls(
-            [call("MyProject.conf"), call("MyProject.conf")]
+            [call(Path("MyProject.conf")), call(Path("MyProject.conf"))]
         )
         git_instance_mock.commit.assert_has_calls(
             [
@@ -2360,10 +2364,10 @@ class CreateReleaseTestCase(unittest.TestCase):
 @dataclass
 class Release:
     release_type: str
+    current_version: str
     expected_release_version: str
-    tags: list[str] = field(default_factory=list)
+    tags: Union[str, list[str]]
     expected_last_release_version: Optional[str] = None
-    current_version: Optional[str] = None
     release_series: Optional[str] = None
 
 
@@ -2457,7 +2461,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                     terminal=mock_terminal(),
                     error_terminal=mock_terminal(),
                     args=args,
-                    token=token,
+                    token=token,  # type: ignore[arg-type]
                 )
 
             self.assertEqual(
@@ -2626,7 +2630,7 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                     terminal=mock_terminal(),
                     error_terminal=mock_terminal(),
                     args=args,
-                    token=token,
+                    token=token,  # type: ignore[arg-type]
                 )
 
             self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
