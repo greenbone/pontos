@@ -65,6 +65,7 @@ class CreateParseArgsTestCase(unittest.TestCase):
         self.assertEqual(args.git_tag_prefix, "v")
         self.assertEqual(args.space, "greenbone")
         self.assertFalse(args.local)
+        self.assertFalse(args.github_pre_release)
 
     def test_git_remote_name(self):
         _, _, args = parse_args(
@@ -247,6 +248,13 @@ class CreateParseArgsTestCase(unittest.TestCase):
         )
 
         self.assertFalse(args.update_project)
+
+    def test_github_pre_release(self):
+        _, _, args = parse_args(
+            ["create", "--release-type", "patch", "--github-pre-release"]
+        )
+
+        self.assertTrue(args.github_pre_release)
 
 
 class SignParseArgsTestCase(unittest.TestCase):
