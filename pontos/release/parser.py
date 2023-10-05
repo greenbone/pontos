@@ -176,6 +176,11 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         action=BooleanOptionalAction,
         default=True,
     )
+    create_parser.add_argument(
+        "--github-pre-release",
+        help="Enforce uploading a release as GitHub " "pre-release. ",
+        action="store_true",
+    )
 
     sign_parser = subparsers.add_parser(
         "sign", help="Create signatures for an existing release"
