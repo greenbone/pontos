@@ -123,12 +123,21 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         'released version. Examples: "1.2", "2", "22.4"',
     )
 
-    create_parser.add_argument(
+    next_version_group = create_parser.add_mutually_exclusive_group()
+
+    next_version_group.add_argument(
         "--next-version",
         help=(
             "Sets the next version in project definition "
             "after the release. Default: set to next dev version"
         ),
+    )
+
+    next_version_group.add_argument(
+        "--no-next-version",
+        help="Don't set a next version after the release.",
+        dest="next_version",
+        action="store_false",
     )
 
     create_parser.add_argument(

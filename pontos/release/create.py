@@ -20,7 +20,7 @@ from argparse import Namespace
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Optional, SupportsInt
+from typing import Literal, Optional, SupportsInt, Union
 
 import httpx
 
@@ -49,7 +49,7 @@ class ReleaseInformation:
     last_release_version: Optional[Version]
     release_version: Version
     git_release_tag: str
-    next_version: Version
+    next_version: Optional[Version]
 
     def write_github_output(self):
         with ActionIO.out() as output:
@@ -58,7 +58,7 @@ class ReleaseInformation:
             )
             output.write("release-version", self.release_version)
             output.write("git-release-tag", self.git_release_tag)
-            output.write("next-version", self.next_version)
+            output.write("next-version", self.next_version or "")
 
 
 class CreateReleaseReturnValue(IntEnum):
@@ -142,7 +142,7 @@ class CreateReleaseCommand(AsyncCommand):
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
         release_version: Optional[Version],
-        next_version: Optional[Version],
+        next_version: Union[Version, Literal[False], None],
         git_signing_key: str,
         git_remote_name: Optional[str],
         git_tag_prefix: Optional[str],
@@ -170,7 +170,9 @@ class CreateReleaseCommand(AsyncCommand):
             release_version: Optional release version to use. If not set the
                 to be released version will be determined from the project.
             next_version: Optional version to set after the release.
-                If not set the next development version will be set.
+                If set to None the next development version will be set.
+                If set to False the version will not be changed after the
+                release. Default is to update to the next development version.
             git_signing_key: A GPG key ID to use for creating signatures.
             git_remote_name: Name of the git remote to use.
             git_tag_prefix: An optional prefix to use for creating a git tag
@@ -315,49 +317,50 @@ class CreateReleaseCommand(AsyncCommand):
                 self.print_error(str(e))
                 return CreateReleaseReturnValue.CREATE_RELEASE_ERROR
 
-        if not next_version:
+        if next_version is None:
             next_version = calculator.next_dev_version(release_version)
 
-        if update_project:
-            try:
-                updated = project.update_version(next_version)
-                self.terminal.ok(
-                    f"Updated version after release to {next_version}"
-                )
-            except VersionError as e:
-                self.print_error(
-                    f"Error while updating version after release. {e}"
-                )
-                return (
-                    CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
-                )
+        if next_version:
+            if update_project:
+                try:
+                    updated = project.update_version(next_version)
+                    self.terminal.ok(
+                        f"Updated version after release to {next_version}"
+                    )
+                except VersionError as e:
+                    self.print_error(
+                        f"Error while updating version after release. {e}"
+                    )
+                    return (
+                        CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
+                    )
 
-            for f in updated.changed_files:
-                self.terminal.info(f"Adding changes of {f}")
-                self.git.add(f)
+                for f in updated.changed_files:
+                    self.terminal.info(f"Adding changes of {f}")
+                    self.git.add(f)
 
-        # check if files have been modified and create a commit
-        status = list(self.git.status())
-        if status:
-            commit_msg = f"""Automatic adjustments after release
+            # check if files have been modified and create a commit
+            status = list(self.git.status())
+            if status:
+                commit_msg = f"""Automatic adjustments after release
 
 * Update to version {next_version}
 """
 
-            self.terminal.info("Committing changes after release")
-            self.git.commit(
-                commit_msg, verify=False, gpg_signing_key=git_signing_key
-            )
+                self.terminal.info("Committing changes after release")
+                self.git.commit(
+                    commit_msg, verify=False, gpg_signing_key=git_signing_key
+                )
 
-        if not local:
-            self.terminal.info("Pushing changes")
-            self.git.push(follow_tags=True, remote=git_remote_name)
+            if not local:
+                self.terminal.info("Pushing changes")
+                self.git.push(follow_tags=True, remote=git_remote_name)
 
         self.release_information = ReleaseInformation(
             last_release_version=last_release_version,
             release_version=release_version,
             git_release_tag=git_version,
-            next_version=next_version,
+            next_version=next_version or None,
         )
         if ActionIO.has_output():
             self.release_information.write_github_output()
