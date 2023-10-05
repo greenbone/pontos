@@ -114,7 +114,11 @@ class CreateReleaseCommand(AsyncCommand):
         )
 
     async def _create_release(
-        self, release_version: Version, token: str, release_text: str
+        self,
+        release_version: Version,
+        token: str,
+        release_text: str,
+        github_pre_release: bool,
     ) -> None:
         github = GitHubAsyncRESTApi(token=token)
 
@@ -126,7 +130,7 @@ class CreateReleaseCommand(AsyncCommand):
             git_version,
             name=f"{self.project} {release_version}",
             body=release_text,
-            prerelease=release_version.is_pre_release,
+            prerelease=release_version.is_pre_release or github_pre_release,
         )
 
     async def async_run(  # type: ignore[override]
@@ -146,6 +150,7 @@ class CreateReleaseCommand(AsyncCommand):
         local: Optional[bool] = False,
         release_series: Optional[str] = None,
         update_project: bool = True,
+        github_pre_release: bool = False,
     ) -> CreateReleaseReturnValue:
         """
         Create a release
@@ -177,6 +182,8 @@ class CreateReleaseCommand(AsyncCommand):
             release_series: Optional release series to use.
                 For example: "1.2", "2", "23".
             update_project: Update version in project files.
+            github_pre_release: Enforce uploading a release as a GitHub pre
+                release
         """
         git_signing_key = (
             git_signing_key
@@ -296,7 +303,12 @@ class CreateReleaseCommand(AsyncCommand):
             try:
                 self.terminal.info(f"Creating release for {release_version}")
 
-                await self._create_release(release_version, token, release_text)
+                await self._create_release(
+                    release_version,
+                    token,
+                    release_text,
+                    github_pre_release,
+                )
 
                 self.terminal.ok(f"Created release {release_version}")
             except httpx.HTTPStatusError as e:
@@ -385,4 +397,5 @@ def create_release(
         local=args.local,
         release_series=args.release_series,
         update_project=args.update_project,
+        github_pre_release=args.github_pre_release,
     )

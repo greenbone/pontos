@@ -19,7 +19,15 @@ import subprocess
 from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
-from typing import Collection, Iterable, Iterator, List, Optional, Union
+from typing import (
+    Collection,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from pontos.errors import PontosError
 from pontos.git.status import StatusEntry, parse_git_status
@@ -384,7 +392,7 @@ class Git:
 
     def add(
         self,
-        files: Union[str, PathLike[str], list[Union[PathLike[str], str]]],
+        files: Union[str, PathLike[str], Sequence[Union[PathLike[str], str]]],
     ) -> None:
         """
         Add files to the git staging area

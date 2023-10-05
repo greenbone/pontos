@@ -48,114 +48,120 @@ class ParseArgsTestCase(unittest.TestCase):
         self.assertEqual(token, "foo")
 
 
-class ReleaseParseArgsTestCase(unittest.TestCase):
-    def test_release_func(self):
+class CreateParseArgsTestCase(unittest.TestCase):
+    def test_create_func(self):
+        _, _, args = parse_args(["create", "--release-type", "patch"])
+
+        self.assertEqual(args.func, create_release)
+
+    def test_release_alias(self):
         _, _, args = parse_args(["release", "--release-type", "patch"])
 
         self.assertEqual(args.func, create_release)
 
     def test_default(self):
-        _, _, args = parse_args(["release", "--release-type", "patch"])
+        _, _, args = parse_args(["create", "--release-type", "patch"])
 
         self.assertEqual(args.git_tag_prefix, "v")
         self.assertEqual(args.space, "greenbone")
         self.assertFalse(args.local)
+        self.assertFalse(args.github_pre_release)
 
     def test_git_remote_name(self):
         _, _, args = parse_args(
-            ["release", "--git-remote-name", "foo", "--release-type", "patch"]
+            ["create", "--git-remote-name", "foo", "--release-type", "patch"]
         )
 
         self.assertEqual(args.git_remote_name, "foo")
 
     def test_git_signing_key(self):
         _, _, args = parse_args(
-            ["release", "--git-signing-key", "123", "--release-type", "patch"]
+            ["create", "--git-signing-key", "123", "--release-type", "patch"]
         )
 
         self.assertEqual(args.git_signing_key, "123")
 
     def test_git_tag_prefix(self):
         _, _, args = parse_args(
-            ["release", "--git-tag-prefix", "a", "--release-type", "patch"]
+            ["create", "--git-tag-prefix", "a", "--release-type", "patch"]
         )
 
         self.assertEqual(args.git_tag_prefix, "a")
 
         _, _, args = parse_args(
-            ["release", "--git-tag-prefix", "", "--release-type", "patch"]
+            ["create", "--git-tag-prefix", "", "--release-type", "patch"]
         )
 
         self.assertEqual(args.git_tag_prefix, "")
 
         _, _, args = parse_args(
-            ["release", "--git-tag-prefix", "--release-type", "patch"]
+            ["create", "--git-tag-prefix", "--release-type", "patch"]
         )
 
         self.assertEqual(args.git_tag_prefix, "")
 
     def test_space(self):
         _, _, args = parse_args(
-            ["release", "--space", "foo", "--release-type", "patch"]
+            ["create", "--space", "foo", "--release-type", "patch"]
         )
 
         self.assertEqual(args.space, "foo")
 
     def test_project(self):
         _, _, args = parse_args(
-            ["release", "--project", "foo", "--release-type", "patch"]
+            ["create", "--project", "foo", "--release-type", "patch"]
         )
 
         self.assertEqual(args.project, "foo")
 
     def test_next_version(self):
         _, _, args = parse_args(
-            ["release", "--next-version", "1.2.3", "--release-type", "patch"]
+            ["create", "--next-version", "1.2.3", "--release-type", "patch"]
         )
 
         self.assertEqual(args.next_version, PEP440Version("1.2.3"))
 
     def test_release_type(self):
-        _, _, args = parse_args(["release", "--release-type", "patch"])
+        _, _, args = parse_args(["create", "--release-type", "patch"])
 
         self.assertEqual(args.release_type, ReleaseType.PATCH)
 
-        _, _, args = parse_args(["release", "--release-type", "calendar"])
+        _, _, args = parse_args(["create", "--release-type", "calendar"])
 
         self.assertEqual(args.release_type, ReleaseType.CALENDAR)
 
-        _, _, args = parse_args(["release", "--release-type", "minor"])
+        _, _, args = parse_args(["create", "--release-type", "minor"])
 
         self.assertEqual(args.release_type, ReleaseType.MINOR)
 
-        _, _, args = parse_args(["release", "--release-type", "major"])
+        _, _, args = parse_args(["create", "--release-type", "major"])
 
         self.assertEqual(args.release_type, ReleaseType.MAJOR)
 
-        _, _, args = parse_args(["release", "--release-type", "alpha"])
+        _, _, args = parse_args(["create", "--release-type", "alpha"])
 
         self.assertEqual(args.release_type, ReleaseType.ALPHA)
 
-        _, _, args = parse_args(["release", "--release-type", "beta"])
+        _, _, args = parse_args(["create", "--release-type", "beta"])
 
         self.assertEqual(args.release_type, ReleaseType.BETA)
 
         _, _, args = parse_args(
-            ["release", "--release-type", "release-candidate"]
+            ["create", "--release-type", "release-candidate"]
         )
 
         self.assertEqual(args.release_type, ReleaseType.RELEASE_CANDIDATE)
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            parse_args(["release", "--release-type", "foo"])
+            parse_args(["create", "--release-type", "foo"])
 
     def test_release_type_version_without_release_version(self):
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            parse_args(["release", "--release-type", "version"])
+            parse_args(["create", "--release-type", "version"])
 
         _, _, args = parse_args(
             [
-                "release",
+                "create",
                 "--release-type",
                 "version",
                 "--release-version",
@@ -166,21 +172,21 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
         self.assertEqual(args.release_version, PEP440Version("1.2.3"))
 
     def test_release_version(self):
-        _, _, args = parse_args(["release", "--release-version", "1.2.3"])
+        _, _, args = parse_args(["create", "--release-version", "1.2.3"])
 
         self.assertEqual(args.release_version, PEP440Version("1.2.3"))
         self.assertEqual(args.release_type, ReleaseType.VERSION)
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            parse_args(["release", "--release-version", "1.2.3", "--patch"])
+            parse_args(["create", "--release-version", "1.2.3", "--patch"])
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
-            parse_args(["release", "--release-version", "1.2.3", "--calendar"])
+            parse_args(["create", "--release-version", "1.2.3", "--calendar"])
 
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
             parse_args(
                 [
-                    "release",
+                    "create",
                     "--release-version",
                     "1.2.3",
                     "--release-type",
@@ -191,7 +197,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
             parse_args(
                 [
-                    "release",
+                    "create",
                     "--release-version",
                     "1.2.3",
                     "--release-type",
@@ -201,7 +207,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
     def test_local(self):
         _, _, args = parse_args(
-            ["release", "--local", "--release-type", "patch"]
+            ["create", "--local", "--release-type", "patch"]
         )
 
         self.assertTrue(args.local)
@@ -209,7 +215,7 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
     def test_conventional_commits_config(self):
         _, _, args = parse_args(
             [
-                "release",
+                "create",
                 "--conventional-commits-config",
                 "foo.toml",
                 "--release-type",
@@ -221,27 +227,34 @@ class ReleaseParseArgsTestCase(unittest.TestCase):
 
     def test_release_series(self):
         _, _, args = parse_args(
-            ["release", "--release-type", "patch", "--release-series", "22.4"]
+            ["create", "--release-type", "patch", "--release-series", "22.4"]
         )
 
         self.assertEqual(args.release_series, "22.4")
 
     def test_update_project(self):
-        _, _, args = parse_args(["release", "--release-type", "patch"])
+        _, _, args = parse_args(["create", "--release-type", "patch"])
 
         self.assertTrue(args.update_project)
 
         _, _, args = parse_args(
-            ["release", "--release-type", "patch", "--update-project"]
+            ["create", "--release-type", "patch", "--update-project"]
         )
 
         self.assertTrue(args.update_project)
 
         _, _, args = parse_args(
-            ["release", "--release-type", "patch", "--no-update-project"]
+            ["create", "--release-type", "patch", "--no-update-project"]
         )
 
         self.assertFalse(args.update_project)
+
+    def test_github_pre_release(self):
+        _, _, args = parse_args(
+            ["create", "--release-type", "patch", "--github-pre-release"]
+        )
+
+        self.assertTrue(args.github_pre_release)
 
 
 class SignParseArgsTestCase(unittest.TestCase):
