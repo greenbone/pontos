@@ -121,6 +121,26 @@ class CreateParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.next_version, PEP440Version("1.2.3"))
 
+    def test_no_next_version(self):
+        _, _, args = parse_args(
+            ["create", "--no-next-version", "--release-type", "patch"]
+        )
+
+        self.assertFalse(args.next_version)
+
+    def test_next_version_conflict(self):
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "create",
+                    "--release-type",
+                    "patch",
+                    "--no-next-version",
+                    "--next-verson",
+                    "1.2.3",
+                ]
+            )
+
     def test_release_type(self):
         _, _, args = parse_args(["create", "--release-type", "patch"])
 
