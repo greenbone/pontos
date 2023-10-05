@@ -187,7 +187,7 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
     )
     create_parser.add_argument(
         "--github-pre-release",
-        help="Enforce uploading a release as GitHub " "pre-release. ",
+        help="Enforce uploading a release as GitHub pre-release. ",
         action="store_true",
     )
 
