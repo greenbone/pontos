@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import re
 import unittest
 from pathlib import Path
 from string import Template
@@ -71,6 +72,43 @@ sentry.release={}
 server.port=8080
 """
 
+class VerifyJavaVersionParsingTestCase(unittest.TestCase):
+    def test_version_parsing(self):
+        versions = {
+            "2023.12.10",
+            "2023.1.1",
+            "2023.10.1",
+            "2023.1.99",
+            "0.0.1",
+            "1.2.3-a1",
+            "1.2.3-alpha1",
+            "1.2.3-alpha1-dev1",
+            "1.2.3-b1",
+            "1.2.3-beta1",
+            "1.2.3-beta1-dev1",
+            "1.2.3-rc1",
+            "1.2.3-rc1-dev1",
+            "1.2.3-dev1",
+            "22.4.1",
+            "22.4.1-dev1",
+            "0.5.0.dev1",
+            "1.0.0-dev1",
+            "1.0.0-alpha1",
+            "1.0.0-alpha1-dev1",
+            "1.0.0-beta1",
+            "1.0.0-beta1-dev1",
+            "1.0.0-rc1",
+            "1.0.0-rc1-dev1",
+        }
+        for version in versions:
+            with self.subTest(version=version):
+                matches = JavaVersionCommand(
+                    SemanticVersioningScheme
+                ).parse_line(f"pre{version}post")
+
+                self.assertEqual(matches.group("pre"), "pre")
+                self.assertEqual(matches.group("version"), version)
+                self.assertEqual(matches.group("post"), "post")
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
