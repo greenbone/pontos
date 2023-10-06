@@ -24,6 +24,7 @@ from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
 
+
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
     VERSION_PATTERN = (

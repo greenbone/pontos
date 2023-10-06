@@ -72,6 +72,7 @@ sentry.release={}
 server.port=8080
 """
 
+
 class VerifyJavaVersionParsingTestCase(unittest.TestCase):
     def test_version_parsing(self):
         versions = {
@@ -109,6 +110,7 @@ class VerifyJavaVersionParsingTestCase(unittest.TestCase):
                 self.assertEqual(matches.group("pre"), "pre")
                 self.assertEqual(matches.group("version"), version)
                 self.assertEqual(matches.group("post"), "post")
+
 
 class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
     def test_getting_version(self):
