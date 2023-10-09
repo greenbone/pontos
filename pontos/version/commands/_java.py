@@ -24,16 +24,18 @@ from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
 
-VERSION_PATTERN = (
-    r"^(?P<pre>.*[^\d])"
-    r"(?P<version>\d+\.\d+\.\d+"
-    r"(-?([ab]|rc|alpha|beta)\d+(.dev\d+)?)?)"
-    r"(?P<post>.*$)"
-)
-
 
 # This class is used for Java Version command(s)
 class JavaVersionCommand(VersionCommand):
+    VERSION_PATTERN = (
+        r"^(?P<pre>.*[^\d])?"
+        r"("
+        r"?P<version>\d+\.\d+\.\d+"
+        r"([-\.]+(dev|rc|beta|a|alpha|b)\d+)*"
+        r")"
+        r"(?P<post>.*$)"
+    )
+
     project_file_name = "upgradeVersion.json"
 
     def get_current_version(self) -> Version:
@@ -79,6 +81,9 @@ class JavaVersionCommand(VersionCommand):
             changed_files=changed_files,
         )
 
+    def parse_line(self, version_line: str):
+        return re.match(self.VERSION_PATTERN, version_line, re.DOTALL)
+
     def _update_version_files(self, new_version) -> List[Path]:
         config = self._load_config()
 
@@ -90,7 +95,7 @@ class JavaVersionCommand(VersionCommand):
                 line_number = file_config["line"]
                 version_line = lines[line_number - 1]
 
-                matches = re.match(VERSION_PATTERN, version_line, re.DOTALL)
+                matches = self.parse_line(version_line)
                 if matches is None:
                     raise VersionError(
                         f"Line has no version, "
@@ -143,7 +148,7 @@ class JavaVersionCommand(VersionCommand):
                         f"file:'{file_path}'"
                     )
                 version_line = readlines[line_number - 1]
-                matches = re.match(VERSION_PATTERN, version_line, re.DOTALL)
+                matches = self.parse_line(version_line)
                 if matches is None:
                     raise VersionError(
                         f"Line has no version, "
