@@ -710,6 +710,39 @@ class GitHubAsyncRESTSecretScanningTestCase(GitHubAsyncRESTTestCase):
             },
         )
 
+    async def test_alert(self):
+        response = create_response()
+        response.json.return_value = {
+            "number": 42,
+            "created_at": "2020-11-06T18:18:30Z",
+            "url": "https://api.github.com/repos/owner/private-repo/secret-scanning/alerts/42",
+            "html_url": "https://github.com/owner/private-repo/security/secret-scanning/42",
+            "locations_url": "https://api.github.com/repos/owner/private-repo/secret-scanning/alerts/42/locations",
+            "state": "open",
+            "resolution": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "secret_type": "mailchimp_api_key",
+            "secret_type_display_name": "Mailchimp API Key",
+            "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-us2",
+            "push_protection_bypassed_by": None,
+            "push_protection_bypassed": False,
+            "push_protection_bypassed_at": None,
+            "resolution_comment": None,
+        }
+        self.client.get.return_value = response
+
+        alert = await self.api.alert(
+            "foo/bar",
+            42,
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/secret-scanning/alerts/42",
+        )
+
+        self.assertEqual(alert.number, 42)
+
     async def test_update(self):
         response = create_response()
         response.json.return_value = {
