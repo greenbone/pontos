@@ -227,7 +227,7 @@ ALERTS = [
 ]
 
 
-class GitHubAsyncRESTDependabotTestCase(GitHubAsyncRESTTestCase):
+class GitHubAsyncRESTSecretScanningTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTSecretScanning
 
     async def test_enterprise_alerts(self):
