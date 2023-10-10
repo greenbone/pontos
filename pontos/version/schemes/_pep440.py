@@ -182,10 +182,10 @@ class PEP440Version(Version):
                 )
         elif version.is_pre_release:
             new_version = cls.from_string(
-                f"{version.major}."  # type: ignore[index]
+                f"{version.major}."
                 f"{version.minor}."
                 f"{version.patch}"
-                f"-{version.pre[0]}{version.pre[1]}"
+                f"-{version.pre[0]}{version.pre[1]}"  # type: ignore[index]
                 f"{version_local}"
             )
         else:
@@ -251,19 +251,19 @@ class PEP440VersionCalculator(VersionCalculator):
                     f"{current_version.major}."  # type: ignore[operator]
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"-{current_version.pre[0]}{current_version.pre[1]}"
-                    f".dev{current_version.dev + 1}"
+                    f"-{current_version.pre[0]}{current_version.pre[1]}"  # type: ignore[index] # noqa: E501
+                    f".dev{current_version.dev + 1}"  # type: ignore[operator]
                 )
             return cls.version_from_string(
                 f"{current_version.major}."  # type: ignore[operator]
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f".dev{current_version.dev + 1}"
+                f".dev{current_version.dev + 1}"  # type: ignore[operator]
             )
 
         if current_version.is_pre_release:
             return cls.version_from_string(
-                f"{current_version.major}."  # type: ignore[index]
+                f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
                 f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"  # type: ignore[index] # noqa: E501
