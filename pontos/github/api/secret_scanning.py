@@ -147,7 +147,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
 
                 async with GitHubAsyncRESTApi(token) as api:
                     async for alert in api.secret_scanning.organization_alerts(
-                        "my-enterprise"
+                        "my-org"
                     ):
                         print(alert)
         """
@@ -202,7 +202,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
 
                 async with GitHubAsyncRESTApi(token) as api:
                     async for alert in api.secret_scanning.alerts(
-                        "my-enterprise"
+                        "my-org/my-repo"
                     ):
                         print(alert)
         """
@@ -288,12 +288,18 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             .. code-block:: python
 
                 from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models.secret_scanning import (
+                    AlertState,
+                    Resolution,
+                )
 
                 async with GitHubAsyncRESTApi(token) as api:
-                    alert = await api.dependabot.update(
+                    alert = await api.secret_scanning.update_alert(
                         "foo/bar",
                         123,
                         AlertState.RESOLVED,
+                        resolution=Resolution.WONT_FIX,
+                        resolution_comment="Not applicable",
                     )
         """
         api = f"/repos/{repo}/secret-scanning/alerts/{alert_number}"
