@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Greenbone AG
+# SPDX-FileCopyrightText: 2020-2023 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -18,11 +18,11 @@
 import json
 import re
 from pathlib import Path
-from typing import Literal, Union, Dict, List, Any
+from typing import Any, Dict, List, Literal, Union
 
-from ._command import VersionCommand
 from ..errors import VersionError
 from ..version import Version, VersionUpdate
+from ._command import VersionCommand
 
 
 # This class is used for Java Version command(s)
