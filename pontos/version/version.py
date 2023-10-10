@@ -18,7 +18,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 
 class Version(ABC):
@@ -68,7 +68,7 @@ class Version(ABC):
 
     @property
     @abstractmethod
-    def pre(self) -> Optional[Tuple[str, int]]:
+    def pre(self) -> Optional[tuple[str, int]]:
         """The pre-release segment of the version."""
 
     @property
@@ -78,7 +78,7 @@ class Version(ABC):
 
     @property
     @abstractmethod
-    def local(self) -> Optional[Tuple[str, int]]:
+    def local(self) -> Optional[tuple[str, int]]:
         """The local version segment of the version."""
 
     @property
