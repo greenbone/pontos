@@ -18,7 +18,16 @@
 
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Any, AsyncContextManager, AsyncIterator, Dict, Optional, Type
+from typing import (
+    Any,
+    AsyncContextManager,
+    AsyncIterator,
+    Dict,
+    Mapping,
+    Optional,
+    Type,
+    Union,
+)
 
 import httpx
 
@@ -31,8 +40,9 @@ from pontos.github.api.helper import (
 )
 from pontos.github.models.base import GitHubModel
 
-Headers = Dict[str, str]
-Params = Dict[str, str]
+Headers = Mapping[str, str]
+ParamValue = Union[str, None]
+Params = Mapping[str, ParamValue]
 
 # supported GitHub API version
 # https://docs.github.com/en/rest/overview/api-versions
@@ -303,12 +313,12 @@ class GitHubAsyncREST:
         Internal method to get the paged items information from different REST
         URLs.
         """
-        if not params:
-            params = {}
+        request_params: dict[str, ParamValue] = {}
+        if params:
+            request_params.update(params)
+        request_params["per_page"] = "100"  # max number
 
-        params["per_page"] = "100"  # max number
-
-        async for response in self._client.get_all(api, params=params):
+        async for response in self._client.get_all(api, params=request_params):
             response.raise_for_status()
             data: JSON_OBJECT = response.json()
             for item in data.get(name, []):  # type: ignore
