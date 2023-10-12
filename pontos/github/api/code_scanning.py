@@ -9,6 +9,7 @@ from pontos.github.models.base import SortOrder
 from pontos.github.models.code_scanning import (
     AlertSort,
     AlertState,
+    Analysis,
     CodeScanningAlert,
     DismissedReason,
     Instance,
@@ -309,3 +310,148 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         async for response in self._client.get_all(api, params=params):
             for alert in response.json():
                 yield Instance.from_dict(alert)
+
+    async def analyses(
+        self,
+        repo: str,
+        *,
+        tool_name: Optional[str] = None,
+        tool_guid: Optional[str] = "",
+        ref: Optional[str] = None,
+        sarif_id: Optional[str] = None,
+        direction: Union[str, SortOrder] = SortOrder.DESC,
+    ) -> AsyncIterator[Analysis]:
+        """
+        Lists the details of all code scanning analyses for a repository,
+        starting with the most recent.
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#list-code-scanning-analyses-for-a-repository
+
+        Args:
+            repo: GitHub repository (owner/name)
+            tool_name: The name of a code scanning tool. Only results by this
+                tool will be listed. You can specify the tool by using either
+                tool_name or tool_guid, but not both.
+            tool_guid: The GUID of a code scanning tool. Only results by this
+                tool will be listed. Note that some code scanning tools may not
+                include a GUID in their analysis data. You can specify the tool
+                by using either tool_guid or tool_name, but not both
+            ref: The Git reference for the analyses you want to list. The ref
+                for a branch can be formatted either as refs/heads/<branch name>
+                or simply <branch name>. To reference a pull request use
+                refs/pull/<number>/merge.
+            sarif_id: Filter analyses belonging to the same SARIF upload
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            An async iterator yielding the code scanning alert analysis data
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for data in api.code_scanning.analyses(
+                        "org/repo"
+                    ):
+                        print(data)
+        """
+
+        api = f"/repos/{repo}/code-scanning/analyses"
+        params: dict[str, Union[str, None]] = {"per_page": "100"}
+
+        if tool_name:
+            params["tool_name"] = tool_name
+        if tool_guid or tool_guid is None:
+            params["tool_guid"] = tool_guid
+        if ref:
+            params["ref"] = ref
+        if sarif_id:
+            params["sarif_id"] = sarif_id
+        if direction:
+            params["direction"] = enum_or_value(direction)
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            for alert in response.json():
+                yield Analysis.from_dict(alert)
+
+    async def analysis(
+        self,
+        repo: str,
+        analysis_id: Union[int, str],
+    ) -> Analysis:
+        """
+        Gets a specified code scanning analysis for a repository
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#get-a-code-scanning-analysis-for-a-repository
+
+        Args:
+            repo: GitHub repository (owner/name)
+            analysis_id: The ID of the analysis
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Code scanning alert analysis data
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    analysis = await api.code_scanning.analysis(
+                        "org/repo", 123
+                    )
+                    print(analysis)
+        """
+
+        api = f"/repos/{repo}/code-scanning/analyses/{analysis_id}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return Analysis.from_dict(response.json())
+
+    async def delete_analysis(
+        self,
+        repo: str,
+        analysis_id: Union[int, str],
+    ) -> dict[str, str]:
+        """
+        Delete a specified code scanning analysis from a repository
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#delete-a-code-scanning-analysis-from-a-repository
+
+        Args:
+            repo: GitHub repository (owner/name)
+            analysis_id: The ID of the analysis
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            See the GitHub documentation for the response object
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.code_scanning.delete(
+                        "org/repo", 123
+                    )
+        """
+
+        api = f"/repos/{repo}/code-scanning/analyses/{analysis_id}"
+        response = await self._client.delete(api)
+        response.raise_for_status()
+        return response.json()
