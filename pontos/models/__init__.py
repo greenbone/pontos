@@ -150,6 +150,12 @@ class Model:
                     "updated_at": "2017-07-08T16:18:44-04:00",
                 })
         """
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Invalid data for creating an instance of {cls.__name__} "
+                f"model. Data is {data!r}"
+            )
+
         kwargs = {}
         additional_attrs = {}
         type_hints = get_type_hints(cls)
@@ -161,7 +167,7 @@ class Model:
                 elif value is not None:
                     model_field_cls = type_hints.get(name)
                     value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501
-            except TypeError as e:
+            except (ValueError, TypeError) as e:
                 raise ModelError(
                     f"Error while creating {cls.__name__} model. Could not set "
                     f"value for property '{name}' from '{value}'."
