@@ -24,6 +24,7 @@ import httpx
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.github.api.branch import GitHubAsyncRESTBranches
 from pontos.github.api.client import GitHubAsyncRESTClient
+from pontos.github.api.code_scanning import GitHubAsyncRESTCodeScanning
 from pontos.github.api.contents import GitHubAsyncRESTContent
 from pontos.github.api.dependabot import GitHubAsyncRESTDependabot
 from pontos.github.api.helper import (
@@ -165,6 +166,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Secret scanning related API
         """
         return GitHubAsyncRESTSecretScanning(self._client)
+
+    @property
+    def code_scanning(self) -> GitHubAsyncRESTCodeScanning:
+        """
+        Code scanning related API
+        """
+        return GitHubAsyncRESTCodeScanning(self._client)
 
     @property
     def teams(self) -> GitHubAsyncRESTTeams:
