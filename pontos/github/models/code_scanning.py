@@ -313,3 +313,58 @@ class CodeQLDatabase(GitHubModel):
     updated_at: datetime
     url: str
     commit_oid: Optional[str] = None
+
+
+class DefaultSetupState(Enum):
+    """
+    State of a default setup
+    """
+
+    CONFIGURED = "configured"
+    NOT_CONFIGURED = "not-configured"
+
+
+class Language(Enum):
+    """
+    Analyzed Language
+    """
+
+    C_CPP = "c-cpp"
+    CSHARP = "csharp"
+    GO = "go"
+    JAVA_KOTLIN = "java-kotlin"
+    JAVASCRIPT_TYPESCRIPT = "javascript-typescript"
+    JAVASCRIPT = "javascript"
+    PYTHON = "python"
+    RUBY = "ruby"
+    TYPESCRIPT = "typescript"
+    SWIFT = "swift"
+
+
+class QuerySuite(Enum):
+    """
+    Used code scanning query suite
+    """
+
+    DEFAULT = "default"
+    EXTENDED = "extended"
+
+
+@dataclass
+class DefaultSetup(GitHubModel):
+    """
+    Code scanning default setup configuration
+
+    Attributes:
+        state: Code scanning default setup has been configured or not
+        languages: Languages to be analyzed
+        query_suite: CodeQL query suite to be used
+        updated_at: Timestamp of latest configuration update
+        schedule: The frequency of the periodic analysis
+    """
+
+    state: DefaultSetupState
+    languages: list[Language]
+    query_suite: QuerySuite
+    updated_at: Optional[datetime] = None
+    schedule: Optional[str] = None
