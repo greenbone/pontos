@@ -48,6 +48,8 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             params["direction"] = enum_or_value(direction)
 
         async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
             for alert in response.json():
                 yield SecretScanningAlert.from_dict(alert)
 
@@ -353,6 +355,8 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
         params = {"per_page": "100"}
 
         async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
             for location in response.json():
                 location_type = location["type"]
                 location_details = location["details"]
