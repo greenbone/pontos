@@ -12,8 +12,12 @@ from pontos.github.models.code_scanning import (
     Analysis,
     CodeQLDatabase,
     CodeScanningAlert,
+    DefaultSetup,
+    DefaultSetupState,
     Instance,
+    Language,
     Location,
+    QuerySuite,
     Rule,
     Severity,
     Tool,
@@ -401,3 +405,25 @@ class CodeQLDatabaseTestCase(unittest.TestCase):
             "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/java",
         )
         self.assertEqual(db.commit_oid, "12345678901234567000")
+
+
+class DefaultSetupTestCase(unittest.TestCase):
+    def test_from_dict(self):
+        setup = DefaultSetup.from_dict(
+            {
+                "state": "configured",
+                "languages": ["ruby", "python"],
+                "query_suite": "default",
+                "updated_at": "2023-01-19T11:21:34Z",
+                "schedule": "weekly",
+            }
+        )
+
+        self.assertEqual(setup.state, DefaultSetupState.CONFIGURED)
+        self.assertEqual(setup.languages, [Language.RUBY, Language.PYTHON])
+        self.assertEqual(setup.query_suite, QuerySuite.DEFAULT)
+        self.assertEqual(
+            setup.updated_at,
+            datetime(2023, 1, 19, 11, 21, 34, tzinfo=timezone.utc),
+        )
+        self.assertEqual(setup.schedule, "weekly")

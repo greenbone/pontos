@@ -9,7 +9,10 @@ from pontos.github.models.base import SortOrder
 from pontos.github.models.code_scanning import (
     AlertSort,
     AlertState,
+    DefaultSetupState,
     DismissedReason,
+    Language,
+    QuerySuite,
     Severity,
 )
 from tests import AsyncIteratorMock, aiter, anext
@@ -1194,3 +1197,57 @@ class GitHubAsyncRESTCodeScanningTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.assertEqual(alert.id, 1)
+
+    async def test_default_setup(self):
+        response = create_response()
+        response.json.return_value = {
+            "state": "configured",
+            "languages": ["ruby", "python"],
+            "query_suite": "default",
+            "updated_at": "2023-01-19T11:21:34Z",
+            "schedule": "weekly",
+        }
+        self.client.get.return_value = response
+
+        setup = await self.api.default_setup(
+            "foo/bar",
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/default-setup",
+        )
+
+        self.assertEqual(setup.state, DefaultSetupState.CONFIGURED)
+
+    async def test_update_default_setup(self):
+        response = create_response()
+        response.json.return_value = {
+            "run_id": 42,
+            "run_url": "https://api.github.com/repos/octoorg/octocat/actions/runs/42",
+        }
+        self.client.patch.return_value = response
+
+        resp = await self.api.update_default_setup(
+            "foo/bar",
+            state=DefaultSetupState.CONFIGURED,
+            query_suite=QuerySuite.EXTENDED,
+            languages=[Language.GO],
+        )
+
+        self.client.patch.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/code-scanning/default-setup",
+            data={
+                "state": "configured",
+                "query_suite": "extended",
+                "languages": ["go"],
+            },
+        )
+
+        self.assertEqual(
+            resp["run_id"],
+            42,
+        )
+        self.assertEqual(
+            resp["run_url"],
+            "https://api.github.com/repos/octoorg/octocat/actions/runs/42",
+        )

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import AsyncIterator, Optional, Union
+from typing import AsyncIterator, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import SortOrder
@@ -12,8 +12,12 @@ from pontos.github.models.code_scanning import (
     Analysis,
     CodeQLDatabase,
     CodeScanningAlert,
+    DefaultSetup,
+    DefaultSetupState,
     DismissedReason,
     Instance,
+    Language,
+    QuerySuite,
     Severity,
 )
 from pontos.helper import enum_or_value
@@ -535,3 +539,94 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         response = await self._client.get(api)
         response.raise_for_status()
         return CodeQLDatabase.from_dict(response.json())
+
+    async def default_setup(
+        self,
+        repo: str,
+    ) -> DefaultSetup:
+        """
+        Gets a code scanning default setup configuration
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#get-a-code-scanning-default-setup-configuration
+
+        Args:
+            repo: GitHub repository (owner/name)
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Code scanning default setup
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    setup = await api.code_scanning.default_setup(
+                        "org/repo"
+                    )
+                    print(setup)
+        """
+
+        api = f"/repos/{repo}/code-scanning/default-setup"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return DefaultSetup.from_dict(response.json())
+
+    async def update_default_setup(
+        self,
+        repo: str,
+        state: Union[str, DefaultSetupState],
+        query_suite: Union[str, QuerySuite],
+        languages: Iterable[Union[str, Language]],
+    ) -> dict[str, str]:
+        """
+        Updates a code scanning default setup configuration
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#update-a-code-scanning-default-setup-configuration
+
+        Args:
+            repo: GitHub repository (owner/name)
+            state: Whether code scanning default setup has been configured or
+                not
+            query_suite: CodeQL query suite to be used
+            languages: CodeQL languages to be analyzed
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            See the GitHub documentation for the response object
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+                from pontos.github.models.code_scanning import (
+                    DefaultSetupState,
+                    Language,
+                    QuerySuite,
+                )
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.code_scanning.update_default_setup(
+                        "org/repo",
+                        state=DefaultSetupState.CONFIGURED,
+                        query_suite=QuerySuite.EXTENDED,
+                        languages=[Language.PYTHON, Language.JAVASCRIPT]
+                    )
+        """
+
+        api = f"/repos/{repo}/code-scanning/code-scanning/default-setup"
+        data = {
+            "state": enum_or_value(state),
+            "query_suite": enum_or_value(query_suite),
+            "languages": [enum_or_value(value) for value in languages],
+        }
+        response = await self._client.patch(api, data=data)
+        response.raise_for_status()
+        return response.json()
