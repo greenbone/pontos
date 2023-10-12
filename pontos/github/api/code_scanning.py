@@ -45,6 +45,8 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             params["direction"] = enum_or_value(direction)
 
         async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
             for alert in response.json():
                 yield CodeScanningAlert.from_dict(alert)
 
