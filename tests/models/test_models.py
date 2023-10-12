@@ -25,6 +25,31 @@ from typing import Dict, List, Optional, Union
 from pontos.models import Model, ModelAttribute, ModelError, dotted_attributes
 
 
+class DottedAttributesTestCase(unittest.TestCase):
+    def test_with_new_class(self):
+        class Foo:
+            pass
+
+        foo = Foo()
+        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
+
+        foo = dotted_attributes(foo, attrs)
+
+        self.assertEqual(foo.bar, 123)
+        self.assertEqual(foo.baz, [1, 2, 3])
+        self.assertEqual(foo.hello, "World")
+
+    def test_with_github_model_attribute(self):
+        foo = ModelAttribute()
+        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
+
+        foo = dotted_attributes(foo, attrs)
+
+        self.assertEqual(foo.bar, 123)
+        self.assertEqual(foo.baz, [1, 2, 3])
+        self.assertEqual(foo.hello, "World")
+
+
 class ModelTestCase(unittest.TestCase):
     def test_from_dict(self):
         model = Model.from_dict(
@@ -42,6 +67,12 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(model.hello, "World")
         self.assertEqual(model.baz, [1, 2, 3])
         self.assertEqual(model.bar.a, "b")
+
+    def test_from_dict_failure(self):
+        with self.assertRaisesRegex(
+            ValueError, "Invalid data for creating an instance of.*"
+        ):
+            Model.from_dict("foo")
 
 
 class ExampleModelTestCase(unittest.TestCase):
@@ -165,31 +196,6 @@ class ExampleModelTestCase(unittest.TestCase):
         self.assertIsNotNone(model.ipsum)
         self.assertEqual(model.ipsum.something, "def")
 
-
-class DottedAttributesTestCase(unittest.TestCase):
-    def test_with_new_class(self):
-        class Foo:
-            pass
-
-        foo = Foo()
-        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
-
-        foo = dotted_attributes(foo, attrs)
-
-        self.assertEqual(foo.bar, 123)
-        self.assertEqual(foo.baz, [1, 2, 3])
-        self.assertEqual(foo.hello, "World")
-
-    def test_with_github_model_attribute(self):
-        foo = ModelAttribute()
-        attrs = {"bar": 123, "hello": "World", "baz": [1, 2, 3]}
-
-        foo = dotted_attributes(foo, attrs)
-
-        self.assertEqual(foo.bar, 123)
-        self.assertEqual(foo.baz, [1, 2, 3])
-        self.assertEqual(foo.hello, "World")
-
     def test_list_with_dict(self):
         @dataclass
         class ExampleModel(Model):
@@ -209,3 +215,23 @@ class DottedAttributesTestCase(unittest.TestCase):
             "property 'foo' from '{'bar': 'baz'}'.",
         ):
             ExampleModel.from_dict({"foo": {"bar": "baz"}})
+
+    def test_model_error_2(self):
+        @dataclass
+        class OtherModel(Model):
+            something: str
+
+        @dataclass
+        class ExampleModel(Model):
+            foo: Optional[OtherModel]
+
+        with self.assertRaisesRegex(
+            ModelError,
+            "Error while creating ExampleModel model. Could not set value for "
+            "property 'foo' from 'abc'.",
+        ):
+            ExampleModel.from_dict(
+                {
+                    "foo": "abc",
+                }
+            )
