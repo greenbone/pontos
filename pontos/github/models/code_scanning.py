@@ -233,3 +233,51 @@ class CodeScanningAlert(GitHubModel):
     dismissed_at: Optional[datetime] = None
     dismissed_reason: Optional[DismissedReason] = None
     dismissed_comment: Optional[str] = None
+
+
+@dataclass
+class Analysis(GitHubModel):
+    """
+    Details for a code scanning analyses
+
+    Attributes:
+        ref: The full Git reference, formatted as `refs/heads/<branch name>`,
+            `refs/pull/<number>/merge`, or `refs/pull/<number>/head`
+        commit_sha: The SHA of the commit to which the analysis you are
+            uploading relates
+        analysis_key: Identifies the configuration under which the analysis was
+            executed. For example, in GitHub Actions this includes the workflow
+            filename and job name
+        environment: Identifies the variable values associated with the
+            environment in which this analysis was performed
+        category: Identifies the configuration under which the analysis was
+            executed. Used to distinguish between multiple analyses for the same
+            tool and commit, but performed on different languages or different
+            parts of the code
+        error: Error generated when processing the analysis
+        created_at: The time that the analysis was created
+        results_count: The total number of results in the analysis
+        rules_count: The total number of rules used in the analysis
+        id: Unique identifier for this analysis
+        url: The REST API URL of the analysis resource
+        sarif_id: An identifier for the upload
+        tool: The tool used to generate the code scanning analysis
+        deletable:
+        warning: Warning generated when processing the analysis
+    """
+
+    ref: str
+    commit_sha: str
+    analysis_key: str
+    environment: str
+    category: str
+    error: str
+    created_at: datetime
+    results_count: int
+    rules_count: int
+    id: int
+    url: str
+    sarif_id: str
+    tool: Tool
+    deletable: bool
+    warning: str

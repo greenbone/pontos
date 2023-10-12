@@ -245,6 +245,47 @@ ALERTS = [
     },
 ]
 
+ANALYSES = [
+    {
+        "ref": "refs/heads/main",
+        "commit_sha": "d99612c3e1f2970085cfbaeadf8f010ef69bad83",
+        "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+        "environment": '{"language":"python"}',
+        "error": "",
+        "category": ".github/workflows/codeql-analysis.yml:analyze/language:python",
+        "created_at": "2020-08-27T15:05:21Z",
+        "results_count": 17,
+        "rules_count": 49,
+        "id": 201,
+        "url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/201",
+        "sarif_id": "6c81cd8e-b078-4ac3-a3be-1dad7dbd0b53",
+        "tool": {"name": "CodeQL", "guid": None, "version": "2.4.0"},
+        "deletable": True,
+        "warning": "",
+    },
+    {
+        "ref": "refs/heads/my-branch",
+        "commit_sha": "c8cff6510d4d084fb1b4aa13b64b97ca12b07321",
+        "analysis_key": ".github/workflows/shiftleft.yml:build",
+        "environment": "{}",
+        "error": "",
+        "category": ".github/workflows/shiftleft.yml:build/",
+        "created_at": "2020-08-31T22:46:44Z",
+        "results_count": 17,
+        "rules_count": 32,
+        "id": 200,
+        "url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/200",
+        "sarif_id": "8981cd8e-b078-4ac3-a3be-1dad7dbd0b582",
+        "tool": {
+            "name": "Python Security Analysis",
+            "guid": None,
+            "version": "1.2.0",
+        },
+        "deletable": True,
+        "warning": "",
+    },
+]
+
 
 class GitHubAsyncRESTCodeScanningTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTCodeScanning
@@ -821,4 +862,204 @@ class GitHubAsyncRESTCodeScanningTestCase(GitHubAsyncRESTTestCase):
             params={
                 "per_page": "100",
             },
+        )
+
+    async def test_analyses(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar"))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "desc",
+            },
+        )
+
+    async def test_analyses_tool_name(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar", tool_name="CodeQL"))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "desc",
+                "tool_name": "CodeQL",
+            },
+        )
+
+    async def test_analyses_tool_guid(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar", tool_guid="123"))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "desc",
+                "tool_guid": "123",
+            },
+        )
+
+    async def test_analyses_sarif_id(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar", sarif_id="123"))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "desc",
+                "sarif_id": "123",
+            },
+        )
+
+    async def test_analyses_ref(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar", ref="refs/heads/main"))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "desc",
+                "ref": "refs/heads/main",
+            },
+        )
+
+    async def test_analyses_direction(self):
+        response = create_response()
+        response.json.return_value = ANALYSES
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.analyses("foo/bar", direction=SortOrder.ASC))
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/main")
+        instance = await anext(async_it)
+        self.assertEqual(instance.ref, "refs/heads/my-branch")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/analyses",
+            params={
+                "per_page": "100",
+                "direction": "asc",
+            },
+        )
+
+    async def test_analysis(self):
+        response = create_response()
+        response.json.return_value = {
+            "ref": "refs/heads/main",
+            "commit_sha": "c18c69115654ff0166991962832dc2bd7756e655",
+            "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+            "environment": '{"language":"javascript"}',
+            "error": "",
+            "category": ".github/workflows/codeql-analysis.yml:analyze/language:javascript",
+            "created_at": "2021-01-13T11:55:49Z",
+            "results_count": 3,
+            "rules_count": 67,
+            "id": 3602840,
+            "url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/201",
+            "sarif_id": "47177e22-5596-11eb-80a1-c1e54ef945c6",
+            "tool": {"name": "CodeQL", "guid": None, "version": "2.4.0"},
+            "deletable": True,
+            "warning": "",
+        }
+        self.client.get.return_value = response
+
+        alert = await self.api.analysis(
+            "foo/bar",
+            42,
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/analyses/42",
+        )
+
+        self.assertEqual(alert.ref, "refs/heads/main")
+
+    async def test_delete_analysis(self):
+        response = create_response()
+        response.json.return_value = {
+            "next_analysis_url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/41",
+            "confirm_delete_url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/41?confirm_delete",
+        }
+        self.client.delete.return_value = response
+
+        resp = await self.api.delete_analysis(
+            "foo/bar",
+            42,
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/analyses/42",
+        )
+
+        self.assertEqual(
+            resp["next_analysis_url"],
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/41",
+        )
+        self.assertEqual(
+            resp["confirm_delete_url"],
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/41?confirm_delete",
         )

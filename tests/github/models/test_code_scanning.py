@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 from pontos.github.models.code_scanning import (
     AlertState,
+    Analysis,
     CodeScanningAlert,
     Instance,
     Location,
@@ -285,3 +286,60 @@ class CodeScanningAlertTestCase(unittest.TestCase):
             "https://api.github.com/repos/octocat/hello-world/code-scanning/alerts/3/instances",
         )
         self.assertEqual(alert.repository.id, 1296269)
+
+
+class AnalysisTestCase(unittest.TestCase):
+    def test_from_dict(self):
+        analysis = Analysis.from_dict(
+            {
+                "ref": "refs/heads/main",
+                "commit_sha": "d99612c3e1f2970085cfbaeadf8f010ef69bad83",
+                "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+                "environment": '{"language":"python"}',
+                "error": "",
+                "category": ".github/workflows/codeql-analysis.yml:analyze/language:python",
+                "created_at": "2020-08-27T15:05:21Z",
+                "results_count": 17,
+                "rules_count": 49,
+                "id": 201,
+                "url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/201",
+                "sarif_id": "6c81cd8e-b078-4ac3-a3be-1dad7dbd0b53",
+                "tool": {"name": "CodeQL", "guid": None, "version": "2.4.0"},
+                "deletable": True,
+                "warning": "",
+            }
+        )
+
+        self.assertEqual(analysis.ref, "refs/heads/main")
+        self.assertEqual(
+            analysis.commit_sha, "d99612c3e1f2970085cfbaeadf8f010ef69bad83"
+        )
+        self.assertEqual(
+            analysis.analysis_key,
+            ".github/workflows/codeql-analysis.yml:analyze",
+        )
+        self.assertEqual(analysis.environment, '{"language":"python"}')
+        self.assertEqual(analysis.error, "")
+        self.assertEqual(analysis.warning, "")
+        self.assertEqual(
+            analysis.category,
+            ".github/workflows/codeql-analysis.yml:analyze/language:python",
+        )
+        self.assertEqual(
+            analysis.created_at,
+            datetime(2020, 8, 27, 15, 5, 21, tzinfo=timezone.utc),
+        )
+        self.assertEqual(analysis.results_count, 17)
+        self.assertEqual(analysis.rules_count, 49)
+        self.assertEqual(analysis.id, 201)
+        self.assertEqual(
+            analysis.url,
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/201",
+        )
+        self.assertEqual(
+            analysis.sarif_id, "6c81cd8e-b078-4ac3-a3be-1dad7dbd0b53"
+        )
+        self.assertEqual(analysis.tool.name, "CodeQL")
+        self.assertEqual(analysis.tool.version, "2.4.0")
+        self.assertIsNone(analysis.tool.guid)
+        self.assertTrue(analysis.deletable)
