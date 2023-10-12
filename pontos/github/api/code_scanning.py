@@ -10,6 +10,7 @@ from pontos.github.models.code_scanning import (
     AlertSort,
     AlertState,
     Analysis,
+    CodeQLDatabase,
     CodeScanningAlert,
     DismissedReason,
     Instance,
@@ -455,3 +456,82 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         response = await self._client.delete(api)
         response.raise_for_status()
         return response.json()
+
+    async def codeql_databases(
+        self,
+        repo: str,
+    ) -> AsyncIterator[CodeQLDatabase]:
+        """
+        List the CodeQL databases that are available in a repository.
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#list-codeql-databases-for-a-repository
+
+        Args:
+            repo: GitHub repository (owner/name)
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            An async iterator yielding the code scanning codeql database
+            information
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for database in api.code_scanning.codeql_databases(
+                        "org/repo"
+                    ):
+                        print(database)
+        """
+
+        api = f"/repos/{repo}/code-scanning/codeql/databases"
+        params = {"per_page": "100"}
+
+        async for response in self._client.get_all(api, params=params):
+            response.raise_for_status()
+
+            for alert in response.json():
+                yield CodeQLDatabase.from_dict(alert)
+
+    async def codeql_database(
+        self,
+        repo: str,
+        language: str,
+    ) -> CodeQLDatabase:
+        """
+        Get a CodeQL database for a language in a repository
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#get-a-codeql-database-for-a-repository
+
+        Args:
+            repo: GitHub repository (owner/name)
+            language: The language of the CodeQL database
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Code scanning CodeQL database information
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    db = await api.code_scanning.codeql_database(
+                        "org/repo", "java"
+                    )
+                    print(db)
+        """
+
+        api = f"/repos/{repo}/code-scanning/codeql/databases/{language}"
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return CodeQLDatabase.from_dict(response.json())

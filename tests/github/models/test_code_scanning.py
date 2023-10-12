@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pontos.github.models.code_scanning import (
     AlertState,
     Analysis,
+    CodeQLDatabase,
     CodeScanningAlert,
     Instance,
     Location,
@@ -343,3 +344,60 @@ class AnalysisTestCase(unittest.TestCase):
         self.assertEqual(analysis.tool.version, "2.4.0")
         self.assertIsNone(analysis.tool.guid)
         self.assertTrue(analysis.deletable)
+
+
+class CodeQLDatabaseTestCase(unittest.TestCase):
+    def test_from_dict(self):
+        db = CodeQLDatabase.from_dict(
+            {
+                "id": 1,
+                "name": "database.zip",
+                "language": "java",
+                "uploader": {
+                    "login": "octocat",
+                    "id": 1,
+                    "node_id": "MDQ6VXNlcjE=",
+                    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/octocat",
+                    "html_url": "https://github.com/octocat",
+                    "followers_url": "https://api.github.com/users/octocat/followers",
+                    "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+                    "organizations_url": "https://api.github.com/users/octocat/orgs",
+                    "repos_url": "https://api.github.com/users/octocat/repos",
+                    "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/octocat/received_events",
+                    "type": "User",
+                    "site_admin": False,
+                },
+                "content_type": "application/zip",
+                "size": 1024,
+                "created_at": "2022-09-12T12:14:32Z",
+                "updated_at": "2022-09-12T12:14:32Z",
+                "url": "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/java",
+                "commit_oid": "12345678901234567000",
+            }
+        )
+
+        self.assertEqual(db.id, 1)
+        self.assertEqual(db.name, "database.zip")
+        self.assertEqual(db.language, "java")
+        self.assertEqual(db.uploader.id, 1)
+        self.assertEqual(db.content_type, "application/zip")
+        self.assertEqual(db.size, 1024)
+        self.assertEqual(
+            db.created_at,
+            datetime(2022, 9, 12, 12, 14, 32, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            db.updated_at,
+            datetime(2022, 9, 12, 12, 14, 32, tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            db.url,
+            "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/java",
+        )
+        self.assertEqual(db.commit_oid, "12345678901234567000")
