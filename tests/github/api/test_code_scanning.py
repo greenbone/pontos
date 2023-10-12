@@ -1063,3 +1063,134 @@ class GitHubAsyncRESTCodeScanningTestCase(GitHubAsyncRESTTestCase):
             resp["confirm_delete_url"],
             "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses/41?confirm_delete",
         )
+
+    async def test_codeql_databases(self):
+        response = create_response()
+        response.json.return_value = [
+            {
+                "id": 1,
+                "name": "database.zip",
+                "language": "java",
+                "uploader": {
+                    "login": "octocat",
+                    "id": 1,
+                    "node_id": "MDQ6VXNlcjE=",
+                    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/octocat",
+                    "html_url": "https://github.com/octocat",
+                    "followers_url": "https://api.github.com/users/octocat/followers",
+                    "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+                    "organizations_url": "https://api.github.com/users/octocat/orgs",
+                    "repos_url": "https://api.github.com/users/octocat/repos",
+                    "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/octocat/received_events",
+                    "type": "User",
+                    "site_admin": False,
+                },
+                "content_type": "application/zip",
+                "size": 1024,
+                "created_at": "2022-09-12T12:14:32Z",
+                "updated_at": "2022-09-12T12:14:32Z",
+                "url": "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/java",
+                "commit_oid": 12345678901234567000,
+            },
+            {
+                "id": 2,
+                "name": "database.zip",
+                "language": "ruby",
+                "uploader": {
+                    "login": "octocat",
+                    "id": 1,
+                    "node_id": "MDQ6VXNlcjE=",
+                    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/octocat",
+                    "html_url": "https://github.com/octocat",
+                    "followers_url": "https://api.github.com/users/octocat/followers",
+                    "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+                    "organizations_url": "https://api.github.com/users/octocat/orgs",
+                    "repos_url": "https://api.github.com/users/octocat/repos",
+                    "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/octocat/received_events",
+                    "type": "User",
+                    "site_admin": False,
+                },
+                "content_type": "application/zip",
+                "size": 1024,
+                "created_at": "2022-09-12T12:14:32Z",
+                "updated_at": "2022-09-12T12:14:32Z",
+                "url": "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/ruby",
+                "commit_oid": 23456789012345680000,
+            },
+        ]
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(self.api.codeql_databases("foo/bar"))
+        db = await anext(async_it)
+        self.assertEqual(db.id, 1)
+        alert = await anext(async_it)
+        self.assertEqual(alert.id, 2)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/repos/foo/bar/code-scanning/codeql/databases",
+            params={
+                "per_page": "100",
+            },
+        )
+
+    async def test_codeql_database(self):
+        response = create_response()
+        response.json.return_value = {
+            "id": 1,
+            "name": "database.zip",
+            "language": "java",
+            "uploader": {
+                "login": "octocat",
+                "id": 1,
+                "node_id": "MDQ6VXNlcjE=",
+                "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/octocat",
+                "html_url": "https://github.com/octocat",
+                "followers_url": "https://api.github.com/users/octocat/followers",
+                "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+                "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+                "organizations_url": "https://api.github.com/users/octocat/orgs",
+                "repos_url": "https://api.github.com/users/octocat/repos",
+                "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/octocat/received_events",
+                "type": "User",
+                "site_admin": False,
+            },
+            "content_type": "application/zip",
+            "size": 1024,
+            "created_at": "2022-09-12T12:14:32Z",
+            "updated_at": "2022-09-12T12:14:32Z",
+            "url": "https://api.github.com/repos/octocat/Hello-World/code-scanning/codeql/databases/java",
+            "commit_oid": 12345678901234567000,
+        }
+        self.client.get.return_value = response
+
+        alert = await self.api.codeql_database(
+            "foo/bar",
+            "java",
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/codeql/databases/java",
+        )
+
+        self.assertEqual(alert.id, 1)

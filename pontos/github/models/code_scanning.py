@@ -281,3 +281,35 @@ class Analysis(GitHubModel):
     tool: Tool
     deletable: bool
     warning: str
+
+
+@dataclass
+class CodeQLDatabase(GitHubModel):
+    """
+    A CodeQL database
+
+    Attributes:
+        id: The ID of the CodeQL database
+        name: The name of the CodeQL database
+        language: The language of the CodeQL database
+        uploader: A GitHub user
+        content_type: The MIME type of the CodeQL database file
+        size: The size of the CodeQL database file in bytes
+        created_at: The date and time at which the CodeQL database was created
+        updated_at: The date and time at which the CodeQL database was last
+            updated
+        url: The URL at which to download the CodeQL database
+        commit_oid: The commit SHA of the repository at the time the CodeQL
+            database was created
+    """
+
+    id: int
+    name: str
+    language: str
+    uploader: User
+    content_type: str
+    size: int
+    created_at: datetime
+    updated_at: datetime
+    url: str
+    commit_oid: Optional[str] = None
