@@ -227,13 +227,14 @@ class Node(Model):
     A CVE configuration node
 
     Attributes:
-        operator:
-        cpe_match:
+        operator: Operator (and/or) for this node
+        cpe_match: The CPE match for the node. Despite a cpe match is required
+            int NISTs API spec the data seems to contain nodes without matches.
         negate:
     """
 
     operator: Operator
-    cpe_match: List[CPEMatch]
+    cpe_match: Optional[List[CPEMatch]] = None
     negate: Optional[bool] = None
 
 
