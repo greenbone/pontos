@@ -19,6 +19,8 @@ from pontos.github.models.code_scanning import (
     Location,
     QuerySuite,
     Rule,
+    SarifProcessingStatus,
+    SarifUploadInformation,
     Severity,
     Tool,
 )
@@ -427,3 +429,21 @@ class DefaultSetupTestCase(unittest.TestCase):
             datetime(2023, 1, 19, 11, 21, 34, tzinfo=timezone.utc),
         )
         self.assertEqual(setup.schedule, "weekly")
+
+
+class SarifUploadInformationTestCase(unittest.TestCase):
+    def test_from_dict(self):
+        sarif = SarifUploadInformation.from_dict(
+            {
+                "processing_status": "complete",
+                "analyses_url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses?sarif_id=47177e22-5596-11eb-80a1-c1e54ef945c6",
+            }
+        )
+        self.assertEqual(
+            sarif.processing_status, SarifProcessingStatus.COMPLETE
+        )
+        self.assertEqual(
+            sarif.analyses_url,
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses?sarif_id=47177e22-5596-11eb-80a1-c1e54ef945c6",
+        )
+        self.assertIsNone(sarif.errors)
