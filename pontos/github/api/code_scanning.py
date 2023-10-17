@@ -2,9 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import base64
+import gzip
+from datetime import datetime
 from typing import AsyncIterator, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
+from pontos.github.api.helper import JSON_OBJECT
 from pontos.github.models.base import SortOrder
 from pontos.github.models.code_scanning import (
     AlertSort,
@@ -18,6 +22,7 @@ from pontos.github.models.code_scanning import (
     Instance,
     Language,
     QuerySuite,
+    SarifUploadInformation,
     Severity,
 )
 from pontos.helper import enum_or_value
@@ -630,3 +635,118 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         response = await self._client.patch(api, data=data)
         response.raise_for_status()
         return response.json()
+
+    async def upload_sarif_data(
+        self,
+        repo: str,
+        commit_sha: str,
+        ref: str,
+        sarif: bytes,
+        *,
+        checkout_uri: Optional[str] = None,
+        started_at: Optional[datetime] = None,
+        tool_name: Optional[str] = None,
+        validate: Optional[bool] = None,
+    ) -> dict[str, str]:
+        """
+        Upload SARIF data containing the results of a code scanning analysis to
+        make the results available in a repository
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#upload-an-analysis-as-sarif-data
+
+        Args:
+            repo: GitHub repository (owner/name)
+            commit_sha: The SHA of the commit to which the analysis you are
+                uploading relates
+            ref: The full Git reference, formatted as refs/heads/<branch name>,
+                refs/pull/<number>/merge, or refs/pull/<number>/head
+            sarif:
+            checkout_uri: The base directory used in the analysis, as it appears
+                in the SARIF file
+            started_at: The time that the analysis run began
+            tool_name: The name of the tool used to generate the code scanning
+                analysis
+            validate: Whether the SARIF file will be validated according to the
+                code scanning specifications
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            See the GitHub documentation for the response object
+
+        Example:
+            .. code-block:: python
+
+                from pathlib import Path
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    json = await api.code_scanning.upload_sarif_data(
+                        "org/repo",
+                        commit_sha="4b6472266afd7b471e86085a6659e8c7f2b119da",
+                        ref="refs/heads/main",
+                        sarif=Path("/path/to/sarif.file").read_bytes(),
+                    )
+                    print(json["id"])
+        """
+        api = f"/repos/{repo}/code-scanning/sarifs"
+        data: JSON_OBJECT = {
+            "commit_sha": commit_sha,
+            "ref": ref,
+        }
+        if checkout_uri:
+            data["checkout_uri"] = checkout_uri
+        if started_at:
+            data["started_at"] = started_at.isoformat(timespec="seconds")
+        if tool_name:
+            data["tool_name"] = tool_name
+        if validate is not None:
+            data["validate"] = validate
+
+        compressed = gzip.compress(sarif, mtime=0)
+        encoded = base64.b64encode(compressed).decode(encoding="ascii")
+
+        data["sarif"] = encoded
+
+        response = await self._client.post(api, data=data)
+        response.raise_for_status()
+        return response.json()
+
+    async def sarif(self, repo: str, sarif_id: str) -> SarifUploadInformation:
+        """
+        Gets information about a SARIF upload, including the status and the URL
+        of the analysis that was uploaded so that you can retrieve details of
+        the analysis
+
+        https://docs.github.com/en/rest/code-scanning/code-scanning#get-information-about-a-sarif-upload
+
+        Args:
+            repo: GitHub repository (owner/name)
+            sarif_id: The SARIF ID obtained after uploading
+
+        Raises:
+            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+                failed.
+
+        Returns:
+            Information about the SARIF upload
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    sarif = await api.code_scanning.sarif(
+                        "org/repo",
+                        "47177e22-5596-11eb-80a1-c1e54ef945c6",
+                    )
+                    print(sarif)
+        """
+        api = f"/repos/{repo}/code-scanning/sarifs/{sarif_id}"
+
+        response = await self._client.get(api)
+        response.raise_for_status()
+        return SarifUploadInformation.from_dict(response.json())

@@ -4,6 +4,8 @@
 
 # ruff: noqa:E501
 
+import json
+
 from pontos.github.api.code_scanning import GitHubAsyncRESTCodeScanning
 from pontos.github.models.base import SortOrder
 from pontos.github.models.code_scanning import (
@@ -13,6 +15,7 @@ from pontos.github.models.code_scanning import (
     DismissedReason,
     Language,
     QuerySuite,
+    SarifProcessingStatus,
     Severity,
 )
 from tests import AsyncIteratorMock, aiter, anext
@@ -1251,3 +1254,110 @@ class GitHubAsyncRESTCodeScanningTestCase(GitHubAsyncRESTTestCase):
             resp["run_url"],
             "https://api.github.com/repos/octoorg/octocat/actions/runs/42",
         )
+
+    async def test_upload_sarif_data(self):
+        sarif = {
+            "version": "2.1.0",
+            "$schema": "http://json.schemastore.org/sarif-2.1.0-rtm.4",
+            "runs": [
+                {
+                    "tool": {
+                        "driver": {
+                            "name": "ESLint",
+                            "informationUri": "https://eslint.org",
+                            "rules": [
+                                {
+                                    "id": "no-unused-vars",
+                                    "shortDescription": {
+                                        "text": "disallow unused variables"
+                                    },
+                                    "helpUri": "https://eslint.org/docs/rules/no-unused-vars",
+                                    "properties": {"category": "Variables"},
+                                }
+                            ],
+                        }
+                    },
+                    "artifacts": [
+                        {
+                            "location": {
+                                "uri": "file:///C:/dev/sarif/sarif-tutorials/samples/Introduction/simple-example.js"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "level": "error",
+                            "message": {
+                                "text": "'x' is assigned a value but never used."
+                            },
+                            "locations": [
+                                {
+                                    "physicalLocation": {
+                                        "artifactLocation": {
+                                            "uri": "file:///C:/dev/sarif/sarif-tutorials/samples/Introduction/simple-example.js",
+                                            "index": 0,
+                                        },
+                                        "region": {
+                                            "startLine": 1,
+                                            "startColumn": 5,
+                                        },
+                                    }
+                                }
+                            ],
+                            "ruleId": "no-unused-vars",
+                            "ruleIndex": 0,
+                        }
+                    ],
+                }
+            ],
+        }
+
+        response = create_response()
+        response.json.return_value = {
+            "id": "47177e22-5596-11eb-80a1-c1e54ef945c6",
+            "url": "https://api.github.com/repos/octocat/hello-world/code-scanning/sarifs/47177e22-5596-11eb-80a1-c1e54ef945c6",
+        }
+        self.client.post.return_value = response
+
+        resp = await self.api.upload_sarif_data(
+            "foo/bar",
+            commit_sha="4b6472266afd7b471e86085a6659e8c7f2b119da",
+            ref="refs/heads/master",
+            sarif=json.dumps(sarif).encode(),
+        )
+        self.client.post.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/sarifs",
+            data={
+                "commit_sha": "4b6472266afd7b471e86085a6659e8c7f2b119da",
+                "ref": "refs/heads/master",
+                "sarif": "H4sIAAAAAAACA7VSO2/cMAz+K4JQIEttJUW73Jp2CHBbkC5FBsXm2Qpk0SCl6wUH//eSsu/aoshYaNGD/F7i2R6BOGCyO2M/tXftrf1o7AfuRpi83o05zzvnXhlTu95yRoIWaXDsKRya2tVQntrP2kslsTT+ONuMGGV3tj0FYanb5CdQ2G+P+5Cy1od0QJp8Fg1PFC6ULJzAUWqUacWNsAGHXssSNiUVhr45emIt4REpfwXuKMx59SQq4JS1vA/sY8SfZm0y0hT8i2Iu0jpCnN+ldz127KoA9y/rTDgD5VDVnW3nMwxIbwr1/TfH8rwoj5fCg+/y5iRi569Ky8p/CBGE3t3vXA/HNeQt6lwk++Ajy3maVc5DyoR96RTEcdDLBk71sX2ttBodcIlXSjiCfosFIiQ1MAGzH+CvtG5ONyaw8cxhSJKWl7xiAfNSskmCQEYzaGt2FxMbwTy+ceh83P/p7eJ7/58N14Hq4SS4t0u1PlzYOIsImTo1eqfToud7jGXS9y/LlpX88sM781XfrujPsn4BtlGkUj8DAAA=",
+            },
+        )
+
+        self.assertEqual(resp["id"], "47177e22-5596-11eb-80a1-c1e54ef945c6")
+        self.assertEqual(
+            resp["url"],
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/sarifs/47177e22-5596-11eb-80a1-c1e54ef945c6",
+        )
+
+    async def test_sarif(self):
+        response = create_response()
+        response.json.return_value = {
+            "processing_status": "complete",
+            "analyses_url": "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses?sarif_id=47177e22-5596-11eb-80a1-c1e54ef945c6",
+        }
+        self.client.get.return_value = response
+
+        resp = await self.api.sarif(
+            "foo/bar", "47177e22-5596-11eb-80a1-c1e54ef945c6"
+        )
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/code-scanning/sarifs/47177e22-5596-11eb-80a1-c1e54ef945c6",
+        )
+
+        self.assertEqual(resp.processing_status, SarifProcessingStatus.COMPLETE)
+        self.assertEqual(
+            resp.analyses_url,
+            "https://api.github.com/repos/octocat/hello-world/code-scanning/analyses?sarif_id=47177e22-5596-11eb-80a1-c1e54ef945c6",
+        )
+        self.assertIsNone(resp.errors)

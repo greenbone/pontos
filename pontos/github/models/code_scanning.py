@@ -368,3 +368,32 @@ class DefaultSetup(GitHubModel):
     query_suite: QuerySuite
     updated_at: Optional[datetime] = None
     schedule: Optional[str] = None
+
+
+class SarifProcessingStatus(Enum):
+    """
+    `pending` files have not yet been processed, while `complete` means results
+    from the SARIF have been stored. `failed` files have either not been
+    processed at all, or could only be partially processed
+    """
+
+    PENDING = "pending"
+    COMPLETE = "complete"
+    FAILED = "failed"
+
+
+@dataclass
+class SarifUploadInformation(GitHubModel):
+    """
+    Information about the SARIF upload
+
+    Attributes:
+        processing_status: Status of the SARIF processing
+        analyses_url: The REST API URL for getting the analyses associated with
+            the upload
+        errors: Any errors that ocurred during processing of the delivery
+    """
+
+    processing_status: SarifProcessingStatus
+    analyses_url: Optional[str] = None
+    errors: Optional[list[str]] = None
