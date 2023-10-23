@@ -22,6 +22,7 @@ from typing import Optional, Type
 import httpx
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
+from pontos.github.api.billing import GitHubAsyncRESTBilling
 from pontos.github.api.branch import GitHubAsyncRESTBranches
 from pontos.github.api.client import GitHubAsyncRESTClient
 from pontos.github.api.code_scanning import GitHubAsyncRESTCodeScanning
@@ -88,6 +89,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Artifacts related API
         """
         return GitHubAsyncRESTArtifacts(self._client)
+
+    @property
+    def billing(self) -> GitHubAsyncRESTBilling:
+        """
+        Billing related API
+        """
+        return GitHubAsyncRESTBilling(self._client)
 
     @property
     def branches(self) -> GitHubAsyncRESTBranches:
