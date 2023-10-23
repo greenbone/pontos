@@ -40,6 +40,7 @@ from pontos.github.api.search import GitHubAsyncRESTSearch
 from pontos.github.api.secret_scanning import GitHubAsyncRESTSecretScanning
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.api.teams import GitHubAsyncRESTTeams
+from pontos.github.api.users import GitHubAsyncRESTUsers
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
 from pontos.helper import deprecated
 
@@ -94,6 +95,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Branches related API
         """
         return GitHubAsyncRESTBranches(self._client)
+
+    @property
+    def code_scanning(self) -> GitHubAsyncRESTCodeScanning:
+        """
+        Code scanning related API
+        """
+        return GitHubAsyncRESTCodeScanning(self._client)
 
     @property
     def contents(self) -> GitHubAsyncRESTContent:
@@ -168,11 +176,11 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTSecretScanning(self._client)
 
     @property
-    def code_scanning(self) -> GitHubAsyncRESTCodeScanning:
+    def search(self) -> GitHubAsyncRESTSearch:
         """
-        Code scanning related API
+        Search related API
         """
-        return GitHubAsyncRESTCodeScanning(self._client)
+        return GitHubAsyncRESTSearch(self._client)
 
     @property
     def teams(self) -> GitHubAsyncRESTTeams:
@@ -189,11 +197,11 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         return GitHubAsyncRESTTags(self._client)
 
     @property
-    def search(self) -> GitHubAsyncRESTSearch:
+    def users(self) -> GitHubAsyncRESTUsers:
         """
-        Search related API
+        Users related API
         """
-        return GitHubAsyncRESTSearch(self._client)
+        return GitHubAsyncRESTUsers(self._client)
 
     async def __aenter__(self) -> "GitHubAsyncRESTApi":
         await self._client.__aenter__()
