@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022 Greenbone AG
+# SPDX-FileCopyrightText: 2019-2023 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -26,7 +26,7 @@ from argparse import ArgumentParser, FileType, Namespace
 from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError, run
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
@@ -52,6 +52,29 @@ SUPPORTED_LICENCES = [
     "GPL-2.0-only",
     "GPL-2.0-or-later",
     "GPL-3.0-or-later",
+]
+OLD_LINES = [
+    "# \-\*\- coding: utf\-8 \-\*\-",
+    "This program is free software: you can redistribute it and/or modify",
+    "it under the terms of the GNU Affero General Public License as",
+    "published by the Free Software Foundation, either version 3 of the",
+    "License, or \(at your option\) any later version.",
+    "This program is free software; you can redistribute it and/or",
+    "modify it under the terms of the GNU General Public License",
+    "version 2 as published by the Free Software Foundation.",
+    "This program is free software: you can redistribute it and/or modify",
+    "it under the terms of the GNU General Public License as published by",
+    "the Free Software Foundation, either version 3 of the License, or",
+    "\(at your option\) any later version.",
+    "This program is distributed in the hope that it will be useful,",
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+    "GNU Affero General Public License for more details.",
+    "GNU General Public License for more details.",
+    "You should have received a copy of the GNU Affero General Public License",
+    "along with this program.  If not, see <http://www.gnu.org/licenses/>.",
+    "along with this program; if not, write to the Free Software",
+    "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",  # noqa: E501
 ]
 
 
@@ -112,11 +135,32 @@ def _add_header(
         raise ValueError
 
 
+def _remove_outdated(
+    content: str, cleanup_regexes: List[re.Pattern]
+) -> Optional[str]:
+    """Remove lines that contain outdated copyright header ..."""
+    changed = False
+    splitted_lines = content.splitlines()
+    i = 0
+    for line in splitted_lines[:20]:
+        for regex in cleanup_regexes:
+            if regex.match(line):
+                changed = True
+                splitted_lines.pop(i)
+                i = i - 1
+                break
+        i = i + 1
+    if changed:
+        return "\n".join(splitted_lines)
+    return None
+
+
 def _update_file(
     file: Path,
     regex: re.Pattern,
     parsed_args: Namespace,
     term: Terminal,
+    cleanup_regexes: Optional[List[re.Pattern]] = None,
 ) -> int:
     """Function to update the given file.
     Checks if header exists. If not it adds an
@@ -173,6 +217,15 @@ def _update_file(
                         "is not existing."
                     )
                 return 1
+            # old header existing - cleanup?
+            if cleanup_regexes:
+                old_content = file.read_text(encoding="utf-8")
+                new_content = _remove_outdated(
+                    content=old_content, cleanup_regexes=cleanup_regexes
+                )
+                if new_content:
+                    file.write_text(new_content, encoding="utf-8")
+                    print(f"{file}: Cleaned up!")
             # replace found header and write it to file
             if copyright_match and (
                 not copyright_match["modification_year"]
@@ -201,10 +254,9 @@ def _update_file(
                     f"{parsed_args.year}"
                 )
 
-                return 0
             else:
                 print(f"{file}: License Header is ok.")
-                return 0
+            return 0
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
         raise e
@@ -335,7 +387,22 @@ def _parse_args(args=None):
         type=FileType("r"),
     )
 
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        default=False,
+        help="Do a cleanup: Remove lines from outdated header format",
+    )
+
     return parser.parse_args(args)
+
+
+def _compile_outdated_regex() -> List[re.Pattern]:
+    """prepare regex patterns to remove old copyright lines"""
+    regexes: List[re.Pattern] = []
+    for line in OLD_LINES:
+        regexes.append(re.compile(rf"^(([#*]|//) ?)?{line}"))
+    return regexes
 
 
 def main() -> None:
@@ -376,10 +443,13 @@ def main() -> None:
         term.error("Specify files to update!")
         sys.exit(1)
 
-    regex = re.compile(
+    regex: re.Pattern = re.compile(
         "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
         f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({parsed_args.company})"
     )
+    cleanup_regexes: Optional[List[re.Pattern]] = None
+    if parsed_args.cleanup:
+        cleanup_regexes = _compile_outdated_regex()
 
     for file in files:
         try:
@@ -387,7 +457,11 @@ def main() -> None:
                 term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
                 _update_file(
-                    file=file, regex=regex, parsed_args=parsed_args, term=term
+                    file=file,
+                    regex=regex,
+                    parsed_args=parsed_args,
+                    term=term,
+                    cleanup_regexes=cleanup_regexes,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue

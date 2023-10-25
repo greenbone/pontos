@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Greenbone AG
+# SPDX-FileCopyrightText: 2020-2023 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -28,6 +28,9 @@ from unittest.mock import patch
 
 from pontos.terminal.terminal import ConsoleTerminal
 from pontos.updateheader.updateheader import _add_header as add_header
+from pontos.updateheader.updateheader import (
+    _compile_outdated_regex as compile_outdated_regex,
+)
 from pontos.updateheader.updateheader import _find_copyright as find_copyright
 from pontos.updateheader.updateheader import (
     _get_exclude_list as get_exclude_list,
@@ -36,6 +39,7 @@ from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
 )
 from pontos.updateheader.updateheader import _parse_args as parse_args
+from pontos.updateheader.updateheader import _remove_outdated as remove_outdated
 from pontos.updateheader.updateheader import _update_file as update_file
 from pontos.updateheader.updateheader import main
 
@@ -467,6 +471,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.verbose = 0
         self.args.log_file = None
         self.args.quiet = False
+        self.args.cleanup = False
 
         argparser_mock.return_value = self.args
 
@@ -487,6 +492,7 @@ class UpdateHeaderTestCase(TestCase):
         self.args.verbose = 0
         self.args.log_file = None
         self.args.quiet = False
+        self.args.cleanup = False
 
         argparser_mock.return_value = self.args
 
@@ -499,3 +505,41 @@ class UpdateHeaderTestCase(TestCase):
             "Specify files to update!",
             ret,
         )
+
+    def test_remove_outdated(self):
+        test_content = """* This program is free software: you can redistribute it and/or modify
+*it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+//License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+# modify it under the terms of the GNU General Public License
+# This program is free software; you can redistribute it and/or
+# version 2 as published by the Free Software Foundation.
+This program is free software: you can redistribute it and/or modify"""  # noqa: E501
+
+        compiled_regexes = compile_outdated_regex()
+
+        new_content = remove_outdated(
+            content=test_content, cleanup_regexes=compiled_regexes
+        )
+        self.assertEqual(new_content, "")
+
+    def test_remove_outdated2(self):
+        test_content = """the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+* GNU General Public License for more details.
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# -*- coding: utf-8 -*-
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA."""  # noqa: E501
+
+        compiled_regexes = compile_outdated_regex()
+
+        new_content = remove_outdated(
+            content=test_content, cleanup_regexes=compiled_regexes
+        )
+        self.assertEqual(new_content, "")
