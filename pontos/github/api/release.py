@@ -344,7 +344,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         tasks = []
         for file_path in files:
             if isinstance(file_path, tuple):
-                file_path, content_type = file_path
+                file_path, content_type = file_path  # noqa: PLW2901
             else:
                 content_type = "application/octet-stream"
 
