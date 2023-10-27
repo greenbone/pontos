@@ -57,7 +57,7 @@ def dotted_attributes(obj: Any, data: Dict[str, Any]) -> Any:
         if isinstance(value, dict):
             default = None if hasattr(obj, key) else ModelAttribute()
             prop = getattr(obj, key, default)
-            value = dotted_attributes(prop, value)
+            value = dotted_attributes(prop, value)  # noqa: PLW2901
 
         setattr(obj, key, value)
 
@@ -163,10 +163,10 @@ class Model:
             try:
                 if isinstance(value, list):
                     model_field_cls = type_hints.get(name)
-                    value = [cls._get_value(model_field_cls, v) for v in value]  # type: ignore # pylint: disable=line-too-long # noqa: E501
+                    value = [cls._get_value(model_field_cls, v) for v in value]  # type: ignore # pylint: disable=line-too-long # noqa: E501,PLW2901
                 elif value is not None:
                     model_field_cls = type_hints.get(name)
-                    value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501
+                    value = cls._get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501,PLW2901
             except (ValueError, TypeError) as e:
                 raise ModelError(
                     f"Error while creating {cls.__name__} model. Could not set "

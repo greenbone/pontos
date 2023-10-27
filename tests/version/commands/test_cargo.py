@@ -1,16 +1,14 @@
-from typing import Iterator
 import unittest
-
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator
+
 import tomlkit
 
 from pontos.testing import temp_directory, temp_file
 from pontos.version import VersionError
-from pontos.version.schemes import PEP440VersioningScheme
-
 from pontos.version.commands._cargo import CargoVersionCommand
-
+from pontos.version.schemes import PEP440VersioningScheme
 
 VERSION_EXAMPLE = """
 [package]

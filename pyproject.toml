@@ -84,7 +84,7 @@ line_length = 80
 [tool.ruff]
 line-length = 80
 target-version = "py39"
-extend-select = ["I"]
+extend-select = ["I", "PLE", "PLW"]
 
 [tool.mypy]
 files = "pontos"
