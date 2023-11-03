@@ -562,6 +562,40 @@ class CPE:
             f"{edition}:{language}:{sw_edition}:{target_sw}:{target_hw}:{other}"
         )
 
+    def clone(
+        self,
+        **kwargs,
+    ) -> "CPE":
+        """
+        Clone a CPE and allow to override parts
+
+        Example:
+            .. code-block:: python
+
+                from pontos.cpe import CPE, ANY
+
+                android_13 = CPE.from_string(
+                    "cpe:2.3:o:google:android:13.0:*:*:*:*:*:*:*"
+                )
+                all_android_versions = cpe.clone(version=ANY)
+        """
+        args = {
+            "part": self.part,
+            "vendor": self.vendor,
+            "product": self.product,
+            "version": self.version,
+            "update": self.update,
+            "edition": self.edition,
+            "language": self.language,
+            "sw_edition": self.sw_edition,
+            "target_sw": self.target_sw,
+            "target_hw": self.target_hw,
+            "other": self.other,
+            "cpe_string": self.cpe_string,
+        }
+        args.update(**kwargs)
+        return CPE(**args)  # type: ignore[arg-type]
+
     def __str__(self) -> str:
         """
         Returns the string representation (uri of formatted string) of the CPE

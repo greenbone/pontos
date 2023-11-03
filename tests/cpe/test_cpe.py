@@ -591,3 +591,19 @@ class CPETestCase(unittest.TestCase):
             target_sw="ipsum",
         )
         self.assertTrue(cpe.has_extended_attribute())
+
+    def test_clone(self):
+        cpe = CPE.from_string(
+            "cpe:2.3:a:hp:openview_network_manager:7.51:*:*:*:*:linux:*:*"
+        )
+
+        cpe2 = cpe.clone()
+        self.assertIsNot(cpe, cpe2)
+
+        cpe = CPE.from_string(
+            "cpe:2.3:a:hp:openview_network_manager:7.51:*:*:*:*:linux:*:*"
+        )
+        cpe2 = cpe.clone(version=ANY)
+        self.assertIsNot(cpe, cpe2)
+        self.assertEqual(cpe.version, "7\\.51")
+        self.assertEqual(cpe2.version, ANY)
