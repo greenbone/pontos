@@ -111,6 +111,7 @@ pontos-github-actions = 'pontos.github.actions:main'
 pontos-github-script = 'pontos.github.script:main'
 pontos-nvd-cve = 'pontos.nvd.cve:cve_main'
 pontos-nvd-cves = 'pontos.nvd.cve:cves_main'
+pontos-nvd-cve-change-history = 'pontos.nvd.cve_change_history:cve_changes'
 pontos-nvd-cpe = 'pontos.nvd.cpe:cpe_main'
 pontos-nvd-cpes = 'pontos.nvd.cpe:cpes_main'
 
