@@ -26,17 +26,23 @@ from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
 from pontos.nvd.api import now
-from pontos.nvd.cpe.api import CPEApi
+from pontos.nvd.cpe.api import MAX_CPES_PER_PAGE, CPEApi
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cpe_data
 
 
 def create_cpe_response(
-    cpe_name_id: str, update: Optional[Dict[str, Any]] = None
+    cpe_name_id: str,
+    *,
+    update: Optional[Dict[str, Any]] = None,
+    results: int = 1,
 ) -> MagicMock:
     data = {
-        "products": [{"cpe": get_cpe_data({"cpe_name_id": cpe_name_id})}],
-        "results_per_page": 1,
+        "products": [
+            {"cpe": get_cpe_data({"cpe_name_id": f"{cpe_name_id}-{i}"})}
+            for i in range(1, results + 1)
+        ],
+        "results_per_page": results,
     }
     if update:
         data.update(update)
@@ -46,10 +52,16 @@ def create_cpe_response(
     return response
 
 
-def create_cpes_responses(count: int = 2) -> List[MagicMock]:
+def create_cpes_responses(
+    responses: int = 2, results_per_response: int = 1
+) -> List[MagicMock]:
     return [
-        create_cpe_response(f"CPE-{i}", {"total_results": count})
-        for i in range(1, count + 1)
+        create_cpe_response(
+            cpe_name_id=f"CPE-{i}",
+            update={"total_results": responses * results_per_response},
+            results=results_per_response,
+        )
+        for i in range(1, responses + 1)
     ]
 
 
@@ -81,19 +93,19 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
     async def test_cpe(self):
         self.http_client.get.return_value = create_cpe_response("CPE-1")
 
-        cpe = await self.api.cpe("CPE-1")
+        cpe = await self.api.cpe("CPE-1-1")
 
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
-            params={"cpeNameId": "CPE-1"},
+            params={"cpeNameId": "CPE-1-1"},
         )
 
         self.assertEqual(
             cpe.cpe_name,
             "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:arm64:*",
         )
-        self.assertEqual(cpe.cpe_name_id, "CPE-1")
+        self.assertEqual(cpe.cpe_name_id, "CPE-1-1")
         self.assertFalse(cpe.deprecated)
         self.assertEqual(
             cpe.last_modified, datetime(2022, 12, 9, 18, 15, 16, 973000)
@@ -137,7 +149,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -145,6 +157,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "lastModStartDate": "2022-12-01T00:00:00",
                 "lastModEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
 
@@ -152,7 +165,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -178,7 +191,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -186,6 +199,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "lastModStartDate": "2022-12-01T00:00:00",
                 "lastModEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
 
@@ -193,7 +207,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -214,7 +228,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cpes(keywords=["Mac OS X", "kernel"]))
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -222,6 +236,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "keywordSearch": "Mac OS X kernel",
                 "keywordExactMatch": "",
+                "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
 
@@ -229,7 +244,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -250,13 +265,14 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cpes(keywords="macOS"))
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
             params={
                 "startIndex": 0,
                 "keywordSearch": "macOS",
+                "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
 
@@ -264,7 +280,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -288,12 +304,13 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
             params={
                 "startIndex": 0,
+                "resultsPerPage": MAX_CPES_PER_PAGE,
                 "cpeMatchString": "cpe:2.3:o:microsoft:windows_10:20h2:*:*:*:*:*:*:*",
             },
         )
@@ -302,7 +319,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -326,13 +343,14 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-1")
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
             params={
                 "startIndex": 0,
                 "matchCriteriaId": "36FBCF0F-8CEE-474C-8A04-5075AF53FAF4",
+                "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
 
@@ -340,7 +358,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.cpe_name_id, "CPE-2")
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpes/2.0",
             headers={},
@@ -352,6 +370,51 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         )
 
         with self.assertRaises(StopAsyncIteration):
+            cve = await anext(it)
+
+    async def test_cpes_request_results(self):
+        self.http_client.get.side_effect = create_cpes_responses(
+            results_per_response=2
+        )
+
+        it = aiter(self.api.cpes(request_results=10))
+        cve = await anext(it)
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cpes/2.0",
+            headers={},
+            params={
+                "startIndex": 0,
+                "resultsPerPage": 10,
+            },
+        )
+        self.assertEqual(cve.cpe_name_id, "CPE-1-1")
+
+        self.http_client.get.reset_mock()
+        cve = await anext(it)
+        self.assertEqual(cve.cpe_name_id, "CPE-1-2")
+        self.http_client.get.assert_not_called()
+
+        self.http_client.get.reset_mock()
+        cve = await anext(it)
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cpes/2.0",
+            headers={},
+            params={
+                "startIndex": 2,
+                "resultsPerPage": 2,
+            },
+        )
+        self.assertEqual(cve.cpe_name_id, "CPE-2-1")
+
+        self.http_client.get.reset_mock()
+        cve = await anext(it)
+        self.assertEqual(cve.cpe_name_id, "CPE-2-2")
+        self.http_client.get.assert_not_called()
+
+        self.http_client.get.reset_mock()
+
+        with self.assertRaises(Exception):
             cve = await anext(it)
 
     async def test_context_manager(self):

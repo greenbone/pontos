@@ -19,9 +19,7 @@
 from datetime import datetime
 from types import TracebackType
 from typing import (
-    Any,
     AsyncIterator,
-    Dict,
     Iterable,
     List,
     Optional,
@@ -34,7 +32,9 @@ from httpx import Timeout
 from pontos.errors import PontosError
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
+    JSON,
     NVDApi,
+    Params,
     convert_camel_case,
     format_date,
     now,
@@ -42,6 +42,7 @@ from pontos.nvd.api import (
 from pontos.nvd.models.cpe import CPE
 
 DEFAULT_NIST_NVD_CPES_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
+MAX_CPES_PER_PAGE = 10000
 
 
 class CPEApi(NVDApi):
@@ -131,6 +132,7 @@ class CPEApi(NVDApi):
         cpe_match_string: Optional[str] = None,
         keywords: Optional[Union[List[str], str]] = None,
         match_criteria_id: Optional[str] = None,
+        request_results: Optional[int] = None,
     ) -> AsyncIterator[CPE]:
         """
         Get all CPEs for the provided arguments
@@ -148,6 +150,8 @@ class CPEApi(NVDApi):
                 the metadata title or reference links.
             match_criteria_id: Returns all CPE records associated with a match
                 string identified by its UUID.
+            request_results: Number of CPEs to download. Set to None (default)
+                to download all available CPEs.
 
         Returns:
             An async iterator of CPE model instances.
@@ -161,9 +165,7 @@ class CPEApi(NVDApi):
                     async for cpe in api.cpes(keywords=["Mac OS X"]):
                         print(cpe.cpe_name, cpe.cpe_name_id)
         """
-        total_results = None
-
-        params: Dict[str, Union[str, int]] = {}
+        params: Params = {}
         if last_modified_start_date:
             params["lastModStartDate"] = format_date(last_modified_start_date)
             if not last_modified_end_date:
@@ -186,9 +188,18 @@ class CPEApi(NVDApi):
             params["matchCriteriaId"] = match_criteria_id
 
         start_index = 0
-        results_per_page = None
+        downloaded_results = 0
+        results_per_page = (
+            request_results
+            if request_results and request_results < MAX_CPES_PER_PAGE
+            else MAX_CPES_PER_PAGE
+        )
+        total_results = None
+        requested_results = request_results
 
-        while total_results is None or start_index < total_results:
+        while (
+            requested_results is None or downloaded_results < requested_results
+        ):
             params["startIndex"] = start_index
 
             if results_per_page is not None:
@@ -197,19 +208,31 @@ class CPEApi(NVDApi):
             response = await self._get(params=params)
             response.raise_for_status()
 
-            data: Dict[str, Union[int, str, Dict[str, Any]]] = response.json(
-                object_hook=convert_camel_case
-            )
+            data: JSON = response.json(object_hook=convert_camel_case)
 
             results_per_page: int = data["results_per_page"]  # type: ignore
             total_results: int = data["total_results"]  # type: ignore
             products: Iterable = data.get("products", [])  # type: ignore
 
+            if not requested_results:
+                requested_results = total_results
+
             for product in products:
                 yield CPE.from_dict(product["cpe"])
 
-            if results_per_page is not None:
-                start_index += results_per_page
+            if results_per_page is None:
+                # just be safe here. should never occur
+                results_per_page = len(products)
+
+            start_index += results_per_page
+            downloaded_results += results_per_page
+
+            if (
+                request_results
+                and downloaded_results + results_per_page > request_results
+            ):
+                # avoid downloading more results then requested
+                results_per_page = request_results - downloaded_results
 
     async def __aenter__(self) -> "CPEApi":
         await super().__aenter__()
