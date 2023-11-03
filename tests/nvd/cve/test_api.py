@@ -25,18 +25,24 @@ from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
 from pontos.nvd.api import now
-from pontos.nvd.cve.api import CVEApi
+from pontos.nvd.cve.api import MAX_CVES_PER_PAGE, CVEApi
 from pontos.nvd.models import cvss_v2, cvss_v3
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_data
 
 
 def create_cve_response(
-    cve_id: str, update: Optional[Dict[str, Any]] = None
+    cve_id: str,
+    *,
+    update: Optional[Dict[str, Any]] = None,
+    results: int = 1,
 ) -> MagicMock:
     data = {
-        "vulnerabilities": [{"cve": get_cve_data({"id": cve_id})}],
-        "results_per_page": 1,
+        "vulnerabilities": [
+            {"cve": get_cve_data({"id": f"{cve_id}-{i}"})}
+            for i in range(1, results + 1)
+        ],
+        "results_per_page": results,
     }
     if update:
         data.update(update)
@@ -46,10 +52,16 @@ def create_cve_response(
     return response
 
 
-def create_cves_responses(count: int = 2) -> List[MagicMock]:
+def create_cves_responses(
+    requests: int = 2, results_per_response: int = 1
+) -> List[MagicMock]:
     return [
-        create_cve_response(f"CVE-{i}", {"total_results": count})
-        for i in range(1, count + 1)
+        create_cve_response(
+            f"CVE-{i}",
+            update={"total_results": requests * results_per_response},
+            results=results_per_response,
+        )
+        for i in range(1, requests + 1)
     ]
 
 
@@ -124,18 +136,21 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves())
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0},
+            params={
+                "startIndex": 0,
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -155,7 +170,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -163,6 +178,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "lastModStartDate": "2022-12-01T00:00:00",
                 "lastModEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -170,7 +186,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -196,7 +212,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -204,6 +220,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "lastModStartDate": "2022-12-01T00:00:00",
                 "lastModEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -211,7 +228,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -234,7 +251,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(published_start_date=datetime(2022, 12, 1)))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -242,6 +259,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "pubStartDate": "2022-12-01T00:00:00",
                 "pubEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -249,7 +267,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -275,7 +293,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -283,6 +301,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "pubStartDate": "2022-12-01T00:00:00",
                 "pubEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -290,7 +309,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -311,18 +330,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cpe_name="foo-bar"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "cpeName": "foo-bar"},
+            params={
+                "startIndex": 0,
+                "cpeName": "foo-bar",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -342,18 +365,23 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cpe_name="foo-bar", is_vulnerable=True))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "cpeName": "foo-bar", "isVulnerable": ""},
+            params={
+                "startIndex": 0,
+                "cpeName": "foo-bar",
+                "isVulnerable": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -374,13 +402,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cvss_v2_vector="AV:N/AC:M/Au:N/C:N/I:P/A:N"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "cvssV2Metrics": "AV:N/AC:M/Au:N/C:N/I:P/A:N",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -388,7 +417,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -412,13 +441,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         )
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "cvssV3Metrics": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -426,7 +456,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -446,13 +476,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cvss_v2_severity=cvss_v2.Severity.HIGH))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "cvssV2Severity": "HIGH",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -460,7 +491,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -480,13 +511,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cvss_v3_severity=cvss_v3.Severity.HIGH))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "cvssV3Severity": "HIGH",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -494,7 +526,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -514,7 +546,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(keywords=["Mac OS X", "kernel"]))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -522,6 +554,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "keywordSearch": "Mac OS X kernel",
                 "keywordExactMatch": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -529,7 +562,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -550,13 +583,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(keywords="Windows"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "keywordSearch": "Windows",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -564,7 +598,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -584,18 +618,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(cwe_id="CWE-1"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "cweId": "CWE-1"},
+            params={
+                "startIndex": 0,
+                "cweId": "CWE-1",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -611,13 +649,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(source_identifier="nvd@nist.gov"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "sourceIdentifier": "nvd@nist.gov",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -625,7 +664,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -645,13 +684,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(virtual_match_string="foo-bar"))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
                 "virtualMatchString": "foo-bar",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
 
@@ -659,7 +699,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -679,18 +719,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(has_cert_alerts=True))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "hasCertAlerts": ""},
+            params={
+                "startIndex": 0,
+                "hasCertAlerts": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -710,18 +754,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(has_cert_notes=True))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "hasCertNotes": ""},
+            params={
+                "startIndex": 0,
+                "hasCertNotes": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -741,18 +789,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(has_kev=True))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "hasKev": ""},
+            params={
+                "startIndex": 0,
+                "hasKev": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -772,18 +824,22 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cves(has_oval=True))
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-1")
+        self.assertEqual(cve.id, "CVE-1-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "hasOval": ""},
+            params={
+                "startIndex": 0,
+                "hasOval": "",
+                "resultsPerPage": MAX_CVES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
 
         cve = await anext(it)
 
-        self.assertEqual(cve.id, "CVE-2")
+        self.assertEqual(cve.id, "CVE-2-1")
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
@@ -795,6 +851,51 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         )
 
         with self.assertRaises(StopAsyncIteration):
+            cve = await anext(it)
+
+    async def test_cves_request_results(self):
+        self.http_client.get.side_effect = create_cves_responses(
+            results_per_response=2
+        )
+
+        it = aiter(self.api.cves(request_results=10))
+        cve = await anext(it)
+
+        self.assertEqual(cve.id, "CVE-1-1")
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cves/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "resultsPerPage": 10,
+            },
+        )
+
+        self.http_client.get.reset_mock()
+        cve = await anext(it)
+        self.assertEqual(cve.id, "CVE-1-2")
+        self.http_client.get.assert_not_called()
+
+        self.http_client.get.reset_mock()
+
+        cve = await anext(it)
+
+        self.assertEqual(cve.id, "CVE-2-1")
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cves/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 2,
+                "resultsPerPage": 2,
+            },
+        )
+
+        self.http_client.get.reset_mock()
+        cve = await anext(it)
+        self.assertEqual(cve.id, "CVE-2-2")
+        self.http_client.get.assert_not_called()
+
+        with self.assertRaises(Exception):
             cve = await anext(it)
 
     async def test_context_manager(self):

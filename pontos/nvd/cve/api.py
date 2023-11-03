@@ -18,9 +18,7 @@
 from datetime import datetime
 from types import TracebackType
 from typing import (
-    Any,
     AsyncIterator,
-    Dict,
     Iterable,
     List,
     Optional,
@@ -33,6 +31,7 @@ from httpx import Timeout
 from pontos.errors import PontosError
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
+    JSON,
     NVDApi,
     Params,
     convert_camel_case,
@@ -46,6 +45,7 @@ from pontos.nvd.models.cvss_v3 import Severity as CVSSv3Severity
 __all__ = ("CVEApi",)
 
 DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+MAX_CVES_PER_PAGE = 10000
 
 
 class CVEApi(NVDApi):
@@ -112,6 +112,7 @@ class CVEApi(NVDApi):
         has_cert_notes: Optional[bool] = None,
         has_kev: Optional[bool] = None,
         has_oval: Optional[bool] = None,
+        request_results: Optional[int] = None,
     ) -> AsyncIterator[CVE]:
         """
         Get all CVEs for the provided arguments
@@ -160,6 +161,8 @@ class CVEApi(NVDApi):
             has_oval: Returns the CVEs that contain information from MITRE's
                 Open Vulnerability and Assessment Language (OVAL) before this
                 transitioned to the Center for Internet Security (CIS).
+            request_results: Number of CVEs to download. Set to None (default)
+                to download all available CVEs.
 
         Returns:
             An async iterator to iterate over CVE model instances
@@ -173,8 +176,6 @@ class CVEApi(NVDApi):
                     async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
                         print(cve.id)
         """
-        total_results: Optional[int] = None
-
         params: Params = {}
         if last_modified_start_date:
             params["lastModStartDate"] = format_date(last_modified_start_date)
@@ -231,9 +232,18 @@ class CVEApi(NVDApi):
             params["hasOval"] = ""
 
         start_index: int = 0
-        results_per_page = None
+        downloaded_results = 0
+        results_per_page = (
+            request_results
+            if request_results and request_results < MAX_CVES_PER_PAGE
+            else MAX_CVES_PER_PAGE
+        )
+        total_results = None
+        requested_results = request_results
 
-        while total_results is None or start_index < total_results:
+        while (
+            requested_results is None or downloaded_results < requested_results
+        ):
             params["startIndex"] = start_index
 
             if results_per_page is not None:
@@ -242,21 +252,33 @@ class CVEApi(NVDApi):
             response = await self._get(params=params)
             response.raise_for_status()
 
-            data: Dict[str, Union[int, str, Dict[str, Any]]] = response.json(
-                object_hook=convert_camel_case
-            )
+            data: JSON = response.json(object_hook=convert_camel_case)
 
-            total_results = data["total_results"]  # type: ignore
             results_per_page: int = data["results_per_page"]  # type: ignore
+            total_results: int = data["total_results"]  # type: ignore
             vulnerabilities: Iterable = data.get(  # type: ignore
                 "vulnerabilities", []
             )
 
+            if not requested_results:
+                requested_results = total_results
+
             for vulnerability in vulnerabilities:
                 yield CVE.from_dict(vulnerability["cve"])
 
-            if results_per_page is not None:
-                start_index += results_per_page
+            if results_per_page is None:
+                # just be safe here. should never occur
+                results_per_page = len(vulnerabilities)
+
+            start_index += results_per_page
+            downloaded_results += results_per_page
+
+            if (
+                request_results
+                and downloaded_results + results_per_page > request_results
+            ):
+                # avoid downloading more results then requested
+                results_per_page = request_results - downloaded_results
 
     async def cve(self, cve_id: str) -> CVE:
         """

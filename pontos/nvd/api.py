@@ -32,6 +32,7 @@ DEFAULT_TIMEOUT_CONFIG = Timeout(DEFAULT_TIMEOUT)  # three minutes
 
 Headers = Dict[str, str]
 Params = Dict[str, Union[str, int]]
+JSON = dict[str, Union[int, str, dict[str, Any]]]
 
 __all__ = (
     "convert_camel_case",
