@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Python 3.7 and later is supported.
+Python 3.9 and later is supported.
 
 ## Using pip
 
@@ -21,7 +21,7 @@ python3 -m pip install --user pontos
 
 Because **pontos** is a Python library you most likely need a tool to
 handle Python package dependencies and Python environments. Therefore we
-strongly recommend using [pipenv](https://pipenv.pypa.io/en/latest/) or [poetry](https://python-poetry.org/).
+strongly recommend using [poetry](https://python-poetry.org/).
 
 You can install the latest stable release of **pontos** and add it as
 a dependency for your current project using [poetry](https://python-poetry.org/)
@@ -29,5 +29,3 @@ a dependency for your current project using [poetry](https://python-poetry.org/)
 ```shell
 poetry add pontos
 ```
-
-For installation via pipenv please take a look at their [documentation](https://pipenv.pypa.io/en/latest/).
