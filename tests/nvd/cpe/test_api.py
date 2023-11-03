@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
-from pontos.nvd.api import now, sleep
+from pontos.nvd.api import now
 from pontos.nvd.cpe.api import CPEApi
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cpe_data
@@ -54,10 +54,12 @@ def create_cpes_responses(count: int = 2) -> List[MagicMock]:
 
 
 class CPEApiTestCase(IsolatedAsyncioTestCase):
+    @patch("pontos.nvd.api.time.monotonic", autospec=True)
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
-    def setUp(self, async_client: MagicMock) -> None:
+    def setUp(self, async_client: MagicMock, monotonic_mock: MagicMock) -> None:
         self.http_client = AsyncMock()
         async_client.return_value = self.http_client
+        monotonic_mock.return_value = 0
         self.api = CPEApi()
 
     async def test_no_cpe_name_id(self):
@@ -102,9 +104,15 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cpe.titles, [])
         self.assertEqual(cpe.deprecated_by, [])
 
-    @patch("pontos.nvd.api.sleep", spec=sleep)
-    async def test_rate_limit(self, sleep_mock: MagicMock):
-        self.http_client.get.side_effect = create_cpes_responses(6)
+    @patch("pontos.nvd.api.time.monotonic", autospec=True)
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
+    async def test_rate_limit(
+        self,
+        sleep_mock: MagicMock,
+        monotonic_mock: MagicMock,
+    ):
+        self.http_client.get.side_effect = create_cpes_responses(8)
+        monotonic_mock.side_effect = [10, 11]
 
         it = aiter(self.api.cpes())
         await anext(it)
@@ -117,7 +125,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         await anext(it)
 
-        sleep_mock.assert_called_once_with()
+        sleep_mock.assert_called_once_with(20.0)
 
     @patch("pontos.nvd.cpe.api.now", spec=now)
     async def test_cves_last_modified_start_date(self, now_mock: MagicMock):

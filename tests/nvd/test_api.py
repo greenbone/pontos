@@ -23,7 +23,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from httpx import AsyncClient
 
-from pontos.nvd.api import NVDApi, convert_camel_case, format_date, sleep
+from pontos.nvd.api import NVDApi, convert_camel_case, format_date
 from tests import IsolatedAsyncioTestCase
 
 
@@ -84,13 +84,19 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
             "https://foo.bar/baz", headers={"apiKey": "token"}, params=None
         )
 
-    @patch("pontos.nvd.api.sleep", spec=sleep)
+    @patch("pontos.nvd.api.time.monotonic", autospec=True)
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
     async def test_rate_limit(
-        self, async_client: MagicMock, sleep_mock: MagicMock
+        self,
+        async_client: MagicMock,
+        sleep_mock: MagicMock,
+        monotonic_mock: MagicMock,
     ):
         http_client = AsyncMock()
         async_client.return_value = http_client
+        monotonic_mock.side_effect = [0.0, 10.0, 11.0]
+
         api = NVDApi("https://foo.bar/baz")
 
         await api._get()
@@ -103,9 +109,9 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
 
         await api._get()
 
-        sleep_mock.assert_called_once_with()
+        sleep_mock.assert_called_once_with(20.0)
 
-    @patch("pontos.nvd.api.sleep", spec=sleep)
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
     async def test_no_rate_limit(
         self, async_client: MagicMock, sleep_mock: MagicMock

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import time
 from abc import ABC
 from datetime import datetime, timezone
 from types import TracebackType
@@ -76,10 +77,6 @@ def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
     return converted
 
 
-async def sleep() -> None:
-    await asyncio.sleep(SLEEP_TIMEOUT)
-
-
 class NVDApi(ABC):
     """
     Abstract base class for querying the NIST NVD API.
@@ -120,6 +117,7 @@ class NVDApi(ABC):
             self._rate_limit = None
 
         self._request_count = 0
+        self._last_sleep = time.monotonic()
 
     def _request_headers(self) -> Headers:
         """
@@ -141,7 +139,13 @@ class NVDApi(ABC):
 
         self._request_count += 1
         if self._request_count > self._rate_limit:
-            await sleep()
+            time_since_last_sleep = time.monotonic() - self._last_sleep
+
+            if time_since_last_sleep < SLEEP_TIMEOUT:
+                time_to_sleep = SLEEP_TIMEOUT - time_since_last_sleep
+                await asyncio.sleep(time_to_sleep)
+
+            self._last_sleep = time.monotonic()
             self._request_count = 0
 
     async def _get(
