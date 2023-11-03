@@ -321,6 +321,33 @@ def unbind_value_uri(value: Optional[str]) -> Optional[str]:
     return result
 
 
+def split_cpe(cpe: str) -> list[str]:
+    """
+    Split a CPE into its parts
+    """
+    if "\\:" in cpe:
+        # houston we have a problem
+        # the cpe string contains an escaped colon (:)
+        parts = []
+        index = 0
+        start_index = 0
+        stripped_cpe = cpe
+        while index < len(cpe):
+            if index > 0 and cpe[index] == ":" and cpe[index - 1] != "\\":
+                part = cpe[start_index:index]
+                parts.append(part)
+                start_index = index + 1
+                stripped_cpe = cpe[start_index:]
+            index += 1
+
+        if stripped_cpe:
+            parts.append(stripped_cpe)
+    else:
+        parts = cpe.split(":")
+
+    return parts
+
+
 @dataclass(frozen=True)  # should require keywords only with Python >= 3.10
 class CPE:
     """
@@ -392,7 +419,7 @@ class CPE:
         Create a new CPE from a string
         """
         cleaned_cpe = cpe.strip().lower()
-        parts = cpe.split(":")
+        parts = split_cpe(cleaned_cpe)
 
         if is_uri_binding(cleaned_cpe):
             values: dict[str, Optional[str]] = dict(

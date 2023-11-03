@@ -7,6 +7,58 @@
 import unittest
 
 from pontos.cpe import ANY, CPE, NA, CPEParsingError, Part
+from pontos.cpe._cpe import split_cpe
+
+
+class SplitCpeTestCase(unittest.TestCase):
+    def test_split_uri_cpe(self):
+        parts = split_cpe("cpe:/o:microsoft:windows_xp:::pro")
+
+        self.assertEqual(len(parts), 7)
+        self.assertEqual(parts[0], "cpe")
+        self.assertEqual(parts[1], "/o")
+        self.assertEqual(parts[2], "microsoft")
+        self.assertEqual(parts[3], "windows_xp")
+        self.assertEqual(parts[4], "")
+        self.assertEqual(parts[5], "")
+        self.assertEqual(parts[6], "pro")
+
+    def test_split_formatted_cpe(self):
+        parts = split_cpe(
+            "cpe:2.3:a:microsoft:internet_explorer:8.0.6001:beta:*:*:*:*:*:*"
+        )
+
+        self.assertEqual(len(parts), 13)
+        self.assertEqual(parts[0], "cpe")
+        self.assertEqual(parts[1], "2.3")
+        self.assertEqual(parts[2], "a")
+        self.assertEqual(parts[3], "microsoft")
+        self.assertEqual(parts[4], "internet_explorer")
+        self.assertEqual(parts[5], "8.0.6001")
+        self.assertEqual(parts[6], "beta")
+        self.assertEqual(parts[7], "*")
+        self.assertEqual(parts[8], "*")
+        self.assertEqual(parts[9], "*")
+        self.assertEqual(parts[10], "*")
+        self.assertEqual(parts[11], "*")
+        self.assertEqual(parts[12], "*")
+
+        parts = split_cpe("cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
+
+        self.assertEqual(len(parts), 13)
+        self.assertEqual(parts[0], "cpe")
+        self.assertEqual(parts[1], "2.3")
+        self.assertEqual(parts[2], "a")
+        self.assertEqual(parts[3], "foo")
+        self.assertEqual(parts[4], "bar\\:mumble")
+        self.assertEqual(parts[5], "1.0")
+        self.assertEqual(parts[6], "*")
+        self.assertEqual(parts[7], "*")
+        self.assertEqual(parts[8], "*")
+        self.assertEqual(parts[9], "*")
+        self.assertEqual(parts[10], "*")
+        self.assertEqual(parts[11], "*")
+        self.assertEqual(parts[12], "*")
 
 
 class CPETestCase(unittest.TestCase):
@@ -390,10 +442,10 @@ class CPETestCase(unittest.TestCase):
         self.assertEqual(cpe.part, Part.APPLICATION)
         self.assertEqual(cpe.vendor, "microsoft")
         self.assertEqual(cpe.product, "internet_explorer")
-        # self.assertEqual(cpe.version, "8\.0\.6001")
+        self.assertEqual(cpe.version, "8\.0\.6001")
         self.assertEqual(cpe.update, "beta")
-        self.assertEqual(cpe.language, ANY)
         self.assertEqual(cpe.edition, ANY)
+        self.assertEqual(cpe.language, ANY)
         self.assertEqual(cpe.sw_edition, ANY)
         self.assertEqual(cpe.target_sw, ANY)
         self.assertEqual(cpe.target_hw, ANY)
@@ -463,12 +515,32 @@ class CPETestCase(unittest.TestCase):
         self.assertEqual(cpe.target_hw, "80gb")
         self.assertEqual(cpe.other, ANY)
 
+        cpe = CPE.from_string("cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
+        self.assertFalse(cpe.is_uri_binding())
+        self.assertTrue(cpe.is_formatted_string_binding())
+        self.assertEqual(cpe.part, Part.APPLICATION)
+        self.assertEqual(cpe.vendor, "foo")
+        self.assertEqual(cpe.product, "bar\:mumble")
+        self.assertEqual(cpe.version, "1\.0")
+        self.assertEqual(cpe.update, ANY)
+        self.assertEqual(cpe.edition, ANY)
+        self.assertEqual(cpe.language, ANY)
+        self.assertEqual(cpe.sw_edition, ANY)
+        self.assertEqual(cpe.target_sw, ANY)
+        self.assertEqual(cpe.target_hw, ANY)
+        self.assertEqual(cpe.other, ANY)
+
     def test_as_uri_binding(self):
-        cpe_string = "cpe:2.3:a:microsoft:internet_explorer:8\\.*:sp?"
-        cpe = CPE.from_string(cpe_string)
+        cpe = CPE.from_string("cpe:2.3:a:microsoft:internet_explorer:8\\.*:sp?")
         self.assertEqual(
             cpe.as_uri_binding(),
             "cpe:/a:microsoft:internet_explorer:8.%02:sp%01",
+        )
+
+        cpe = CPE.from_string("cpe:2.3:a:cgiirc:cgi\:irc:0.5.7:*:*:*:*:*:*:*")
+        self.assertEqual(
+            cpe.as_uri_binding(),
+            "cpe:/a:cgiirc:cgi%3airc:0.5.7",
         )
 
     def test_as_uri_binding_with_edition(self):
