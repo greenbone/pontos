@@ -4,6 +4,7 @@
 :maxdepth: 1
 
 pontos/changelog
+pontos/cpe
 pontos/errors
 pontos/git
 pontos/github
