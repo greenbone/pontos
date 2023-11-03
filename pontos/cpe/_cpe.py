@@ -253,7 +253,10 @@ def bind_value_for_uri(value: Optional[str]) -> str:
         return ""
     if value == NA:
         return value
-    return _transform_for_uri(value)
+    try:
+        return _transform_for_uri(value)
+    except Exception as e:
+        raise CPEParsingError(f"Can't bind '{value}' for URI") from e
 
 
 def unbind_value_uri(value: Optional[str]) -> Optional[str]:
