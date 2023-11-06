@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, Iterable, Optional, Union
+from types import TracebackType
+from typing import Any, AsyncIterator, Dict, Iterable, Optional, Type, Union
 
 from httpx import Timeout
 
@@ -150,3 +151,17 @@ class CVEChangeHistoryApi(NVDApi):
 
             if results_per_page is not None:
                 start_index += results_per_page
+
+    async def __aenter__(self) -> "CVEChangeHistoryApi":
+        await super().__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
+        return await super().__aexit__(  # type: ignore
+            exc_type, exc_value, traceback
+        )
