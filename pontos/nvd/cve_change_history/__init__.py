@@ -21,7 +21,6 @@ from typing import Callable
 
 from pontos.nvd.cve_change_history.api import CVEChangeHistoryApi
 
-
 __all__ = ("CVEChangeHistoryApi",)
 
 
