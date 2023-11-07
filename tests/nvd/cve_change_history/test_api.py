@@ -18,14 +18,14 @@
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from unittest import IsolatedAsyncioTestCase
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from uuid import UUID
 
 from httpx import AsyncClient, Response
 
 from pontos.nvd.cve_change_history.api import CVEChangeHistoryApi
 from pontos.nvd.models.cve_change import Detail, EventName
+from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_change_data
 
 
