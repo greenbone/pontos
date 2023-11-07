@@ -7,7 +7,12 @@
 import unittest
 
 from pontos.cpe import ANY, CPE, NA, CPEParsingError, Part
-from pontos.cpe._cpe import split_cpe
+from pontos.cpe._cpe import (
+    bind_value_for_formatted_string,
+    convert_double_backslash,
+    split_cpe,
+    unbind_value_from_formatted_string,
+)
 
 
 class SplitCpeTestCase(unittest.TestCase):
@@ -61,6 +66,103 @@ class SplitCpeTestCase(unittest.TestCase):
         self.assertEqual(parts[12], "*")
 
 
+class ConvertDoubleBackslashTestCase(unittest.TestCase):
+    def test_remove_backslash(self):
+        self.assertEqual(convert_double_backslash("foo-bar"), "foo-bar")
+        self.assertEqual(convert_double_backslash("foo\\bar"), "foo\\bar")
+        self.assertEqual(convert_double_backslash("foo\\\\bar"), "foo\\bar")
+
+
+class UnbindValueFromFormattedStringTestCase(unittest.TestCase):
+    def test_unchanged(self):
+        self.assertIsNone(unbind_value_from_formatted_string(None))
+        self.assertEqual(unbind_value_from_formatted_string(ANY), ANY)
+        self.assertEqual(unbind_value_from_formatted_string(NA), NA)
+
+        self.assertEqual(
+            unbind_value_from_formatted_string("foo_bar"), "foo_bar"
+        )
+        self.assertEqual(
+            unbind_value_from_formatted_string("foo\\:bar"), "foo\\:bar"
+        )
+        self.assertEqual(
+            unbind_value_from_formatted_string("1\\.2\\.3"), "1\\.2\\.3"
+        )
+
+    def test_quoting(self):
+        self.assertEqual(
+            unbind_value_from_formatted_string("foo-bar"), "foo\\-bar"
+        )
+        self.assertEqual(  # not sure if this can happen and if it's valid
+            unbind_value_from_formatted_string("foo:bar"), "foo\\:bar"
+        )
+        self.assertEqual(
+            unbind_value_from_formatted_string("1.2.3"), "1\\.2\\.3"
+        )
+
+    def test_asterisk(self):
+        self.assertEqual(unbind_value_from_formatted_string("*foo"), "*foo")
+        self.assertEqual(unbind_value_from_formatted_string("foo*"), "foo*")
+        self.assertEqual(unbind_value_from_formatted_string("foo\\*"), "foo\\*")
+
+        with self.assertRaisesRegex(
+            CPEParsingError,
+            "An unquoted asterisk must appear at the beginning or end of "
+            "'foo\*bar'",
+        ):
+            unbind_value_from_formatted_string("foo*bar")
+
+        with self.assertRaisesRegex(
+            CPEParsingError,
+            "An unquoted asterisk must appear at the beginning or end of "
+            "'\*\*foo'",
+        ):
+            unbind_value_from_formatted_string("**foo")
+
+    def test_question_mark(self):
+        self.assertEqual(unbind_value_from_formatted_string("?foo"), "?foo")
+        self.assertEqual(unbind_value_from_formatted_string("??foo"), "??foo")
+        self.assertEqual(unbind_value_from_formatted_string("foo?"), "foo?")
+        self.assertEqual(unbind_value_from_formatted_string("foo??"), "foo??")
+        self.assertEqual(unbind_value_from_formatted_string("foo\\?"), "foo\\?")
+
+        with self.assertRaisesRegex(
+            CPEParsingError,
+            "An unquoted question mark must appear at the beginning or end, "
+            "or in a leading or trailing sequence 'foo\?bar'",
+        ):
+            unbind_value_from_formatted_string("foo?bar")
+
+
+class BindValueForFormattedStringTestCase(unittest.TestCase):
+    def test_any(self):
+        self.assertEqual(bind_value_for_formatted_string(None), ANY)
+        self.assertEqual(bind_value_for_formatted_string(""), ANY)
+        self.assertEqual(bind_value_for_formatted_string(ANY), ANY)
+
+    def test_na(self):
+        self.assertEqual(bind_value_for_formatted_string(NA), NA)
+
+    def test_remove_quoting(self):
+        self.assertEqual(bind_value_for_formatted_string("1\\.2\\.3"), "1.2.3")
+        # _ doesn't get quoted during unbinding therefore unquoting it here
+        # doesn't really make sense bit it's in the standard!
+        self.assertEqual(
+            bind_value_for_formatted_string("foo\\_bar"), "foo_bar"
+        )
+        self.assertEqual(
+            bind_value_for_formatted_string("foo\\-bar"), "foo-bar"
+        )
+
+    def test_unchanged(self):
+        self.assertEqual(
+            bind_value_for_formatted_string("foo\\:bar"), "foo\\:bar"
+        )
+        self.assertEqual(bind_value_for_formatted_string("?foo"), "?foo")
+        self.assertEqual(bind_value_for_formatted_string("foo*"), "foo*")
+        self.assertEqual(bind_value_for_formatted_string("foo\\*"), "foo\\*")
+
+
 class CPETestCase(unittest.TestCase):
     def test_uri_binding(self):
         cpe_string = "cpe:/o:microsoft:windows_xp:::pro"
@@ -91,7 +193,6 @@ class CPETestCase(unittest.TestCase):
         cpe = CPE.from_string(
             "cpe:/a:foo%5cbar:big%24money_manager_2010:::~~special~ipod_touch~80gb~"
         )
-        print(repr(cpe))
         self.assertEqual(
             str(cpe),
             "cpe:/a:foo%5cbar:big%24money_manager_2010:::~~special~ipod_touch~80gb~",
