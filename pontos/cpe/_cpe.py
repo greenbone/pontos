@@ -385,7 +385,60 @@ def split_cpe(cpe: str) -> list[str]:
     return parts
 
 
-@dataclass(frozen=True)  # should require keywords only with Python >= 3.10
+@dataclass(frozen=True)
+class CPEWellFormed:
+    """
+    Represents a Common Platform Enumeration (CPE) name using the Well-Formed
+    CPE Name (WNF) Data Model. Attributes are quoted according to the WNF model.
+
+    In most cases this class should not be used directly and the CPE class
+    should be used instead.
+
+    Attributes:
+        part: Value should be "a" for application, "o" for operating system or
+            "h" for hardware
+        vendor: Person or organization that manufactured or created the product
+        product: Identifies the most common and recognizable title or name of
+            the product
+        version: A vendor-specific alphanumeric string characterizing the
+            particular release version of the product
+        update: A vendor-specific alphanumeric string characterizing the
+            particular update, service pack, or point release of the product
+        edition: The edition attribute is considered deprecated in the 2.3
+            CPE specification, and it should be assigned the logical value ANY
+            except where required for backward compatibility with version 2.2 of
+            the CPE specification. This attribute is referred to as the “legacy
+            edition” attribute
+        language: Defines the language supported in the user interface of the
+            product (as language tags defined by RFC5646)
+        sw_edition: Characterizes how the product is tailored to a particular
+            market or class of end users. Extended attribute introduced with
+            version 2.3 of the CPE specification
+        target_sw: Characterizes the software computing environment within which
+            the product operates. Extended attribute introduced with
+            version 2.3 of the CPE specification
+        hardware_sw: Characterizes the instruction set architecture (e.g., x86)
+            on which the product operates. Extended attribute introduced with
+            version 2.3 of the CPE specification
+        other: Captures any other general descriptive or identifying information
+            which is vendor- or product-specific and which does not logically
+            fit in any other attribute value. Extended attribute introduced with
+            version 2.3 of the CPE specification
+    """
+
+    part: Part
+    vendor: str
+    product: str
+    version: Optional[str] = None
+    update: Optional[str] = None
+    edition: Optional[str] = None
+    language: Optional[str] = None
+    sw_edition: Optional[str] = None
+    target_sw: Optional[str] = None
+    target_hw: Optional[str] = None
+    other: Optional[str] = None
+
+
 class CPE:
     """
     Represents a Common Platform Enumeration (CPE) name
@@ -433,22 +486,51 @@ class CPE:
 
             print(cpe.vendor)           # google
             print(cpe.product)          # android
-            print(cpe.version)          # 13\.0
+            print(cpe.version)          # 13.0
             print(cpe.as_uri_binding()) # cpe:/o:google:android:13.0
     """
 
-    part: Part
-    vendor: str
-    product: str
-    version: Optional[str] = None
-    update: Optional[str] = None
-    edition: Optional[str] = None
-    language: Optional[str] = None
-    sw_edition: Optional[str] = None
-    target_sw: Optional[str] = None
-    target_hw: Optional[str] = None
-    other: Optional[str] = None
-    cpe_string: Optional[str] = None
+    def __init__(
+        self,
+        *,
+        cpe_string: Optional[str] = None,
+        part: Part,
+        vendor: str,
+        product: str,
+        version: Optional[str] = None,
+        update: Optional[str] = None,
+        edition: Optional[str] = None,
+        language: Optional[str] = None,
+        sw_edition: Optional[str] = None,
+        target_sw: Optional[str] = None,
+        target_hw: Optional[str] = None,
+        other: Optional[str] = None,
+    ) -> None:
+        self.cpe_string = cpe_string
+        self.__wnf__ = CPEWellFormed(
+            part=part,
+            vendor=vendor,
+            product=product,
+            version=version,
+            update=update,
+            edition=edition,
+            language=language,
+            sw_edition=sw_edition,
+            target_sw=target_sw,
+            target_hw=target_hw,
+            other=other,
+        )
+        self.part = part
+        self.vendor = unquote_attribute_value(vendor)
+        self.product = unquote_attribute_value(product)
+        self.version = unquote_attribute_value(version)
+        self.update = unquote_attribute_value(update)
+        self.edition = unquote_attribute_value(edition)
+        self.language = unquote_attribute_value(language)
+        self.sw_edition = unquote_attribute_value(sw_edition)
+        self.target_sw = unquote_attribute_value(target_sw)
+        self.target_hw = unquote_attribute_value(target_hw)
+        self.other = unquote_attribute_value(other)
 
     @staticmethod
     def from_string(cpe: str) -> "CPE":
@@ -549,16 +631,16 @@ class CPE:
         Converts the CPE to an URI binding
         """
         part = self.part.value
-        vendor = bind_value_for_uri(self.vendor)
-        product = bind_value_for_uri(self.product)
-        version = bind_value_for_uri(self.version)
-        update = bind_value_for_uri(self.update)
-        language = bind_value_for_uri(self.language)
-        edition = bind_value_for_uri(self.edition)
-        sw_edition = bind_value_for_uri(self.sw_edition)
-        target_sw = bind_value_for_uri(self.target_sw)
-        target_hw = bind_value_for_uri(self.target_hw)
-        other = bind_value_for_uri(self.other)
+        vendor = bind_value_for_uri(self.__wnf__.vendor)
+        product = bind_value_for_uri(self.__wnf__.product)
+        version = bind_value_for_uri(self.__wnf__.version)
+        update = bind_value_for_uri(self.__wnf__.update)
+        language = bind_value_for_uri(self.__wnf__.language)
+        edition = bind_value_for_uri(self.__wnf__.edition)
+        sw_edition = bind_value_for_uri(self.__wnf__.sw_edition)
+        target_sw = bind_value_for_uri(self.__wnf__.target_sw)
+        target_hw = bind_value_for_uri(self.__wnf__.target_hw)
+        other = bind_value_for_uri(self.__wnf__.other)
 
         edition = pack_extended_attributes(
             edition,
@@ -584,16 +666,16 @@ class CPE:
         Converts the CPE to a formatted string binding
         """
         part = self.part.value
-        vendor = bind_value_for_formatted_string(self.vendor)
-        product = bind_value_for_formatted_string(self.product)
-        version = bind_value_for_formatted_string(self.version)
-        update = bind_value_for_formatted_string(self.update)
-        edition = bind_value_for_formatted_string(self.edition)
-        language = bind_value_for_formatted_string(self.language)
-        sw_edition = bind_value_for_formatted_string(self.sw_edition)
-        target_sw = bind_value_for_formatted_string(self.target_sw)
-        target_hw = bind_value_for_formatted_string(self.target_hw)
-        other = bind_value_for_formatted_string(self.other)
+        vendor = bind_value_for_formatted_string(self.__wnf__.vendor)
+        product = bind_value_for_formatted_string(self.__wnf__.product)
+        version = bind_value_for_formatted_string(self.__wnf__.version)
+        update = bind_value_for_formatted_string(self.__wnf__.update)
+        edition = bind_value_for_formatted_string(self.__wnf__.edition)
+        language = bind_value_for_formatted_string(self.__wnf__.language)
+        sw_edition = bind_value_for_formatted_string(self.__wnf__.sw_edition)
+        target_sw = bind_value_for_formatted_string(self.__wnf__.target_sw)
+        target_hw = bind_value_for_formatted_string(self.__wnf__.target_hw)
+        other = bind_value_for_formatted_string(self.__wnf__.other)
         return (
             f"cpe:2.3:{part}:{vendor}:{product}:{version}:{update}:"
             f"{edition}:{language}:{sw_edition}:{target_sw}:{target_hw}:{other}"
@@ -617,17 +699,17 @@ class CPE:
                 all_android_versions = cpe.clone(version=ANY)
         """
         args = {
-            "part": self.part,
-            "vendor": self.vendor,
-            "product": self.product,
-            "version": self.version,
-            "update": self.update,
-            "edition": self.edition,
-            "language": self.language,
-            "sw_edition": self.sw_edition,
-            "target_sw": self.target_sw,
-            "target_hw": self.target_hw,
-            "other": self.other,
+            "part": self.__wnf__.part,
+            "vendor": self.__wnf__.vendor,
+            "product": self.__wnf__.product,
+            "version": self.__wnf__.version,
+            "update": self.__wnf__.update,
+            "edition": self.__wnf__.edition,
+            "language": self.__wnf__.language,
+            "sw_edition": self.__wnf__.sw_edition,
+            "target_sw": self.__wnf__.target_sw,
+            "target_hw": self.__wnf__.target_hw,
+            "other": self.__wnf__.other,
             "cpe_string": self.cpe_string,
         }
         args.update(**kwargs)
