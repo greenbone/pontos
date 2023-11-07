@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from types import TracebackType
 from typing import Any, AsyncIterator, Dict, Iterable, Optional, Type, Union
 
 from httpx import Timeout
 
+from pontos.errors import PontosError
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
     NVDApi,
     Params,
     convert_camel_case,
     format_date,
-    now,
 )
 from pontos.nvd.models.cve_change import CVEChange, EventName
 
@@ -111,13 +111,19 @@ class CVEChangeHistoryApi(NVDApi):
         """
         total_results: Optional[int] = None
 
-        params: Params = {}
-        if change_start_date:
-            params["changeStartDate"] = format_date(change_start_date)
-            if not change_end_date:
-                params["changeEndDate"] = format_date(now())
+        if bool(change_start_date) ^ bool(change_end_date):
+            raise PontosError(
+                "change_start_date and change_end_date must be provided mutally"
+            )
 
-        if change_end_date:
+        params: Params = {}
+        if change_start_date and change_end_date:
+            if change_end_date - change_start_date > timedelta(days=120):
+                raise PontosError(
+                    "change_start_date and change_end_date must not be more than 120 days apart"
+                )
+
+            params["changeStartDate"] = format_date(change_start_date)
             params["changeEndDate"] = format_date(change_end_date)
 
         if cve_id:
