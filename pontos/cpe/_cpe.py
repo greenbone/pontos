@@ -52,23 +52,23 @@ def is_formatted_string_binding(cpe: str) -> bool:
     return cpe.startswith("cpe:2.3:")
 
 
-def _remove_backslash(value: str) -> str:
+def convert_double_backslash(value: str) -> str:
     """
-    Remove a single backslash
+    Convert a double backslash into s single backslash
     """
     return re.sub("\\\\(\\W)", lambda match: match.group(1), value)
 
 
 def _url_quote(value: str) -> str:
     """
-    Quote value according to the pct_encode function from the spec
+    Quote value according to the pct_encode function from the spec for uri format
     """
     return urllib.parse.quote(value, safe="").lower()
 
 
 def _url_unquote(value: str) -> str:
     """
-    Un-quote value according to the the spec
+    Un-quote value according to the the spec for uri format
     """
     return urllib.parse.unquote(value)
 
@@ -121,7 +121,7 @@ def unpack_edition(edition: str) -> dict[str, Optional[str]]:
     )
 
 
-def bind_value_for_fs(value: Optional[str]) -> str:
+def bind_value_for_formatted_string(value: Optional[str]) -> str:
     """
     Convert an attribute value for formatted string representation
     """
@@ -136,7 +136,8 @@ def bind_value_for_fs(value: Optional[str]) -> str:
 
 def _add_quoting(value: str) -> str:
     """
-    Add quoting for parsing attributes from formatted string format
+    Add quoting for parsing attributes from formatted string format to
+    Well-Formed CPE Name Data Model (WFN)
     """
     result = ""
     index = 0
@@ -144,19 +145,23 @@ def _add_quoting(value: str) -> str:
 
     while index < len(value):
         c = value[index]
-        if c.isalnum() or c in ["_"]:  # not sure about "-" and "~"
+        if c.isalnum() or c in ["_"]:
+            # just add character
             result += c
             index += 1
             embedded = True
             continue
 
         if c == "\\":
+            # keep escaped character
             result += value[index : index + 2]
             index += 2
             embedded = True
             continue
 
         if c == ANY:
+            # An unquoted asterisk must appear at the beginning or
+            # end of the string.
             if index == 0 or index == (len(value) - 1):
                 result += c
                 index += 1
@@ -168,6 +173,8 @@ def _add_quoting(value: str) -> str:
                     f"of '{value}'"
                 )
         if c == "?":
+            # An unquoted question mark must appear at the beginning or
+            # end of the string, or in a leading or trailing sequence
             if (
                 (  # ? is legal at the beginning or the end
                     (index == 0) or (index == (len(value) - 1))
@@ -197,9 +204,9 @@ def _add_quoting(value: str) -> str:
     return result
 
 
-def unbind_value_fs(value: Optional[str]) -> Optional[str]:
+def unbind_value_from_formatted_string(value: Optional[str]) -> Optional[str]:
     """
-    Convert a formatted string representation to an attribute value
+    Convert a formatted string representation to an attribute value for WNF
     """
     if value is None or value == ANY or value == NA:
         return value
@@ -230,7 +237,7 @@ def _transform_for_uri(value: str) -> str:
         if c == "\\":
             index += 1
             next = value[index]
-            transformed += _url_quote(_remove_backslash(next))
+            transformed += _url_quote(convert_double_backslash(next))
             index += 1
             continue
 
@@ -472,7 +479,7 @@ class CPE:
                         "target_hw",
                         "other",
                     ],
-                    [unbind_value_fs(a) for a in parts[3:]],
+                    [unbind_value_from_formatted_string(a) for a in parts[3:]],
                 )
             )
 
@@ -547,16 +554,16 @@ class CPE:
         Converts the CPE to a formatted string binding
         """
         part = self.part.value
-        vendor = bind_value_for_fs(self.vendor)
-        product = bind_value_for_fs(self.product)
-        version = bind_value_for_fs(self.version)
-        update = bind_value_for_fs(self.update)
-        edition = bind_value_for_fs(self.edition)
-        language = bind_value_for_fs(self.language)
-        sw_edition = bind_value_for_fs(self.sw_edition)
-        target_sw = bind_value_for_fs(self.target_sw)
-        target_hw = bind_value_for_fs(self.target_hw)
-        other = bind_value_for_fs(self.other)
+        vendor = bind_value_for_formatted_string(self.vendor)
+        product = bind_value_for_formatted_string(self.product)
+        version = bind_value_for_formatted_string(self.version)
+        update = bind_value_for_formatted_string(self.update)
+        edition = bind_value_for_formatted_string(self.edition)
+        language = bind_value_for_formatted_string(self.language)
+        sw_edition = bind_value_for_formatted_string(self.sw_edition)
+        target_sw = bind_value_for_formatted_string(self.target_sw)
+        target_hw = bind_value_for_formatted_string(self.target_hw)
+        other = bind_value_for_formatted_string(self.other)
         return (
             f"cpe:2.3:{part}:{vendor}:{product}:{version}:{update}:"
             f"{edition}:{language}:{sw_edition}:{target_sw}:{target_hw}:{other}"
