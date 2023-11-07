@@ -155,8 +155,7 @@ class CVEChangeHistoryApi(NVDApi):
             for cve_change in cve_changes:
                 yield CVEChange.from_dict(cve_change["change"])
 
-            if results_per_page is not None:
-                start_index += results_per_page
+            start_index += results_per_page  # type: ignore
 
     async def __aenter__(self) -> "CVEChangeHistoryApi":
         await super().__aenter__()
