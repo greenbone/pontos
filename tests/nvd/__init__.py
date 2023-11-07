@@ -66,3 +66,37 @@ def get_cpe_data(update: Dict[str, Any] = None) -> Dict[str, Any]:
     if update:
         data.update(update)
     return data
+
+
+def get_cve_change_data(
+    data: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    cve_changes = {
+        "cve_id": "CVE-2022-0001",
+        "event_name": "Initial Analysis",
+        "cve_change_id": "5160FDEB-0FF0-457B-AA36-0AEDCAB2522E",
+        "source_identifier": "nvd@nist.gov",
+        "created": "2022-03-18T20:13:08.123",
+        "details": [
+            {
+                "action": "Added",
+                "type": "CVSS V2",
+                "new_value": "NIST (AV:L/AC:L/Au:N/C:P/I:N/A:N)",
+            },
+            {
+                "action": "Added",
+                "type": "CVSS V3.1",
+                "new_value": "NIST AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:N/A:N",
+            },
+            {
+                "action": "Changed",
+                "type": "Reference Type",
+                "old_value": "http://www.openwall.com/lists/oss-security/2022/03/18/2 No Types Assigned",
+                "new_value": "http://www.openwall.com/lists/oss-security/2022/03/18/2 Mailing List, Third Party Advisory",
+            },
+        ],
+    }
+
+    if data:
+        cve_changes.update(data)
+    return cve_changes
