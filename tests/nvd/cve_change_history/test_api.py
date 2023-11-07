@@ -23,6 +23,7 @@ from uuid import UUID
 
 from httpx import AsyncClient, Response
 
+from pontos.errors import PontosError
 from pontos.nvd.cve_change_history.api import CVEChangeHistoryApi
 from pontos.nvd.models.cve_change import Detail, EventName
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
@@ -217,6 +218,25 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
 
         with self.assertRaises(StopAsyncIteration):
             cve_changes = await anext(it)
+
+    async def test_cve_changes_no_dates(self):
+        it = aiter(self.api.cve_changes(change_start_date=datetime(2023, 1, 1)))
+        with self.assertRaises(PontosError):
+            await anext(it)
+
+        it = aiter(self.api.cve_changes(change_end_date=datetime(2023, 1, 1)))
+        with self.assertRaises(PontosError):
+            await anext(it)
+
+    async def test_cve_changes_range_too_long(self):
+        it = aiter(
+            self.api.cve_changes(
+                change_start_date=datetime(2023, 1, 1),
+                change_end_date=datetime(2023, 5, 2),
+            )
+        )
+        with self.assertRaises(PontosError):
+            await anext(it)
 
     async def test_context_manager(self):
         async with self.api:
