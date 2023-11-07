@@ -328,6 +328,36 @@ def unbind_value_uri(value: Optional[str]) -> Optional[str]:
     return result
 
 
+def unquote_attribute_value(value: Optional[str]) -> Optional[str]:
+    """
+    Unquote a Well-Formed CPE Name Data Model (WFN) attribute value
+    """
+    if not value or "\\" not in value:
+        # do nothing
+        return value
+
+    index = 0
+    result = ""
+    while index < len(value):
+        c = value[index]
+        if c == "\\":
+            next_c = value[index + 1]
+            if next_c in ["*", "?"]:
+                # keep escaped asterisks and question marks
+                result += f"{c}{next_c}"
+            else:
+                result += next_c
+
+            index += 2
+            continue
+        else:
+            result += c
+
+        index += 1
+
+    return result
+
+
 def split_cpe(cpe: str) -> list[str]:
     """
     Split a CPE into its parts

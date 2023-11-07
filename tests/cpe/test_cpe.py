@@ -12,6 +12,7 @@ from pontos.cpe._cpe import (
     convert_double_backslash,
     split_cpe,
     unbind_value_from_formatted_string,
+    unquote_attribute_value,
 )
 
 
@@ -161,6 +162,26 @@ class BindValueForFormattedStringTestCase(unittest.TestCase):
         self.assertEqual(bind_value_for_formatted_string("?foo"), "?foo")
         self.assertEqual(bind_value_for_formatted_string("foo*"), "foo*")
         self.assertEqual(bind_value_for_formatted_string("foo\\*"), "foo\\*")
+
+
+class UnquoteAttributeValueTestCase(unittest.TestCase):
+    def test_unchanged(self):
+        self.assertIsNone(unquote_attribute_value(None))
+        self.assertEqual(unquote_attribute_value(""), "")
+        self.assertEqual(unquote_attribute_value(ANY), ANY)
+        self.assertEqual(unquote_attribute_value("?"), "?")
+        self.assertEqual(unquote_attribute_value("foo-bar"), "foo-bar")
+        self.assertEqual(unquote_attribute_value("foo_bar"), "foo_bar")
+        self.assertEqual(unquote_attribute_value("1.2.3"), "1.2.3")
+
+    def test_special(self):
+        self.assertEqual(unquote_attribute_value("foo\\?bar"), "foo\\?bar")
+        self.assertEqual(unquote_attribute_value("foo\\*bar"), "foo\\*bar")
+
+    def test_unquote(self):
+        self.assertEqual(unquote_attribute_value("foo\\\\bar"), "foo\\bar")
+        self.assertEqual(unquote_attribute_value("foo\\:bar"), "foo:bar")
+        self.assertEqual(unquote_attribute_value("1\\.2\\.3"), "1.2.3")
 
 
 class CPETestCase(unittest.TestCase):
