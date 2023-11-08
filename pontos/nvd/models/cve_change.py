@@ -25,7 +25,6 @@ from uuid import UUID
 from pontos.models import Model
 
 
-@dataclass
 class EventName(str, Enum):
     INITAL_ANALYSIS = "Initial Analysis"
     REANALYSIS = "Reanalysis"
@@ -38,6 +37,9 @@ class EventName(str, Enum):
     CWE_REMAP = "CWE Remap"
     CVE_REJECTED = "CVE Rejected"
     CVE_UNREJECT = "CVE Unreject"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
