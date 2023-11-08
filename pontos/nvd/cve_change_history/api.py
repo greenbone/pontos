@@ -47,10 +47,11 @@ class CVEChangeHistoryApi(NVDApi):
     Example:
         .. code-block:: python
 
-            from pontos.nvd.cve import CVEApi
+            from pontos.nvd.cve_change_history import CVEChangeHistoryApi
 
-            async with CVEApi() as api:
-                cve = await api.cve("CVE-2022-45536")
+            async with CVEChangeHistoryApi() as api:
+                async for cve_change in api.cve_changes(event_name=EventName.INITIAL_ANALYSIS):
+                    print(cve_change)
     """
 
     def __init__(
@@ -95,7 +96,11 @@ class CVEChangeHistoryApi(NVDApi):
         https://nvd.nist.gov/developers/vulnerabilities#divGetCves
 
         Args:
-            TODO: ...
+            change_start_date: Return all CVE changes after this date.
+            change_end_date: Return all CVE changes before this date.
+            cve_id: Return all CVE changes for this Common Vulnerabilities and Exposures identifier.
+            event_name: Return all CVE changes with this event name.
+
 
         Returns:
             An async iterator to iterate over CVEChange model instances
@@ -103,11 +108,11 @@ class CVEChangeHistoryApi(NVDApi):
         Example:
             .. code-block:: python
 
-                from pontos.nvd.cve import CVEApi
+                from pontos.nvd.cve_change_history import CVEChangeHistoryApi
 
-                async with CVEApi() as api:
-                    async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
-                        print(cve.id)
+                async with CVEChangeHistoryApi() as api:
+                    async for cve_change in api.cve_changes(event_name=EventName.INITIAL_ANALYSIS):
+                        print(cve_change)
         """
         total_results: Optional[int] = None
 
