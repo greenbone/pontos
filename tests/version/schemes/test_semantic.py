@@ -306,6 +306,243 @@ class SemanticVersionTestCase(unittest.TestCase):
                 f"{version1} should not be greater then {version2}",
             )
 
+        versions = [
+            ("1.0.0", object()),
+            ("1.0.0", 1),
+            ("1.0.0", True),
+        ]
+        for version1, version2 in versions:
+            with self.assertRaisesRegex(ValueError, "Can't compare"):
+                self.assertFalse(Version.from_string(version1) > version2)
+
+    def test_greater_or_equal_then(self):
+        versions = [
+            ("1.0.0", "0.9.9999"),
+            ("1.0.0", "1.0.0"),
+            ("1.0.1", "1.0.0"),
+            ("1.0.0", "1.0.0-dev1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-beta1"),
+            ("1.0.0", "1.0.0-rc1"),
+            ("1.0.0-dev1", "1.0.0-dev1"),
+            ("1.0.0+dev1", "1.0.0+dev1"),
+            ("1.0.0-alpha1", "1.0.0-dev1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha2", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-dev1"),
+            ("1.0.0-beta1", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-beta1"),
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
+            ("1.0.0-beta2", "1.0.0-beta1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
+            ("1.0.0-rc1", "1.0.0-dev1"),
+            ("1.0.0-rc1", "1.0.0-alpha1"),
+            ("1.0.0-rc1", "1.0.0-beta1"),
+            ("1.0.0-rc1", "1.0.0-rc1"),
+            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
+            ("1.0.0-rc2", "1.0.0-rc1"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
+        ]
+        for version1, version2 in versions:
+            self.assertTrue(
+                Version.from_string(version1) >= Version.from_string(version2),
+                f"{version1} should be greater or equal then {version2}",
+            )
+
+        versions = [
+            ("1.0.0", "1.0.0+dev1"),
+            ("1.0.0-dev1", "1.0.0-dev2"),
+            ("1.0.0", "1.0.1"),
+            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-alpha1"),
+            ("1.0.0-dev1", "1.0.0-beta1"),
+            ("1.0.0-dev1", "1.0.0-rc1"),
+            ("1.0.0+dev1", "1.0.0+dev2"),
+            ("1.0.0-alpha1", "1.0.0-beta1"),
+            ("1.0.0-alpha1", "1.0.0-rc1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
+            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
+            ("1.0.0-beta1", "1.0.0-rc1"),
+            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
+            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
+            ("1.0.0-rc1", "1.0.0"),
+            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
+            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+        ]
+        for version1, version2 in versions:
+            self.assertFalse(
+                Version.from_string(version1) >= Version.from_string(version2),
+                f"{version1} should not be greater or equal then {version2}",
+            )
+
+        versions = [
+            ("1.0.0", object()),
+            ("1.0.0", 1),
+            ("1.0.0", True),
+        ]
+        for version1, version2 in versions:
+            with self.assertRaisesRegex(ValueError, "Can't compare"):
+                self.assertFalse(Version.from_string(version1) >= version2)
+
+    def test_less_then(self):
+        versions = [
+            ("1.0.0", "0.9.9999"),
+            ("1.0.1", "1.0.0"),
+            ("1.0.0", "1.0.0-dev1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-beta1"),
+            ("1.0.0", "1.0.0-rc1"),
+            ("1.0.0-alpha1", "1.0.0-dev1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha2", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-dev1"),
+            ("1.0.0-beta1", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
+            ("1.0.0-beta2", "1.0.0-beta1"),
+            ("1.0.0-rc1", "1.0.0-dev1"),
+            ("1.0.0-rc1", "1.0.0-alpha1"),
+            ("1.0.0-rc1", "1.0.0-beta1"),
+            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
+            ("1.0.0-rc2", "1.0.0-rc1"),
+            # the following ones are strange with current semver implementation
+            # because they are both less then and greater then at the same time
+            ("1.0.0", "1.0.0+dev1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
+            ("1.0.0+dev1", "1.0.0+dev2"),
+            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
+            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
+            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
+            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
+            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+        ]
+        for version2, version1 in versions:
+            self.assertTrue(
+                Version.from_string(version1) < Version.from_string(version2),
+                f"{version1} should be less then {version2}",
+            )
+
+        versions = [
+            ("1.0.0", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-dev1"),
+            ("1.0.0-dev1", "1.0.0-dev2"),
+            ("1.0.0", "1.0.1"),
+            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-alpha1"),
+            ("1.0.0-dev1", "1.0.0-beta1"),
+            ("1.0.0-dev1", "1.0.0-rc1"),
+            ("1.0.0+dev1", "1.0.0+dev1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1"),
+            ("1.0.0-alpha1", "1.0.0-beta1"),
+            ("1.0.0-alpha1", "1.0.0-rc1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
+            ("1.0.0-beta1", "1.0.0-rc1"),
+            ("1.0.0-beta1", "1.0.0-beta1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
+            ("1.0.0-rc1", "1.0.0"),
+            ("1.0.0-rc1", "1.0.0-rc1"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
+        ]
+        for version2, version1 in versions:
+            self.assertFalse(
+                Version.from_string(version1) < Version.from_string(version2),
+                f"{version1} should not be less then {version2}",
+            )
+
+        versions = [
+            ("1.0.0", object()),
+            ("1.0.0", 1),
+            ("1.0.0", True),
+        ]
+        for version1, version2 in versions:
+            with self.assertRaisesRegex(ValueError, "Can't compare"):
+                self.assertFalse(Version.from_string(version1) < version2)
+
+    def test_less_or_equal_then(self):
+        versions = [
+            ("1.0.0", "0.9.9999"),
+            ("1.0.0", "1.0.0"),
+            ("1.0.1", "1.0.0"),
+            ("1.0.0", "1.0.0-dev1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-alpha1"),
+            ("1.0.0", "1.0.0-beta1"),
+            ("1.0.0", "1.0.0-rc1"),
+            ("1.0.0-dev1", "1.0.0-dev1"),
+            ("1.0.0+dev1", "1.0.0+dev1"),
+            ("1.0.0-alpha1", "1.0.0-dev1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1"),
+            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
+            ("1.0.0-alpha2", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-dev1"),
+            ("1.0.0-beta1", "1.0.0-alpha1"),
+            ("1.0.0-beta1", "1.0.0-beta1"),
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
+            ("1.0.0-beta2", "1.0.0-beta1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
+            ("1.0.0-rc1", "1.0.0-dev1"),
+            ("1.0.0-rc1", "1.0.0-alpha1"),
+            ("1.0.0-rc1", "1.0.0-beta1"),
+            ("1.0.0-rc1", "1.0.0-rc1"),
+            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
+            ("1.0.0-rc2", "1.0.0-rc1"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
+            # the strange ones
+            ("1.0.0", "1.0.0+dev1"),
+            ("1.0.0+dev1", "1.0.0+dev2"),
+            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
+            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
+            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
+            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
+            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
+            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+        ]
+        for version2, version1 in versions:
+            self.assertTrue(
+                Version.from_string(version1) <= Version.from_string(version2),
+                f"{version1} should be greater or equal then {version2}",
+            )
+
+        versions = [
+            ("1.0.0-dev1", "1.0.0-dev2"),
+            ("1.0.0", "1.0.1"),
+            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-alpha1"),
+            ("1.0.0-dev1", "1.0.0-beta1"),
+            ("1.0.0-dev1", "1.0.0-rc1"),
+            ("1.0.0-alpha1", "1.0.0-beta1"),
+            ("1.0.0-alpha1", "1.0.0-rc1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
+            ("1.0.0-beta1", "1.0.0-rc1"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
+            ("1.0.0-rc1", "1.0.0"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
+        ]
+        for version2, version1 in versions:
+            self.assertFalse(
+                Version.from_string(version1) <= Version.from_string(version2),
+                f"{version1} should not be greater or equal then {version2}",
+            )
+
+        versions = [
+            ("1.0.0", object()),
+            ("1.0.0", 1),
+            ("1.0.0", True),
+        ]
+        for version1, version2 in versions:
+            with self.assertRaisesRegex(ValueError, "Can't compare"):
+                self.assertFalse(Version.from_string(version1) <= version2)
+
     def test_is_dev_release(self):
         versions = [
             "1.0.0-dev1",

@@ -164,20 +164,7 @@ class SemanticVersion(Version):
         )
 
     def __ne__(self, other: Any) -> bool:
-        if other is None:
-            return True
-        if isinstance(other, str):
-            # allow to compare against "current" for now
-            return True
-        if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
-        if not isinstance(other, type(self)):
-            other = self.from_version(other)
-
-        return (
-            self._version_info != other._version_info
-            or self._version_info.build != other._version_info.build
-        )
+        return not self == other
 
     def __gt__(self, other: Any) -> bool:
         if not isinstance(other, Version):
@@ -222,6 +209,27 @@ class SemanticVersion(Version):
 
         # both are equal
         return False
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, Version):
+            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+        if not isinstance(other, type(self)):
+            other = self.from_version(other)
+        return self > other or self == other
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, Version):
+            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+        if not isinstance(other, type(self)):
+            other = self.from_version(other)
+        return (not self > other) and self != other
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, Version):
+            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+        if not isinstance(other, type(self)):
+            other = self.from_version(other)
+        return not self > other or self == other
 
     def __str__(self) -> str:
         """A string representation of the version"""
