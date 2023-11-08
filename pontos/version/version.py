@@ -147,6 +147,18 @@ class Version(ABC):
         pass
 
     @abstractmethod
+    def __ge__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
+    def __lt__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
+    def __le__(self, other: Any) -> bool:
+        pass
+
+    @abstractmethod
     def __str__(self) -> str:
         """A string representation of the version"""
 
