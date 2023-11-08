@@ -245,7 +245,6 @@ class CPETestCase(unittest.TestCase):
             "cpe:2.3:a:qrokes:qr_twitter_widget:*:*:*:*:*:wordpress:*:*"
         )
         cpe = CPE.from_string(cpe_string)
-        print(repr(cpe))
 
         self.assertEqual(
             str(cpe),
@@ -403,7 +402,6 @@ class CPETestCase(unittest.TestCase):
         cpe = CPE.from_string(
             "cpe:/a:hp:insight_diagnostics:7.4.0.1570::~~online~win2003~x64~"
         )
-        print(repr(cpe))
         self.assertTrue(cpe.is_uri_binding())
         self.assertFalse(cpe.is_formatted_string_binding())
         self.assertEqual(cpe.part, Part.APPLICATION)
