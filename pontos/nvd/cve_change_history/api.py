@@ -15,6 +15,7 @@ from pontos.nvd.api import (
     Params,
     convert_camel_case,
     format_date,
+    now,
 )
 from pontos.nvd.models.cve_change import CVEChange, EventName
 
@@ -103,10 +104,12 @@ class CVEChangeHistoryApi(NVDApi):
         """
         total_results: Optional[int] = None
 
-        if bool(change_start_date) ^ bool(change_end_date):
-            raise PontosError(
-                "change_start_date and change_end_date must be provided mutally"
+        if change_start_date and not change_end_date:
+            change_end_date = min(
+                now(), change_start_date + timedelta(days=120)
             )
+        elif change_end_date and not change_start_date:
+            change_start_date = change_end_date - timedelta(days=120)
 
         params: Params = {}
         if change_start_date and change_end_date:
