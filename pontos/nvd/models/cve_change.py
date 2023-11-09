@@ -22,7 +22,7 @@ class EventName(str, Enum):
     CPE_DEPRECATION_REMAP = "CPE Deprecation Remap"
     CWE_REMAP = "CWE Remap"
     CVE_REJECTED = "CVE Rejected"
-    CVE_UNREJECT = "CVE Unreject"
+    CVE_UNREJECTED = "CVE Unrejected"
 
     def __str__(self) -> str:
         return self.value
