@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 from uuid import UUID
@@ -11,6 +11,7 @@ from uuid import UUID
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
+from pontos.nvd.api import now
 from pontos.nvd.cve_change_history.api import CVEChangeHistoryApi
 from pontos.nvd.models.cve_change import Detail, EventName
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
@@ -204,16 +205,76 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
         )
 
         with self.assertRaises(StopAsyncIteration):
-            cve_changes = await anext(it)
-
-    async def test_cve_changes_no_dates(self):
-        it = aiter(self.api.cve_changes(change_start_date=datetime(2023, 1, 1)))
-        with self.assertRaises(PontosError):
             await anext(it)
 
-        it = aiter(self.api.cve_changes(change_end_date=datetime(2023, 1, 1)))
-        with self.assertRaises(PontosError):
-            await anext(it)
+    @patch("pontos.nvd.cve_change_history.api.now", spec=now)
+    async def test_cve_changes_calculate_end_date(self, now_mock: MagicMock):
+        now_mock.return_value = datetime(2023, 1, 2, tzinfo=timezone.utc)
+        self.http_client.get.side_effect = create_cve_changes_responses()
+
+        it = aiter(
+            self.api.cve_changes(
+                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
+            )
+        )
+
+        await anext(it)
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "changeStartDate": "2023-01-01T00:00:00+00:00",
+                "changeEndDate": "2023-01-02T00:00:00+00:00",
+            },
+        )
+
+    @patch("pontos.nvd.cve_change_history.api.now", spec=now)
+    async def test_cve_changes_calculate_end_date_with_limit(
+        self, now_mock: MagicMock
+    ):
+        now_mock.return_value = datetime(2023, 5, 2, tzinfo=timezone.utc)
+        self.http_client.get.side_effect = create_cve_changes_responses()
+
+        it = aiter(
+            self.api.cve_changes(
+                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
+            )
+        )
+
+        await anext(it)
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "changeStartDate": "2023-01-01T00:00:00+00:00",
+                "changeEndDate": "2023-05-01T00:00:00+00:00",
+            },
+        )
+
+    async def test_cve_changes_calculate_start_date(self):
+        self.http_client.get.side_effect = create_cve_changes_responses()
+
+        it = aiter(
+            self.api.cve_changes(
+                change_end_date=datetime(2023, 5, 1, tzinfo=timezone.utc)
+            )
+        )
+
+        await anext(it)
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "changeStartDate": "2023-01-01T00:00:00+00:00",
+                "changeEndDate": "2023-05-01T00:00:00+00:00",
+            },
+        )
 
     async def test_cve_changes_range_too_long(self):
         it = aiter(
