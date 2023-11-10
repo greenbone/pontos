@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime, timedelta
-from types import TracebackType
-from typing import Any, AsyncIterator, Dict, Iterable, Optional, Type, Union
+from typing import AsyncIterator, Iterable, Optional
 
 from httpx import Timeout
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
+    JSON,
     NVDApi,
     Params,
     convert_camel_case,
@@ -139,9 +139,7 @@ class CVEChangeHistoryApi(NVDApi):
             response = await self._get(params=params)
             response.raise_for_status()
 
-            data: Dict[str, Union[int, str, Dict[str, Any]]] = response.json(
-                object_hook=convert_camel_case
-            )
+            data: JSON = response.json(object_hook=convert_camel_case)
 
             total_results = data["total_results"]  # type: ignore
             results_per_page: int = data["results_per_page"]  # type: ignore
@@ -155,4 +153,3 @@ class CVEChangeHistoryApi(NVDApi):
     async def __aenter__(self) -> "CVEChangeHistoryApi":
         await super().__aenter__()
         return self
-
