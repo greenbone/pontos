@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime, timedelta
-from typing import AsyncIterator, Iterable, Optional
+from typing import AsyncIterator, Iterable, Optional, Union
 
 from httpx import Timeout
 
