@@ -12,7 +12,7 @@ from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
 from pontos.nvd.api import now
-from pontos.nvd.cve_change_history.api import CVEChangeHistoryApi
+from pontos.nvd.cve_changes.api import CVEChangesApi
 from pontos.nvd.models.cve_change import Detail, EventName
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_change_data
@@ -40,17 +40,17 @@ def create_cve_changes_responses(count: int = 2) -> list[MagicMock]:
     ]
 
 
-class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
+class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
     def setUp(self, async_client: MagicMock) -> None:
         self.http_client = AsyncMock()
         async_client.return_value = self.http_client
-        self.api = CVEChangeHistoryApi(token="token")
+        self.api = CVEChangesApi(token="token")
 
     async def test_cve_changes(self):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
-        it = aiter(self.api.cve_changes())
+        it = aiter(self.api.changes())
         cve_change = await anext(it)
 
         self.assertEqual(cve_change.cve_id, "CVE-1")
@@ -108,7 +108,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.cve_changes(
+            self.api.changes(
                 change_start_date=datetime(2022, 12, 1),
                 change_end_date=datetime(2022, 12, 31),
             )
@@ -148,7 +148,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_cve_id(self):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
-        it = aiter(self.api.cve_changes(cve_id="CVE-1"))
+        it = aiter(self.api.changes(cve_id="CVE-1"))
         cve_changes = await anext(it)
 
         self.assertEqual(cve_changes.cve_id, "CVE-1")
@@ -179,7 +179,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_event_name(self):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
-        it = aiter(self.api.cve_changes(event_name=EventName.INITAL_ANALYSIS))
+        it = aiter(self.api.changes(event_name=EventName.INITAL_ANALYSIS))
         cve_changes = await anext(it)
 
         self.assertEqual(cve_changes.cve_id, "CVE-1")
@@ -207,13 +207,13 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             await anext(it)
 
-    @patch("pontos.nvd.cve_change_history.api.now", spec=now)
+    @patch("pontos.nvd.cve_changes.api.now", spec=now)
     async def test_cve_changes_calculate_end_date(self, now_mock: MagicMock):
         now_mock.return_value = datetime(2023, 1, 2, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.cve_changes(
+            self.api.changes(
                 change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
             )
         )
@@ -230,7 +230,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
             },
         )
 
-    @patch("pontos.nvd.cve_change_history.api.now", spec=now)
+    @patch("pontos.nvd.cve_changes.api.now", spec=now)
     async def test_cve_changes_calculate_end_date_with_limit(
         self, now_mock: MagicMock
     ):
@@ -238,7 +238,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.cve_changes(
+            self.api.changes(
                 change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
             )
         )
@@ -259,7 +259,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.cve_changes(
+            self.api.changes(
                 change_end_date=datetime(2023, 5, 1, tzinfo=timezone.utc)
             )
         )
@@ -278,7 +278,7 @@ class CVEChangeHistoryApiTestCase(IsolatedAsyncioTestCase):
 
     async def test_cve_changes_range_too_long(self):
         it = aiter(
-            self.api.cve_changes(
+            self.api.changes(
                 change_start_date=datetime(2023, 1, 1),
                 change_end_date=datetime(2023, 5, 2),
             )

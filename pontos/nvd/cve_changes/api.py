@@ -19,14 +19,14 @@ from pontos.nvd.api import (
 )
 from pontos.nvd.models.cve_change import CVEChange, EventName
 
-__all__ = ("CVEChangeHistoryApi",)
+__all__ = ("CVEChangesApi",)
 
 DEFAULT_NIST_NVD_CVE_HISTORY_URL = (
     "https://services.nvd.nist.gov/rest/json/cvehistory/2.0"
 )
 
 
-class CVEChangeHistoryApi(NVDApi):
+class CVEChangesApi(NVDApi):
     """
     API for querying the NIST NVD CVE Change History information.
 
@@ -35,10 +35,10 @@ class CVEChangeHistoryApi(NVDApi):
     Example:
         .. code-block:: python
 
-            from pontos.nvd.cve_change_history import CVEChangeHistoryApi
+            from pontos.nvd.cve_changes import CVEChangesApi
 
-            async with CVEChangeHistoryApi() as api:
-                async for cve_change in api.cve_changes(event_name=EventName.INITIAL_ANALYSIS):
+            async with CVEChangesApi() as api:
+                async for cve_change in api.changes(event_name=EventName.INITIAL_ANALYSIS):
                     print(cve_change)
     """
 
@@ -70,7 +70,7 @@ class CVEChangeHistoryApi(NVDApi):
             rate_limit=rate_limit,
         )
 
-    async def cve_changes(
+    async def changes(
         self,
         *,
         change_start_date: Optional[datetime] = None,
@@ -96,10 +96,10 @@ class CVEChangeHistoryApi(NVDApi):
         Example:
             .. code-block:: python
 
-                from pontos.nvd.cve_change_history import CVEChangeHistoryApi
+                from pontos.nvd.cve_changes import CVEChangesApi
 
-                async with CVEChangeHistoryApi() as api:
-                    async for cve_change in api.cve_changes(event_name=EventName.INITIAL_ANALYSIS):
+                async with CVEChangesApi() as api:
+                    async for cve_change in api.changes(event_name=EventName.INITIAL_ANALYSIS):
                         print(cve_change)
         """
         total_results: Optional[int] = None
@@ -150,6 +150,6 @@ class CVEChangeHistoryApi(NVDApi):
 
             start_index += results_per_page  # type: ignore
 
-    async def __aenter__(self) -> "CVEChangeHistoryApi":
+    async def __aenter__(self) -> "CVEChangesApi":
         await super().__aenter__()
         return self
