@@ -156,12 +156,3 @@ class CVEChangeHistoryApi(NVDApi):
         await super().__aenter__()
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
-        return await super().__aexit__(  # type: ignore
-            exc_type, exc_value, traceback
-        )
