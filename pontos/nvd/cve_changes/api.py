@@ -76,7 +76,7 @@ class CVEChangesApi(NVDApi):
         change_start_date: Optional[datetime] = None,
         change_end_date: Optional[datetime] = None,
         cve_id: Optional[str] = None,
-        event_name: Optional[EventName] = None,
+        event_name: Optional[Union[EventName, str]] = None,
     ) -> AsyncIterator[CVEChange]:
         """
         Get all CVEs for the provided arguments
