@@ -4,7 +4,7 @@
 
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 from uuid import UUID
 
@@ -19,7 +19,7 @@ from tests.nvd import get_cve_change_data
 
 
 def create_cve_changes_response(
-    cve_id: str, update: Optional[Dict[str, Any]] = None
+    cve_id: str, update: Optional[dict[str, Any]] = None
 ) -> MagicMock:
     data = {
         "cve_changes": [{"change": get_cve_change_data({"cve_id": cve_id})}],
@@ -33,7 +33,7 @@ def create_cve_changes_response(
     return response
 
 
-def create_cve_changes_responses(count: int = 2) -> List[MagicMock]:
+def create_cve_changes_responses(count: int = 2) -> list[MagicMock]:
     return [
         create_cve_changes_response(f"CVE-{i}", {"total_results": count})
         for i in range(1, count + 1)

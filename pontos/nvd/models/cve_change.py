@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from pontos.models import Model
@@ -43,4 +43,4 @@ class CVEChange(Model):
     cve_change_id: UUID
     source_identifier: str
     created: Optional[datetime] = None
-    details: Optional[List[Detail]] = None
+    details: Optional[list[Detail]] = None
