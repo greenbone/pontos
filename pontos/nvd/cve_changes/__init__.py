@@ -4,7 +4,6 @@
 
 import asyncio
 from argparse import ArgumentParser, Namespace
-from typing import Callable
 
 from pontos.nvd.cve_changes.api import CVEChangesApi
 
@@ -19,20 +18,23 @@ async def query_changes(args: Namespace) -> None:
             print(cve)
 
 
-def cve_changes() -> None:
+def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--token", help="API key to use for querying.")
     parser.add_argument("--cve-id", help="Get changes for a specific CVE")
     parser.add_argument(
         "--event-name", help="Get all CVE associated with a specific event name"
     )
+    return parser.parse_args()
 
-    main(parser, query_changes)
 
-
-def main(parser: ArgumentParser, func: Callable) -> None:
+def main() -> None:
     try:
-        args = parser.parse_args()
-        asyncio.run(func(args))
+        args = parse_args()
+        asyncio.run(query_changes(args))
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == "__main__":
+    main()
