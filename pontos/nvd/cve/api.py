@@ -45,7 +45,7 @@ from pontos.nvd.models.cvss_v3 import Severity as CVSSv3Severity
 __all__ = ("CVEApi",)
 
 DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-MAX_CVES_PER_PAGE = 10000
+MAX_CVES_PER_PAGE = 2000
 
 
 class CVEApi(NVDApi):
