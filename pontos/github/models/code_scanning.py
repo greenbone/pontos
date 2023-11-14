@@ -71,6 +71,7 @@ class Classification(Enum):
     GENERATED = "generated"
     TEST = "test"
     LIBRARY = "library"
+    DOCUMENTATION = "documentation"
 
 
 @dataclass
