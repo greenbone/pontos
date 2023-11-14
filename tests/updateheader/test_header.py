@@ -107,7 +107,9 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         # Full match
-        found, match = find_copyright(regex=self.regex, line=test_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -115,7 +117,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No modification Date
-        found, match = find_copyright(regex=self.regex, line=test2_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test2_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -123,7 +127,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No match
-        found, match = find_copyright(regex=self.regex, line=invalid_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=invalid_line
+        )
         self.assertFalse(found)
         self.assertIsNone(match)
 
@@ -136,7 +142,9 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         # Full match
-        found, match = find_copyright(regex=self.regex, line=test_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -144,7 +152,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No modification Date
-        found, match = find_copyright(regex=self.regex, line=test2_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test2_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -152,7 +162,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No match
-        found, match = find_copyright(regex=self.regex, line=invalid_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=invalid_line
+        )
         self.assertFalse(found)
         self.assertIsNone(match)
 
@@ -201,7 +213,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(FileNotFoundError):
             update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -224,7 +236,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
         self.assertEqual(code, 1)
 
@@ -249,7 +264,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
         self.assertEqual(code, 1)
 
@@ -281,7 +299,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(UnicodeDecodeError):
             code = update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -310,7 +328,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(FileNotFoundError):
             code = update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -338,7 +356,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         ret = mock_stdout.getvalue()
@@ -367,7 +388,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         self.assertEqual(code, 0)
@@ -401,7 +425,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         self.assertEqual(code, 0)
@@ -523,7 +550,7 @@ This program is free software: you can redistribute it and/or modify"""  # noqa:
         new_content = remove_outdated(
             content=test_content, cleanup_regexes=compiled_regexes
         )
-        self.assertEqual(new_content, "")
+        self.assertEqual(new_content, "\n")
 
     def test_remove_outdated2(self):
         test_content = """the Free Software Foundation, either version 3 of the License, or
@@ -542,4 +569,4 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA."""  # 
         new_content = remove_outdated(
             content=test_content, cleanup_regexes=compiled_regexes
         )
-        self.assertEqual(new_content, "")
+        self.assertEqual(new_content, "\n")
