@@ -72,6 +72,7 @@ OLD_LINES = [
     "GNU Affero General Public License for more details.",
     "GNU General Public License for more details.",
     "You should have received a copy of the GNU Affero General Public License",
+    "You should have received a copy of the GNU General Public License",
     "along with this program.  If not, see <http://www.gnu.org/licenses/>.",
     "along with this program; if not, write to the Free Software",
     "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",  # noqa: E501
@@ -136,7 +137,7 @@ def _add_header(
         raise ValueError
 
 
-def _remove_outdated(
+def _remove_outdated_lines(
     content: str, cleanup_regexes: List[re.Pattern]
 ) -> Optional[str]:
     """Remove lines that contain outdated copyright header ..."""
@@ -144,6 +145,10 @@ def _remove_outdated(
     splitted_lines = content.splitlines()
     i = 0
     for line in splitted_lines[:20]:
+        if i > 3 and re.match(r"^(([#*]|//) ?)", line):
+            splitted_lines.pop(i)
+            i = i - 1
+            continue
         for regex in cleanup_regexes:
             if regex.match(line):
                 changed = True
@@ -152,7 +157,8 @@ def _remove_outdated(
                 break
         i = i + 1
     if changed:
-        return "\n".join(splitted_lines) + "\n"
+        new_content = "\n".join(splitted_lines) + "\n"
+        return new_content
     return None
 
 
@@ -226,15 +232,6 @@ def _update_file(
                         "is not existing."
                     )
                 return 1
-            # old header existing - cleanup?
-            if cleanup_regexes:
-                old_content = file.read_text(encoding="utf-8")
-                new_content = _remove_outdated(
-                    content=old_content, cleanup_regexes=cleanup_regexes
-                )
-                if new_content:
-                    file.write_text(new_content, encoding="utf-8")
-                    print(f"{file}: Cleaned up!")
             # replace found header and write it to file
             if copyright_match and (
                 not copyright_match["modification_year"]
@@ -265,13 +262,22 @@ def _update_file(
 
             else:
                 print(f"{file}: License Header is ok.")
-            return 0
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
         raise e
     except UnicodeDecodeError as e:
         print(f"{file}: Ignoring binary file.")
         raise e
+    # old header existing - cleanup?
+    if cleanup_regexes:
+        old_content = file.read_text(encoding="utf-8")
+        new_content = _remove_outdated_lines(
+            content=old_content, cleanup_regexes=cleanup_regexes
+        )
+        if new_content:
+            file.write_text(new_content, encoding="utf-8")
+            print(f"{file}: Cleaned up!")
+    return 0
 
 
 def _get_exclude_list(

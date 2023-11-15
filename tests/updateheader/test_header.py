@@ -39,7 +39,9 @@ from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
 )
 from pontos.updateheader.updateheader import _parse_args as parse_args
-from pontos.updateheader.updateheader import _remove_outdated as remove_outdated
+from pontos.updateheader.updateheader import (
+    _remove_outdated_lines as remove_outdated_lines,
+)
 from pontos.updateheader.updateheader import _update_file as update_file
 from pontos.updateheader.updateheader import main
 
@@ -533,7 +535,7 @@ class UpdateHeaderTestCase(TestCase):
             ret,
         )
 
-    def test_remove_outdated(self):
+    def test_remove_outdated_lines(self):
         test_content = """* This program is free software: you can redistribute it and/or modify
 *it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -547,12 +549,12 @@ This program is free software: you can redistribute it and/or modify"""  # noqa:
 
         compiled_regexes = compile_outdated_regex()
 
-        new_content = remove_outdated(
+        new_content = remove_outdated_lines(
             content=test_content, cleanup_regexes=compiled_regexes
         )
         self.assertEqual(new_content, "\n")
 
-    def test_remove_outdated2(self):
+    def test_remove_outdated_lines2(self):
         test_content = """the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -566,7 +568,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA."""  # 
 
         compiled_regexes = compile_outdated_regex()
 
-        new_content = remove_outdated(
+        new_content = remove_outdated_lines(
             content=test_content, cleanup_regexes=compiled_regexes
         )
         self.assertEqual(new_content, "\n")
