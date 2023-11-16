@@ -4,14 +4,13 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 
 
-class EventName(str, Enum):
+class EventName(StrEnum):
     CVE_RECEIVED = "CVE Received"
     INITAL_ANALYSIS = "Initial Analysis"
     REANALYSIS = "Reanalysis"
@@ -24,9 +23,6 @@ class EventName(str, Enum):
     CWE_REMAP = "CWE Remap"
     CVE_REJECTED = "CVE Rejected"
     CVE_UNREJECTED = "CVE Unrejected"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 @dataclass
