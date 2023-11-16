@@ -17,10 +17,9 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 
 __all__ = (
     "DeprecatedBy",
@@ -45,7 +44,7 @@ class Title(Model):
     lang: str
 
 
-class ReferenceType(Enum):
+class ReferenceType(StrEnum):
     """
     A CPE reference type
 
