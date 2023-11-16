@@ -17,10 +17,9 @@
 
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from enum import Enum
 from typing import List, Optional
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 from pontos.nvd.models.cvss_v2 import CVSSData as CVSSv2Data
 from pontos.nvd.models.cvss_v3 import CVSSData as CVSSv3Data
 
@@ -41,7 +40,7 @@ __all__ = (
 )
 
 
-class CVSSType(Enum):
+class CVSSType(StrEnum):
     """
     The CVSS Type: primary or secondary
 
@@ -182,7 +181,7 @@ class VendorComment(Model):
     last_modified: datetime
 
 
-class Operator(Enum):
+class Operator(StrEnum):
     """
     An operator: AND or OR
 

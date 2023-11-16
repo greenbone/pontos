@@ -16,43 +16,42 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 
 
-class Severity(Enum):
+class Severity(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
 
 
-class AccessVector(Enum):
+class AccessVector(StrEnum):
     NETWORK = "NETWORK"
     ADJACENT_NETWORK = "ADJACENT_NETWORK"
     LOCAL = "LOCAL"
 
 
-class AccessComplexity(Enum):
+class AccessComplexity(StrEnum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
 
-class Authentication(Enum):
+class Authentication(StrEnum):
     MULTIPLE = "MULTIPLE"
     SINGLE = "SINGLE"
     NONE = "NONE"
 
 
-class Impact(Enum):
+class Impact(StrEnum):
     NONE = "NONE"
     PARTIAL = "PARTIAL"
     COMPLETE = "COMPLETE"
 
 
-class Exploitability(Enum):
+class Exploitability(StrEnum):
     UNPROVEN = "UNPROVEN"
     PROOF_OF_CONCEPT = "PROOF_OF_CONCEPT"
     FUNCTIONAL = "FUNCTIONAL"
@@ -60,7 +59,7 @@ class Exploitability(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class RemediationLevel(Enum):
+class RemediationLevel(StrEnum):
     OFFICIAL_FIX = "OFFICIAL_FIX"
     TEMPORARY_FIX = "TEMPORARY_FIX"
     WORKAROUND = "WORKAROUND"
@@ -68,14 +67,14 @@ class RemediationLevel(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class ReportConfidence(Enum):
+class ReportConfidence(StrEnum):
     UNCONFIRMED = "UNCONFIRMED"
     UNCORROBORATED = "UNCORROBORATED"
     CONFIRMED = "CONFIRMED"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class CollateralDamagePotential(Enum):
+class CollateralDamagePotential(StrEnum):
     NONE = "NONE"
     LOW = "LOW"
     LOW_MEDIUM = "LOW_MEDIUM"
@@ -84,7 +83,7 @@ class CollateralDamagePotential(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class TargetDistribution(Enum):
+class TargetDistribution(StrEnum):
     NONE = "NONE"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -92,7 +91,7 @@ class TargetDistribution(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class Requirement(Enum):
+class Requirement(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"

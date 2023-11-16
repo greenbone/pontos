@@ -16,13 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 
 
-class Severity(Enum):
+class Severity(StrEnum):
     NONE = "NONE"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -30,14 +29,14 @@ class Severity(Enum):
     CRITICAL = "CRITICAL"
 
 
-class AttackVector(Enum):
+class AttackVector(StrEnum):
     NETWORK = "NETWORK"
     ADJACENT_NETWORK = "ADJACENT_NETWORK"
     LOCAL = "LOCAL"
     PHYSICAL = "PHYSICAL"
 
 
-class ModifiedAttackVector(Enum):
+class ModifiedAttackVector(StrEnum):
     NETWORK = "NETWORK"
     ADJACENT_NETWORK = "ADJACENT_NETWORK"
     LOCAL = "LOCAL"
@@ -45,66 +44,66 @@ class ModifiedAttackVector(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class AttackComplexity(Enum):
+class AttackComplexity(StrEnum):
     HIGH = "HIGH"
     LOW = "LOW"
 
 
-class ModifiedAttackComplexity(Enum):
+class ModifiedAttackComplexity(StrEnum):
     HIGH = "HIGH"
     LOW = "LOW"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class PrivilegesRequired(Enum):
+class PrivilegesRequired(StrEnum):
     HIGH = "HIGH"
     LOW = "LOW"
     NONE = "NONE"
 
 
-class ModifiedPrivilegesRequired(Enum):
+class ModifiedPrivilegesRequired(StrEnum):
     HIGH = "HIGH"
     LOW = "LOW"
     NONE = "NONE"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class UserInteraction(Enum):
+class UserInteraction(StrEnum):
     NONE = "NONE"
     REQUIRED = "REQUIRED"
 
 
-class ModifiedUserInteraction(Enum):
+class ModifiedUserInteraction(StrEnum):
     NONE = "NONE"
     REQUIRED = "REQUIRED"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class Scope(Enum):
+class Scope(StrEnum):
     UNCHANGED = "UNCHANGED"
     CHANGED = "CHANGED"
 
 
-class ModifiedScope(Enum):
+class ModifiedScope(StrEnum):
     UNCHANGED = "UNCHANGED"
     CHANGED = "CHANGED"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class Impact(Enum):
+class Impact(StrEnum):
     NONE = "NONE"
     LOW = "LOW"
     HIGH = "HIGH"
 
 
-class ModifiedImpact(Enum):
+class ModifiedImpact(StrEnum):
     NONE = "NONE"
     LOW = "LOW"
     HIGH = "HIGH"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class ExploitCodeMaturity(Enum):
+class ExploitCodeMaturity(StrEnum):
     UNPROVEN = "UNPROVEN"
     PROOF_OF_CONCEPT = "PROOF_OF_CONCEPT"
     FUNCTIONAL = "FUNCTIONAL"
@@ -112,7 +111,7 @@ class ExploitCodeMaturity(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class RemediationLevel(Enum):
+class RemediationLevel(StrEnum):
     OFFICIAL_FIX = "OFFICIAL_FIX"
     TEMPORARY_FIX = "TEMPORARY_FIX"
     WORKAROUND = "WORKAROUND"
@@ -120,14 +119,14 @@ class RemediationLevel(Enum):
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class Confidence(Enum):
+class Confidence(StrEnum):
     UNKNOWN = "UNKNOWN"
     REASONABLE = "REASONABLE"
     CONFIRMED = "CONFIRMED"
     NOT_DEFINED = "NOT_DEFINED"
 
 
-class Requirement(Enum):
+class Requirement(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
