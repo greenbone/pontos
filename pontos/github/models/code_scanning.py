@@ -4,14 +4,14 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
+from pontos.models import StrEnum
 
 
-class AlertState(Enum):
+class AlertState(StrEnum):
     """
     State of a code scanning alert
     """
@@ -21,7 +21,7 @@ class AlertState(Enum):
     FIXED = "fixed"
 
 
-class AlertSort(Enum):
+class AlertSort(StrEnum):
     """
     The property by which to sort the alerts
     """
@@ -30,7 +30,7 @@ class AlertSort(Enum):
     UPDATED = "updated"
 
 
-class DismissedReason(Enum):
+class DismissedReason(StrEnum):
     """
     The reason for dismissing or closing the alert
     """
@@ -40,7 +40,7 @@ class DismissedReason(Enum):
     USED_IN_TESTS = "used in tests"
 
 
-class Severity(Enum):
+class Severity(StrEnum):
     """
     The severity of the alert
     """
@@ -51,7 +51,7 @@ class Severity(Enum):
     ERROR = "error"
 
 
-class SecuritySeverityLevel(Enum):
+class SecuritySeverityLevel(StrEnum):
     """
     The security severity of the alert
     """
@@ -62,7 +62,7 @@ class SecuritySeverityLevel(Enum):
     CRITICAL = "critical"
 
 
-class Classification(Enum):
+class Classification(StrEnum):
     """
     A classification of the file. For example to identify it as generated
     """
@@ -316,7 +316,7 @@ class CodeQLDatabase(GitHubModel):
     commit_oid: Optional[str] = None
 
 
-class DefaultSetupState(Enum):
+class DefaultSetupState(StrEnum):
     """
     State of a default setup
     """
@@ -325,7 +325,7 @@ class DefaultSetupState(Enum):
     NOT_CONFIGURED = "not-configured"
 
 
-class Language(Enum):
+class Language(StrEnum):
     """
     Analyzed Language
     """
@@ -342,7 +342,7 @@ class Language(Enum):
     SWIFT = "swift"
 
 
-class QuerySuite(Enum):
+class QuerySuite(StrEnum):
     """
     Used code scanning query suite
     """
@@ -371,7 +371,7 @@ class DefaultSetup(GitHubModel):
     schedule: Optional[str] = None
 
 
-class SarifProcessingStatus(Enum):
+class SarifProcessingStatus(StrEnum):
     """
     `pending` files have not yet been processed, while `complete` means results
     from the SARIF have been stored. `failed` files have either not been

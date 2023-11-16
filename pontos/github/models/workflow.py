@@ -17,10 +17,10 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import Dict, List, Optional
 
 from pontos.github.models.base import Event, GitHubModel, User
+from pontos.models import StrEnum
 
 __all__ = (
     "Workflow",
@@ -70,7 +70,7 @@ class WorkflowRunCommit(GitHubModel):
     committer: Optional[WorkflowRunCommitUser] = None
 
 
-class WorkflowState(Enum):
+class WorkflowState(StrEnum):
     """
     State of a workflow
 
@@ -227,7 +227,7 @@ class WorkflowRunRepository(GitHubModel):
     hooks_url: Optional[str] = None
 
 
-class WorkflowRunStatus(Enum):
+class WorkflowRunStatus(StrEnum):
     """
     Status of a workflow run
 

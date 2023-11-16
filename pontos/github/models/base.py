@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import List, Optional
 
-from pontos.models import Model
+from pontos.models import Model, StrEnum
 
 __all__ = (
     "App",
@@ -35,7 +34,7 @@ __all__ = (
 )
 
 
-class FileStatus(Enum):
+class FileStatus(StrEnum):
     """
     File status
 
@@ -110,7 +109,7 @@ class User(GitHubModel):
     site_admin: bool
 
 
-class TeamPrivacy(Enum):
+class TeamPrivacy(StrEnum):
     """
     Team privacy
 
@@ -123,7 +122,7 @@ class TeamPrivacy(Enum):
     CLOSED = "closed"
 
 
-class TeamRole(Enum):
+class TeamRole(StrEnum):
     """
     A user's role withing a team
 
@@ -137,7 +136,7 @@ class TeamRole(Enum):
     MAINTAINER = "maintainer"
 
 
-class Permission(Enum):
+class Permission(StrEnum):
     # pylint: disable=line-too-long
     """
     Permissions on a repository/project at GitHub
@@ -225,7 +224,7 @@ class App(GitHubModel):
     events: List[str]
 
 
-class Event(Enum):
+class Event(StrEnum):
     """
     A GitHub event type
 
@@ -309,7 +308,7 @@ class Event(Enum):
     WORKFLOW_RUN = "workflow_run"
 
 
-class SortOrder(Enum):
+class SortOrder(StrEnum):
     """
     Sort order: asc or desc
 

@@ -17,7 +17,8 @@
 
 
 from abc import ABC
-from enum import Enum
+
+from pontos.models import StrEnum
 
 from .base import SortOrder
 
@@ -38,7 +39,7 @@ __all__ = (
 )
 
 
-class RepositorySort(Enum):
+class RepositorySort(StrEnum):
     """
     Sort repositories by
 

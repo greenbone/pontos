@@ -4,14 +4,14 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
+from pontos.models import StrEnum
 
 
-class AlertSort(Enum):
+class AlertSort(StrEnum):
     """
     The property by which to sort the alerts
     """
@@ -20,7 +20,7 @@ class AlertSort(Enum):
     UPDATED = "updated"
 
 
-class AlertState(Enum):
+class AlertState(StrEnum):
     """
     State of the GitHub Dependabot Security Alert
     """
@@ -31,7 +31,7 @@ class AlertState(Enum):
     OPEN = "open"
 
 
-class DismissedReason(Enum):
+class DismissedReason(StrEnum):
     """
     Reason phrase for a dismissed Dependabot alert
     """
@@ -43,7 +43,7 @@ class DismissedReason(Enum):
     TOLERABLE_RISK = "tolerable_risk"
 
 
-class DependencyScope(Enum):
+class DependencyScope(StrEnum):
     """
     The execution scope of the vulnerable dependency
     """
@@ -52,7 +52,7 @@ class DependencyScope(Enum):
     RUNTIME = "runtime"
 
 
-class Severity(Enum):
+class Severity(StrEnum):
     """
     The severity of the vulnerability
     """
@@ -63,7 +63,7 @@ class Severity(Enum):
     CRITICAL = "critical"
 
 
-class IdentifierType(Enum):
+class IdentifierType(StrEnum):
     """
     The type of advisory identifier
     """

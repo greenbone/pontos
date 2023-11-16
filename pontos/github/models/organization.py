@@ -17,10 +17,10 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
+from pontos.models import StrEnum
 
 __all__ = (
     "CodeOfConduct",
@@ -44,7 +44,7 @@ __all__ = (
 )
 
 
-class MergeCommitTitle(Enum):
+class MergeCommitTitle(StrEnum):
     """
     Merge commit title
 
@@ -57,7 +57,7 @@ class MergeCommitTitle(Enum):
     MERGE_MESSAGE = "MERGE_MESSAGE"
 
 
-class MergeCommitMessage(Enum):
+class MergeCommitMessage(StrEnum):
     """
     Merge commit message setting
 
@@ -72,7 +72,7 @@ class MergeCommitMessage(Enum):
     BLANK = "BLANK"
 
 
-class SquashMergeCommitTitle(Enum):
+class SquashMergeCommitTitle(StrEnum):
     """
     Squash merge commit title
 
@@ -85,7 +85,7 @@ class SquashMergeCommitTitle(Enum):
     COMMIT_OR_PR_TITLE = "COMMIT_OR_PR_TITLE"
 
 
-class SquashMergeCommitMessage(Enum):
+class SquashMergeCommitMessage(StrEnum):
     """
     Squash merge commit message setting
 
@@ -100,7 +100,7 @@ class SquashMergeCommitMessage(Enum):
     BLANK = "BLANK"
 
 
-class RepositoryType(Enum):
+class RepositoryType(StrEnum):
     """
     A repository type
 
@@ -235,7 +235,7 @@ class CodeOfConduct(GitHubModel):
     html_url: str
 
 
-class SecurityAndAnalysisStatus(Enum):
+class SecurityAndAnalysisStatus(StrEnum):
     """
     Security and analysis status
 
@@ -486,7 +486,7 @@ class Repository(GitHubModel):
     web_commit_signoff_required: Optional[bool] = None
 
 
-class MemberFilter(Enum):
+class MemberFilter(StrEnum):
     """
     A member filter
 
@@ -499,7 +499,7 @@ class MemberFilter(Enum):
     ALL = "all"
 
 
-class MemberRole(Enum):
+class MemberRole(StrEnum):
     """
     A member role
 
@@ -514,7 +514,7 @@ class MemberRole(Enum):
     MEMBER = "member"
 
 
-class InvitationRole(Enum):
+class InvitationRole(StrEnum):
     """
     A invitation role
 
@@ -530,7 +530,7 @@ class InvitationRole(Enum):
     BILLING_MANAGER = "billing_manager"
 
 
-class GitIgnoreTemplate(Enum):
+class GitIgnoreTemplate(StrEnum):
     """
     Just a small part of the available gitignore templates at
     https://github.com/github/gitignore
@@ -558,7 +558,7 @@ class GitIgnoreTemplate(Enum):
     RUST = "Rust"
 
 
-class LicenseType(Enum):
+class LicenseType(StrEnum):
     """
     License Type
 

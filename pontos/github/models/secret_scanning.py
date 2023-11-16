@@ -4,14 +4,14 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Union
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
+from pontos.models import StrEnum
 
 
-class AlertSort(Enum):
+class AlertSort(StrEnum):
     """
     The property by which to sort the alerts
     """
@@ -20,7 +20,7 @@ class AlertSort(Enum):
     UPDATED = "updated"
 
 
-class AlertState(Enum):
+class AlertState(StrEnum):
     """
     State of the GitHub Secrets Scanning Alert
     """
@@ -29,7 +29,7 @@ class AlertState(Enum):
     RESOLVED = "resolved"
 
 
-class Resolution(Enum):
+class Resolution(StrEnum):
     """
     The reason for resolving the alert
     """
@@ -40,7 +40,7 @@ class Resolution(Enum):
     USED_IN_TESTS = "used_in_tests"
 
 
-class LocationType(Enum):
+class LocationType(StrEnum):
     """
     Type of location
     """
