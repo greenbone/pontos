@@ -79,7 +79,7 @@ def pack_extended_attributes(
     target_sw: Optional[str],
     target_hw: Optional[str],
     other: Optional[str],
-) -> Optional[str]:
+) -> str:
     """
     Pack the extended attributes (v2.3) for an edition attribute (v2.2)
     """
