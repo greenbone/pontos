@@ -17,6 +17,7 @@
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from enum import Enum
 from inspect import isclass
 from typing import Any, Dict, Type, Union, get_args, get_origin, get_type_hints
 
@@ -27,6 +28,7 @@ from pontos.errors import PontosError
 __all__ = (
     "Model",
     "ModelError",
+    "StrEnum",
     "dotted_attributes",
 )
 
@@ -35,6 +37,16 @@ class ModelError(PontosError):
     """
     Errors raised for Models
     """
+
+
+class StrEnum(str, Enum):
+    # Should be replaced by enum.StrEnum when we require Python >= 3.11
+    """
+    An Enum that provides str like behavior
+    """
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def dotted_attributes(obj: Any, data: Dict[str, Any]) -> Any:
