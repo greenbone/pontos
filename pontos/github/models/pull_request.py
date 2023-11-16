@@ -17,11 +17,11 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional
 
 from pontos.github.models.base import FileStatus, GitHubModel, Team, User
 from pontos.github.models.organization import Repository
+from pontos.models import StrEnum
 
 __all__ = (
     "AuthorAssociation",
@@ -237,7 +237,7 @@ class Label(GitHubModel):
     description: Optional[str] = None
 
 
-class MilestoneState(Enum):
+class MilestoneState(StrEnum):
     """
     State of a pull request milestone (open, closed)
 
@@ -312,7 +312,7 @@ class PullRequestRef(GitHubModel):
     repo: Repository
 
 
-class PullRequestState(Enum):
+class PullRequestState(StrEnum):
     """
     Pull request state
 
@@ -325,7 +325,7 @@ class PullRequestState(Enum):
     CLOSED = "closed"
 
 
-class AuthorAssociation(Enum):
+class AuthorAssociation(StrEnum):
     """
     Pull request author association
 
@@ -408,7 +408,7 @@ class Comment(GitHubModel):
     reactions: Optional[Reactions] = None
 
 
-class MergeMethod(Enum):
+class MergeMethod(StrEnum):
     """
     The (auto) merge method
 

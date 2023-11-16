@@ -17,10 +17,10 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
+from pontos.models import StrEnum
 
 __all__ = (
     "Release",
@@ -30,7 +30,7 @@ __all__ = (
 )
 
 
-class ReleaseAssetState(Enum):
+class ReleaseAssetState(StrEnum):
     """
     State of a release asset
 

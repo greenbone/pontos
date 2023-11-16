@@ -17,10 +17,10 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pontos.github.models.base import GitHubModel
+from pontos.models import StrEnum
 
 __all__ = (
     "GitObjectType",
@@ -31,7 +31,7 @@ __all__ = (
 )
 
 
-class GitObjectType(Enum):
+class GitObjectType(StrEnum):
     """
     A git object type
 
@@ -78,7 +78,7 @@ class Tagger(GitHubModel):
     name: str
 
 
-class VerificationReason(Enum):
+class VerificationReason(StrEnum):
     """
     Verification reason details
 
