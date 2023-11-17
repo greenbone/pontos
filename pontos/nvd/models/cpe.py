@@ -18,6 +18,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
+from uuid import UUID
 
 from pontos.models import Model, StrEnum
 
@@ -90,7 +91,7 @@ class DeprecatedBy(Model):
     """
 
     cpe_name: Optional[str] = None
-    cpe_name_id: Optional[str] = None
+    cpe_name_id: Optional[UUID] = None
 
 
 @dataclass
@@ -100,7 +101,7 @@ class CPE(Model):
 
     Attributes:
         cpe_name: The name of the CPE
-        cpe_name_id: ID of the CPE
+        cpe_name_id: UUID of the CPE
         deprecated: True if the CPE is deprecated
         last_modified: Last modification date of the CPE
         created: Creation date of the CPE
@@ -111,7 +112,7 @@ class CPE(Model):
     """
 
     cpe_name: str
-    cpe_name_id: str
+    cpe_name_id: UUID
     deprecated: bool
     last_modified: datetime
     created: datetime
