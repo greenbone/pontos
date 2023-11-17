@@ -53,8 +53,8 @@ class CVEChangeTestCase(unittest.TestCase):
 class EventNameTestCase(unittest.TestCase):
     def test_init(self):
         self.assertEqual(
-            EventName("Initial Analysis"), EventName.INITAL_ANALYSIS
+            EventName("Initial Analysis"), EventName.INITIAL_ANALYSIS
         )
 
     def test__str__(self):
-        self.assertEqual(str(EventName.INITAL_ANALYSIS), "Initial Analysis")
+        self.assertEqual(str(EventName.INITIAL_ANALYSIS), "Initial Analysis")
