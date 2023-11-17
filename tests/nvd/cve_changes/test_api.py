@@ -54,7 +54,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         cve_change = await anext(it)
 
         self.assertEqual(cve_change.cve_id, "CVE-1")
-        self.assertEqual(cve_change.event_name, EventName.INITAL_ANALYSIS)
+        self.assertEqual(cve_change.event_name, EventName.INITIAL_ANALYSIS)
         self.assertEqual(
             cve_change.cve_change_id,
             UUID("5160FDEB-0FF0-457B-AA36-0AEDCAB2522E"),
@@ -179,7 +179,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_event_name(self):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
-        it = aiter(self.api.changes(event_name=EventName.INITAL_ANALYSIS))
+        it = aiter(self.api.changes(event_name=EventName.INITIAL_ANALYSIS))
         cve_changes = await anext(it)
 
         self.assertEqual(cve_changes.cve_id, "CVE-1")
