@@ -18,6 +18,7 @@
 
 import unittest
 from datetime import datetime
+from uuid import UUID
 
 from pontos.nvd.models.cpe import CPE, ReferenceType
 from tests.nvd import get_cpe_data
@@ -32,7 +33,7 @@ class CPETestCase(unittest.TestCase):
             "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:arm64:*",
         )
         self.assertEqual(
-            cpe.cpe_name_id, "9BAECDB2-614D-4E9C-9936-190C30246F03"
+            cpe.cpe_name_id, UUID("9BAECDB2-614D-4E9C-9936-190C30246F03")
         )
         self.assertFalse(cpe.deprecated)
         self.assertEqual(
@@ -111,5 +112,6 @@ class CPETestCase(unittest.TestCase):
             "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:x64:*",
         )
         self.assertEqual(
-            deprecated_by.cpe_name_id, "A09335E2-B42F-4820-B487-57A4BF0CEE98"
+            deprecated_by.cpe_name_id,
+            UUID("A09335E2-B42F-4820-B487-57A4BF0CEE98"),
         )

@@ -26,6 +26,7 @@ from typing import (
     Type,
     Union,
 )
+from uuid import UUID
 
 from httpx import Timeout
 
@@ -88,7 +89,7 @@ class CPEApi(NVDApi):
             rate_limit=rate_limit,
         )
 
-    async def cpe(self, cpe_name_id: str) -> CPE:
+    async def cpe(self, cpe_name_id: Union[str, UUID]) -> CPE:
         """
         Query for a CPE matching the CPE UUID.
 
@@ -114,7 +115,7 @@ class CPEApi(NVDApi):
         if not cpe_name_id:
             raise PontosError("Missing CPE Name ID.")
 
-        response = await self._get(params={"cpeNameId": cpe_name_id})
+        response = await self._get(params={"cpeNameId": str(cpe_name_id)})
         response.raise_for_status()
         data = response.json(object_hook=convert_camel_case)
         products = data["products"]
