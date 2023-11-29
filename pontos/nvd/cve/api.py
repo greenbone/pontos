@@ -18,8 +18,8 @@
 from datetime import datetime
 from types import TracebackType
 from typing import (
-    AsyncIterator,
     Iterable,
+    Iterator,
     List,
     Optional,
     Type,
@@ -33,6 +33,7 @@ from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
     JSON,
     NVDApi,
+    NVDResults,
     Params,
     convert_camel_case,
     format_date,
@@ -46,6 +47,13 @@ __all__ = ("CVEApi",)
 
 DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 MAX_CVES_PER_PAGE = 2000
+
+
+def _result_iterator(data: JSON) -> Iterator[CVE]:
+    vulnerabilities: Iterable = data.get("vulnerabilities", [])  # type: ignore
+    return (
+        CVE.from_dict(vulnerability["cve"]) for vulnerability in vulnerabilities
+    )
 
 
 class CVEApi(NVDApi):
@@ -91,7 +99,7 @@ class CVEApi(NVDApi):
             rate_limit=rate_limit,
         )
 
-    async def cves(
+    def cves(
         self,
         *,
         last_modified_start_date: Optional[datetime] = None,
@@ -113,7 +121,7 @@ class CVEApi(NVDApi):
         has_kev: Optional[bool] = None,
         has_oval: Optional[bool] = None,
         request_results: Optional[int] = None,
-    ) -> AsyncIterator[CVE]:
+    ) -> NVDResults[CVE]:
         """
         Get all CVEs for the provided arguments
 
@@ -165,9 +173,9 @@ class CVEApi(NVDApi):
                 to download all available CVEs.
 
         Returns:
-            An async iterator to iterate over CVE model instances
+            A NVDResponse for CVEs
 
-        Example:
+        Examples:
             .. code-block:: python
 
                 from pontos.nvd.cve import CVEApi
@@ -175,6 +183,16 @@ class CVEApi(NVDApi):
                 async with CVEApi() as api:
                     async for cve in api.cves(keywords=["Mac OS X", "kernel"]):
                         print(cve.id)
+
+                    json = await api.cves(
+                        cpe_name="cpe:2.3:o:microsoft:windows_7:-:*:*:*:*:*:x64:*",
+                    ).json()
+
+                    async for cves in api.cves(
+                        virtual_match_string="cpe:2.3:o:microsoft:windows_7:-:*:*:*:*:*:x64:*",
+                    ).chunks():
+                        for cve in cves:
+                            print(cve)
         """
         params: Params = {}
         if last_modified_start_date:
@@ -231,54 +249,20 @@ class CVEApi(NVDApi):
         if has_oval:
             params["hasOval"] = ""
 
-        start_index: int = 0
-        downloaded_results = 0
+        start_index = 0
         results_per_page = (
             request_results
             if request_results and request_results < MAX_CVES_PER_PAGE
             else MAX_CVES_PER_PAGE
         )
-        total_results = None
-        requested_results = request_results
-
-        while (
-            requested_results is None or downloaded_results < requested_results
-        ):
-            params["startIndex"] = start_index
-
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
-
-            response = await self._get(params=params)
-            response.raise_for_status()
-
-            data: JSON = response.json(object_hook=convert_camel_case)
-
-            results_per_page: int = data["results_per_page"]  # type: ignore
-            total_results: int = data["total_results"]  # type: ignore
-            vulnerabilities: Iterable = data.get(  # type: ignore
-                "vulnerabilities", []
-            )
-
-            if not requested_results:
-                requested_results = total_results
-
-            for vulnerability in vulnerabilities:
-                yield CVE.from_dict(vulnerability["cve"])
-
-            if results_per_page is None:
-                # just be safe here. should never occur
-                results_per_page = len(vulnerabilities)
-
-            start_index += results_per_page
-            downloaded_results += results_per_page
-
-            if (
-                request_results
-                and downloaded_results + results_per_page > request_results
-            ):
-                # avoid downloading more results then requested
-                results_per_page = request_results - downloaded_results
+        return NVDResults(
+            self,
+            params,
+            _result_iterator,
+            request_results=request_results,
+            results_per_page=results_per_page,
+            start_index=start_index,
+        )
 
     async def cve(self, cve_id: str) -> CVE:
         """

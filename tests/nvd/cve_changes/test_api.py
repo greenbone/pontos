@@ -12,7 +12,7 @@ from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
 from pontos.nvd.api import now
-from pontos.nvd.cve_changes.api import CVEChangesApi
+from pontos.nvd.cve_changes.api import MAX_CVE_CHANGES_PER_PAGE, CVEChangesApi
 from pontos.nvd.models.cve_change import Detail, EventName
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
 from tests.nvd import get_cve_change_data
@@ -88,7 +88,10 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0},
+            params={
+                "startIndex": 0,
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
@@ -123,6 +126,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "changeStartDate": "2022-12-01T00:00:00",
                 "changeEndDate": "2022-12-31T00:00:00",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
 
@@ -155,7 +159,11 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "cveId": "CVE-1"},
+            params={
+                "startIndex": 0,
+                "cveId": "CVE-1",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
@@ -186,7 +194,11 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
             headers={"apiKey": "token"},
-            params={"startIndex": 0, "eventName": "Initial Analysis"},
+            params={
+                "startIndex": 0,
+                "eventName": "Initial Analysis",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
+            },
         )
 
         self.http_client.get.reset_mock()
@@ -227,6 +239,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "changeStartDate": "2023-01-01T00:00:00+00:00",
                 "changeEndDate": "2023-01-02T00:00:00+00:00",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
 
@@ -252,6 +265,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "changeStartDate": "2023-01-01T00:00:00+00:00",
                 "changeEndDate": "2023-05-01T00:00:00+00:00",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
 
@@ -273,18 +287,32 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
                 "startIndex": 0,
                 "changeStartDate": "2023-01-01T00:00:00+00:00",
                 "changeEndDate": "2023-05-01T00:00:00+00:00",
+                "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
 
     async def test_cve_changes_range_too_long(self):
-        it = aiter(
+        with self.assertRaises(PontosError):
             self.api.changes(
                 change_start_date=datetime(2023, 1, 1),
                 change_end_date=datetime(2023, 5, 2),
             )
+
+    async def test_cve_changes_request_results(self):
+        self.http_client.get.side_effect = create_cve_changes_responses()
+
+        it = aiter(self.api.changes(request_results=10))
+
+        await anext(it)
+
+        self.http_client.get.assert_awaited_once_with(
+            "https://services.nvd.nist.gov/rest/json/cvehistory/2.0",
+            headers={"apiKey": "token"},
+            params={
+                "startIndex": 0,
+                "resultsPerPage": 10,
+            },
         )
-        with self.assertRaises(PontosError):
-            await anext(it)
 
     async def test_context_manager(self):
         async with self.api:

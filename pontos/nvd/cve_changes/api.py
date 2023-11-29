@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from datetime import datetime, timedelta
-from typing import AsyncIterator, Iterable, Optional, Union
+from typing import Any, Iterator, Optional, Union
 
 from httpx import Timeout
 
@@ -12,8 +12,8 @@ from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
     JSON,
     NVDApi,
+    NVDResults,
     Params,
-    convert_camel_case,
     format_date,
     now,
 )
@@ -24,6 +24,13 @@ __all__ = ("CVEChangesApi",)
 DEFAULT_NIST_NVD_CVE_HISTORY_URL = (
     "https://services.nvd.nist.gov/rest/json/cvehistory/2.0"
 )
+
+MAX_CVE_CHANGES_PER_PAGE = 5000
+
+
+def _result_iterator(data: JSON) -> Iterator[CVEChange]:
+    results: list[dict[str, Any]] = data.get("cve_changes", [])  # type: ignore
+    return (CVEChange.from_dict(result["change"]) for result in results)
 
 
 class CVEChangesApi(NVDApi):
@@ -70,14 +77,15 @@ class CVEChangesApi(NVDApi):
             rate_limit=rate_limit,
         )
 
-    async def changes(
+    def changes(
         self,
         *,
         change_start_date: Optional[datetime] = None,
         change_end_date: Optional[datetime] = None,
         cve_id: Optional[str] = None,
         event_name: Optional[Union[EventName, str]] = None,
-    ) -> AsyncIterator[CVEChange]:
+        request_results: Optional[int] = None,
+    ) -> NVDResults[CVEChange]:
         """
         Get all CVEs for the provided arguments
 
@@ -88,10 +96,11 @@ class CVEChangesApi(NVDApi):
             change_end_date: Return all CVE changes before this date.
             cve_id: Return all CVE changes for this Common Vulnerabilities and Exposures identifier.
             event_name: Return all CVE changes with this event name.
-
+            request_results: Number of CVEs changes to download. Set to None
+                (default) to download all available CPEs.
 
         Returns:
-            An async iterator to iterate over CVEChange model instances
+            A NVDResponse for CVE changes
 
         Example:
             .. code-block:: python
@@ -101,9 +110,15 @@ class CVEChangesApi(NVDApi):
                 async with CVEChangesApi() as api:
                     async for cve_change in api.changes(event_name=EventName.INITIAL_ANALYSIS):
                         print(cve_change)
-        """
-        total_results: Optional[int] = None
 
+                    json = api.changes(event_name=EventName.INITIAL_ANALYSIS).json()
+
+                    async for changes in api.changes(
+                        event_name=EventName.INITIAL_ANALYSIS,
+                    ).chunks():
+                        for cve_change in changes:
+                        print(cve_change)
+        """
         if change_start_date and not change_end_date:
             change_end_date = min(
                 now(), change_start_date + timedelta(days=120)
@@ -128,27 +143,19 @@ class CVEChangesApi(NVDApi):
             params["eventName"] = event_name
 
         start_index: int = 0
-        results_per_page = None
-
-        while total_results is None or start_index < total_results:
-            params["startIndex"] = start_index
-
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
-
-            response = await self._get(params=params)
-            response.raise_for_status()
-
-            data: JSON = response.json(object_hook=convert_camel_case)
-
-            total_results = data["total_results"]  # type: ignore
-            results_per_page: int = data["results_per_page"]  # type: ignore
-            cve_changes: Iterable = data.get("cve_changes", [])  # type: ignore
-
-            for cve_change in cve_changes:
-                yield CVEChange.from_dict(cve_change["change"])
-
-            start_index += results_per_page  # type: ignore
+        results_per_page = (
+            request_results
+            if request_results and request_results < MAX_CVE_CHANGES_PER_PAGE
+            else MAX_CVE_CHANGES_PER_PAGE
+        )
+        return NVDResults(
+            self,
+            params,
+            _result_iterator,
+            request_results=request_results,
+            results_per_page=results_per_page,
+            start_index=start_index,
+        )
 
     async def __aenter__(self) -> "CVEChangesApi":
         await super().__aenter__()

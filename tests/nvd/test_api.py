@@ -19,12 +19,21 @@
 
 import unittest
 from datetime import datetime
+from typing import Any, Iterator
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
-from pontos.nvd.api import NVDApi, convert_camel_case, format_date
-from tests import IsolatedAsyncioTestCase
+from pontos.nvd.api import (
+    JSON,
+    InvalidState,
+    NoMoreResults,
+    NVDApi,
+    NVDResults,
+    convert_camel_case,
+    format_date,
+)
+from tests import IsolatedAsyncioTestCase, aiter, anext
 
 
 class ConvertCamelCaseTestCase(unittest.TestCase):
@@ -131,3 +140,329 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
         await api._get()
 
         sleep_mock.assert_not_called()
+
+
+class Result:
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+
+def result_func(data: JSON) -> Iterator[Result]:
+    return (Result(d) for d in data["values"])  # type: ignore
+
+
+class NVDResultsTestCase(IsolatedAsyncioTestCase):
+    async def test_items(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        it = aiter(results.items())
+
+        result = await anext(it)
+        self.assertEqual(result.value, 1)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 2)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 3)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 4)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 5)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 6)
+
+    async def test_aiter(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        it = aiter(results)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 1)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 2)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 3)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 4)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 5)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 6)
+
+    async def test_len(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.return_value = {
+            "values": [1, 2, 3],
+            "total_results": 3,
+            "results_per_page": 3,
+        }
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        with self.assertRaisesRegex(
+            InvalidState, "NVDResults has not been awaited yet"
+        ):
+            len(results)
+
+        await results
+
+        self.assertEqual(len(results), 3)
+
+    async def test_chunks(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        it = aiter(nvd_results.chunks())
+
+        results = await anext(it)
+        self.assertEqual([result.value for result in results], [1, 2, 3])
+
+        results = await anext(it)
+        self.assertEqual([result.value for result in results], [4, 5, 6])
+
+    async def test_json(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [1, 2, 3])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [4, 5, 6])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+        self.assertIsNone(await nvd_results.json())
+
+    async def test_await(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        await nvd_results
+        self.assertEqual(len(nvd_results), 6)
+
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [1, 2, 3])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+        await nvd_results
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [4, 5, 6])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+        with self.assertRaises(NoMoreResults):
+            await nvd_results
+
+    async def test_mix_and_match(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        await nvd_results
+        self.assertEqual(len(nvd_results), 6)
+
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [1, 2, 3])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+        self.assertEqual(
+            [result.value async for result in nvd_results], [1, 2, 3, 4, 5, 6]
+        )
+
+        json: dict[str, Any] = await nvd_results.json()  # type: ignore
+        self.assertEqual(json["values"], [4, 5, 6])
+        self.assertEqual(json["total_results"], 6)
+        self.assertEqual(json["results_per_page"], 3)
+
+    async def test_response_error(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2, 3],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        json = await nvd_results.json()
+        self.assertEqual(json["values"], [1, 2, 3])  # type: ignore
+
+        api_mock._get.assert_called_once_with(params={"startIndex": 0})
+
+        response_mock.raise_for_status.side_effect = Exception("Server Error")
+
+        api_mock.reset_mock()
+
+        with self.assertRaises(Exception):
+            json = await nvd_results.json()
+
+        api_mock._get.assert_called_once_with(
+            params={
+                "startIndex": 3,
+                "resultsPerPage": 3,
+            }
+        )
+
+        response_mock.reset_mock(return_value=True, side_effect=True)
+        api_mock.reset_mock()
+
+        response_mock.json.side_effect = [
+            {
+                "values": [4, 5, 6],
+                "total_results": 6,
+                "results_per_page": 3,
+            },
+        ]
+
+        json = await nvd_results.json()
+        self.assertEqual(json["values"], [4, 5, 6])  # type: ignore
+
+        api_mock._get.assert_called_once_with(
+            params={
+                "startIndex": 3,
+                "resultsPerPage": 3,
+            }
+        )

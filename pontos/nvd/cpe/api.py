@@ -19,8 +19,8 @@
 from datetime import datetime
 from types import TracebackType
 from typing import (
-    AsyncIterator,
-    Iterable,
+    Any,
+    Iterator,
     List,
     Optional,
     Type,
@@ -35,6 +35,7 @@ from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
     JSON,
     NVDApi,
+    NVDResults,
     Params,
     convert_camel_case,
     format_date,
@@ -44,6 +45,11 @@ from pontos.nvd.models.cpe import CPE
 
 DEFAULT_NIST_NVD_CPES_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
 MAX_CPES_PER_PAGE = 10000
+
+
+def _result_iterator(data: JSON) -> Iterator[CPE]:
+    results: list[dict[str, Any]] = data.get("products", [])  # type: ignore
+    return (CPE.from_dict(result["cpe"]) for result in results)
 
 
 class CPEApi(NVDApi):
@@ -125,7 +131,7 @@ class CPEApi(NVDApi):
         product = products[0]
         return CPE.from_dict(product["cpe"])
 
-    async def cpes(
+    def cpes(
         self,
         *,
         last_modified_start_date: Optional[datetime] = None,
@@ -134,7 +140,7 @@ class CPEApi(NVDApi):
         keywords: Optional[Union[List[str], str]] = None,
         match_criteria_id: Optional[str] = None,
         request_results: Optional[int] = None,
-    ) -> AsyncIterator[CPE]:
+    ) -> NVDResults[CPE]:
         """
         Get all CPEs for the provided arguments
 
@@ -155,9 +161,9 @@ class CPEApi(NVDApi):
                 to download all available CPEs.
 
         Returns:
-            An async iterator of CPE model instances.
+            A NVDResponse for CPEs
 
-        Example:
+        Examples:
             .. code-block:: python
 
                 from pontos.nvd.cpe import CPEApi
@@ -165,6 +171,14 @@ class CPEApi(NVDApi):
                 async with CPEApi() as api:
                     async for cpe in api.cpes(keywords=["Mac OS X"]):
                         print(cpe.cpe_name, cpe.cpe_name_id)
+
+                    json = await api.cpes(request_results=10).json()
+
+                    async for cpes in api.cpes(
+                        cpe_match_string="cpe:2.3:o:microsoft:windows_7:-:*:*:*:*:*:*:*",
+                    ).chunks():
+                        for cpe in cpes:
+                            print(cpe)
         """
         params: Params = {}
         if last_modified_start_date:
@@ -189,51 +203,20 @@ class CPEApi(NVDApi):
             params["matchCriteriaId"] = match_criteria_id
 
         start_index = 0
-        downloaded_results = 0
         results_per_page = (
             request_results
             if request_results and request_results < MAX_CPES_PER_PAGE
             else MAX_CPES_PER_PAGE
         )
-        total_results = None
-        requested_results = request_results
 
-        while (
-            requested_results is None or downloaded_results < requested_results
-        ):
-            params["startIndex"] = start_index
-
-            if results_per_page is not None:
-                params["resultsPerPage"] = results_per_page
-
-            response = await self._get(params=params)
-            response.raise_for_status()
-
-            data: JSON = response.json(object_hook=convert_camel_case)
-
-            results_per_page: int = data["results_per_page"]  # type: ignore
-            total_results: int = data["total_results"]  # type: ignore
-            products: Iterable = data.get("products", [])  # type: ignore
-
-            if not requested_results:
-                requested_results = total_results
-
-            for product in products:
-                yield CPE.from_dict(product["cpe"])
-
-            if results_per_page is None:
-                # just be safe here. should never occur
-                results_per_page = len(products)
-
-            start_index += results_per_page
-            downloaded_results += results_per_page
-
-            if (
-                request_results
-                and downloaded_results + results_per_page > request_results
-            ):
-                # avoid downloading more results then requested
-                results_per_page = request_results - downloaded_results
+        return NVDResults(
+            self,
+            params,
+            _result_iterator,
+            request_results=request_results,
+            results_per_page=results_per_page,
+            start_index=start_index,
+        )
 
     async def __aenter__(self) -> "CPEApi":
         await super().__aenter__()
