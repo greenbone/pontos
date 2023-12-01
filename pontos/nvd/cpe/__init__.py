@@ -32,9 +32,12 @@ async def query_cpe(args: Namespace) -> None:
 
 async def query_cpes(args: Namespace) -> None:
     async with CPEApi(token=args.token) as api:
-        async for cpe in api.cpes(
-            keywords=args.keywords, cpe_match_string=args.cpe_match_string
-        ):
+        response = api.cpes(
+            keywords=args.keywords,
+            cpe_match_string=args.cpe_match_string,
+            request_results=args.number,
+        )
+        async for cpe in response:
             print(cpe)
 
 
@@ -60,6 +63,9 @@ def cpes_main() -> None:
         nargs="*",
         help="Search for CPEs containing the keyword in their titles and "
         "references.",
+    )
+    parser.add_argument(
+        "--number", "-n", metavar="N", help="Request only N CPEs", type=int
     )
 
     main(parser, query_cpes)

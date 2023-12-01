@@ -32,6 +32,7 @@ async def query_cves(args: Namespace) -> None:
             cvss_v2_vector=args.cvss_v2_vector,
             cvss_v3_vector=args.cvss_v3_vector,
             source_identifier=args.source_identifier,
+            request_results=args.number,
         ):
             print(cve)
 
@@ -65,6 +66,9 @@ def cves_main() -> None:
         "--source-identifier",
         help="Get all CVE information with the source identifier. For example: "
         "cve@mitre.org",
+    )
+    parser.add_argument(
+        "--number", "-n", metavar="N", help="Request only N CVEs", type=int
     )
 
     main(parser, query_cves)
