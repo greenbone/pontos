@@ -13,7 +13,9 @@ __all__ = ("CVEChangesApi",)
 async def query_changes(args: Namespace) -> None:
     async with CVEChangesApi(token=args.token) as api:
         async for cve in api.changes(
-            cve_id=args.cve_id, event_name=args.event_name
+            cve_id=args.cve_id,
+            event_name=args.event_name,
+            request_results=args.number,
         ):
             print(cve)
 
@@ -24,6 +26,9 @@ def parse_args() -> Namespace:
     parser.add_argument("--cve-id", help="Get changes for a specific CVE")
     parser.add_argument(
         "--event-name", help="Get all CVE associated with a specific event name"
+    )
+    parser.add_argument(
+        "--number", "-n", metavar="N", help="Request only N CPEs", type=int
     )
     return parser.parse_args()
 
