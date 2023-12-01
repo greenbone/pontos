@@ -19,6 +19,8 @@ import asyncio
 from argparse import ArgumentParser, Namespace
 from typing import Callable
 
+import httpx
+
 from pontos.nvd.cpe.api import CPEApi
 
 __all__ = ("CPEApi",)
@@ -77,3 +79,5 @@ def main(parser: ArgumentParser, func: Callable) -> None:
         asyncio.run(func(args))
     except KeyboardInterrupt:
         pass
+    except httpx.HTTPStatusError as e:
+        print(f"HTTP Error {e.response.status_code}: {e.response.text}")
