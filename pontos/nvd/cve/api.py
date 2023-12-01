@@ -121,6 +121,7 @@ class CVEApi(NVDApi):
         has_kev: Optional[bool] = None,
         has_oval: Optional[bool] = None,
         request_results: Optional[int] = None,
+        start_index: int = 0,
     ) -> NVDResults[CVE]:
         """
         Get all CVEs for the provided arguments
@@ -171,6 +172,8 @@ class CVEApi(NVDApi):
                 transitioned to the Center for Internet Security (CIS).
             request_results: Number of CVEs to download. Set to None (default)
                 to download all available CVEs.
+            start_index: Index of the first CVE to be returned. Useful only for
+                paginated requests that should not start at the first page.
 
         Returns:
             A NVDResponse for CVEs
@@ -249,7 +252,6 @@ class CVEApi(NVDApi):
         if has_oval:
             params["hasOval"] = ""
 
-        start_index = 0
         results_per_page = (
             request_results
             if request_results and request_results < MAX_CVES_PER_PAGE

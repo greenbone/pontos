@@ -16,6 +16,7 @@ async def query_changes(args: Namespace) -> None:
             cve_id=args.cve_id,
             event_name=args.event_name,
             request_results=args.number,
+            start_index=args.start,
         ):
             print(cve)
 
@@ -29,6 +30,12 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         "--number", "-n", metavar="N", help="Request only N CPEs", type=int
+    )
+    parser.add_argument(
+        "--start",
+        "-s",
+        help="Index of the first CPE to request.",
+        type=int,
     )
     return parser.parse_args()
 

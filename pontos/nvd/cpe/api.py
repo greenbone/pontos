@@ -140,6 +140,7 @@ class CPEApi(NVDApi):
         keywords: Optional[Union[List[str], str]] = None,
         match_criteria_id: Optional[str] = None,
         request_results: Optional[int] = None,
+        start_index: int = 0,
     ) -> NVDResults[CPE]:
         """
         Get all CPEs for the provided arguments
@@ -159,6 +160,8 @@ class CPEApi(NVDApi):
                 string identified by its UUID.
             request_results: Number of CPEs to download. Set to None (default)
                 to download all available CPEs.
+            start_index: Index of the first CPE to be returned. Useful only for
+                paginated requests that should not start at the first page.
 
         Returns:
             A NVDResponse for CPEs
@@ -202,7 +205,6 @@ class CPEApi(NVDApi):
         if match_criteria_id:
             params["matchCriteriaId"] = match_criteria_id
 
-        start_index = 0
         results_per_page = (
             request_results
             if request_results and request_results < MAX_CPES_PER_PAGE
