@@ -38,6 +38,7 @@ async def query_cpes(args: Namespace) -> None:
             keywords=args.keywords,
             cpe_match_string=args.cpe_match_string,
             request_results=args.number,
+            start_index=args.start,
         )
         async for cpe in response:
             print(cpe)
@@ -68,6 +69,12 @@ def cpes_main() -> None:
     )
     parser.add_argument(
         "--number", "-n", metavar="N", help="Request only N CPEs", type=int
+    )
+    parser.add_argument(
+        "--start",
+        "-s",
+        help="Index of the first CPE to request.",
+        type=int,
     )
 
     main(parser, query_cpes)
