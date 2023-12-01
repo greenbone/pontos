@@ -324,7 +324,14 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
         return self
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} url="{self._url}" total_results={self._total_results} start_index={self._start_index} current_index={self._current_index} results_per_page={self._results_per_page}>'
+        return (
+            f"<{self.__class__.__name__} "
+            f'url="{self._url}" '
+            f"total_results={self._total_results} "
+            f"start_index={self._start_index} "
+            f"current_index={self._current_index} "
+            f"results_per_page={self._results_per_page}>"
+        )
 
 
 class NVDApi(ABC):
