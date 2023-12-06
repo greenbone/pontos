@@ -55,6 +55,7 @@ __all__ = (
     "format_date",
     "now",
     "NVDApi",
+    "NVDResults",
 )
 
 
