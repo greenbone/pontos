@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .api import NVDApi, convert_camel_case, format_date, now
+from .api import NVDApi, NVDResults, convert_camel_case, format_date, now
 
 __all__ = (
     "convert_camel_case",
     "format_date",
     "now",
     "NVDApi",
+    "NVDResults",
 )
