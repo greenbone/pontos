@@ -86,6 +86,7 @@ class CVEChangesApi(NVDApi):
         event_name: Optional[Union[EventName, str]] = None,
         request_results: Optional[int] = None,
         start_index: int = 0,
+        results_per_page: Optional[int] = None,
     ) -> NVDResults[CVEChange]:
         """
         Get all CVEs for the provided arguments
@@ -102,6 +103,8 @@ class CVEChangesApi(NVDApi):
             start_index: Index of the first CVE change to be returned. Useful
                 only for paginated requests that should not start at the first
                 page.
+            results_per_page: Number of results in a single requests. Mostly
+                useful for paginated requests.
 
         Returns:
             A NVDResponse for CVE changes
@@ -146,10 +149,9 @@ class CVEChangesApi(NVDApi):
         if event_name:
             params["eventName"] = event_name
 
-        results_per_page = (
-            request_results
-            if request_results and request_results < MAX_CVE_CHANGES_PER_PAGE
-            else MAX_CVE_CHANGES_PER_PAGE
+        results_per_page = min(
+            results_per_page or MAX_CVE_CHANGES_PER_PAGE,
+            request_results or MAX_CVE_CHANGES_PER_PAGE,
         )
         return NVDResults(
             self,
