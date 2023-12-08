@@ -17,7 +17,7 @@
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
@@ -111,10 +111,12 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cve.id, "CVE-2022-45536")
         self.assertEqual(cve.source_identifier, "cve@mitre.org")
         self.assertEqual(
-            cve.published, datetime(2022, 11, 22, 21, 15, 11, 103000)
+            cve.published,
+            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=timezone.utc),
         )
         self.assertEqual(
-            cve.last_modified, datetime(2022, 11, 23, 16, 2, 7, 367000)
+            cve.last_modified,
+            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=timezone.utc),
         )
         self.assertEqual(len(cve.descriptions), 1)
         self.assertEqual(len(cve.references), 2)

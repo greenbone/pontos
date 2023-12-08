@@ -61,7 +61,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         )
         self.assertEqual(cve_change.source_identifier, "nvd@nist.gov")
         self.assertEqual(
-            cve_change.created, datetime(2022, 3, 18, 20, 13, 8, 123000)
+            cve_change.created,
+            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=timezone.utc),
         )
         self.assertEqual(
             cve_change.details,

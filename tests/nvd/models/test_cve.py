@@ -19,7 +19,7 @@
 # ruff: noqa: E501
 
 import unittest
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from pontos.nvd.models import cvss_v2, cvss_v3
 from pontos.nvd.models.cve import CVE, CVSSType, Operator
@@ -33,10 +33,12 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(cve.id, "CVE-2022-45536")
         self.assertEqual(cve.source_identifier, "cve@mitre.org")
         self.assertEqual(
-            cve.published, datetime(2022, 11, 22, 21, 15, 11, 103000)
+            cve.published,
+            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=timezone.utc),
         )
         self.assertEqual(
-            cve.last_modified, datetime(2022, 11, 23, 16, 2, 7, 367000)
+            cve.last_modified,
+            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=timezone.utc),
         )
         self.assertEqual(len(cve.descriptions), 1)
         self.assertEqual(len(cve.references), 2)
@@ -506,7 +508,9 @@ class CVETestCase(unittest.TestCase):
             comment.comment,
             "Fixed in Apache HTTP Server 1.3.12:\nhttp://httpd.apache.org/security/vulnerabilities_13.html",
         )
-        self.assertEqual(comment.last_modified, datetime(2008, 7, 2))
+        self.assertEqual(
+            comment.last_modified, datetime(2008, 7, 2, tzinfo=timezone.utc)
+        )
 
     def test_evaluator_comment(self):
         cve = CVE.from_dict(

@@ -18,7 +18,7 @@
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 # ruff: noqa: E501
 
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import repeat
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
@@ -132,9 +132,13 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cpe.cpe_name_id, uuid_replace(uuid, 1, 1))
         self.assertFalse(cpe.deprecated)
         self.assertEqual(
-            cpe.last_modified, datetime(2022, 12, 9, 18, 15, 16, 973000)
+            cpe.last_modified,
+            datetime(2022, 12, 9, 18, 15, 16, 973000, tzinfo=timezone.utc),
         )
-        self.assertEqual(cpe.created, datetime(2022, 12, 9, 16, 20, 6, 943000))
+        self.assertEqual(
+            cpe.created,
+            datetime(2022, 12, 9, 16, 20, 6, 943000, tzinfo=timezone.utc),
+        )
 
         self.assertEqual(cpe.refs, [])
         self.assertEqual(cpe.titles, [])
