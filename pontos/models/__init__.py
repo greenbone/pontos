@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from inspect import isclass
 from typing import Any, Dict, Type, Union, get_args, get_origin, get_type_hints
@@ -93,11 +93,10 @@ def _get_value_from_model_field_cls(
         value = dateparser.isoparse(value)
         # the iso format may not contain UTC data or a UTC offset
         # this means it is considered local time (Python calls this "naive"
-        # datetime) and can't really be compared to other times. maybe we
-        # should always assume UTC for these formats.
-        # This could be done the following:
-        # if not value.tzinfo:
-        #     value = value.replace(tzinfo=timezone.utc)
+        # datetime) and can't really be compared to other times.
+        # Let's UTC in these cases:
+        if not value.tzinfo:
+            value = value.replace(tzinfo=timezone.utc)
     elif isclass(model_field_cls) and issubclass(model_field_cls, date):
         value = date.fromisoformat(value)
     elif get_origin(model_field_cls) == list:
