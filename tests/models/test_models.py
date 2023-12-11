@@ -112,7 +112,9 @@ class ExampleModelTestCase(unittest.TestCase):
             foo: datetime
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00.000"})
-        self.assertEqual(model.foo, datetime(1988, 10, 1, 4))
+        self.assertEqual(
+            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
+        )
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00Z"})
         self.assertEqual(
@@ -131,7 +133,10 @@ class ExampleModelTestCase(unittest.TestCase):
         )
 
         model = ExampleModel.from_dict({"foo": "2021-06-06T11:15:10.213"})
-        self.assertEqual(model.foo, datetime(2021, 6, 6, 11, 15, 10, 213000))
+        self.assertEqual(
+            model.foo,
+            datetime(2021, 6, 6, 11, 15, 10, 213000, tzinfo=timezone.utc),
+        )
 
     def test_date(self):
         @dataclass
@@ -190,7 +195,9 @@ class ExampleModelTestCase(unittest.TestCase):
         )
 
         self.assertEqual(model.foo, "abc")
-        self.assertEqual(model.bar, datetime(1988, 10, 1, 4))
+        self.assertEqual(
+            model.bar, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
+        )
         self.assertEqual(model.id, 123)
         self.assertEqual(model.baz, ["a", "b", "c"])
         self.assertIsNotNone(model.ipsum)

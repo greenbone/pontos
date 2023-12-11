@@ -6,7 +6,7 @@
 # ruff: noqa: E501
 
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from pontos.nvd.models.cve_change import CVEChange, Detail, EventName
@@ -25,7 +25,8 @@ class CVEChangeTestCase(unittest.TestCase):
         )
         self.assertEqual(cve_change.source_identifier, "nvd@nist.gov")
         self.assertEqual(
-            cve_change.created, datetime(2022, 3, 18, 20, 13, 8, 123000)
+            cve_change.created,
+            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=timezone.utc),
         )
         self.assertEqual(
             cve_change.details,
