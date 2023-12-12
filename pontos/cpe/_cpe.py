@@ -139,7 +139,7 @@ def _add_quoting(value: str) -> str:
     Add quoting for parsing attributes from formatted string format to
     Well-Formed CPE Name Data Model (WFN)
     """
-    result = ""
+    result: list[str] = []
     index = 0
     embedded = False
 
@@ -147,14 +147,14 @@ def _add_quoting(value: str) -> str:
         c = value[index]
         if c.isalnum() or c in ["_"]:
             # just add character
-            result += c
+            result.append(c)
             index += 1
             embedded = True
             continue
 
         if c == "\\":
             # keep escaped character
-            result += value[index : index + 2]
+            result.append(value[index : index + 2])
             index += 2
             embedded = True
             continue
@@ -163,7 +163,7 @@ def _add_quoting(value: str) -> str:
             # An unquoted asterisk must appear at the beginning or
             # end of the string.
             if index == 0 or index == (len(value) - 1):
-                result += c
+                result.append(c)
                 index += 1
                 embedded = True
                 continue
@@ -186,7 +186,7 @@ def _add_quoting(value: str) -> str:
                     embedded and (value[index + 1] == "?")
                 )
             ):
-                result += c
+                result.append(c)
                 index += 1
                 embedded = False
                 continue
@@ -197,11 +197,11 @@ def _add_quoting(value: str) -> str:
                 )
 
         # all other characters must be quoted
-        result += f"\\{c}"
+        result.append(f"\\{c}")
         index += 1
         embedded = True
 
-    return result
+    return "".join(result)
 
 
 def unbind_value_from_formatted_string(value: Optional[str]) -> Optional[str]:
