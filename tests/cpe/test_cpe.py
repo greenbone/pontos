@@ -727,3 +727,35 @@ class CPETestCase(unittest.TestCase):
         self.assertIsNot(cpe, cpe2)
         self.assertEqual(cpe.version, "7.51")
         self.assertEqual(cpe2.version, ANY)
+
+    def test_equal(self):
+        cpe1 = CPE.from_string("cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*")
+        cpe2 = CPE.from_string("cpe:2.3:a:adobe:flash_player:-:*:*:*:*:*:*:*")
+        cpe3 = CPE.from_string("cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*")
+
+        self.assertNotEqual(cpe1, None)
+        self.assertNotEqual(cpe1, "foo")
+        self.assertNotEqual(cpe1, cpe2)
+        self.assertIsNot(cpe1, cpe3)
+        self.assertEqual(cpe1, cpe3)
+
+    def test_hashable(self):
+        cpe1 = CPE.from_string("cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*")
+        cpe2 = CPE.from_string("cpe:2.3:a:adobe:flash_player:-:*:*:*:*:*:*:*")
+        cpe3 = CPE.from_string("cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*")
+
+        cpe_list = [cpe1, cpe2, cpe3, cpe1]
+        self.assertTrue(len(cpe_list), 4)
+
+        cpe_set = set(cpe_list)
+        self.assertTrue(len(cpe_set), 2)
+
+    def test_repr(self):
+        cpe1 = CPE.from_string("cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*")
+
+        self.assertEqual(
+            repr(cpe1),
+            '<CPE part="a" vendor="3com" product="3cdaemon" version="-" '
+            'update="*" edition="*" language="*" sw_edition="*" target_sw="*" '
+            'target_hw="*" other="*">',
+        )

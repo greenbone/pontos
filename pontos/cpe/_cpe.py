@@ -5,10 +5,10 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pontos.errors import PontosError
+from pontos.models import StrEnum
 
 __all__ = (
     "ANY",
@@ -28,7 +28,7 @@ class CPEParsingError(PontosError):
     """
 
 
-class Part(Enum):
+class Part(StrEnum):
     """
     Represents the possible values for a part CPE attribute
     """
@@ -726,3 +726,28 @@ class CPE:
             return self.as_uri_binding()
 
         return self.as_formatted_string_binding()
+
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__} "
+            f'part="{self.part}" '
+            f'vendor="{self.vendor}" '
+            f'product="{self.product}" '
+            f'version="{self.version}" '
+            f'update="{self.update}" '
+            f'edition="{self.edition}" '
+            f'language="{self.language}" '
+            f'sw_edition="{self.sw_edition}" '
+            f'target_sw="{self.target_sw}" '
+            f'target_hw="{self.target_hw}" '
+            f'other="{self.other}"'
+            ">"
+        )
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, CPE):
+            return False
+        return str(self) == str(other)
