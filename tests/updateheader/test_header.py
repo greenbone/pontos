@@ -27,7 +27,10 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from pontos.terminal.terminal import ConsoleTerminal
+from pontos.testing import temp_file
+from pontos.updateheader.updateheader import OLD_COMPANY
 from pontos.updateheader.updateheader import _add_header as add_header
+from pontos.updateheader.updateheader import _compile_copyright_regex
 from pontos.updateheader.updateheader import (
     _compile_outdated_regex as compile_outdated_regex,
 )
@@ -535,6 +538,11 @@ class UpdateHeaderTestCase(TestCase):
             ret,
         )
 
+
+class UpdateHeaderCleanupTestCase(TestCase):
+    def setUp(self) -> None:
+        self.compiled_regexes = compile_outdated_regex()
+
     def test_remove_outdated_lines(self):
         test_content = """* This program is free software: you can redistribute it and/or modify
 *it under the terms of the GNU Affero General Public License as
@@ -547,10 +555,8 @@ class UpdateHeaderTestCase(TestCase):
 # version 2 as published by the Free Software Foundation.
 This program is free software: you can redistribute it and/or modify"""  # noqa: E501
 
-        compiled_regexes = compile_outdated_regex()
-
         new_content = remove_outdated_lines(
-            content=test_content, cleanup_regexes=compiled_regexes
+            content=test_content, cleanup_regexes=self.compiled_regexes
         )
         self.assertEqual(new_content, "\n")
 
@@ -566,9 +572,64 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA."""  # noqa: E501
 
-        compiled_regexes = compile_outdated_regex()
-
         new_content = remove_outdated_lines(
-            content=test_content, cleanup_regexes=compiled_regexes
+            content=test_content, cleanup_regexes=self.compiled_regexes
         )
         self.assertEqual(new_content, "\n")
+
+    def test_cleanup_file(self):
+        test_content = """# Copyright (C) 2021-2022 Greenbone Networks GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        expected_content = f"""# SPDX-FileCopyrightText: 2021-{str(datetime.datetime.now().year)} Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        with temp_file(content=test_content, name="foo.py") as tmp:
+            args = Namespace()
+            args.company = "Greenbone AG"
+            args.year = str(datetime.datetime.now().year)
+            args.changed = False
+            args.license_id = "GPL-3.0-or-later"
+            args.verbose = 0
+            args.cleanup = True
+
+            update_file(
+                file=tmp,
+                copyright_regex=_compile_copyright_regex(
+                    ["Greenbone AG", OLD_COMPANY]
+                ),
+                parsed_args=args,
+                term=Terminal(),
+                cleanup_regexes=self.compiled_regexes,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)

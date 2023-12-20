@@ -145,12 +145,12 @@ def _remove_outdated_lines(
     splitted_lines = content.splitlines()
     i = 0
     for line in splitted_lines[:20]:
-        if i > 3 and re.match(r"^(([#*]|//) ?)", line):
+        if i > 3 and re.match(r"^(([#*]|//) ?$)", line):
             splitted_lines.pop(i)
-            i = i - 1
             continue
         for regex in cleanup_regexes:
             if regex.match(line):
+                ("match")
                 changed = True
                 splitted_lines.pop(i)
                 i = i - 1
@@ -168,16 +168,12 @@ def _update_file(
     parsed_args: Namespace,
     term: Terminal,
     cleanup_regexes: Optional[List[re.Pattern]] = None,
-    old_company_copyright_regex: Optional[re.Pattern] = None,
 ) -> int:
     """Function to update the given file.
     Checks if header exists. If not it adds an
     header to that file, else it checks if year
     is up to date
     """
-    cleanup = False
-    if cleanup_regexes and old_company_copyright_regex:
-        cleanup = True
 
     if parsed_args.changed:
         try:
@@ -200,10 +196,6 @@ def _update_file(
                 found, copyright_match = _find_copyright(
                     line=line, copyright_regex=copyright_regex
                 )
-                if cleanup and not found:
-                    found, copyright_match = _find_copyright(
-                        line=line, copyright_regex=old_company_copyright_regex  # type: ignore # noqa: E501
-                    )
                 i = i - 1
             # header not found, add header
             if i == 0 and not found:
@@ -242,7 +234,7 @@ def _update_file(
                 copyright_term = (
                     f"SPDX-FileCopyrightText: "
                     f'{copyright_match["creation_year"]}'
-                    f'-{parsed_args.year} {copyright_match["company"]}'
+                    f"-{parsed_args.year} {parsed_args.company}"
                 )
                 new_line = re.sub(copyright_regex, copyright_term, line)
                 fp_write = fp.tell() - len(line)  # save position to insert
@@ -420,12 +412,14 @@ def _compile_outdated_regex() -> List[re.Pattern]:
     return regexes
 
 
-def _compile_copyright_regex(company: str) -> re.Pattern:
+def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
     """prepare the copyright regex"""
     c_str = r"(SPDX-FileCopyrightText:|[Cc]opyright)"
     d_str = r"(19[0-9]{2}|20[0-9]{2})"
 
-    return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({company})")
+    if isinstance(company, str):
+        return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({company})")
+    return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({'|'.join(company)})")
 
 
 def main() -> None:
@@ -467,10 +461,7 @@ def main() -> None:
         sys.exit(1)
 
     copyright_regex: re.Pattern = _compile_copyright_regex(
-        company=parsed_args.company
-    )
-    old_company_copyright_regex: re.Pattern = _compile_copyright_regex(
-        company=OLD_COMPANY
+        company=[parsed_args.company, OLD_COMPANY]
     )
 
     cleanup_regexes: Optional[List[re.Pattern]] = None
@@ -488,7 +479,6 @@ def main() -> None:
                     parsed_args=parsed_args,
                     term=term,
                     cleanup_regexes=cleanup_regexes,
-                    old_company_copyright_regex=old_company_copyright_regex,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
