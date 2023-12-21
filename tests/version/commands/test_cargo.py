@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
