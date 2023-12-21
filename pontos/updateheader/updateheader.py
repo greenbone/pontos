@@ -72,10 +72,12 @@ OLD_LINES = [
     "GNU Affero General Public License for more details.",
     "GNU General Public License for more details.",
     "You should have received a copy of the GNU Affero General Public License",
+    "You should have received a copy of the GNU General Public License",
     "along with this program.  If not, see <http://www.gnu.org/licenses/>.",
     "along with this program; if not, write to the Free Software",
     "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",  # noqa: E501
 ]
+OLD_COMPANY = "Greenbone Networks GmbH"
 
 
 def _get_modified_year(f: Path) -> str:
@@ -96,10 +98,10 @@ def _get_modified_year(f: Path) -> str:
 
 def _find_copyright(
     line: str,
-    regex: re.Pattern,
+    copyright_regex: re.Pattern,
 ) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
-    """Match the line for the regex"""
-    copyright_match = re.search(regex, line)
+    """Match the line for the copyright_regex"""
+    copyright_match = re.search(copyright_regex, line)
     if copyright_match:
         return (
             True,
@@ -135,7 +137,7 @@ def _add_header(
         raise ValueError
 
 
-def _remove_outdated(
+def _remove_outdated_lines(
     content: str, cleanup_regexes: List[re.Pattern]
 ) -> Optional[str]:
     """Remove lines that contain outdated copyright header ..."""
@@ -143,6 +145,9 @@ def _remove_outdated(
     splitted_lines = content.splitlines()
     i = 0
     for line in splitted_lines[:20]:
+        if i > 3 and re.match(r"^(([#*]|//) ?$)", line):
+            splitted_lines.pop(i)
+            continue
         for regex in cleanup_regexes:
             if regex.match(line):
                 changed = True
@@ -151,13 +156,14 @@ def _remove_outdated(
                 break
         i = i + 1
     if changed:
-        return "\n".join(splitted_lines)
+        new_content = "\n".join(splitted_lines) + "\n"
+        return new_content
     return None
 
 
 def _update_file(
     file: Path,
-    regex: re.Pattern,
+    copyright_regex: re.Pattern,
     parsed_args: Namespace,
     term: Terminal,
     cleanup_regexes: Optional[List[re.Pattern]] = None,
@@ -186,7 +192,9 @@ def _update_file(
                 if line == "":
                     i = 0
                     continue
-                found, copyright_match = _find_copyright(line=line, regex=regex)
+                found, copyright_match = _find_copyright(
+                    line=line, copyright_regex=copyright_regex
+                )
                 i = i - 1
             # header not found, add header
             if i == 0 and not found:
@@ -201,9 +209,7 @@ def _update_file(
                         fp.seek(0)  # back to beginning of file
                         rest_of_file = fp.read()
                         fp.seek(0)
-                        fp.write(header)
-                        fp.write("\n")
-                        fp.write(rest_of_file)
+                        fp.write(header + "\n" + rest_of_file)
                         print(f"{file}: Added license header.")
                         return 0
                 except ValueError:
@@ -217,15 +223,6 @@ def _update_file(
                         "is not existing."
                     )
                 return 1
-            # old header existing - cleanup?
-            if cleanup_regexes:
-                old_content = file.read_text(encoding="utf-8")
-                new_content = _remove_outdated(
-                    content=old_content, cleanup_regexes=cleanup_regexes
-                )
-                if new_content:
-                    file.write_text(new_content, encoding="utf-8")
-                    print(f"{file}: Cleaned up!")
             # replace found header and write it to file
             if copyright_match and (
                 not copyright_match["modification_year"]
@@ -236,9 +233,9 @@ def _update_file(
                 copyright_term = (
                     f"SPDX-FileCopyrightText: "
                     f'{copyright_match["creation_year"]}'
-                    f'-{parsed_args.year} {copyright_match["company"]}'
+                    f"-{parsed_args.year} {parsed_args.company}"
                 )
-                new_line = re.sub(regex, copyright_term, line)
+                new_line = re.sub(copyright_regex, copyright_term, line)
                 fp_write = fp.tell() - len(line)  # save position to insert
                 rest_of_file = fp.read()
                 fp.seek(fp_write)
@@ -256,13 +253,22 @@ def _update_file(
 
             else:
                 print(f"{file}: License Header is ok.")
-            return 0
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
         raise e
     except UnicodeDecodeError as e:
         print(f"{file}: Ignoring binary file.")
         raise e
+    # old header existing - cleanup?
+    if cleanup_regexes:
+        old_content = file.read_text(encoding="utf-8")
+        new_content = _remove_outdated_lines(
+            content=old_content, cleanup_regexes=cleanup_regexes
+        )
+        if new_content:
+            file.write_text(new_content, encoding="utf-8")
+            print(f"{file}: Cleaned up!")
+    return 0
 
 
 def _get_exclude_list(
@@ -405,6 +411,16 @@ def _compile_outdated_regex() -> List[re.Pattern]:
     return regexes
 
 
+def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
+    """prepare the copyright regex"""
+    c_str = r"(SPDX-FileCopyrightText:|[Cc]opyright)"
+    d_str = r"(19[0-9]{2}|20[0-9]{2})"
+
+    if isinstance(company, str):
+        return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({company})")
+    return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({'|'.join(company)})")
+
+
 def main() -> None:
     parsed_args = _parse_args()
     exclude_list = []
@@ -443,10 +459,10 @@ def main() -> None:
         term.error("Specify files to update!")
         sys.exit(1)
 
-    regex: re.Pattern = re.compile(
-        "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
-        f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({parsed_args.company})"
+    copyright_regex: re.Pattern = _compile_copyright_regex(
+        company=[parsed_args.company, OLD_COMPANY]
     )
+
     cleanup_regexes: Optional[List[re.Pattern]] = None
     if parsed_args.cleanup:
         cleanup_regexes = _compile_outdated_regex()
@@ -458,7 +474,7 @@ def main() -> None:
             else:
                 _update_file(
                     file=file,
-                    regex=regex,
+                    copyright_regex=copyright_regex,
                     parsed_args=parsed_args,
                     term=term,
                     cleanup_regexes=cleanup_regexes,

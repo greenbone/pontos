@@ -27,6 +27,12 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from pontos.terminal.terminal import ConsoleTerminal
+from pontos.testing import temp_file
+from pontos.updateheader.updateheader import (
+    OLD_COMPANY,
+    _compile_copyright_regex,
+    main,
+)
 from pontos.updateheader.updateheader import _add_header as add_header
 from pontos.updateheader.updateheader import (
     _compile_outdated_regex as compile_outdated_regex,
@@ -39,9 +45,10 @@ from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
 )
 from pontos.updateheader.updateheader import _parse_args as parse_args
-from pontos.updateheader.updateheader import _remove_outdated as remove_outdated
+from pontos.updateheader.updateheader import (
+    _remove_outdated_lines as remove_outdated_lines,
+)
 from pontos.updateheader.updateheader import _update_file as update_file
-from pontos.updateheader.updateheader import main
 
 HEADER = """# SPDX-FileCopyrightText: {date} Greenbone AG
 #
@@ -107,7 +114,9 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         # Full match
-        found, match = find_copyright(regex=self.regex, line=test_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -115,7 +124,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No modification Date
-        found, match = find_copyright(regex=self.regex, line=test2_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test2_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -123,7 +134,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No match
-        found, match = find_copyright(regex=self.regex, line=invalid_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=invalid_line
+        )
         self.assertFalse(found)
         self.assertIsNone(match)
 
@@ -136,7 +149,9 @@ class UpdateHeaderTestCase(TestCase):
         )
 
         # Full match
-        found, match = find_copyright(regex=self.regex, line=test_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -144,7 +159,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No modification Date
-        found, match = find_copyright(regex=self.regex, line=test2_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=test2_line
+        )
         self.assertTrue(found)
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
@@ -152,7 +169,9 @@ class UpdateHeaderTestCase(TestCase):
         self.assertEqual(match["company"], self.args.company)
 
         # No match
-        found, match = find_copyright(regex=self.regex, line=invalid_line)
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=invalid_line
+        )
         self.assertFalse(found)
         self.assertIsNone(match)
 
@@ -201,7 +220,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(FileNotFoundError):
             update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -224,7 +243,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
         self.assertEqual(code, 1)
 
@@ -249,7 +271,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
         self.assertEqual(code, 1)
 
@@ -281,7 +306,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(UnicodeDecodeError):
             code = update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -310,7 +335,7 @@ class UpdateHeaderTestCase(TestCase):
         with self.assertRaises(FileNotFoundError):
             code = update_file(
                 file=test_file,
-                regex=self.regex,
+                copyright_regex=self.regex,
                 parsed_args=self.args,
                 term=term,
             )
@@ -338,7 +363,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.touch()
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         ret = mock_stdout.getvalue()
@@ -367,7 +395,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         self.assertEqual(code, 0)
@@ -401,7 +432,10 @@ class UpdateHeaderTestCase(TestCase):
         test_file.write_text(header, encoding="utf-8")
 
         code = update_file(
-            file=test_file, regex=self.regex, parsed_args=self.args, term=term
+            file=test_file,
+            copyright_regex=self.regex,
+            parsed_args=self.args,
+            term=term,
         )
 
         self.assertEqual(code, 0)
@@ -506,7 +540,12 @@ class UpdateHeaderTestCase(TestCase):
             ret,
         )
 
-    def test_remove_outdated(self):
+
+class UpdateHeaderCleanupTestCase(TestCase):
+    def setUp(self) -> None:
+        self.compiled_regexes = compile_outdated_regex()
+
+    def test_remove_outdated_lines(self):
         test_content = """* This program is free software: you can redistribute it and/or modify
 *it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -518,14 +557,12 @@ class UpdateHeaderTestCase(TestCase):
 # version 2 as published by the Free Software Foundation.
 This program is free software: you can redistribute it and/or modify"""  # noqa: E501
 
-        compiled_regexes = compile_outdated_regex()
-
-        new_content = remove_outdated(
-            content=test_content, cleanup_regexes=compiled_regexes
+        new_content = remove_outdated_lines(
+            content=test_content, cleanup_regexes=self.compiled_regexes
         )
-        self.assertEqual(new_content, "")
+        self.assertEqual(new_content, "\n")
 
-    def test_remove_outdated2(self):
+    def test_remove_outdated_lines2(self):
         test_content = """the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -537,9 +574,64 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA."""  # noqa: E501
 
-        compiled_regexes = compile_outdated_regex()
-
-        new_content = remove_outdated(
-            content=test_content, cleanup_regexes=compiled_regexes
+        new_content = remove_outdated_lines(
+            content=test_content, cleanup_regexes=self.compiled_regexes
         )
-        self.assertEqual(new_content, "")
+        self.assertEqual(new_content, "\n")
+
+    def test_cleanup_file(self):
+        test_content = """# Copyright (C) 2021-2022 Greenbone Networks GmbH
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        expected_content = f"""# SPDX-FileCopyrightText: 2021-{str(datetime.datetime.now().year)} Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        with temp_file(content=test_content, name="foo.py") as tmp:
+            args = Namespace()
+            args.company = "Greenbone AG"
+            args.year = str(datetime.datetime.now().year)
+            args.changed = False
+            args.license_id = "GPL-3.0-or-later"
+            args.verbose = 0
+            args.cleanup = True
+
+            update_file(
+                file=tmp,
+                copyright_regex=_compile_copyright_regex(
+                    ["Greenbone AG", OLD_COMPANY]
+                ),
+                parsed_args=args,
+                term=Terminal(),
+                cleanup_regexes=self.compiled_regexes,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
