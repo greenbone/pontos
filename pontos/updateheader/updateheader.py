@@ -150,7 +150,6 @@ def _remove_outdated_lines(
             continue
         for regex in cleanup_regexes:
             if regex.match(line):
-                ("match")
                 changed = True
                 splitted_lines.pop(i)
                 i = i - 1
