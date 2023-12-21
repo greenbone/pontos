@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from pathlib import Path
 from typing import Iterator, Literal, Tuple, Union
 
