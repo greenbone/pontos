@@ -28,9 +28,12 @@ from unittest.mock import patch
 
 from pontos.terminal.terminal import ConsoleTerminal
 from pontos.testing import temp_file
-from pontos.updateheader.updateheader import OLD_COMPANY
+from pontos.updateheader.updateheader import (
+    OLD_COMPANY,
+    _compile_copyright_regex,
+    main,
+)
 from pontos.updateheader.updateheader import _add_header as add_header
-from pontos.updateheader.updateheader import _compile_copyright_regex
 from pontos.updateheader.updateheader import (
     _compile_outdated_regex as compile_outdated_regex,
 )
@@ -46,7 +49,6 @@ from pontos.updateheader.updateheader import (
     _remove_outdated_lines as remove_outdated_lines,
 )
 from pontos.updateheader.updateheader import _update_file as update_file
-from pontos.updateheader.updateheader import main
 
 HEADER = """# SPDX-FileCopyrightText: {date} Greenbone AG
 #
