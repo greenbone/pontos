@@ -23,6 +23,7 @@ class EventName(StrEnum):
     CWE_REMAP = "CWE Remap"
     CVE_REJECTED = "CVE Rejected"
     CVE_UNREJECTED = "CVE Unrejected"
+    CVE_CISA_KEV_UPDATE = "CVE CISA KEV Update"
 
 
 @dataclass
