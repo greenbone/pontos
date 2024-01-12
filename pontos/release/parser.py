@@ -79,7 +79,10 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
     )
 
     create_parser = subparsers.add_parser(
-        "create", help="Create a new release", aliases=["release"]
+        "create",
+        aliases=["release"],
+        help="Create a new release",
+        description="Create a new release",
     )
     create_parser.set_defaults(func=create_release)
     create_parser.add_argument(
@@ -180,7 +183,9 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
     )
 
     sign_parser = subparsers.add_parser(
-        "sign", help="Create signatures for an existing release"
+        "sign",
+        help="Create signatures for an existing release",
+        description="Create signatures for an existing release",
     )
     sign_parser.set_defaults(func=sign)
     sign_parser.add_argument(
@@ -238,6 +243,8 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         "show",
         help="Show release information about the current release version and "
         "determine the next release version",
+        description="Show release information about the current release "
+        "version and determine the next release version",
     )
     show_parser.set_defaults(func=show)
     show_parser.add_argument(
