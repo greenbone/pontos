@@ -7,7 +7,6 @@ import unittest
 from unittest.mock import patch
 
 from pontos.git.git import Git
-from pontos.version.errors import VersionError
 from pontos.version.helper import (
     get_last_release_version,
     get_last_release_versions,
@@ -116,11 +115,18 @@ class GetLastReleaseVersionsTestCase(unittest.TestCase):
         ]
 
         it = get_last_release_versions(SemanticVersioningScheme.parse_version)
-        next(it)
 
-        with self.assertRaisesRegex(
-            VersionError, "3.55a1 is not valid SemVer string"
-        ):
+        version = next(it)
+        self.assertEqual(
+            version, SemanticVersioningScheme.parse_version("2.0.0")
+        )
+
+        version = next(it)
+        self.assertEqual(
+            version, SemanticVersioningScheme.parse_version("1.0.0")
+        )
+
+        with self.assertRaises(StopIteration):
             next(it)
 
 
@@ -192,12 +198,12 @@ class GetLastReleaseVersionTestCase(unittest.TestCase):
     @patch("pontos.version.helper.Git", spec=Git)
     def test_invalid_version(self, git_mock):
         git_interface = git_mock.return_value
-        git_interface.list_tags.return_value = ["1", "2", "3.55a1"]
+        git_interface.list_tags.return_value = ["1.0.0", "2.0.0", "3.55a1"]
 
-        with self.assertRaisesRegex(
-            VersionError, "3.55a1 is not valid SemVer string"
-        ):
-            get_last_release_version(SemanticVersioningScheme.parse_version)
+        self.assertEqual(
+            get_last_release_version(SemanticVersioningScheme.parse_version),
+            SemanticVersioningScheme.parse_version("2.0.0"),
+        )
 
     @patch("pontos.version.helper.Git", spec=Git)
     def test_success_with_invalid_version(self, git_mock):
