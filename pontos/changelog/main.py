@@ -22,7 +22,8 @@ from pontos.version.schemes import (
 
 def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     parser = ArgumentParser(
-        description="Conventional commits utility.",
+        description="Conventional commits utility. Create a changelog markdown "
+        " text from conventional commits between the current and next release.",
         prog="pontos-changelog",
     )
 
@@ -30,19 +31,22 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         "--config",
         "-C",
         type=Path,
-        help="Conventional commits config file (toml), including conventions.",
+        help="Optional. Conventional commits config file (toml), including "
+        "conventions. If not provided defaults are used.",
     )
 
     parser.add_argument(
         "--project",
         required=True,
-        help="The github project",
+        help="The github project. Used for building the links to the "
+        "repository.",
     )
 
     parser.add_argument(
         "--space",
         default="greenbone",
-        help="User/Team name in github",
+        help="User/Team name in github. Used for building the links to the "
+        "repository",
     )
 
     parser.add_argument(
@@ -56,18 +60,22 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
 
     parser.add_argument(
         "--current-version",
-        help="Current version before these changes",
+        help="Version to start looking for changes. All commits since this "
+        "releases are take into account for creating the changelog text.",
     )
 
     parser.add_argument(
         "--next-version",
+        "--release-version",
+        dest="next_version",
         help="The planned release version",
     )
 
     parser.add_argument(
         "--git-tag-prefix",
         default="v",
-        help="Prefix for git tag versions. Default: %(default)s",
+        help="Prefix for git tag versions. Used to determine existing "
+        "releases. Default: %(default)s",
     )
 
     parser.add_argument(
