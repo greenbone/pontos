@@ -413,6 +413,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 token=token,  # type: ignore[arg-type]
             )
 
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=True,
+        )
+
         git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote=None),
@@ -516,6 +523,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 args=args,
                 token=token,  # type: ignore[arg-type]
             )
+
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=True,
+        )
 
         git_instance_mock.push.assert_has_calls(
             [
@@ -625,6 +639,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 token=token,  # type: ignore[arg-type]
             )
 
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=True,
+        )
+
         git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote=None),
@@ -730,6 +751,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 token=token,  # type: ignore[arg-type]
             )
 
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=True,
+        )
+
         git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote=None),
@@ -832,6 +860,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 args=args,
                 token=token,  # type: ignore[arg-type]
             )
+
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=False,
+        )
 
         git_instance_mock.push.assert_has_calls(
             [
@@ -938,6 +973,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 token=token,  # type: ignore[arg-type]
             )
 
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=False,
+        )
+
         git_instance_mock.push.assert_has_calls(
             [
                 call(follow_tags=True, remote=None),
@@ -1042,6 +1084,13 @@ class CreateReleaseTestCase(unittest.TestCase):
                 args=args,
                 token=token,  # type: ignore[arg-type]
             )
+
+        get_last_release_version_mock.assert_called_once_with(
+            parse_version=PEP440VersioningScheme.parse_version,
+            git_tag_prefix="v",
+            tag_name=None,
+            ignore_pre_releases=False,
+        )
 
         git_instance_mock.push.assert_has_calls(
             [
@@ -2715,7 +2764,11 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                     token=token,  # type: ignore[arg-type]
                 )
 
-            self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
+            self.assertEqual(
+                released,
+                CreateReleaseReturnValue.SUCCESS,
+                f"Invalid return value for {r}",
+            )
             self.assertEqual(
                 create_api_mock.call_args.args[1],
                 f"v{r.expected_release_version}",

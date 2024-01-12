@@ -196,6 +196,18 @@ class CreateReleaseCommand(AsyncCommand):
                 tag_name=f"{self.git_tag_prefix}{release_series}.*"
                 if release_series
                 else None,
+                # include changes from pre-releases in release changelog for
+                # non pre-release changes
+                ignore_pre_releases=release_type
+                not in [
+                    ReleaseType.ALPHA,
+                    ReleaseType.BETA,
+                    ReleaseType.RELEASE_CANDIDATE,
+                ]
+                # but not when using a release series because then we might not
+                # be able to determine the last release if there are only
+                # pre-releases in the series yet
+                and not release_series,
             )
         except PontosError as e:
             last_release_version = None
