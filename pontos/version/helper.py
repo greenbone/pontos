@@ -7,6 +7,7 @@ from typing import Iterator, Optional
 
 from pontos.git import Git, TagSort
 from pontos.git.git import DEFAULT_TAG_SORT_SUFFIX
+from pontos.version.errors import VersionError
 
 from .version import ParseVersionFuncType, Version
 
@@ -40,7 +41,12 @@ def get_last_release_versions(
     for tag in tag_list:
         last_release_version = tag.strip(git_tag_prefix)
 
-        version = parse_version(last_release_version)
+        try:
+            version = parse_version(last_release_version)
+        except VersionError:
+            # be safe and ignore invalid versions
+            continue
+
         if version.is_pre_release and ignore_pre_releases:
             continue
 
