@@ -73,6 +73,7 @@ class CMakeVersionParser:
         self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
+    # better don't touch this. :O
     __cmake_scanner = re.Scanner(  # type: ignore
         [
             (r"#.*", lambda _, token: ("comment", token)),
