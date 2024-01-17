@@ -73,17 +73,44 @@ class CMakeVersionParser:
         self._project_dev_version_line_number = pd_line_no
         self._project_dev_version = pd
 
+    # The tokenizer is used to parse and identify specific elements in CMake scripts.
+    # We are interested in identifying words that represent functions, variables, and their values.
+    # Specifically, we want to scan for the words 'project', 'version', 'set', 'PROJECT_DEV_VERSION',
+    # and their respective values, as we need to modify them.
     __cmake_scanner = re.Scanner(  # type: ignore
         [
-            (r"#.*", lambda _, token: ("comment", token)),
-            (r'"[^"]*"', lambda _, token: ("string", token)),
-            (r'"[0-9]+"', lambda _, token: ("number", token)),
-            (r"\(", lambda _, token: ("open_bracket", token)),
-            (r"\)", lambda _, token: ("close_bracket", token)),
-            (r'[^ \t\r\n()#"]+', lambda _, token: ("word", token)),
-            (r"\n", lambda _, token: ("newline", token)),
-            # to have spaces etc correctly
-            (r"\s+", lambda _, token: ("special_printable", token)),
+            (
+                r"#.*",
+                lambda _, token: ("comment", token),
+            ),  # so that we can skip ahead
+            (
+                r'"[^"]*"',
+                lambda _, token: ("string", token),
+            ),  # so that we can verify if a value is a string value
+            (
+                r'"[0-9]+"',
+                lambda _, token: ("number", token),
+            ),  # so that we can verify if a value is numeric
+            (
+                r"\(",
+                lambda _, token: ("open_bracket", token),
+            ),  # so that we can identify function calls
+            (
+                r"\)",
+                lambda _, token: ("close_bracket", token),
+            ),  # so that we can identify end of function calls
+            (
+                r'[^ \t\r\n()#"]+',
+                lambda _, token: ("word", token),
+            ),  # so that we can identify words (identifiers)
+            (
+                r"\n",
+                lambda _, token: ("newline", token),
+            ),  # so that we can keep track of the position
+            (
+                r"\s+",
+                lambda _, token: ("special_printable", token),
+            ),  # so that we can keep track of the position
         ]
     )
 
