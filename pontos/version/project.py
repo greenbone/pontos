@@ -4,7 +4,7 @@
 #
 
 
-from typing import List, Literal, Union
+from typing import List, Literal, Type, Union
 
 from ._errors import ProjectError
 from ._version import Version, VersionUpdate
@@ -27,7 +27,9 @@ class Project:
             project = Project(PEP440VersioningScheme)
     """
 
-    def __init__(self, versioning_scheme: VersioningScheme) -> None:
+    def __init__(
+        self, versioning_scheme: Union[VersioningScheme, Type[VersioningScheme]]
+    ) -> None:
         """
         Creates a new project instance
 
