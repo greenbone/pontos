@@ -7,7 +7,7 @@ import os
 import unittest
 from pathlib import Path
 
-from pontos.git.status import Status, StatusEntry, parse_git_status
+from pontos.git._status import Status, StatusEntry, parse_git_status
 
 
 class StatusEntryTestCase(unittest.TestCase):
