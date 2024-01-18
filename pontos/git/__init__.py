@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from .git import (
+from ._git import (
     DEFAULT_TAG_SORT_SUFFIX,
     ConfigScope,
     Git,

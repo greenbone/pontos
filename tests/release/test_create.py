@@ -15,8 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
 
-from pontos.git.git import ConfigScope, Git
-from pontos.git.status import StatusEntry
+from pontos.git import ConfigScope, Git, StatusEntry
 from pontos.github.actions.errors import GitHubActionsError
 from pontos.release.create import (
     CreateReleaseReturnValue,

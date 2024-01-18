@@ -6,7 +6,7 @@
 import unittest
 from pathlib import Path
 
-from pontos.git.git import Git
+from pontos.git import Git
 from pontos.helper import unload_module
 from pontos.testing import (
     temp_directory,

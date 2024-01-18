@@ -6,7 +6,7 @@
 import unittest
 from unittest.mock import patch
 
-from pontos.git.git import Git
+from pontos.git import Git
 from pontos.version.helper import (
     get_last_release_version,
     get_last_release_versions,

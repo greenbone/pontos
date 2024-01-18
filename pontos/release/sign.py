@@ -18,7 +18,7 @@ from rich.progress import Progress as RichProgress
 from rich.progress import TextColumn
 
 from pontos.errors import PontosError
-from pontos.git.git import GitError
+from pontos.git import GitError
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.release.command import AsyncCommand
