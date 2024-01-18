@@ -8,7 +8,7 @@
 [![Build and test](https://github.com/greenbone/pontos/actions/workflows/ci-python.yml/badge.svg)](https://github.com/greenbone/pontos/actions/workflows/ci-python.yml)
 
 The **pontos** Python package is a collection of utilities, tools, classes and
-functions maintained by [Greenbone Networks].
+functions maintained by [Greenbone].
 
 Pontos is the German name of the Greek titan [Pontus](https://en.wikipedia.org/wiki/Pontus_(mythology)),
 the titan of the sea.
@@ -45,7 +45,7 @@ Package Index (pypi) using [pipx]
 
 ### Install using pip
 
-**NOTE:** The ‘pip install’ command does no longer work out-of-the-box in newer
+**NOTE:** The `pip install` command does no longer work out-of-the-box in newer
 distributions like Ubuntu 23.04 because of [PEP 668](https://peps.python.org/pep-0668).
 Please use the [installation via pipx](#install-using-pipx) instead.
 
@@ -93,7 +93,7 @@ Validate the activated git hooks by running
 
 ## Maintainer
 
-This project is maintained by [Greenbone AG][Greenbone Networks]
+This project is maintained by [Greenbone AG][Greenbone]
 
 ## Contributing
 
@@ -105,11 +105,11 @@ first.
 
 ## License
 
-Copyright (C) 2020-2023 [Greenbone AG][Greenbone Networks]
+Copyright (C) 2020-2024 [Greenbone AG][Greenbone]
 
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
-[Greenbone Networks]: https://www.greenbone.net/
+[Greenbone]: https://www.greenbone.net/
 [poetry]: https://python-poetry.org/
 [pip]: https://pip.pypa.io/
 [pipx]: https://pypa.github.io/pipx/
