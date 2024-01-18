@@ -5,7 +5,7 @@
 
 
 import re
-from typing import Generator, Literal, Optional, Tuple, Union
+from typing import Iterator, Literal, Optional, Tuple, Union
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -189,11 +189,7 @@ class CMakeVersionParser:
 
     def _tokenize(  # type: ignore
         self, content: str
-    ) -> Generator[
-        Tuple[int, str, str],
-        Tuple[int, str, str],
-        Tuple[int, str, str],
-    ]:
+    ) -> Iterator[Tuple[int, str, str]]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != "":
             print(f"WARNING: unrecognized cmake tokens: {remainder}")
