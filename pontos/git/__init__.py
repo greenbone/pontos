@@ -11,7 +11,7 @@ from ._git import (
     MergeStrategy,
     TagSort,
 )
-from .status import Status, StatusEntry
+from ._status import Status, StatusEntry
 
 __all__ = (
     "DEFAULT_TAG_SORT_SUFFIX",

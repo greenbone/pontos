@@ -18,7 +18,8 @@ from typing import (
 )
 
 from pontos.errors import PontosError
-from pontos.git.status import StatusEntry, parse_git_status
+
+from ._status import StatusEntry, parse_git_status
 
 DEFAULT_TAG_SORT_SUFFIX = [
     "-alpha",
