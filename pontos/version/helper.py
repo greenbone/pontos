@@ -5,8 +5,7 @@
 
 from typing import Iterator, Optional
 
-from pontos.git import Git, TagSort
-from pontos.git.git import DEFAULT_TAG_SORT_SUFFIX
+from pontos.git import DEFAULT_TAG_SORT_SUFFIX, Git, TagSort
 from pontos.version.errors import VersionError
 
 from .version import ParseVersionFuncType, Version

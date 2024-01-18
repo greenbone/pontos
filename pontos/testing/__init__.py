@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, AsyncIterator, Awaitable, Generator, Iterable, Optional
 
-from pontos.git.git import exec_git
+from pontos.git._git import exec_git
 from pontos.helper import add_sys_path, ensure_unload_module, unload_module
 
 __all__ = (
