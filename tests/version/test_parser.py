@@ -7,7 +7,7 @@ import unittest
 from contextlib import redirect_stderr
 from io import StringIO
 
-from pontos.version.parser import parse_args
+from pontos.version._parser import parse_args
 
 
 class ParserTestCase(unittest.TestCase):

@@ -6,7 +6,7 @@
 
 import unittest
 
-from pontos.version.errors import VersionError
+from pontos.version import VersionError
 
 
 class VersionErrorTestCase(unittest.TestCase):

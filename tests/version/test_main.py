@@ -9,7 +9,7 @@ from datetime import datetime
 from io import StringIO
 
 from pontos.testing import temp_directory
-from pontos.version.main import VersionExitCode, main
+from pontos.version._main import VersionExitCode, main
 
 
 class MainTestCase(unittest.TestCase):

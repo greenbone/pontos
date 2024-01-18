@@ -7,9 +7,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Type
 
-from pontos.version.errors import VersionError
-
-from .version import Version
+from ._errors import VersionError
+from ._version import Version
 
 
 class VersionCalculator(ABC):
