@@ -8,8 +8,7 @@ from typing import Optional
 
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
-from pontos.version import Version, VersionCalculator
-from pontos.version.errors import VersionError
+from pontos.version import Version, VersionCalculator, VersionError
 
 DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096

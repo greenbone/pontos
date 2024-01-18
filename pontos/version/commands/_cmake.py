@@ -7,9 +7,9 @@
 import re
 from typing import Generator, Literal, Optional, Tuple, Union
 
-from ..errors import VersionError
+from .._errors import VersionError
+from .._version import Version, VersionUpdate
 from ..schemes import PEP440VersioningScheme
-from ..version import Version, VersionUpdate
 from ._command import VersionCommand
 
 

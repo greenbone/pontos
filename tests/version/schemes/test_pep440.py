@@ -6,7 +6,7 @@
 import unittest
 from datetime import datetime
 
-from pontos.version.errors import VersionError
+from pontos.version._errors import VersionError
 from pontos.version.schemes._pep440 import PEP440Version as Version
 from pontos.version.schemes._pep440 import (
     PEP440VersionCalculator as VersionCalculator,

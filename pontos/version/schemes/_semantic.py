@@ -9,8 +9,8 @@ from typing import Any, Optional, Tuple
 from semver import VersionInfo
 
 from .._calculator import VersionCalculator
-from ..errors import VersionError
-from ..version import Version
+from .._errors import VersionError
+from .._version import Version
 from ._scheme import VersioningScheme
 
 # Note: This regex currently support any kind of

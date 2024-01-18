@@ -5,9 +5,9 @@
 
 from .__version__ import __version__
 from ._calculator import VersionCalculator
-from .errors import VersionError
-from .main import main
-from .version import ParseVersionFuncType, Version, VersionUpdate
+from ._errors import VersionError
+from ._main import main
+from ._version import ParseVersionFuncType, Version, VersionUpdate
 
 __all__ = (
     "__version__",

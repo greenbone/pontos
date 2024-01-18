@@ -6,9 +6,9 @@
 from typing import Iterator, Optional
 
 from pontos.git import DEFAULT_TAG_SORT_SUFFIX, Git, TagSort
-from pontos.version.errors import VersionError
 
-from .version import ParseVersionFuncType, Version
+from ._errors import VersionError
+from ._version import ParseVersionFuncType, Version
 
 
 def get_last_release_versions(

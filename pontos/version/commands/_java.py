@@ -8,8 +8,8 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Union
 
-from ..errors import VersionError
-from ..version import Version, VersionUpdate
+from .._errors import VersionError
+from .._version import Version, VersionUpdate
 from ._command import VersionCommand
 
 

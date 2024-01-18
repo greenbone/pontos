@@ -10,8 +10,8 @@ from packaging.version import InvalidVersion
 from packaging.version import Version as PackagingVersion
 
 from .._calculator import VersionCalculator
-from ..errors import VersionError
-from ..version import Version
+from .._errors import VersionError
+from .._version import Version
 from ._scheme import VersioningScheme
 
 __all__ = (

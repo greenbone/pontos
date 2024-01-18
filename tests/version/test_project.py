@@ -6,8 +6,7 @@
 import unittest
 
 from pontos.testing import temp_directory, temp_python_module
-from pontos.version.errors import ProjectError
-from pontos.version.project import Project
+from pontos.version.project import Project, ProjectError
 from pontos.version.schemes import PEP440VersioningScheme
 
 

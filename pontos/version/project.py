@@ -6,10 +6,10 @@
 
 from typing import List, Literal, Union
 
+from ._errors import ProjectError
+from ._version import Version, VersionUpdate
 from .commands import VersionCommand, get_commands
-from .errors import ProjectError
 from .schemes import VersioningScheme
-from .version import Version, VersionUpdate
 
 __all__ = ("Project",)
 

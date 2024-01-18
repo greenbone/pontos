@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Literal, Union
 
+from .._version import Version, VersionUpdate
 from ..schemes import VersioningScheme
-from ..version import Version, VersionUpdate
 
 
 class VersionCommand(ABC):

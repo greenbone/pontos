@@ -7,7 +7,7 @@ from abc import ABC
 from typing import Type
 
 from .._calculator import VersionCalculator
-from ..version import Version
+from .._version import Version
 
 
 class VersioningScheme(ABC):

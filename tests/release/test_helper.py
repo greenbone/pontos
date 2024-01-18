@@ -19,7 +19,7 @@ from pontos.release.helper import (
     get_next_release_version,
 )
 from pontos.testing import temp_git_repository
-from pontos.version.errors import VersionError
+from pontos.version import VersionError
 from pontos.version.schemes import SemanticVersioningScheme
 
 

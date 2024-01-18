@@ -7,8 +7,8 @@ from typing import Iterator, Literal, Tuple, Union
 
 import tomlkit
 
-from ..errors import VersionError
-from ..version import Version, VersionUpdate
+from .._errors import VersionError
+from .._version import Version, VersionUpdate
 from ._command import VersionCommand
 
 
