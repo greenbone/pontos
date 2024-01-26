@@ -45,9 +45,10 @@ Package Index (pypi) using [pipx]
 
 ### Install using pip
 
-**NOTE:** The `pip install` command does no longer work out-of-the-box in newer
-distributions like Ubuntu 23.04 because of [PEP 668](https://peps.python.org/pep-0668).
-Please use the [installation via pipx](#install-using-pipx) instead.
+> [!NOTE]
+> The `pip install` command does no longer work out-of-the-box in newer
+> distributions like Ubuntu 23.04 because of [PEP 668](https://peps.python.org/pep-0668).
+> Please use the [installation via pipx](#install-using-pipx) instead.
 
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pip]
