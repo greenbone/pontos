@@ -1,9 +1,0 @@
-# Configuration for coverage.py
-[run]
-branch = True
-omit =
-    tests/*
-    pontos/github/scripts/*
-    */__init__.py
-source =
-    pontos
