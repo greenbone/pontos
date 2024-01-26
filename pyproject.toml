@@ -100,6 +100,11 @@ ignore_missing_imports = true
 [tool.pontos.version]
 version-module-file = "pontos/version/__version__.py"
 
+[tool.coverage.run]
+branch = true
+omit = ["tests/*", "pontos/github/scripts/*", "*/__init__.py"]
+source = ["pontos"]
+
 [tool.poetry.scripts]
 pontos = 'pontos:main'
 pontos-version = 'pontos.version:main'
