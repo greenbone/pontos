@@ -12,8 +12,11 @@ from pontos.version.schemes import PEP440VersioningScheme
 
 class ProjectTestCase(unittest.TestCase):
     def test_no_project_found(self):
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            ProjectError, "No project settings file found"
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                ProjectError, "No project settings file found"
+            ),
         ):
             Project(PEP440VersioningScheme)
 

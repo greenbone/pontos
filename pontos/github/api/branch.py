@@ -55,18 +55,18 @@ def update_from_applied_settings(
     if required_linear_history is not None:
         kwargs["required_linear_history"] = required_linear_history
     elif branch_protection.required_linear_history:
-        kwargs[
-            "required_linear_history"
-        ] = branch_protection.required_linear_history.enabled
+        kwargs["required_linear_history"] = (
+            branch_protection.required_linear_history.enabled
+        )
     else:
         kwargs["required_linear_history"] = None
 
     if allow_force_pushes is not None:
         kwargs["allow_force_pushes"] = allow_force_pushes
     elif branch_protection.allow_force_pushes:
-        kwargs[
-            "allow_force_pushes"
-        ] = branch_protection.allow_force_pushes.enabled
+        kwargs["allow_force_pushes"] = (
+            branch_protection.allow_force_pushes.enabled
+        )
     else:
         kwargs["allow_force_pushes"] = None
 
@@ -78,13 +78,13 @@ def update_from_applied_settings(
         kwargs["allow_deletions"] = None
 
     if required_conversation_resolution is not None:
-        kwargs[
-            "required_conversation_resolution"
-        ] = required_conversation_resolution
+        kwargs["required_conversation_resolution"] = (
+            required_conversation_resolution
+        )
     elif branch_protection.required_conversation_resolution:
-        kwargs[
-            "required_conversation_resolution"
-        ] = branch_protection.required_conversation_resolution.enabled
+        kwargs["required_conversation_resolution"] = (
+            branch_protection.required_conversation_resolution.enabled
+        )
     else:
         kwargs["required_conversation_resolution"] = None
 
@@ -105,25 +105,25 @@ def update_from_applied_settings(
     if allow_fork_syncing is not None:
         kwargs["allow_fork_syncing"] = allow_fork_syncing
     elif branch_protection.allow_fork_syncing:
-        kwargs[
-            "allow_fork_syncing"
-        ] = branch_protection.allow_fork_syncing.enabled
+        kwargs["allow_fork_syncing"] = (
+            branch_protection.allow_fork_syncing.enabled
+        )
     else:
         kwargs["allow_fork_syncing"] = None
     if required_signatures is not None:
         kwargs["required_signatures"] = required_signatures
     elif branch_protection.required_signatures:
-        kwargs[
-            "required_signatures"
-        ] = branch_protection.required_signatures.enabled
+        kwargs["required_signatures"] = (
+            branch_protection.required_signatures.enabled
+        )
     else:
         kwargs["required_signatures"] = None
 
     existing_required_status_checks = branch_protection.required_status_checks
     if existing_required_status_checks:
-        kwargs[
-            "require_branches_to_be_up_to_date"
-        ] = existing_required_status_checks.strict
+        kwargs["require_branches_to_be_up_to_date"] = (
+            existing_required_status_checks.strict
+        )
         if existing_required_status_checks.checks is not None:
             kwargs["required_status_checks"] = [
                 (c.context, c.app_id)
@@ -132,9 +132,9 @@ def update_from_applied_settings(
     if required_status_checks is not None:
         kwargs["required_status_checks"] = required_status_checks
     if require_branches_to_be_up_to_date:
-        kwargs[
-            "require_branches_to_be_up_to_date"
-        ] = require_branches_to_be_up_to_date
+        kwargs["require_branches_to_be_up_to_date"] = (
+            require_branches_to_be_up_to_date
+        )
 
     required_pull_request_reviews = (
         branch_protection.required_pull_request_reviews
@@ -163,18 +163,18 @@ def update_from_applied_settings(
             else:
                 kwargs["dismissal_restrictions_apps"] = []
 
-        kwargs[
-            "dismiss_stale_reviews"
-        ] = required_pull_request_reviews.dismiss_stale_reviews
-        kwargs[
-            "require_code_owner_reviews"
-        ] = required_pull_request_reviews.require_code_owner_reviews
-        kwargs[
-            "required_approving_review_count"
-        ] = required_pull_request_reviews.required_approving_review_count
-        kwargs[
-            "require_last_push_approval"
-        ] = required_pull_request_reviews.require_last_push_approval
+        kwargs["dismiss_stale_reviews"] = (
+            required_pull_request_reviews.dismiss_stale_reviews
+        )
+        kwargs["require_code_owner_reviews"] = (
+            required_pull_request_reviews.require_code_owner_reviews
+        )
+        kwargs["required_approving_review_count"] = (
+            required_pull_request_reviews.required_approving_review_count
+        )
+        kwargs["require_last_push_approval"] = (
+            required_pull_request_reviews.require_last_push_approval
+        )
 
         bypass_pull_request_allowances = (
             required_pull_request_reviews.bypass_pull_request_allowances
@@ -249,9 +249,9 @@ def update_from_applied_settings(
     if require_code_owner_reviews is not None:
         kwargs["require_code_owner_reviews"] = require_code_owner_reviews
     if required_approving_review_count is not None:
-        kwargs[
-            "required_approving_review_count"
-        ] = required_approving_review_count
+        kwargs["required_approving_review_count"] = (
+            required_approving_review_count
+        )
     if require_last_push_approval is not None:
         kwargs["require_last_push_approval"] = require_last_push_approval
 
@@ -477,9 +477,9 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         if block_creations is not None:
             data["block_creations"] = block_creations
         if required_conversation_resolution is not None:
-            data[
-                "required_conversation_resolution"
-            ] = required_conversation_resolution
+            data["required_conversation_resolution"] = (
+                required_conversation_resolution
+            )
         if lock_branch is not None:
             data["lock_branch"] = lock_branch
         if allow_fork_syncing is not None:
@@ -529,42 +529,42 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
             )
-            required_pull_request_reviews[
-                "dismiss_stale_reviews"
-            ] = dismiss_stale_reviews
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["dismiss_stale_reviews"] = (
+                dismiss_stale_reviews
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if require_code_owner_reviews is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
             )
-            required_pull_request_reviews[
-                "require_code_owner_reviews"
-            ] = require_code_owner_reviews
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["require_code_owner_reviews"] = (
+                require_code_owner_reviews
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if required_approving_review_count is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
             )
-            required_pull_request_reviews[
-                "required_approving_review_count"
-            ] = required_approving_review_count
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["required_approving_review_count"] = (
+                required_approving_review_count
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if require_last_push_approval is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
             )
-            required_pull_request_reviews[
-                "require_last_push_approval"
-            ] = require_last_push_approval
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["require_last_push_approval"] = (
+                require_last_push_approval
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if dismissal_restrictions_users is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -573,12 +573,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "dismissal_restrictions", {}
             )
             dismissal_restrictions["users"] = list(dismissal_restrictions_users)
-            required_pull_request_reviews[
-                "dismissal_restrictions"
-            ] = dismissal_restrictions
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["dismissal_restrictions"] = (
+                dismissal_restrictions
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if dismissal_restrictions_teams is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -587,12 +587,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "dismissal_restrictions", {}
             )
             dismissal_restrictions["teams"] = list(dismissal_restrictions_teams)
-            required_pull_request_reviews[
-                "dismissal_restrictions"
-            ] = dismissal_restrictions
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["dismissal_restrictions"] = (
+                dismissal_restrictions
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if dismissal_restrictions_apps is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -601,12 +601,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                 "dismissal_restrictions", {}
             )
             dismissal_restrictions["apps"] = list(dismissal_restrictions_apps)
-            required_pull_request_reviews[
-                "dismissal_restrictions"
-            ] = dismissal_restrictions
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["dismissal_restrictions"] = (
+                dismissal_restrictions
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if bypass_pull_request_allowances_users is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -617,12 +617,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             bypass_pull_request_allowances["users"] = list(
                 bypass_pull_request_allowances_users
             )
-            required_pull_request_reviews[
-                "bypass_pull_request_allowances"
-            ] = bypass_pull_request_allowances
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["bypass_pull_request_allowances"] = (
+                bypass_pull_request_allowances
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if bypass_pull_request_allowances_teams is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -633,12 +633,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             bypass_pull_request_allowances["teams"] = list(
                 bypass_pull_request_allowances_teams
             )
-            required_pull_request_reviews[
-                "bypass_pull_request_allowances"
-            ] = bypass_pull_request_allowances
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["bypass_pull_request_allowances"] = (
+                bypass_pull_request_allowances
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if bypass_pull_request_allowances_apps is not None:
             required_pull_request_reviews = (
                 data.get("required_pull_request_reviews") or {}
@@ -649,12 +649,12 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             bypass_pull_request_allowances["apps"] = list(
                 bypass_pull_request_allowances_apps
             )
-            required_pull_request_reviews[
-                "bypass_pull_request_allowances"
-            ] = bypass_pull_request_allowances
-            data[
-                "required_pull_request_reviews"
-            ] = required_pull_request_reviews
+            required_pull_request_reviews["bypass_pull_request_allowances"] = (
+                bypass_pull_request_allowances
+            )
+            data["required_pull_request_reviews"] = (
+                required_pull_request_reviews
+            )
         if required_signatures is not None:
             data["required_signatures"] = required_signatures
 

@@ -321,9 +321,12 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         )
 
     def test_changelog_builder_config_file_not_exists(self):
-        with temp_directory() as temp_dir, self.assertRaisesRegex(
-            ChangelogBuilderError,
-            r"Changelog Config file '.*\.toml' does not exist\.",
+        with (
+            temp_directory() as temp_dir,
+            self.assertRaisesRegex(
+                ChangelogBuilderError,
+                r"Changelog Config file '.*\.toml' does not exist\.",
+            ),
         ):
             ChangelogBuilder(
                 space="foo",

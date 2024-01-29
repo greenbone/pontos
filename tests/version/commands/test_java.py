@@ -128,9 +128,12 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
 
     def test_getting_version_no_files_configured(self):
         exp_err_msg = "no version found"
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError,
-            exp_err_msg,
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                exp_err_msg,
+            ),
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
@@ -147,9 +150,12 @@ class GetCurrentJavaVersionCommandTestCase(unittest.TestCase):
             r"No /tmp/.*/upgradeVersion\.json config file found\. "
             r"This file is required for pontos"
         )
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError,
-            exp_err_msg,
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                exp_err_msg,
+            ),
         ):
             JavaVersionCommand(SemanticVersioningScheme).get_current_version()
 
@@ -191,9 +197,12 @@ class VerifyJavaVersionCommandTestCase(unittest.TestCase):
             + r"in '/tmp/.*/upgradeVersion\.json'"
         )
 
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError,
-            exp_err_msg,
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                exp_err_msg,
+            ),
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(
@@ -350,9 +359,12 @@ class UpdateJavaVersionCommandTestCase(unittest.TestCase):
             "lineNo:4 "
             "content:'\n'"
         )
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError,
-            exp_err_msg,
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                exp_err_msg,
+            ),
         ):
             version_file_path = Path("upgradeVersion.json")
             version_file_path.write_text(

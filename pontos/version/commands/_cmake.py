@@ -114,12 +114,10 @@ class CMakeVersionParser:
         self._current_version = str(new_version)
 
         if self._project_dev_version_line_number:
-            self._cmake_content_lines[
-                self._project_dev_version_line_number
-            ] = self._cmake_content_lines[
-                self._project_dev_version_line_number
-            ].replace(
-                str(int(not develop)), str(int(develop))
+            self._cmake_content_lines[self._project_dev_version_line_number] = (
+                self._cmake_content_lines[
+                    self._project_dev_version_line_number
+                ].replace(str(int(not develop)), str(int(develop)))
             )
             self._project_dev_version = str(int(develop))
 

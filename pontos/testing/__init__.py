@@ -205,9 +205,12 @@ def temp_python_module(
 
 
     """
-    with temp_directory(
-        add_to_sys_path=True, change_into=change_into
-    ) as tmp_dir, ensure_unload_module(name):
+    with (
+        temp_directory(
+            add_to_sys_path=True, change_into=change_into
+        ) as tmp_dir,
+        ensure_unload_module(name),
+    ):
         test_file = tmp_dir / f"{name}.py"
         test_file.write_text(content, encoding="utf8")
         yield test_file

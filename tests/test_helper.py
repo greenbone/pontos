@@ -503,8 +503,9 @@ class AddSysPathTestCase(unittest.TestCase):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
             import mymodule  # noqa: F811,F401
 
-        with temp_file("", name="mymodule.py") as module_path, add_sys_path(
-            module_path.parent
+        with (
+            temp_file("", name="mymodule.py") as module_path,
+            add_sys_path(module_path.parent),
         ):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
             import mymodule  # noqa: F811,F401
@@ -514,9 +515,10 @@ class AddSysPathTestCase(unittest.TestCase):
 
 class EnsureUnloadModuleTestCase(unittest.TestCase):
     def test_ensure_unload_module(self):
-        with temp_python_module(
-            "def foo():\n  pass", name="bar"
-        ), ensure_unload_module("bar"):
+        with (
+            temp_python_module("def foo():\n  pass", name="bar"),
+            ensure_unload_module("bar"),
+        ):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
             import bar  # noqa: F401,F811
 
@@ -526,9 +528,12 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
 
     def test_ensure_unload_module_exception(self):
         with self.assertRaisesRegex(ValueError, "Ipsum"):
-            with temp_python_module(
-                "def func():\n  raise ValueError('Ipsum')", name="bar"
-            ), ensure_unload_module("bar"):
+            with (
+                temp_python_module(
+                    "def func():\n  raise ValueError('Ipsum')", name="bar"
+                ),
+                ensure_unload_module("bar"),
+            ):
                 # pylint: disable=import-error,import-outside-toplevel,unused-import
                 import bar
 
@@ -544,8 +549,9 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
             import mymodule  # noqa: F811,F401
 
         try:
-            with temp_file("", name="mymodule.py") as module_path, add_sys_path(
-                module_path.parent
+            with (
+                temp_file("", name="mymodule.py") as module_path,
+                add_sys_path(module_path.parent),
             ):
                 # pylint: disable=import-error,import-outside-toplevel,unused-import
                 import mymodule  # noqa: F811,F401

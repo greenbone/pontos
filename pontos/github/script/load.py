@@ -49,8 +49,9 @@ def load_script(
     if path.suffix == ".py":
         module_name = path.stem
 
-        with add_sys_path(path.parent.absolute()), ensure_unload_module(
-            module_name
+        with (
+            add_sys_path(path.parent.absolute()),
+            ensure_unload_module(module_name),
         ):
             yield importlib.import_module(module_name)
     else:

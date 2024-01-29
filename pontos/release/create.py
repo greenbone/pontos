@@ -94,9 +94,11 @@ class CreateReleaseCommand(AsyncCommand):
         )
 
         return changelog_builder.create_changelog(
-            last_version=last_release_version.parsed_version
-            if last_release_version
-            else None,
+            last_version=(
+                last_release_version.parsed_version
+                if last_release_version
+                else None
+            ),
             next_version=release_version,
         )
 
@@ -193,9 +195,11 @@ class CreateReleaseCommand(AsyncCommand):
             last_release_version = get_last_release_version(
                 parse_version=versioning_scheme.parse_version,
                 git_tag_prefix=self.git_tag_prefix,
-                tag_name=f"{self.git_tag_prefix}{release_series}.*"
-                if release_series
-                else None,
+                tag_name=(
+                    f"{self.git_tag_prefix}{release_series}.*"
+                    if release_series
+                    else None
+                ),
                 # include changes from pre-releases in release changelog for
                 # non pre-release changes
                 ignore_pre_releases=release_type

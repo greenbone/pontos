@@ -26,25 +26,28 @@ class GetCurrentJavaScriptVersionCommandTestCase(unittest.TestCase):
             )
 
     def test_no_project_file(self):
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError, ".* file not found."
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(VersionError, ".* file not found."),
         ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.get_current_version()
 
     def test_no_package_version(self):
         content = '{"name": "foo"}'
-        with temp_file(
-            content, name="package.json", change_into=True
-        ), self.assertRaisesRegex(VersionError, "Version field missing in"):
+        with (
+            temp_file(content, name="package.json", change_into=True),
+            self.assertRaisesRegex(VersionError, "Version field missing in"),
+        ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.get_current_version()
 
     def test_no_valid_json_in_package_version(self):
         content = "{"
-        with temp_file(
-            content, name="package.json", change_into=True
-        ), self.assertRaisesRegex(VersionError, "No valid JSON found."):
+        with (
+            temp_file(content, name="package.json", change_into=True),
+            self.assertRaisesRegex(VersionError, "No valid JSON found."),
+        ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.get_current_version()
 
@@ -291,15 +294,18 @@ const func = () => ();
 
 class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
     def test_versions_not_equal(self):
-        with patch.object(
-            JavaScriptVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=SemanticVersioningScheme.parse_version("1.2.3")
+        with (
+            patch.object(
+                JavaScriptVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=SemanticVersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), self.assertRaisesRegex(
-            VersionError,
-            "Provided version .* does not match the current version .*",
+            self.assertRaisesRegex(
+                VersionError,
+                "Provided version .* does not match the current version .*",
+            ),
         ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.verify_version(SemanticVersioningScheme.parse_version("22.4.0"))
@@ -316,46 +322,60 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
             cmd.verify_version(SemanticVersioningScheme.parse_version("22.4.0"))
 
     def test_verify_js_mismatch(self):
-        with patch.object(
-            JavaScriptVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=SemanticVersioningScheme.parse_version("22.4.0")
+        with (
+            patch.object(
+                JavaScriptVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=SemanticVersioningScheme.parse_version(
+                        "22.4.0"
+                    )
+                ),
             ),
-        ), patch.object(
-            JavaScriptVersionCommand,
-            "_get_current_file_version",
-            MagicMock(
-                return_value=SemanticVersioningScheme.parse_version("22.5.0")
+            patch.object(
+                JavaScriptVersionCommand,
+                "_get_current_file_version",
+                MagicMock(
+                    return_value=SemanticVersioningScheme.parse_version(
+                        "22.5.0"
+                    )
+                ),
             ),
-        ), self.assertRaisesRegex(
-            VersionError,
-            "Provided version 22.4.0 does not match the current version 22.5.0 "
-            "in src/version.js.",
+            self.assertRaisesRegex(
+                VersionError,
+                "Provided version 22.4.0 does not match the current version 22.5.0 "
+                "in src/version.js.",
+            ),
         ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.verify_version(SemanticVersioningScheme.parse_version("22.4.0"))
 
     def test_verify_ts_mismatch(self):
-        with patch.object(
-            JavaScriptVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=SemanticVersioningScheme.parse_version("22.4.0")
+        with (
+            patch.object(
+                JavaScriptVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=SemanticVersioningScheme.parse_version(
+                        "22.4.0"
+                    )
+                ),
             ),
-        ), patch.object(
-            JavaScriptVersionCommand,
-            "_get_current_file_version",
-            MagicMock(
-                side_effect=[
-                    SemanticVersioningScheme.parse_version("22.4.0"),
-                    SemanticVersioningScheme.parse_version("22.5.0"),
-                ]
+            patch.object(
+                JavaScriptVersionCommand,
+                "_get_current_file_version",
+                MagicMock(
+                    side_effect=[
+                        SemanticVersioningScheme.parse_version("22.4.0"),
+                        SemanticVersioningScheme.parse_version("22.5.0"),
+                    ]
+                ),
             ),
-        ), self.assertRaisesRegex(
-            VersionError,
-            "Provided version 22.4.0 does not match the current version 22.5.0 "
-            "in src/version.ts.",
+            self.assertRaisesRegex(
+                VersionError,
+                "Provided version 22.4.0 does not match the current version 22.5.0 "
+                "in src/version.ts.",
+            ),
         ):
             cmd = JavaScriptVersionCommand(SemanticVersioningScheme)
             cmd.verify_version(SemanticVersioningScheme.parse_version("22.4.0"))
@@ -407,12 +427,13 @@ class VerifyJavaScriptVersionCommandTestCase(unittest.TestCase):
         content = '{"name":"foo", "version":"1.2.3"}'
         js_content = 'const VERSION = "1.2.4";'
 
-        with temp_directory(
-            change_into=True
-        ) as temp_dir, self.assertRaisesRegex(
-            VersionError,
-            "The version 1.2.4 in src/version.js doesn't match the current "
-            "version 1.2.3.",
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaisesRegex(
+                VersionError,
+                "The version 1.2.4 in src/version.js doesn't match the current "
+                "version 1.2.3.",
+            ),
         ):
             package_json = temp_dir / "package.json"
             package_json.write_text(content, encoding="utf8")
