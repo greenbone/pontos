@@ -18,17 +18,21 @@ class MainTestCase(unittest.TestCase):
             main([])
 
     def test_no_project(self):
-        with temp_directory(change_into=True), self.assertRaises(
-            SystemExit
-        ) as cm, redirect_stderr(StringIO()):
+        with (
+            temp_directory(change_into=True),
+            self.assertRaises(SystemExit) as cm,
+            redirect_stderr(StringIO()),
+        ):
             main(["show"])
 
         self.assertEqual(cm.exception.code, VersionExitCode.NO_PROJECT)
 
     def test_update_success(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -43,9 +47,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_update_failure(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stderr(
-            StringIO()
-        ), self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stderr(StringIO()),
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 "{}",
@@ -56,9 +62,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.UPDATE_ERROR)
 
     def test_update_already_up_to_date(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -71,9 +79,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_show(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -86,9 +96,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_show_error(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stderr(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stderr(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "abc"}',
@@ -103,9 +115,11 @@ class MainTestCase(unittest.TestCase):
         )
 
     def test_verify_failure(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stderr(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stderr(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -122,9 +136,10 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.VERIFY_ERROR)
 
     def test_verify_success(self):
-        with temp_directory(change_into=True) as temp_dir, self.assertRaises(
-            SystemExit
-        ) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -135,9 +150,10 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_verify_current(self):
-        with temp_directory(change_into=True) as temp_dir, self.assertRaises(
-            SystemExit
-        ) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -148,9 +164,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, VersionExitCode.SUCCESS)
 
     def test_next_invalid_current(self):
-        with redirect_stderr(StringIO()), temp_directory(
-            change_into=True
-        ) as temp_dir, self.assertRaises(SystemExit) as cm:
+        with (
+            redirect_stderr(StringIO()),
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.tt"}',
@@ -163,9 +181,11 @@ class MainTestCase(unittest.TestCase):
         )
 
     def test_next_dev(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -177,9 +197,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.2.4.dev1\n")
 
     def test_next_patch(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -191,9 +213,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.2.4\n")
 
     def test_next_minor(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -205,9 +229,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.3.0\n")
 
     def test_next_major(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -219,9 +245,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "2.0.0\n")
 
     def test_next_alpha(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -233,9 +261,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.2.4-alpha1\n")
 
     def test_next_beta(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -247,9 +277,11 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.2.4-beta1\n")
 
     def test_next_rc(self):
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',
@@ -262,9 +294,11 @@ class MainTestCase(unittest.TestCase):
 
     def test_next_calendar(self):
         today = datetime.today()
-        with temp_directory(change_into=True) as temp_dir, redirect_stdout(
-            StringIO()
-        ) as out, self.assertRaises(SystemExit) as cm:
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            redirect_stdout(StringIO()) as out,
+            self.assertRaises(SystemExit) as cm,
+        ):
             version_file = temp_dir / "package.json"
             version_file.write_text(
                 '{"name": "foo", "version": "1.2.3"}',

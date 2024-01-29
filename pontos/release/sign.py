@@ -232,9 +232,11 @@ class SignCommand(AsyncCommand):
                 else get_last_release_version(
                     versioning_scheme.parse_version,
                     git_tag_prefix=git_tag_prefix,
-                    tag_name=f"{git_tag_prefix}{release_series}.*"
-                    if release_series
-                    else None,
+                    tag_name=(
+                        f"{git_tag_prefix}{release_series}.*"
+                        if release_series
+                        else None
+                    ),
                 )
             )
         except PontosError as e:
@@ -291,7 +293,10 @@ class SignCommand(AsyncCommand):
                 )
 
                 # pylint: disable=line-too-long
-                async for name, download_cm in github.releases.download_release_assets(  # noqa: E501
+                async for (
+                    name,
+                    download_cm,
+                ) in github.releases.download_release_assets(  # noqa: E501
                     repo,
                     git_version,
                 ):
@@ -350,7 +355,9 @@ class SignCommand(AsyncCommand):
 
             try:
                 # pylint: disable=line-too-long
-                async for uploaded_file in github.releases.upload_release_assets(  # noqa: E501
+                async for (
+                    uploaded_file
+                ) in github.releases.upload_release_assets(  # noqa: E501
                     repo, git_version, upload_files
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")

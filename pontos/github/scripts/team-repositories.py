@@ -81,9 +81,9 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
 
     done, pending = await asyncio.wait(
         tasks,
-        return_when=asyncio.FIRST_EXCEPTION
-        if args.failfast
-        else asyncio.ALL_COMPLETED,
+        return_when=(
+            asyncio.FIRST_EXCEPTION if args.failfast else asyncio.ALL_COMPLETED
+        ),
     )
     pending: Set[asyncio.Task]
 

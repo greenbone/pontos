@@ -56,9 +56,11 @@ class ShowReleaseCommand(Command):
             last_release_version = get_last_release_version(
                 parse_version=versioning_scheme.parse_version,
                 git_tag_prefix=git_tag_prefix,
-                tag_name=f"{git_tag_prefix}{release_series}.*"
-                if release_series
-                else None,
+                tag_name=(
+                    f"{git_tag_prefix}{release_series}.*"
+                    if release_series
+                    else None
+                ),
             )
         except PontosError as e:
             last_release_version = None

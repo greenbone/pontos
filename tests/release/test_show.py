@@ -331,8 +331,13 @@ release_version=2.0.0
 
             terminal.print.assert_called_once_with(expected)
 
-            with temp_file(name="output") as output_file, patch.dict(
-                "os.environ", {"GITHUB_OUTPUT": f"{output_file}"}, clear=True
+            with (
+                temp_file(name="output") as output_file,
+                patch.dict(
+                    "os.environ",
+                    {"GITHUB_OUTPUT": f"{output_file}"},
+                    clear=True,
+                ),
             ):
                 return_val = show_cmd.run(
                     versioning_scheme=PEP440VersioningScheme,

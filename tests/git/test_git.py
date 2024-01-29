@@ -1044,9 +1044,10 @@ class GitExtendedTestCase(unittest.TestCase):
                 next(it)
 
     def test_git_error(self):
-        with temp_directory(change_into=True), self.assertRaises(
-            GitError
-        ) as cm:
+        with (
+            temp_directory(change_into=True),
+            self.assertRaises(GitError) as cm,
+        ):
             Git().log()
 
         self.assertEqual(cm.exception.returncode, 128)

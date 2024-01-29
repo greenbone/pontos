@@ -22,23 +22,28 @@ from pontos.version.schemes import (
 
 class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
     def test_missing_tool_pontos_version_section(self):
-        with temp_file(
-            "[tool.pontos]", name="pyproject.toml", change_into=True
-        ), self.assertRaisesRegex(
-            VersionError, r"^\[tool\.pontos\.version\] section missing in .*\.$"
+        with (
+            temp_file("[tool.pontos]", name="pyproject.toml", change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                r"^\[tool\.pontos\.version\] section missing in .*\.$",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_missing_version_module_file_key(self):
-        with temp_file(
-            '[tool.pontos.version]\nname="foo"',
-            name="pyproject.toml",
-            change_into=True,
-        ), self.assertRaisesRegex(
-            VersionError,
-            r"^version-module-file key not set in \[tool\.pontos\.version\] "
-            r"section .*\.$",
+        with (
+            temp_file(
+                '[tool.pontos.version]\nname="foo"',
+                name="pyproject.toml",
+                change_into=True,
+            ),
+            self.assertRaisesRegex(
+                VersionError,
+                r"^version-module-file key not set in \[tool\.pontos\.version\] "
+                r"section .*\.$",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
@@ -56,19 +61,26 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             )
 
     def test_pyproject_toml_file_not_exists(self):
-        with temp_directory(change_into=True), self.assertRaisesRegex(
-            VersionError, "pyproject.toml file not found."
+        with (
+            temp_directory(change_into=True),
+            self.assertRaisesRegex(
+                VersionError, "pyproject.toml file not found."
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_no_version_module(self):
-        with temp_file(
-            '[tool.pontos.version]\nversion-module-file = "foo.py"',
-            name="pyproject.toml",
-            change_into=True,
-        ), self.assertRaisesRegex(
-            VersionError, r"Could not load version from 'foo'\. .* not found."
+        with (
+            temp_file(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                name="pyproject.toml",
+                change_into=True,
+            ),
+            self.assertRaisesRegex(
+                VersionError,
+                r"Could not load version from 'foo'\. .* not found.",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
@@ -139,22 +151,24 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
         self.assertEqual(version_line, '__version__ = "22.2"')
 
     def test_empty_pyproject_toml(self):
-        with temp_file(
-            "", name="pyproject.toml", change_into=True
-        ), self.assertRaisesRegex(
-            VersionError,
-            r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
+        with (
+            temp_file("", name="pyproject.toml", change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
             cmd.update_version(new_version)
 
     def test_empty_tool_section(self):
-        with temp_file(
-            "[tool]", name="pyproject.toml", change_into=True
-        ), self.assertRaisesRegex(
-            VersionError,
-            r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
+        with (
+            temp_file("[tool]", name="pyproject.toml", change_into=True),
+            self.assertRaisesRegex(
+                VersionError,
+                r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
@@ -284,19 +298,23 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 class VerifyVersionTestCase(unittest.TestCase):
     def test_current_version_not_equal_pyproject_toml_version(self):
         fake_version_py = Path("foo.py")
-        with patch.object(
-            PythonVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+        with (
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), patch.object(
-            PythonVersionCommand,
-            "version_file_path",
-            new=PropertyMock(return_value=fake_version_py),
-        ), self.assertRaisesRegex(
-            VersionError,
-            "The version .* in .* doesn't match the current version .*.",
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+            self.assertRaisesRegex(
+                VersionError,
+                "The version .* in .* doesn't match the current version .*.",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.3")
@@ -309,18 +327,20 @@ class VerifyVersionTestCase(unittest.TestCase):
             '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with temp_file(
-            content, name="pyproject.toml", change_into=True
-        ), patch.object(
-            PythonVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), patch.object(
-            PythonVersionCommand,
-            "version_file_path",
-            new=PropertyMock(return_value=fake_version_py),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
@@ -332,21 +352,24 @@ class VerifyVersionTestCase(unittest.TestCase):
             '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with temp_file(
-            content, name="pyproject.toml", change_into=True
-        ), patch.object(
-            PythonVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), patch.object(
-            PythonVersionCommand,
-            "version_file_path",
-            new=PropertyMock(return_value=fake_version_py),
-        ), self.assertRaisesRegex(
-            VersionError,
-            "The version .* in .* doesn't match the current version .*.",
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+            self.assertRaisesRegex(
+                VersionError,
+                "The version .* in .* doesn't match the current version .*.",
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
@@ -358,18 +381,20 @@ class VerifyVersionTestCase(unittest.TestCase):
             '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with temp_file(
-            content, name="pyproject.toml", change_into=True
-        ), patch.object(
-            PythonVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), patch.object(
-            PythonVersionCommand,
-            "version_file_path",
-            new=PropertyMock(return_value=fake_version_py),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
         ):
             with self.assertRaisesRegex(
                 VersionError,
@@ -386,18 +411,20 @@ class VerifyVersionTestCase(unittest.TestCase):
             '[tool.pontos.version]\nversion-module-file = "foo.py"'
         )
 
-        with temp_file(
-            content, name="pyproject.toml", change_into=True
-        ), patch.object(
-            PythonVersionCommand,
-            "get_current_version",
-            MagicMock(
-                return_value=PEP440VersioningScheme.parse_version("1.2.3")
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
             ),
-        ), patch.object(
-            PythonVersionCommand,
-            "version_file_path",
-            new=PropertyMock(return_value=fake_version_py),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
         ):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.3")
