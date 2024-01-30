@@ -79,11 +79,17 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     organization = args.organization
     repository = args.name
+    private = True if args.visibility == "private" else False
+    gitignore_template = GITIGNORE.get(args.template)
+    license_template = args.license
+    description = args.description
 
-    team_id = None
     if args.team:
         team = await api.teams.get(organization, args.team)
         team_id = team.id
+    else:
+        team_id = None
+        team = None
 
     with temp_directory() as temp_dir:
         git = Git()
@@ -101,8 +107,6 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             git.cwd = temp_dir
             git.init()
 
-        private = True if args.visibility == "private" else False
-
         repo = await api.repositories.create(
             organization,
             repository,
@@ -116,10 +120,10 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             allow_update_branch=True,
             delete_branch_on_merge=True,
             is_template=False,
-            license_template=args.license,
-            description=args.description,
+            license_template=license_template,
+            description=description,
             auto_init=True,
-            gitignore_template=GITIGNORE.get(args.template),
+            gitignore_template=gitignore_template,
             team_id=team_id,
         )
 
@@ -136,7 +140,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
         else:
             git.checkout("main", start_point="upstream/main")
 
-        if args.team:
+        if team:
             await api.teams.update_permission(
                 organization, team.slug, repository, Permission.ADMIN
             )
