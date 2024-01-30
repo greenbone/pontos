@@ -8,7 +8,7 @@ This script creates a new repository with default settings
 """
 
 import shutil
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from typing import Union
 
 from pontos.git import Git, MergeStrategy
@@ -67,6 +67,13 @@ def add_script_arguments(parser: ArgumentParser) -> None:
         help="Visibility of the repository. Default: %(default)s.",
     )
     parser.add_argument("--description", help="Description of the repository.")
+    parser.add_argument(
+        "--branch-protection",
+        action=BooleanOptionalAction,
+        default=True,
+        help="Enable/Disable branch protection for the main branch. Default is "
+        "enabled.",
+    )
     parser.add_argument("name", help="Repository to create.")
     parser.add_argument(
         "organization",
@@ -83,6 +90,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     gitignore_template = GITIGNORE.get(args.template)
     license_template = args.license
     description = args.description
+    branch_protection = args.branch_protection
 
     if args.team:
         team = await api.teams.get(organization, args.team)
@@ -154,6 +162,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
 
         git.push(remote="upstream", force=True)
 
+    if branch_protection:
         await api.branches.update_protection_rules(
             f"{organization}/{repository}",
             "main",
