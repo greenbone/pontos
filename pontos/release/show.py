@@ -4,9 +4,10 @@
 
 import json
 from argparse import Namespace
-from enum import Enum, IntEnum, auto
+from enum import IntEnum, auto
 from typing import Optional
 
+from pontos.enum import StrEnum
 from pontos.errors import PontosError
 from pontos.git import Git
 from pontos.github.actions import ActionIO
@@ -29,7 +30,7 @@ class ShowReleaseReturnValue(IntEnum):
     NO_RELEASE_VERSION = auto()
 
 
-class OutputFormat(Enum):
+class OutputFormat(StrEnum):
     ENV = "env"
     JSON = "json"
     GITHUB_ACTION = "github-action"
