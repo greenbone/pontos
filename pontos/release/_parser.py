@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Greenbone AG
+# SPDX-FileCopyrightText: 2020-2024 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -11,13 +11,11 @@ from argparse import (
     Namespace,
 )
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import shtab
 
 from pontos.enum import enum_choice, enum_type, to_choices
-from pontos.release.helper import ReleaseType
-from pontos.release.show import OutputFormat, show
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
     PEP440VersioningScheme,
@@ -26,6 +24,8 @@ from pontos.version.schemes import (
 )
 
 from .create import create_release
+from .helper import ReleaseType
+from .show import OutputFormat, show
 from .sign import sign
 
 DEFAULT_SIGNING_KEY = "0ED1E580"
@@ -39,7 +39,9 @@ class ReleaseVersionAction(
         setattr(namespace, self.dest, values)
 
 
-def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
+def parse_args(
+    args: Optional[Sequence[str]] = None,
+) -> Tuple[Optional[str], Optional[str], Namespace]:
     """
     Return user, token, parsed arguments
     """

@@ -6,9 +6,10 @@
 import asyncio
 import sys
 
-from pontos.github.argparser import parse_args
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+
+from ._parser import parse_args
 
 
 def main(args=None):

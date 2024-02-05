@@ -10,17 +10,16 @@ Also it appends a header if it is missing in the file.
 
 import re
 import sys
-from argparse import ArgumentParser, FileType, Namespace
-from datetime import datetime
+from argparse import Namespace
 from pathlib import Path
 from subprocess import CalledProcessError, run
 from typing import Dict, List, Optional, Tuple, Union
 
-import shtab
-
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+
+from ._parser import parse_args
 
 SUPPORTED_FILE_TYPES = [
     ".bash",
@@ -36,12 +35,6 @@ SUPPORTED_FILE_TYPES = [
     ".txt",
     ".xml",
     ".xsl",
-]
-SUPPORTED_LICENCES = [
-    "AGPL-3.0-or-later",
-    "GPL-2.0-only",
-    "GPL-2.0-or-later",
-    "GPL-3.0-or-later",
 ]
 OLD_LINES = [
     "# \-\*\- coding: utf\-8 \-\*\-",
@@ -298,101 +291,6 @@ def _get_exclude_list(
     return exclude_list
 
 
-def _parse_args(args=None):
-    """Parsing the args"""
-
-    parser = ArgumentParser(
-        description="Update copyright in source file headers.",
-    )
-    shtab.add_argument_to(parser)
-
-    parser.add_argument(
-        "--quiet",
-        "-q",
-        action="store_true",
-        help="Don't print messages to the terminal",
-    )
-
-    parser.add_argument(
-        "--log-file",
-        dest="log_file",
-        type=str,
-        help="Acivate logging using the given file path",
-    ).complete = shtab.FILE
-
-    date_group = parser.add_mutually_exclusive_group()
-    date_group.add_argument(
-        "-c",
-        "--changed",
-        action="store_true",
-        default=False,
-        help=(
-            "Update modified year using git log modified year. "
-            "This will not changed all files to current year!"
-        ),
-    )
-    date_group.add_argument(
-        "-y",
-        "--year",
-        default=str(datetime.now().year),
-        help=(
-            "If year is set, modified year will be "
-            "set to the specified year."
-        ),
-    )
-
-    parser.add_argument(
-        "-l",
-        "--license",
-        dest="license_id",
-        choices=SUPPORTED_LICENCES,
-        default="GPL-3.0-or-later",
-        help=("Use the passed license type"),
-    )
-
-    parser.add_argument(
-        "--company",
-        default="Greenbone AG",
-        help=(
-            "If a header will be added to file, "
-            "it will be licensed by company."
-        ),
-    )
-
-    files_group = parser.add_mutually_exclusive_group(required=True)
-    files_group.add_argument(
-        "-f", "--files", nargs="+", help="Files to update."
-    ).complete = shtab.FILE
-    files_group.add_argument(
-        "-d",
-        "--directories",
-        nargs="+",
-        help="Directories to find files to update recursively.",
-    ).complete = shtab.DIRECTORY
-
-    parser.add_argument(
-        "--exclude-file",
-        help=(
-            "File containing glob patterns for files to "
-            "ignore when finding files to update in a directory. "
-            "Will look for '.pontos-header-ignore' in the directory "
-            "if none is given. "
-            "The ignore file should only contain relative paths like *.py,"
-            "not absolute as **/*.py"
-        ),
-        type=FileType("r"),
-    ).complete = shtab.FILE
-
-    parser.add_argument(
-        "--cleanup",
-        action="store_true",
-        default=False,
-        help="Do a cleanup: Remove lines from outdated header format",
-    )
-
-    return parser.parse_args(args)
-
-
 def _compile_outdated_regex() -> List[re.Pattern]:
     """prepare regex patterns to remove old copyright lines"""
     regexes: List[re.Pattern] = []
@@ -412,7 +310,7 @@ def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
 
 
 def main() -> None:
-    parsed_args = _parse_args()
+    parsed_args = parse_args()
     exclude_list = []
 
     if parsed_args.quiet:

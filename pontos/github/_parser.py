@@ -8,7 +8,7 @@
 import os
 from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, Sequence
 
 import shtab
 
@@ -35,9 +35,7 @@ def from_env(name: str) -> str:
     return os.environ.get(name, name)
 
 
-def parse_args(
-    args: Optional[List[str]] = None,
-) -> Namespace:
+def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     """
     Parsing args for Pontos GitHub
 
@@ -243,7 +241,6 @@ def parse_args(
         ),
     )
 
-    # orga-repos
     repos_parser = subparsers.add_parser(
         "repos", aliases=["R"], help="Repository information"
     )
@@ -418,7 +415,7 @@ def parse_args(
         "-got",
         "--git-object-type",
         default="commit",
-        help="The type of the object we're taggin",
+        help="The type of the object we're tagging",
     )
 
     create_tag_parser.add_argument(

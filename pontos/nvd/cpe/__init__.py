@@ -4,13 +4,14 @@
 #
 
 import asyncio
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from typing import Callable
 
 import httpx
-import shtab
 
 from pontos.nvd.cpe.api import CPEApi
+
+from ._parser import cpe_parser, cpes_parser
 
 __all__ = ("CPEApi",)
 
@@ -34,46 +35,15 @@ async def query_cpes(args: Namespace) -> None:
 
 
 def cpe_main() -> None:
-    parser = ArgumentParser()
-    shtab.add_argument_to(parser)
-    parser.add_argument("--token", help="API key to use for querying.")
-    parser.add_argument(
-        "cpe_name_id", metavar="CPE Name ID", help="UUID of the CPE"
-    )
-
-    main(parser, query_cpe)
+    main(cpe_parser(), query_cpe)
 
 
 def cpes_main() -> None:
-    parser = ArgumentParser()
-    shtab.add_argument_to(parser)
-    parser.add_argument("--token", help="API key to use for querying.")
-    parser.add_argument(
-        "--cpe-match-string",
-        help="Search for CPE names that exist in the Official CPE Dictionary.",
-    )
-    parser.add_argument(
-        "--keywords",
-        nargs="*",
-        help="Search for CPEs containing the keyword in their titles and "
-        "references.",
-    )
-    parser.add_argument(
-        "--number", "-n", metavar="N", help="Request only N CPEs", type=int
-    )
-    parser.add_argument(
-        "--start",
-        "-s",
-        help="Index of the first CPE to request.",
-        type=int,
-    )
-
-    main(parser, query_cpes)
+    main(cpes_parser(), query_cpes)
 
 
-def main(parser: ArgumentParser, func: Callable) -> None:
+def main(args: Namespace, func: Callable) -> None:
     try:
-        args = parser.parse_args()
         asyncio.run(func(args))
     except KeyboardInterrupt:
         pass

@@ -20,6 +20,7 @@ from pontos.updateheader.updateheader import (
     OLD_COMPANY,
     _compile_copyright_regex,
     main,
+    parse_args,
 )
 from pontos.updateheader.updateheader import _add_header as add_header
 from pontos.updateheader.updateheader import (
@@ -32,7 +33,6 @@ from pontos.updateheader.updateheader import (
 from pontos.updateheader.updateheader import (
     _get_modified_year as get_modified_year,
 )
-from pontos.updateheader.updateheader import _parse_args as parse_args
 from pontos.updateheader.updateheader import (
     _remove_outdated_lines as remove_outdated_lines,
 )
@@ -483,7 +483,7 @@ class UpdateHeaderTestCase(TestCase):
 
         test_ignore_file.unlink()
 
-    @patch("pontos.updateheader.updateheader._parse_args")
+    @patch("pontos.updateheader.updateheader.parse_args")
     def test_main(self, argparser_mock):
         self.args.year = "2021"
         self.args.changed = False
@@ -504,7 +504,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertTrue(code)
 
     @patch("sys.stdout", new_callable=StringIO)
-    @patch("pontos.updateheader.updateheader._parse_args")
+    @patch("pontos.updateheader.updateheader.parse_args")
     def test_main_never_happen(self, argparser_mock, mock_stdout):
         self.args.year = "2021"
         self.args.changed = False

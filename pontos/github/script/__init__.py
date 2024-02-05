@@ -37,13 +37,13 @@ import httpx
 
 from pontos.errors import PontosError
 
+from ._parser import create_parser
 from .errors import GitHubScriptError
 from .load import (
     load_script,
     run_add_arguments_function,
     run_github_script_function,
 )
-from .parser import create_parser
 
 __all__ = (
     "GitHubScriptError",
