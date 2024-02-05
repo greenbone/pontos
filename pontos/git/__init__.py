@@ -9,6 +9,7 @@ from ._git import (
     Git,
     GitError,
     MergeStrategy,
+    ResetMode,
     TagSort,
 )
 from ._status import Status, StatusEntry
@@ -19,6 +20,7 @@ __all__ = (
     "Git",
     "GitError",
     "MergeStrategy",
+    "ResetMode",
     "Status",
     "StatusEntry",
     "TagSort",
