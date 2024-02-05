@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from .core import ActionIO, Console
+from .core import ActionIO, ActionOutput, Console
 from .env import GitHubEnvironment
 from .errors import GitHubActionsError
 from .event import (
@@ -18,6 +18,7 @@ from .main import main
 __all__ = (
     "GitHubActionsError",
     "ActionIO",
+    "ActionOutput",
     "Console",
     "GitHubEnvironment",
     "GitHubEvent",
