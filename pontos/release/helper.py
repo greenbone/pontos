@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from enum import Enum
 from typing import Optional
 
+from pontos.enum import StrEnum
 from pontos.git import Git, GitError
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionCalculator, VersionError
@@ -14,7 +14,7 @@ DEFAULT_TIMEOUT = 1000
 DEFAULT_CHUNK_SIZE = 4096
 
 
-class ReleaseType(Enum):
+class ReleaseType(StrEnum):
     """
     Type of the release. Used to determine the next release version.
 
