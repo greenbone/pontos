@@ -13,6 +13,7 @@ from pontos.git import (
     Git,
     GitError,
     MergeStrategy,
+    ResetMode,
     Status,
     TagSort,
 )
@@ -192,6 +193,40 @@ class GitTestCase(unittest.TestCase):
         git.push(force=False)
 
         exec_git_mock.assert_called_once_with("push", cwd=None)
+
+    @patch("pontos.git._git.exec_git")
+    def test_push_branch_with_delete(self, exec_git_mock):
+        git = Git()
+        git.push(delete=True, branch="v1.2.3", remote="origin")
+
+        exec_git_mock.assert_called_once_with(
+            "push", "--delete", "origin", "v1.2.3", cwd=None
+        )
+
+    @patch("pontos.git._git.exec_git")
+    def test_push_refspec_with_delete(self, exec_git_mock):
+        git = Git()
+        git.push("v1.2.3", delete=True)
+
+        exec_git_mock.assert_called_once_with(
+            "push", "--delete", "v1.2.3", cwd=None
+        )
+
+    @patch("pontos.git._git.exec_git")
+    def test_push_refspec(self, exec_git_mock):
+        git = Git()
+        git.push("v1.2.3")
+
+        exec_git_mock.assert_called_once_with("push", "v1.2.3", cwd=None)
+
+    @patch("pontos.git._git.exec_git")
+    def test_push_refspecs(self, exec_git_mock):
+        git = Git()
+        git.push(["v1.2.3", "main"])
+
+        exec_git_mock.assert_called_once_with(
+            "push", "v1.2.3", "main", cwd=None
+        )
 
     @patch("pontos.git._git.exec_git")
     def test_config_get(self, exec_git_mock):
@@ -756,6 +791,22 @@ Date:   Wed Jul 19 15:07:03 2023 +0200
         exec_git_mock.assert_called_once_with("show", "--no-patch", cwd=None)
 
         self.assertEqual(show, content.strip())
+
+    @patch("pontos.git._git.exec_git")
+    def test_delete_tag(self, exec_git_mock):
+        git = Git()
+        git.delete_tag("v1.2.3")
+
+        exec_git_mock.assert_called_once_with("tag", "-d", "v1.2.3", cwd=None)
+
+    @patch("pontos.git._git.exec_git")
+    def test_reset_mixed(self, exec_git_mock):
+        git = Git()
+        git.reset("c1234", mode=ResetMode.MIXED)
+
+        exec_git_mock.assert_called_once_with(
+            "reset", "--mixed", "c1234", cwd=None
+        )
 
 
 class GitExtendedTestCase(unittest.TestCase):

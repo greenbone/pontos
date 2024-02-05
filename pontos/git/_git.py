@@ -4,19 +4,18 @@
 #
 
 import subprocess
-from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
 from typing import (
     Collection,
     Iterable,
     Iterator,
-    List,
     Optional,
     Sequence,
     Union,
 )
 
+from pontos.enum import StrEnum
 from pontos.errors import PontosError
 
 from ._status import StatusEntry, parse_git_status
@@ -85,7 +84,7 @@ def exec_git(
         raise GitError(e.returncode, e.cmd, e.output, e.stderr) from None
 
 
-class MergeStrategy(Enum):
+class MergeStrategy(StrEnum):
     """
     Possible strategies for a merge
 
@@ -107,7 +106,7 @@ class MergeStrategy(Enum):
     SUBTREE = "subtree"
 
 
-class ConfigScope(Enum):
+class ConfigScope(StrEnum):
     """
     Possible scopes for git settings
 
@@ -126,7 +125,7 @@ class ConfigScope(Enum):
     WORKTREE = "worktree"
 
 
-class TagSort(Enum):
+class TagSort(StrEnum):
     """
     Sorting for git tags
 
@@ -135,6 +134,14 @@ class TagSort(Enum):
     """
 
     VERSION = "version:refname"
+
+
+class ResetMode(StrEnum):
+    SOFT = "soft"
+    MIXED = "mixed"
+    HARD = "hard"
+    MERGE = "merge"
+    KEEP = "keep"
 
 
 class Git:
@@ -231,7 +238,7 @@ class Git:
             if strategy == MergeStrategy.ORT_OURS:
                 args.extend(["--strategy", "ort", "-X", "ours"])
             else:
-                args.extend(["--strategy", strategy.value])
+                args.extend(["--strategy", str(strategy)])
 
         if onto:
             args.extend(["--onto", onto])
@@ -274,32 +281,43 @@ class Git:
 
     def push(
         self,
+        refspec: Optional[Union[str, Iterable[str]]] = None,
         *,
         remote: Optional[str] = None,
         branch: Optional[str] = None,
         follow_tags: bool = False,
         force: Optional[bool] = None,
+        delete: Optional[bool] = None,
     ) -> None:
         """
         Push changes to remote repository
 
         Args:
+            refspec: Refs to push
             remote: Push changes to the named remote
-            branch: Branch to push. Will only be considered in combination with
-                    a remote.
+            branch: Branch to push. Will only be considered in
+                combination with a remote. Deprecated, use refs instead.
             follow_tags: Push all tags pointing to a commit included in the to
-                         be pushed branch.
+                be pushed branch.
             force: Force push changes.
+            delete: Delete remote refspec
         """
         args = ["push"]
         if follow_tags:
             args.append("--follow-tags")
         if force:
             args.append("--force")
+        if delete:
+            args.append("--delete")
         if remote:
             args.append(remote)
             if branch:
                 args.append(branch)
+        if refspec:
+            if isinstance(refspec, str):
+                args.append(refspec)
+            else:
+                args.extend(refspec)
 
         self.exec(*args)
 
@@ -308,7 +326,7 @@ class Git:
         key: str,
         value: Optional[str] = None,
         *,
-        scope: Optional[ConfigScope] = None,
+        scope: Optional[Union[ConfigScope, str]] = None,
     ) -> str:
         """
         Get and set a git config
@@ -320,7 +338,7 @@ class Git:
         """
         args = ["config"]
         if scope:
-            args.append(f"--{scope.value}")
+            args.append(f"--{scope}")
 
         args.append(key)
 
@@ -329,7 +347,7 @@ class Git:
 
         return self.exec(*args)
 
-    def cherry_pick(self, commits: Union[str, List[str]]) -> None:
+    def cherry_pick(self, commits: Union[str, list[str]]) -> None:
         """
         Apply changes of a commit(s) to the current branch
 
@@ -348,10 +366,10 @@ class Git:
     def list_tags(
         self,
         *,
-        sort: Optional[TagSort] = None,
+        sort: Optional[Union[TagSort, str]] = None,
         tag_name: Optional[str] = None,
-        sort_suffix: Optional[List[str]] = None,
-    ) -> List[str]:
+        sort_suffix: Optional[list[str]] = None,
+    ) -> list[str]:
         """
         List all available tags
 
@@ -370,7 +388,7 @@ class Git:
                     args.extend(["-c", f"versionsort.suffix={suffix}"])
 
             args.extend(["tag", "-l"])
-            args.append(f"--sort={sort.value}")
+            args.append(f"--sort={sort}")
         else:
             args = ["tag", "-l"]
 
@@ -463,6 +481,19 @@ class Git:
 
         self.exec(*args)
 
+    def delete_tag(
+        self,
+        tag: str,
+    ) -> None:
+        """
+        Delete a Tag
+
+        Args:
+            tag: Tag name to delete
+        """
+        args = ["tag", "-d", tag]
+        self.exec(*args)
+
     def fetch(
         self,
         remote: Optional[str] = None,
@@ -538,7 +569,7 @@ class Git:
         *log_args: str,
         oneline: Optional[bool] = None,
         format: Optional[str] = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get log of a git repository
 
@@ -614,7 +645,7 @@ class Git:
         *commit: str,
         max_parents: Optional[int] = None,
         abbrev_commit: Optional[bool] = False,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Lists commit objects in reverse chronological order
 
@@ -693,3 +724,30 @@ class Git:
 
         output = self.exec(*args)
         return parse_git_status(output)
+
+    def reset(
+        self,
+        commit,
+        *,
+        mode: Union[ResetMode, str],
+    ) -> None:
+        """
+        Reset the git history
+
+        Args:
+            commit: Git reference to reset the checked out tree to
+            mode: The reset mode to use
+
+        Examples:
+            This will "list all the commits which are reachable from foo or
+            bar, but not from baz".
+
+            .. code-block:: python
+
+                from pontos.git import Git, ResetMode
+
+                git = Git()
+                git.reset("HEAD^", mode=ResetMode.HARD)
+        """
+        args = ["reset", f"--{mode}", commit]
+        self.exec(*args)
