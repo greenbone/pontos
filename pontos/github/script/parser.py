@@ -6,6 +6,8 @@
 import os
 from argparse import ArgumentParser
 
+import shtab
+
 from pontos.github.api.helper import DEFAULT_TIMEOUT
 
 GITHUB_TOKEN = "GITHUB_TOKEN"
@@ -19,6 +21,7 @@ def create_parser() -> ArgumentParser:
         A new ArgumentParser instance add the default arguments
     """
     parser = ArgumentParser(add_help=False)
+    shtab.add_argument_to(parser)
     parser.add_argument(
         "--token",
         default=os.environ.get(GITHUB_TOKEN),

@@ -8,6 +8,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Callable
 
 import httpx
+import shtab
 
 from pontos.nvd.cpe.api import CPEApi
 
@@ -34,6 +35,7 @@ async def query_cpes(args: Namespace) -> None:
 
 def cpe_main() -> None:
     parser = ArgumentParser()
+    shtab.add_argument_to(parser)
     parser.add_argument("--token", help="API key to use for querying.")
     parser.add_argument(
         "cpe_name_id", metavar="CPE Name ID", help="UUID of the CPE"
@@ -44,6 +46,7 @@ def cpe_main() -> None:
 
 def cpes_main() -> None:
     parser = ArgumentParser()
+    shtab.add_argument_to(parser)
     parser.add_argument("--token", help="API key to use for querying.")
     parser.add_argument(
         "--cpe-match-string",

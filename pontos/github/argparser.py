@@ -10,6 +10,9 @@ from argparse import ArgumentParser, FileType, Namespace
 from pathlib import Path
 from typing import List, Optional
 
+import shtab
+
+from pontos.enum import enum_choice, enum_type
 from pontos.github.cmds import (
     create_pull_request,
     create_release,
@@ -32,10 +35,6 @@ def from_env(name: str) -> str:
     return os.environ.get(name, name)
 
 
-def get_repository_type(rtype: str) -> RepositoryType:
-    return RepositoryType[rtype]
-
-
 def parse_args(
     args: Optional[List[str]] = None,
 ) -> Namespace:
@@ -43,14 +42,13 @@ def parse_args(
     Parsing args for Pontos GitHub
 
     Arguments:
-    args        The program arguments passed by exec
-    term        The terminal to print
+        args        The program arguments passed by exec
     """
 
     parser = ArgumentParser(
         description="Greenbone GitHub API.",
     )
-
+    shtab.add_argument_to(parser)
     parser.add_argument(
         "--quiet",
         "-q",
@@ -62,20 +60,21 @@ def parse_args(
         "--log-file",
         dest="log_file",
         type=str,
-        help="Acivate logging using the given file path",
-    )
+        help="Activate logging using the given file path",
+    ).complete = shtab.FILE  # type: ignore[attr-defined]
 
     subparsers = parser.add_subparsers(
         title="subcommands",
-        description="valid subcommands",
-        required=True,
-        help="additional help",
+        description="Valid subcommands",
+        help="Additional help",
         dest="command",
     )
 
     # create a PR from command line
     pr_parser = subparsers.add_parser(
-        "pull-request", aliases=["pr", "PR", "pullrequest"]
+        "pull-request",
+        aliases=["pr", "PR", "pullrequest"],
+        help="Pull request related commands",
     )
 
     pr_parser.set_defaults(func=pull_request)
@@ -95,8 +94,8 @@ def parse_args(
         title="method",
         dest="pr_method",
         metavar="name",
-        description="valid pull request method",
-        help="pull request method",
+        description="Valid pull request method",
+        help="Pull request method",
         required=True,
     )
 
@@ -136,7 +135,7 @@ def parse_args(
     )
 
     update_pr_parser = pr_subparsers.add_parser(
-        "update", help="update Pull Request"
+        "update", help="Update Pull Request"
     )
 
     update_pr_parser.set_defaults(pr_func=update_pull_request)
@@ -166,7 +165,7 @@ def parse_args(
 
     # get files
     file_status_parser = subparsers.add_parser(
-        "file-status", aliases=["status", "FS"]
+        "file-status", aliases=["status", "FS"], help="File status"
     )
 
     file_status_parser.set_defaults(func=file_status)
@@ -182,7 +181,7 @@ def parse_args(
     file_status_parser.add_argument(
         "-s",
         "--status",
-        choices=FileStatus,
+        choices=enum_choice(FileStatus),
         default=[FileStatus.ADDED, FileStatus.MODIFIED],
         nargs="+",
         help="What file status should be returned. Default: %(default)s",
@@ -212,7 +211,9 @@ def parse_args(
     )
 
     # labels
-    label_parser = subparsers.add_parser("labels", aliases=["L"])
+    label_parser = subparsers.add_parser(
+        "labels", aliases=["L"], help="Issue/pull Request label handling"
+    )
 
     label_parser.set_defaults(func=labels)
 
@@ -243,7 +244,9 @@ def parse_args(
     )
 
     # orga-repos
-    repos_parser = subparsers.add_parser("repos", aliases=["R"])
+    repos_parser = subparsers.add_parser(
+        "repos", aliases=["R"], help="Repository information"
+    )
 
     repos_parser.set_defaults(func=repos)
 
@@ -262,8 +265,8 @@ def parse_args(
 
     repos_parser.add_argument(
         "--type",
-        choices=RepositoryType,
-        type=get_repository_type,
+        choices=enum_choice(RepositoryType),
+        type=enum_type(RepositoryType),
         default=RepositoryType.PUBLIC,
         help=(
             "Define the type of repositories that should be covered. "
@@ -279,7 +282,7 @@ def parse_args(
 
     # create a release from command line
     re_parser = subparsers.add_parser(
-        "release", aliases=["re", "RE", "release"]
+        "release", aliases=["re", "RE", "release"], help="Release commands"
     )
 
     re_parser.set_defaults(func=release)
@@ -299,7 +302,7 @@ def parse_args(
         title="method",
         dest="re_method",
         metavar="name",
-        description="valid release method",
+        description="Valid release method",
         help="Release method",
         required=True,
     )
@@ -353,7 +356,9 @@ def parse_args(
     )
 
     # Create a tag from command line
-    tag_parser = subparsers.add_parser("tag", aliases=["tag", "TAG"])
+    tag_parser = subparsers.add_parser(
+        "tag", aliases=["tag", "TAG"], help="Tag commands"
+    )
 
     tag_parser.set_defaults(func=tag)
 
@@ -372,7 +377,7 @@ def parse_args(
         title="method",
         dest="tag_method",
         metavar="name",
-        description="valid tag method",
+        description="Valid tag method",
         help="Release method",
         required=True,
     )
@@ -425,7 +430,4 @@ def parse_args(
             " YYYY-MM-DDTHH:MM:SSZ."
         ),
     )
-
-    parsed_args = parser.parse_args(args)
-
-    return parsed_args
+    return parser.parse_args(args)

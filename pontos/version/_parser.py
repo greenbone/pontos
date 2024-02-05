@@ -6,6 +6,8 @@
 import argparse
 from typing import List, Optional
 
+import shtab
+
 from pontos.errors import PontosError
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
@@ -25,6 +27,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         description="Version handling utilities.",
         prog="version",
     )
+    shtab.add_argument_to(parser)
     subparsers = parser.add_subparsers(
         title="subcommands",
         description="Valid subcommands",
@@ -33,7 +36,9 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         required=True,
     )
 
-    verify_parser = subparsers.add_parser("verify")
+    verify_parser = subparsers.add_parser(
+        "verify", help="Verify version in the current project"
+    )
     verify_parser.add_argument(
         "version",
         help="Version string to compare",
@@ -48,7 +53,9 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         type=versioning_scheme_argument_type,
     )
 
-    show_parser = subparsers.add_parser("show")
+    show_parser = subparsers.add_parser(
+        "show", help="Show version information of the current project"
+    )
     show_parser.add_argument(
         "--versioning-scheme",
         help="Versioning scheme to use for parsing and handling version "
@@ -58,7 +65,9 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         type=versioning_scheme_argument_type,
     )
 
-    update_parser = subparsers.add_parser("update")
+    update_parser = subparsers.add_parser(
+        "update", help="Update version in the current project"
+    )
     update_parser.add_argument(
         "version",
         help="Version string to use",
