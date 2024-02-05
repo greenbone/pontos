@@ -127,3 +127,15 @@ def get_next_release_version(
         return calculator.next_release_candidate_version(last_release_version)
 
     raise VersionError(f"Unsupported release type {release_type.value}.")
+
+
+def repository_split(repository: str) -> tuple[str, str]:
+    """
+    Split a GitHub repository (owner/name) into a space, project tuple
+    """
+    splitted_repo = repository.split("/")
+    if len(splitted_repo) != 2:
+        raise ValueError(
+            f"Invalid repository {repository}. Format must be " "owner/name."
+        )
+    return splitted_repo[0], splitted_repo[1]

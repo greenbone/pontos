@@ -17,6 +17,7 @@ from pontos.release.helper import (
     find_signing_key,
     get_git_repository_name,
     get_next_release_version,
+    repository_split,
 )
 from pontos.testing import temp_git_repository
 from pontos.version import VersionError
@@ -293,3 +294,24 @@ class GetNextReleaseVersionTestCase(unittest.TestCase):
                 release_type=ReleaseType.ALPHA,
                 release_version=release_version,
             )
+
+
+class RepositorySplitTestCase(unittest.TestCase):
+    def test_invalid_repository(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            r"Invalid repository foo/bar/baz. Format must be owner/name.",
+        ):
+            repository_split("foo/bar/baz")
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"Invalid repository foo_bar_baz. Format must be owner/name.",
+        ):
+            repository_split("foo_bar_baz")
+
+    def test_repository(self):
+        space, project = repository_split("foo/bar")
+
+        self.assertEqual(space, "foo")
+        self.assertEqual(project, "bar")
