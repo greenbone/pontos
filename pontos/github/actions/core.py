@@ -9,8 +9,9 @@ from io import TextIOWrapper
 from pathlib import Path
 from typing import Generator, Optional
 
-from pontos.github.actions.errors import GitHubActionsError
 from pontos.typing import SupportsStr
+
+from .errors import GitHubActionsError
 
 
 def _to_options(
@@ -55,6 +56,7 @@ def _message(
 class Console:
     """
     Class for printing messages to the action console
+
     """
 
     @classmethod
@@ -62,6 +64,14 @@ class Console:
     def group(cls, title: str):
         """
         ContextManager to display a foldable group
+
+        .. code-block:: python
+
+            from pontos.github.actions import Console
+
+            console = Console()
+            with console.group("my-group"):
+                console.log("some message)
 
         Args:
             title: Title of the group
@@ -190,6 +200,10 @@ class Console:
 
 
 class ActionOutput:
+    """
+    A GitHub Action output
+    """
+
     def __init__(self, file: TextIOWrapper) -> None:
         self._file = file
 
@@ -207,6 +221,10 @@ class ActionOutput:
 
 
 class ActionIO:
+    """
+    Class with static methods for handling GitHub Action IO
+    """
+
     @staticmethod
     def has_output() -> bool:
         """
@@ -218,9 +236,18 @@ class ActionIO:
     @contextmanager
     def out() -> Generator[ActionOutput, None, None]:
         """
-        Create action output
+        Create an action output to write several output values
 
         An action output can be consumed by another job
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.actions import ActionIO
+
+                with ActionIO.out() as out:
+                    out.write("foo", "bar")
+                    out.write("lorem", "ipsum")
         """
         output_filename = os.environ.get("GITHUB_OUTPUT")
         if not output_filename:
@@ -238,6 +265,13 @@ class ActionIO:
         Set action output
 
         An action output can be consumed by another job
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.actions import ActionIO
+
+                ActionIO.output("foo", "bar")
 
         Args:
             name: Name of the output variable
@@ -257,6 +291,13 @@ class ActionIO:
     def input(name: str, default: Optional[str] = None) -> Optional[str]:
         """
         Get the value of an action input
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.actions import ActionIO
+
+                value = ActionIO.input("foo", "bar")
 
         Args:
             name: Name of the input variable
