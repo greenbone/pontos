@@ -8,7 +8,7 @@ import hashlib
 import subprocess
 from argparse import Namespace
 from asyncio.subprocess import Process
-from enum import IntEnum
+from enum import IntEnum, auto
 from os import PathLike
 from pathlib import Path
 from typing import AsyncContextManager, Optional, SupportsInt, Union
@@ -36,12 +36,12 @@ class SignReturnValue(IntEnum):
     """
 
     SUCCESS = 0
-    TOKEN_MISSING = 1
-    NO_PROJECT = 2
-    NO_RELEASE_VERSION = 3
-    NO_RELEASE = 4
-    UPLOAD_ASSET_ERROR = 5
-    SIGNATURE_GENERATION_FAILED = 6
+    TOKEN_MISSING = auto()
+    NO_PROJECT = auto()
+    NO_RELEASE_VERSION = auto()
+    NO_RELEASE = auto()
+    UPLOAD_ASSET_ERROR = auto()
+    SIGNATURE_GENERATION_FAILED = auto()
 
 
 class SignatureError(PontosError):
