@@ -4,13 +4,14 @@
 #
 
 import asyncio
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from typing import Callable
 
 import httpx
-import shtab
 
 from pontos.nvd.cve.api import CVEApi
+
+from ._parser import cve_parser, cves_parser
 
 __all__ = ("CVEApi",)
 
@@ -36,55 +37,15 @@ async def query_cve(args: Namespace) -> None:
 
 
 def cves_main() -> None:
-    parser = ArgumentParser()
-    shtab.add_argument_to(parser)
-    parser.add_argument("--token", help="API key to use for querying.")
-    parser.add_argument(
-        "--keywords",
-        nargs="*",
-        help="Search for CVEs containing the keyword in their description.",
-    )
-    parser.add_argument(
-        "--cpe-name", help="Get all CVE information associated with the CPE"
-    )
-    parser.add_argument(
-        "--cvss-v2-vector",
-        help="Get all CVE information with the CVSSv2 vector",
-    )
-    parser.add_argument(
-        "--cvss-v3-vector",
-        help="Get all CVE information with the CVSSv3 vector",
-    )
-    parser.add_argument(
-        "--source-identifier",
-        help="Get all CVE information with the source identifier. For example: "
-        "cve@mitre.org",
-    )
-    parser.add_argument(
-        "--number", "-n", metavar="N", help="Request only N CVEs", type=int
-    )
-    parser.add_argument(
-        "--start",
-        "-s",
-        help="Index of the first CVE to request.",
-        type=int,
-    )
-
-    main(parser, query_cves)
+    main(cves_parser(), query_cves)
 
 
 def cve_main() -> None:
-    parser = ArgumentParser()
-    shtab.add_argument_to(parser)
-    parser.add_argument("--token", help="API key to use for querying.")
-    parser.add_argument("cve_id", metavar="CVE-ID", help="ID of the CVE")
-
-    main(parser, query_cve)
+    main(cve_parser(), query_cve)
 
 
-def main(parser: ArgumentParser, func: Callable) -> None:
+def main(args: Namespace, func: Callable) -> None:
     try:
-        args = parser.parse_args()
         asyncio.run(func(args))
     except KeyboardInterrupt:
         pass

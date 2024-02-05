@@ -6,7 +6,9 @@
 """ Argument parser for pontos-github-actions """
 
 from argparse import ArgumentParser, Namespace
-from typing import List, Optional
+from typing import Optional, Sequence
+
+import shtab
 
 from .cmds import actions_input, actions_output
 
@@ -17,9 +19,7 @@ def split_pairs(value: str):
     return tuple(value.split("=", 1))
 
 
-def parse_args(
-    args: Optional[List[str]] = None,
-) -> Namespace:
+def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     """
     Parsing args for Pontos GitHub Actions
     """
@@ -27,6 +27,7 @@ def parse_args(
     parser = ArgumentParser(
         description="Greenbone GitHub Actions API.",
     )
+    shtab.add_argument_to(parser)
 
     parser.add_argument(
         "--quiet",

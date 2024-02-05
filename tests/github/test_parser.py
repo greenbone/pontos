@@ -12,7 +12,7 @@ from contextlib import redirect_stderr
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from pontos.github.argparser import parse_args
+from pontos.github._parser import parse_args
 from pontos.github.cmds import (
     create_pull_request,
     create_release,

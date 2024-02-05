@@ -1,10 +1,10 @@
-# Copyright (C) 2023 Greenbone AG
+# SPDX-FileCopyrightText: 2023-2024 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 import argparse
-from typing import List, Optional
+from typing import Optional, Sequence
 
 import shtab
 
@@ -115,7 +115,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = initialize_default_parser()
 
     parsed_args = parser.parse_args(args)

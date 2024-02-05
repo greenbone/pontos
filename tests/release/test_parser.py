@@ -9,9 +9,9 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+from pontos.release._parser import DEFAULT_SIGNING_KEY, parse_args
 from pontos.release.create import create_release
 from pontos.release.helper import ReleaseType
-from pontos.release.parser import DEFAULT_SIGNING_KEY, parse_args
 from pontos.release.show import OutputFormat, show
 from pontos.release.sign import sign
 from pontos.version.schemes._pep440 import PEP440Version, PEP440VersioningScheme

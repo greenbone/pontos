@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from pontos.github.actions.argparser import parse_args
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
+
+from ._parser import parse_args
 
 
 def main(args=None):

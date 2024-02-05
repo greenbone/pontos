@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from pontos.github.api.helper import DEFAULT_TIMEOUT
-from pontos.github.script.parser import create_parser
+from pontos.github.script._parser import create_parser
 
 
 class CreateParserTestCase(unittest.TestCase):
