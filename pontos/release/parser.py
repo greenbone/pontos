@@ -147,15 +147,27 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         help="The key to sign the commits and tag for a release",
         default=os.environ.get("GPG_SIGNING_KEY"),
     )
-    create_parser.add_argument(
-        "--project",
-        help="The github project",
+
+    repo_group = create_parser.add_argument_group(
+        "Repository",
+        description="Where to publish the new release. Either a full repository"
+        " name or a space/project combination.",
     )
-    create_parser.add_argument(
+    repo_group.add_argument(
+        "--repository",
+        help="GitHub repository name (owner/name). For example "
+        "octocat/Hello-World",
+    )
+    repo_group.add_argument(
         "--space",
         default="greenbone",
-        help="User/Team name in github",
+        help="Owner (User/Team/Organization) name at GitHub",
     )
+    repo_group.add_argument(
+        "--project",
+        help="The GitHub project",
+    )
+
     create_parser.add_argument(
         "--local",
         action="store_true",
@@ -218,16 +230,25 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         nargs="?",
         help="Prefix for git tag versions. Default: %(default)s",
     )
-    sign_parser.add_argument(
-        "--project",
-        help="The github project",
+    repo_group = sign_parser.add_argument_group(
+        "Repository",
+        description="Where to publish the new release. Either a full repository"
+        " name or a space/project combination.",
     )
-    sign_parser.add_argument(
+    repo_group.add_argument(
+        "--repository",
+        help="GitHub repository name (owner/name). For example "
+        "octocat/Hello-World",
+    )
+    repo_group.add_argument(
         "--space",
         default="greenbone",
-        help="user/team name in github",
+        help="Owner (User/Team/Organization) name at GitHub",
     )
-
+    repo_group.add_argument(
+        "--project",
+        help="The GitHub project",
+    )
     sign_parser.add_argument(
         "--passphrase",
         help=(

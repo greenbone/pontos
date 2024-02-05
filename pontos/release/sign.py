@@ -27,7 +27,7 @@ from pontos.version import Version
 from pontos.version.helper import get_last_release_version
 from pontos.version.schemes import VersioningScheme
 
-from .helper import get_git_repository_name
+from .helper import get_git_repository_name, repository_split
 
 
 class SignReturnValue(IntEnum):
@@ -42,6 +42,7 @@ class SignReturnValue(IntEnum):
     NO_RELEASE = auto()
     UPLOAD_ASSET_ERROR = auto()
     SIGNATURE_GENERATION_FAILED = auto()
+    INVALID_REPOSITORY = auto()
 
 
 class SignatureError(PontosError):
@@ -175,12 +176,13 @@ class SignCommand(AsyncCommand):
         self,
         *,
         token: str,
-        space: str,
+        repository: Optional[str],
+        space: Optional[str],
+        project: Optional[str],
         versioning_scheme: VersioningScheme,
         signing_key: str,
         passphrase: str,
         dry_run: Optional[bool] = False,
-        project: Optional[str],
         git_tag_prefix: Optional[str],
         release_version: Optional[Version],
         release_series: Optional[str] = None,
@@ -190,13 +192,15 @@ class SignCommand(AsyncCommand):
 
         Args:
             token: A token for creating a release on GitHub
-            dry_run: True to not upload the signature files
+            repository: GitHub repository (owner/name). Overrides space and
+                project.
             space: GitHub username or organization. Required for generating
                 links in the changelog.
             project: Name of the project to release. If not set it will be
                 gathered via the git remote url.
             versioning_scheme: The versioning scheme to use for version parsing
                 and calculation
+            dry_run: True to not upload the signature files
             git_tag_prefix: An optional prefix to use for handling a git tag
                 from the release version.
             release_version: Optional release version to use. If not set the
@@ -216,6 +220,18 @@ class SignCommand(AsyncCommand):
             return SignReturnValue.TOKEN_MISSING
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
+
+        if repository:
+            if space:
+                self.print_warning(
+                    f"Repository {repository} overrides space setting {space}"
+                )
+
+            try:
+                space, project = repository_split(repository)
+            except ValueError as e:
+                self.print_error(str(e))
+                return SignReturnValue.INVALID_REPOSITORY
 
         try:
             project = (
@@ -373,12 +389,13 @@ def sign(
     *,
     terminal: Terminal,
     error_terminal: Terminal,
-    token: str,
+    token: Optional[str],
     **_kwargs,
 ) -> SupportsInt:
     return SignCommand(terminal=terminal, error_terminal=error_terminal).run(
         token=token,
         dry_run=args.dry_run,
+        repository=args.repository,
         project=args.project,
         space=args.space,
         versioning_scheme=args.versioning_scheme,
