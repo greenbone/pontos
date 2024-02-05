@@ -28,6 +28,7 @@ from .helper import (
     find_signing_key,
     get_git_repository_name,
     get_next_release_version,
+    repository_split,
 )
 
 
@@ -62,6 +63,7 @@ class CreateReleaseReturnValue(IntEnum):
     CREATE_RELEASE_ERROR = auto()
     UPDATE_VERSION_ERROR = auto()
     UPDATE_VERSION_AFTER_RELEASE_ERROR = auto()
+    INVALID_REPOSITORY = auto()
 
 
 class CreateReleaseCommand(AsyncCommand):
@@ -87,7 +89,7 @@ class CreateReleaseCommand(AsyncCommand):
         cc_config: Optional[Path],
     ) -> str:
         changelog_builder = ChangelogBuilder(
-            space=self.space,
+            space=self.space,  # type: ignore[arg-type]
             project=self.project,
             config=cc_config,
             git_tag_prefix=self.git_tag_prefix,
@@ -126,7 +128,8 @@ class CreateReleaseCommand(AsyncCommand):
         self,
         *,
         token: str,
-        space: str,
+        repository: Optional[str],
+        space: Optional[str],
         project_name: Optional[str],
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
@@ -146,6 +149,8 @@ class CreateReleaseCommand(AsyncCommand):
 
         Args:
             token: A token for creating a release on GitHub
+            repository: GitHub repository (owner/name). Overrides space and
+                project.
             space: GitHub username or organization. Required for generating
                 links in the changelog.
             project: Name of the project to release. If not set it will be
@@ -182,12 +187,25 @@ class CreateReleaseCommand(AsyncCommand):
             else find_signing_key(self.terminal)
         )
         self.git_tag_prefix = git_tag_prefix or ""
+
+        if repository:
+            if space:
+                self.print_warning(
+                    f"Repository {repository} overrides space setting {space}"
+                )
+
+            try:
+                space, project_name = repository_split(repository)
+            except ValueError as e:
+                self.print_error(str(e))
+                return CreateReleaseReturnValue.INVALID_REPOSITORY
+
+        self.space = space
         self.project = (
             project_name
             if project_name is not None
             else get_git_repository_name()
         )
-        self.space = space
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
@@ -390,6 +408,7 @@ def create_release(
         terminal=terminal, error_terminal=error_terminal
     ).run(
         token=token,
+        repository=args.repository,
         space=args.space,
         project_name=args.project,
         versioning_scheme=args.versioning_scheme,
