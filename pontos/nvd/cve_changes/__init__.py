@@ -5,6 +5,8 @@
 import asyncio
 from argparse import ArgumentParser, Namespace
 
+import shtab
+
 from pontos.nvd.cve_changes.api import CVEChangesApi
 
 __all__ = ("CVEChangesApi",)
@@ -23,6 +25,7 @@ async def query_changes(args: Namespace) -> None:
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()
+    shtab.add_argument_to(parser)
     parser.add_argument("--token", help="API key to use for querying.")
     parser.add_argument("--cve-id", help="Get changes for a specific CVE")
     parser.add_argument(

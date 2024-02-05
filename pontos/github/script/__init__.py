@@ -66,6 +66,7 @@ def main():
             child_parser = ArgumentParser(parents=[parser])
             run_add_arguments_function(module, child_parser)
             args = child_parser.parse_args()
+
             token = args.token
             timeout = args.timeout
 

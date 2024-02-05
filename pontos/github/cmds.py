@@ -231,7 +231,7 @@ async def repos(terminal: Terminal, args: Namespace):
             exists = await api.organizations.exists(args.orga)
             if not exists:
                 terminal.error(
-                    f"PR {args.orga} is not existing or authorisation failed."
+                    f"Organization {args.orga} is not existing or authorisation failed."
                 )
                 sys.exit(1)
 

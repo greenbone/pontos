@@ -16,6 +16,8 @@ from pathlib import Path
 from subprocess import CalledProcessError, run
 from typing import Dict, List, Optional, Tuple, Union
 
+import shtab
+
 from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
@@ -301,8 +303,8 @@ def _parse_args(args=None):
 
     parser = ArgumentParser(
         description="Update copyright in source file headers.",
-        prog="pontos-update-header",
     )
+    shtab.add_argument_to(parser)
 
     parser.add_argument(
         "--quiet",
@@ -316,7 +318,7 @@ def _parse_args(args=None):
         dest="log_file",
         type=str,
         help="Acivate logging using the given file path",
-    )
+    ).complete = shtab.FILE
 
     date_group = parser.add_mutually_exclusive_group()
     date_group.add_argument(
@@ -360,13 +362,13 @@ def _parse_args(args=None):
     files_group = parser.add_mutually_exclusive_group(required=True)
     files_group.add_argument(
         "-f", "--files", nargs="+", help="Files to update."
-    )
+    ).complete = shtab.FILE
     files_group.add_argument(
         "-d",
         "--directories",
         nargs="+",
         help="Directories to find files to update recursively.",
-    )
+    ).complete = shtab.DIRECTORY
 
     parser.add_argument(
         "--exclude-file",
@@ -379,7 +381,7 @@ def _parse_args(args=None):
             "not absolute as **/*.py"
         ),
         type=FileType("r"),
-    )
+    ).complete = shtab.FILE
 
     parser.add_argument(
         "--cleanup",

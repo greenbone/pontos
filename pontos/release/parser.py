@@ -7,14 +7,15 @@ import argparse
 import os
 from argparse import (
     ArgumentParser,
-    ArgumentTypeError,
     BooleanOptionalAction,
     Namespace,
 )
-from enum import Enum
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Type
+from typing import Optional, Tuple
 
+import shtab
+
+from pontos.enum import enum_choice, enum_type, to_choices
 from pontos.release.helper import ReleaseType
 from pontos.release.show import OutputFormat, show
 from pontos.version.schemes import (
@@ -28,22 +29,6 @@ from .create import create_release
 from .sign import sign
 
 DEFAULT_SIGNING_KEY = "0ED1E580"
-
-
-def to_choices(enum: Type[Enum]) -> str:
-    return ", ".join([t.value for t in enum])
-
-
-def enum_type(enum: Type[Enum]) -> Callable[[str], Enum]:
-    def convert(value: str) -> Enum:
-        try:
-            return enum(value)
-        except ValueError:
-            raise ArgumentTypeError(
-                f"invalid value {value}. Expected one of {to_choices(enum)}."
-            ) from None
-
-    return convert
 
 
 class ReleaseVersionAction(
@@ -62,6 +47,7 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         description="Release handling utility.",
         prog="pontos-release",
     )
+    shtab.add_argument_to(parser)
 
     parser.add_argument(
         "--quiet",
@@ -72,8 +58,8 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
 
     subparsers = parser.add_subparsers(
         title="subcommands",
-        description="valid subcommands",
-        help="additional help",
+        description="Valid subcommands",
+        help="Additional help",
         dest="command",
         required=True,
     )
@@ -98,6 +84,7 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         help="Select the release type for calculating the release version. "
         f"Possible choices are: {to_choices(ReleaseType)}.",
         type=enum_type(ReleaseType),
+        choices=enum_choice(ReleaseType),
     )
     create_parser.add_argument(
         "--release-version",
@@ -281,6 +268,7 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         help="Select the release type for calculating the release version. "
         f"Possible choices are: {to_choices(ReleaseType)}.",
         type=enum_type(ReleaseType),
+        choices=enum_choice(ReleaseType),
     )
     show_parser.add_argument(
         "--release-version",
@@ -308,6 +296,7 @@ def parse_args(args) -> Tuple[Optional[str], Optional[str], Namespace]:
         help="Print in the desired output format. "
         f"Possible choices are: {to_choices(OutputFormat)}.",
         type=enum_type(OutputFormat),
+        choices=enum_choice(OutputFormat),
     )
 
     parsed_args = parser.parse_args(args)

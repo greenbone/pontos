@@ -8,6 +8,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import NoReturn, Optional, Sequence
 
+import shtab
+
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.terminal.null import NullTerminal
@@ -26,6 +28,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         " text from conventional commits between the current and next release.",
         prog="pontos-changelog",
     )
+    shtab.add_argument_to(parser)
 
     parser.add_argument(
         "--config",
@@ -33,7 +36,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         type=Path,
         help="Optional. Conventional commits config file (toml), including "
         "conventions. If not provided defaults are used.",
-    )
+    ).complete = shtab.FILE  # type: ignore[attr-defined]
 
     parser.add_argument(
         "--project",
@@ -83,7 +86,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         "-o",
         type=Path,
         help="Write changelog to this file.",
-    )
+    ).complete = shtab.FILE  # type: ignore[attr-defined]
 
     parser.add_argument(
         "--quiet",
