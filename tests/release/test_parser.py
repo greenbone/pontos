@@ -51,7 +51,6 @@ class CreateParseArgsTestCase(unittest.TestCase):
         _, _, args = parse_args(["create", "--release-type", "patch"])
 
         self.assertEqual(args.git_tag_prefix, "v")
-        self.assertEqual(args.space, "greenbone")
         self.assertFalse(args.local)
         self.assertFalse(args.github_pre_release)
 
@@ -88,19 +87,29 @@ class CreateParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.git_tag_prefix, "")
 
-    def test_space(self):
+    def test_repository(self):
         _, _, args = parse_args(
-            ["create", "--space", "foo", "--release-type", "patch"]
+            ["create", "--repository", "foo/bar", "--release-type", "patch"]
         )
 
-        self.assertEqual(args.space, "foo")
+        self.assertEqual(args.repository, "foo/bar")
 
-    def test_project(self):
-        _, _, args = parse_args(
-            ["create", "--project", "foo", "--release-type", "patch"]
-        )
+    def test_invalid_repository(self):
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit):
+            parse_args(
+                ["create", "--repository", "foo_bar", "--release-type", "patch"]
+            )
 
-        self.assertEqual(args.project, "foo")
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit):
+            parse_args(
+                [
+                    "sign",
+                    "--repository",
+                    "foo/bar/baz",
+                    "--release-type",
+                    "patch",
+                ]
+            )
 
     def test_next_version(self):
         _, _, args = parse_args(
@@ -124,7 +133,7 @@ class CreateParseArgsTestCase(unittest.TestCase):
                     "--release-type",
                     "patch",
                     "--no-next-version",
-                    "--next-verson",
+                    "--next-version",
                     "1.2.3",
                 ]
             )
@@ -275,18 +284,19 @@ class SignParseArgsTestCase(unittest.TestCase):
         _, _, args = parse_args(["sign"])
 
         self.assertEqual(args.git_tag_prefix, "v")
-        self.assertEqual(args.space, "greenbone")
         self.assertEqual(args.signing_key, DEFAULT_SIGNING_KEY)
 
-    def test_space(self):
-        _, _, args = parse_args(["sign", "--space", "foo"])
+    def test_repository(self):
+        _, _, args = parse_args(["sign", "--repository", "foo/bar"])
 
-        self.assertEqual(args.space, "foo")
+        self.assertEqual(args.repository, "foo/bar")
 
-    def test_project(self):
-        _, _, args = parse_args(["sign", "--project", "foo"])
+    def test_invalid_repository(self):
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit):
+            parse_args(["sign", "--repository", "foo_bar"])
 
-        self.assertEqual(args.project, "foo")
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit):
+            parse_args(["sign", "--repository", "foo/bar/baz"])
 
     def test_release_version(self):
         _, _, args = parse_args(["sign", "--release-version", "1.2.3"])

@@ -26,7 +26,6 @@ from pontos.version.schemes import VersioningScheme
 from .helper import (
     ReleaseType,
     find_signing_key,
-    get_git_repository_name,
     get_next_release_version,
     repository_split,
 )
@@ -89,8 +88,7 @@ class CreateReleaseCommand(AsyncCommand):
         cc_config: Optional[Path],
     ) -> str:
         changelog_builder = ChangelogBuilder(
-            space=self.space,  # type: ignore[arg-type]
-            project=self.project,
+            repository=self.repository,
             config=cc_config,
             git_tag_prefix=self.git_tag_prefix,
         )
@@ -114,12 +112,12 @@ class CreateReleaseCommand(AsyncCommand):
         github = GitHubAsyncRESTApi(token=token)
 
         git_version = f"{self.git_tag_prefix}{release_version}"
-        repo = f"{self.space}/{self.project}"
+        _, project = repository_split(self.repository)
 
         await github.releases.create(
-            repo,
+            self.repository,
             git_version,
-            name=f"{self.project} {release_version}",
+            name=f"{project} {release_version}",
             body=release_text,
             prerelease=release_version.is_pre_release or github_pre_release,
         )
@@ -128,9 +126,7 @@ class CreateReleaseCommand(AsyncCommand):
         self,
         *,
         token: str,
-        repository: Optional[str],
-        space: Optional[str],
-        project_name: Optional[str],
+        repository: str,
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
         release_version: Optional[Version],
@@ -149,12 +145,7 @@ class CreateReleaseCommand(AsyncCommand):
 
         Args:
             token: A token for creating a release on GitHub
-            repository: GitHub repository (owner/name). Overrides space and
-                project.
-            space: GitHub username or organization. Required for generating
-                links in the changelog.
-            project: Name of the project to release. If not set it will be
-                gathered via the git remote url.
+            repository: GitHub repository (owner/name)
             versioning_scheme: The versioning scheme to use for version parsing
                 and calculation
             release_type: Type of the release to prepare. Defines the release
@@ -187,25 +178,13 @@ class CreateReleaseCommand(AsyncCommand):
             else find_signing_key(self.terminal)
         )
         self.git_tag_prefix = git_tag_prefix or ""
+        self.repository = repository
 
-        if repository:
-            if space:
-                self.print_warning(
-                    f"Repository {repository} overrides space setting {space}"
-                )
-
-            try:
-                space, project_name = repository_split(repository)
-            except ValueError as e:
-                self.print_error(str(e))
-                return CreateReleaseReturnValue.INVALID_REPOSITORY
-
-        self.space = space
-        self.project = (
-            project_name
-            if project_name is not None
-            else get_git_repository_name()
-        )
+        try:
+            _, self.project_name = repository_split(repository)
+        except ValueError as e:
+            self.print_error(str(e))
+            return CreateReleaseReturnValue.INVALID_REPOSITORY
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
@@ -409,8 +388,6 @@ def create_release(
     ).run(
         token=token,
         repository=args.repository,
-        space=args.space,
-        project_name=args.project,
         versioning_scheme=args.versioning_scheme,
         release_type=args.release_type,
         release_version=args.release_version,

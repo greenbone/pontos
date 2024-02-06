@@ -32,17 +32,10 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     ).complete = shtab.FILE  # type: ignore[attr-defined]
 
     parser.add_argument(
-        "--project",
+        "--repository",
         required=True,
-        help="The github project. Used for building the links to the "
-        "repository.",
-    )
-
-    parser.add_argument(
-        "--space",
-        default="greenbone",
-        help="User/Team name in github. Used for building the links to the "
-        "repository",
+        help="The github repository (owner/name). Used for building the links "
+        "to the repository.",
     )
 
     parser.add_argument(

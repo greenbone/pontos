@@ -7,6 +7,7 @@ import argparse
 import os
 from argparse import (
     ArgumentParser,
+    ArgumentTypeError,
     BooleanOptionalAction,
     Namespace,
 )
@@ -39,34 +40,22 @@ class ReleaseVersionAction(
         setattr(namespace, self.dest, values)
 
 
-def parse_args(
-    args: Optional[Sequence[str]] = None,
-) -> Tuple[Optional[str], Optional[str], Namespace]:
+def repository_type(value: str) -> str:
     """
-    Return user, token, parsed arguments
+    Validates the repository format of owner/name
     """
-    parser = ArgumentParser(
-        description="Release handling utility.",
-        prog="pontos-release",
-    )
-    shtab.add_argument_to(parser)
+    splitted = value.split("/")
+    if len(splitted) != 2:
+        raise ArgumentTypeError(
+            f"Invalid repository format {value}. Format must be owner/name."
+        )
+    return value
 
-    parser.add_argument(
-        "--quiet",
-        "-q",
-        action="store_true",
-        help="Don't print messages to the terminal",
-    )
 
-    subparsers = parser.add_subparsers(
-        title="subcommands",
-        description="Valid subcommands",
-        help="Additional help",
-        dest="command",
-        required=True,
-    )
-
-    create_parser = subparsers.add_parser(
+def add_create_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
+    create_parser: ArgumentParser = subparsers.add_parser(
         "create",
         aliases=["release"],
         help="Create a new release",
@@ -137,26 +126,12 @@ def parse_args(
         default=os.environ.get("GPG_SIGNING_KEY"),
     )
 
-    repo_group = create_parser.add_argument_group(
-        "Repository",
-        description="Where to publish the new release. Either a full repository"
-        " name or a space/project combination.",
-    )
-    repo_group.add_argument(
+    create_parser.add_argument(
         "--repository",
-        help="GitHub repository name (owner/name). For example "
-        "octocat/Hello-World",
+        help="GitHub repository name (owner/name) where to publish the new "
+        "release. For example octocat/Hello-World",
+        type=repository_type,
     )
-    repo_group.add_argument(
-        "--space",
-        default="greenbone",
-        help="Owner (User/Team/Organization) name at GitHub",
-    )
-    repo_group.add_argument(
-        "--project",
-        help="The GitHub project",
-    )
-
     create_parser.add_argument(
         "--local",
         action="store_true",
@@ -183,7 +158,11 @@ def parse_args(
         action="store_true",
     )
 
-    sign_parser = subparsers.add_parser(
+
+def add_sign_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
+    sign_parser: ArgumentParser = subparsers.add_parser(
         "sign",
         help="Create signatures for an existing release",
         description="Create signatures for an existing release",
@@ -219,24 +198,11 @@ def parse_args(
         nargs="?",
         help="Prefix for git tag versions. Default: %(default)s",
     )
-    repo_group = sign_parser.add_argument_group(
-        "Repository",
-        description="Where to publish the new release. Either a full repository"
-        " name or a space/project combination.",
-    )
-    repo_group.add_argument(
+    sign_parser.add_argument(
         "--repository",
-        help="GitHub repository name (owner/name). For example "
-        "octocat/Hello-World",
-    )
-    repo_group.add_argument(
-        "--space",
-        default="greenbone",
-        help="Owner (User/Team/Organization) name at GitHub",
-    )
-    repo_group.add_argument(
-        "--project",
-        help="The GitHub project",
+        help="GitHub repository name (owner/name) where to download the "
+        "release files from. For example octocat/Hello-World",
+        type=repository_type,
     )
     sign_parser.add_argument(
         "--passphrase",
@@ -249,7 +215,11 @@ def parse_args(
         "--dry-run", action="store_true", help="Do not upload signed files."
     )
 
-    show_parser = subparsers.add_parser(
+
+def add_show_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
+    show_parser: ArgumentParser = subparsers.add_parser(
         "show",
         help="Show release information about the current release version and "
         "determine the next release version",
@@ -300,6 +270,38 @@ def parse_args(
         type=enum_type(OutputFormat),
         choices=enum_choice(OutputFormat),
     )
+
+
+def parse_args(
+    args: Optional[Sequence[str]] = None,
+) -> Tuple[Optional[str], Optional[str], Namespace]:
+    """
+    Return user, token, parsed arguments
+    """
+    parser = ArgumentParser(
+        description="Release handling utility.",
+        prog="pontos-release",
+    )
+    shtab.add_argument_to(parser)
+
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't print messages to the terminal",
+    )
+
+    subparsers = parser.add_subparsers(
+        title="subcommands",
+        description="Valid subcommands",
+        help="Additional help",
+        dest="command",
+        required=True,
+    )
+
+    add_create_parser(subparsers)
+    add_sign_parser(subparsers)
+    add_show_parser(subparsers)
 
     parsed_args = parser.parse_args(args)
 

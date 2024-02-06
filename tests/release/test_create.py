@@ -185,8 +185,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.2",
                 "--next-version",
@@ -397,8 +397,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "1.0.0",
             ]
@@ -501,8 +501,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "patch",
                 "--next-version",
@@ -614,8 +614,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "calendar",
             ]
@@ -727,8 +727,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "minor",
                 "--next-version",
@@ -839,8 +839,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "major",
                 "--next-version",
@@ -951,8 +951,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "alpha",
             ]
@@ -1063,8 +1063,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "beta",
             ]
@@ -1175,8 +1175,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "release-candidate",
             ]
@@ -1247,8 +1247,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, _, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
             ]
@@ -1270,11 +1270,13 @@ class CreateReleaseTestCase(unittest.TestCase):
             [
                 "release",
                 "--repository",
-                "foo/bar/baz",
+                "foo/bar",
                 "--release-version",
                 "0.0.1",
             ]
         )
+
+        setattr(args, "repository", "foo/bar/baz")
 
         released = create_release(
             terminal=mock_terminal(),
@@ -1289,11 +1291,13 @@ class CreateReleaseTestCase(unittest.TestCase):
             [
                 "release",
                 "--repository",
-                "foo_bar_baz",
+                "foo/bar",
                 "--release-version",
                 "0.0.1",
             ]
         )
+
+        setattr(args, "repository", "foo_bar_baz")
 
         released = create_release(
             terminal=mock_terminal(),
@@ -1315,8 +1319,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
             ]
@@ -1362,8 +1366,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.2",
                 "--next-version",
@@ -1406,8 +1410,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "major",
             ]
@@ -1433,8 +1437,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "minor",
             ]
@@ -1468,8 +1472,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--git-signing-key",
                 "123",
                 "--release-type",
@@ -1503,8 +1507,8 @@ class CreateReleaseTestCase(unittest.TestCase):
                 "release",
                 "--release-version",
                 "1.0.1",
-                "--project",
-                "bla",
+                "--repository",
+                "greenbone/bla",
             ]
         )
 
@@ -1544,8 +1548,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -1628,8 +1632,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -1707,8 +1711,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -1799,8 +1803,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -1898,8 +1902,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -1994,10 +1998,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--space",
-                "bar",
-                "--project",
-                "foo",
+                "--repository",
+                "bar/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -2095,10 +2097,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--space",
-                "bar",
-                "--project",
-                "foo",
+                "--repository",
+                "bar/foo",
                 "--release-version",
                 "0.0.1a1",
                 "--next-version",
@@ -2177,7 +2177,9 @@ class CreateReleaseTestCase(unittest.TestCase):
             StatusEntry(f"M  {GoVersionCommand.version_file_path}")
         ]
 
-        _, token, args = parse_args(["release", "--release-type", "patch"])
+        _, token, args = parse_args(
+            ["release", "--repository", "foo/bar", "--release-type", "patch"]
+        )
 
         with setup_go_project(current_version="0.0.1", tags=["0.0.1"]):
             released = create_release(
@@ -2279,8 +2281,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.2",
                 "--next-version",
@@ -2395,8 +2397,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-version",
                 "0.0.1",
                 "--next-version",
@@ -2483,8 +2485,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "patch",
                 "--next-version",
@@ -2589,8 +2591,8 @@ class CreateReleaseTestCase(unittest.TestCase):
         _, token, args = parse_args(
             [
                 "release",
-                "--project",
-                "foo",
+                "--repository",
+                "greenbone/foo",
                 "--release-type",
                 "patch",
                 "--no-next-version",
@@ -2732,7 +2734,13 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
                 current_version=r.current_version, tags=r.tags
             ):
                 _, token, args = parse_args(
-                    ["release", "--release-type", r.release_type]
+                    [
+                        "release",
+                        "--repository",
+                        "foo/bar",
+                        "--release-type",
+                        r.release_type,
+                    ]
                 )
                 released = create_release(
                     terminal=mock_terminal(),
@@ -2898,7 +2906,13 @@ class ReleaseGoProjectTestCase(unittest.TestCase):
             with setup_go_project(
                 current_version=r.current_version, tags=r.tags
             ):
-                input_args = ["release", "--release-type", r.release_type]
+                input_args = [
+                    "release",
+                    "--repository",
+                    "foo/bar",
+                    "--release-type",
+                    r.release_type,
+                ]
                 if r.release_series:
                     input_args.extend(["--release-series", r.release_series])
 
