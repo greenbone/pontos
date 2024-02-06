@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       - name: Create release
         run: |
-          poetry run pontos-release create --release-type calendar
+          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
@@ -56,7 +56,7 @@ jobs:
           rm tmp.file
       - name: Sign assets for released version
         run: |
-          poetry run pontos-release sign --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }}
+          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
