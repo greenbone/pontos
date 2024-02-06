@@ -73,8 +73,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            space="foo",
-            project="bar",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog(
@@ -100,8 +99,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         git_mock.return_value.log.return_value = []
 
         changelog_builder = ChangelogBuilder(
-            space="foo",
-            project="bar",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog(
@@ -162,8 +160,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 [0.0.2]: https://github.com/foo/bar/compare/123...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            project="bar",
-            space="foo",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog(next_version="0.0.2")
@@ -218,8 +215,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 [Unreleased]: https://github.com/foo/bar/compare/v0.0.1...HEAD"""
 
         changelog_builder = ChangelogBuilder(
-            project="bar",
-            space="foo",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog(last_version="0.0.1")
@@ -278,8 +274,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 [Unreleased]: https://github.com/foo/bar/compare/123...HEAD"""
 
         changelog_builder = ChangelogBuilder(
-            project="bar",
-            space="foo",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog()
@@ -306,8 +301,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             "8abcdef bar baz",
         ]
         changelog_builder = ChangelogBuilder(
-            space="foo",
-            project="bar",
+            repository="foo/bar",
             config=config_toml,
         )
         changelog = changelog_builder.create_changelog(
@@ -329,8 +323,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
             ),
         ):
             ChangelogBuilder(
-                space="foo",
-                project="bar",
+                repository="foo/bar",
                 config=temp_dir / "changelog.toml",
             )
 
@@ -355,8 +348,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         ]
 
         changelog_builder = ChangelogBuilder(
-            space="foo",
-            project="bar",
+            repository="foo/bar",
         )
         expected_output = f"""## [0.0.2] - {today}
 
@@ -407,8 +399,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
         ]
 
         changelog_builder = ChangelogBuilder(
-            space="foo",
-            project="bar",
+            repository="foo/bar",
             git_tag_prefix="",
         )
         expected_output = f"""## [0.0.2] - {today}
@@ -485,7 +476,8 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 [0.0.2]: https://github.com/foo/bar/compare/v0.0.1...v0.0.2"""
 
         changelog_builder = ChangelogBuilder(
-            space="foo", project="bar", config=config_toml
+            repository="foo/bar",
+            config=config_toml,
         )
 
         with temp_directory() as temp_dir:

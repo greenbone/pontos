@@ -14,10 +14,8 @@ class ParseArgsTestCase(unittest.TestCase):
         parsed_args = parse_args(
             [
                 "-q",
-                "--project",
-                "urghs",
-                "--space",
-                "bla",
+                "--repository",
+                "urghs/bla",
                 "--config",
                 "foo.toml",
                 "--current-version",
@@ -32,8 +30,7 @@ class ParseArgsTestCase(unittest.TestCase):
         )
 
         self.assertTrue(parsed_args.quiet)
-        self.assertEqual(parsed_args.project, "urghs")
-        self.assertEqual(parsed_args.space, "bla")
+        self.assertEqual(parsed_args.repository, "urghs/bla")
         self.assertEqual(parsed_args.config, Path("foo.toml"))
         self.assertEqual(parsed_args.current_version, PEP440Version("1.2.3"))
         self.assertEqual(parsed_args.next_version, PEP440Version("2.3.4"))

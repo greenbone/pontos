@@ -18,7 +18,6 @@ from rich.progress import Progress as RichProgress
 from rich.progress import TextColumn
 
 from pontos.errors import PontosError
-from pontos.git import GitError
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.helper import AsyncDownloadProgressIterable
 from pontos.release.command import AsyncCommand
@@ -27,7 +26,7 @@ from pontos.version import Version
 from pontos.version.helper import get_last_release_version
 from pontos.version.schemes import VersioningScheme
 
-from .helper import get_git_repository_name, repository_split
+from .helper import repository_split
 
 
 class SignReturnValue(IntEnum):
@@ -37,7 +36,6 @@ class SignReturnValue(IntEnum):
 
     SUCCESS = 0
     TOKEN_MISSING = auto()
-    NO_PROJECT = auto()
     NO_RELEASE_VERSION = auto()
     NO_RELEASE = auto()
     UPLOAD_ASSET_ERROR = auto()
@@ -176,9 +174,7 @@ class SignCommand(AsyncCommand):
         self,
         *,
         token: str,
-        repository: Optional[str],
-        space: Optional[str],
-        project: Optional[str],
+        repository: str,
         versioning_scheme: VersioningScheme,
         signing_key: str,
         passphrase: str,
@@ -194,10 +190,6 @@ class SignCommand(AsyncCommand):
             token: A token for creating a release on GitHub
             repository: GitHub repository (owner/name). Overrides space and
                 project.
-            space: GitHub username or organization. Required for generating
-                links in the changelog.
-            project: Name of the project to release. If not set it will be
-                gathered via the git remote url.
             versioning_scheme: The versioning scheme to use for version parsing
                 and calculation
             dry_run: True to not upload the signature files
@@ -221,25 +213,11 @@ class SignCommand(AsyncCommand):
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
-        if repository:
-            if space:
-                self.print_warning(
-                    f"Repository {repository} overrides space setting {space}"
-                )
-
-            try:
-                space, project = repository_split(repository)
-            except ValueError as e:
-                self.print_error(str(e))
-                return SignReturnValue.INVALID_REPOSITORY
-
         try:
-            project = (
-                project if project is not None else get_git_repository_name()
-            )
-        except GitError as e:
-            self.print_error(f"Could not determine project. {e}")
-            return SignReturnValue.NO_PROJECT
+            _, project = repository_split(repository)
+        except ValueError as e:
+            self.print_error(str(e))
+            return SignReturnValue.INVALID_REPOSITORY
 
         try:
             release_version = (
@@ -263,10 +241,9 @@ class SignCommand(AsyncCommand):
             return SignReturnValue.NO_RELEASE_VERSION
 
         git_version: str = f"{git_tag_prefix}{release_version}"
-        repo = f"{space}/{project}"
 
         async with GitHubAsyncRESTApi(token=token) as github:
-            if not await github.releases.exists(repo, git_version):
+            if not await github.releases.exists(repository, git_version):
                 self.print_error(
                     f"Release version {git_version} does not exist."
                 )
@@ -291,7 +268,7 @@ class SignCommand(AsyncCommand):
                             rich_progress,
                             github,
                             zip_destination,
-                            repo,
+                            repository,
                             git_version,
                         )
                     )
@@ -302,7 +279,7 @@ class SignCommand(AsyncCommand):
                             rich_progress,
                             github,
                             tarball_destination,
-                            repo,
+                            repository,
                             git_version,
                         )
                     )
@@ -313,7 +290,7 @@ class SignCommand(AsyncCommand):
                     name,
                     download_cm,
                 ) in github.releases.download_release_assets(  # noqa: E501
-                    repo,
+                    repository,
                     git_version,
                 ):
                     tasks.append(
@@ -374,7 +351,7 @@ class SignCommand(AsyncCommand):
                 async for (
                     uploaded_file
                 ) in github.releases.upload_release_assets(  # noqa: E501
-                    repo, git_version, upload_files
+                    repository, git_version, upload_files
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")
             except httpx.HTTPStatusError as e:
@@ -396,8 +373,6 @@ def sign(
         token=token,
         dry_run=args.dry_run,
         repository=args.repository,
-        project=args.project,
-        space=args.space,
         versioning_scheme=args.versioning_scheme,
         git_tag_prefix=args.git_tag_prefix,
         release_version=args.release_version,

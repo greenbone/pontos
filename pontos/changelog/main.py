@@ -31,8 +31,7 @@ def main(args: Optional[Sequence[str]] = None) -> NoReturn:
     try:
         changelog_builder = ChangelogBuilder(
             config=parsed_args.config,
-            project=parsed_args.project,
-            space=parsed_args.space,
+            repository=parsed_args.repository,
         )
         if parsed_args.output:
             changelog_builder.create_changelog_file(
@@ -46,9 +45,11 @@ def main(args: Optional[Sequence[str]] = None) -> NoReturn:
                 next_version=parsed_args.next_version,
             )
             term.out(changelog)
+    except KeyboardInterrupt:
+        sys.exit(1)
     except PontosError as e:
         term.error(str(e))
-        sys.exit(1)
+        sys.exit(2)
 
     sys.exit(0)
 

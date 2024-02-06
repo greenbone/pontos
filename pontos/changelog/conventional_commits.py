@@ -51,7 +51,7 @@ class ConventionalCommits:
 
             from pontos.changelog import ConventionalCommits
 
-            collector = ConventionalCommits(space="my-org", project="my-project)
+            collector = ConventionalCommits()
             commits = collector.get_commits(
                 from_ref="v1.2.3",
                 to_ref="v2.0.0",
@@ -195,7 +195,7 @@ class ChangelogBuilder:
 
             from pontos.changelog import ChangelogBuilder
 
-            builder = ChangelogBuilder(space="my-org", project="my-project)
+            builder = ChangelogBuilder(repository="my-org/my-project)
             changelog = builder.create_changelog(
                 last_version="1.2.3",
                 next_version="2.0.0",
@@ -205,8 +205,7 @@ class ChangelogBuilder:
     def __init__(
         self,
         *,
-        space: str,
-        project: str,
+        repository: str,
         git_tag_prefix: Optional[str] = "v",
         config: Optional[Path] = None,
     ) -> None:
@@ -214,15 +213,13 @@ class ChangelogBuilder:
         Create a new ChangelogBuilder instance.
 
         Args:
-            space: GitHub space to use (organization or user name).
-            project: GitHub project to create a changelog for
+            repository: GitHub repository (owner/name) to create the changelog
+                for. For example: "octocat/Hello-World"
             git_tag_prefix: Git tag prefix to use when checking for git tags.
                 Default is "v".
             config: TOML config for conventional commit parsing settings
         """
-        self._project = project
-        self._space = space
-
+        self._repository = repository
         self._git_tag_prefix = git_tag_prefix
         self._conventional_commits = ConventionalCommits(config)
 
@@ -312,15 +309,14 @@ class ChangelogBuilder:
                 for log_entry in commit_dict[commit_type["group"]]:
                     commit_id, commit_message = log_entry
                     commit_link = (
-                        f"{ADDRESS}{self._space}/{self._project}/"
-                        f"commit/{commit_id}"
+                        f"{ADDRESS}{self._repository}/" f"commit/{commit_id}"
                     )
                     msg = f"{commit_message} [{commit_id}]({commit_link})"
                     changelog.append(f"* {msg}")
 
         # comparison line (footer)
         pre = "\n[Unreleased]: "
-        compare_link = f"{ADDRESS}{self._space}/{self._project}/compare/"
+        compare_link = f"{ADDRESS}{self._repository}/compare/"
         if next_version and last_version:
             pre = f"\n[{next_version}]: "
             diff = (
