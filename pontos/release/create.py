@@ -13,7 +13,7 @@ import httpx
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
-from pontos.git import Git
+from pontos.git import Git, ResetMode
 from pontos.github.actions.core import ActionIO
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.command import AsyncCommand
@@ -315,6 +315,11 @@ class CreateReleaseCommand(AsyncCommand):
                 self.terminal.ok(f"Created release {release_version}")
             except httpx.HTTPStatusError as e:
                 self.print_error(str(e))
+                # revert commit and tag
+                self.git.delete_tag(git_version)
+                self.git.push(git_version, delete=True, remote=git_remote_name)
+                self.git.reset("HEAD^", mode=ResetMode.HARD)
+                self.git.push(force=True, remote=git_remote_name)
                 return CreateReleaseReturnValue.CREATE_RELEASE_ERROR
 
         if next_version is None:
