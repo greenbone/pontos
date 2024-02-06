@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
 
-from pontos.git import ConfigScope, Git, StatusEntry
+from pontos.git import ConfigScope, Git, ResetMode, StatusEntry
 from pontos.github.actions.errors import GitHubActionsError
 from pontos.release.create import (
     CreateReleaseReturnValue,
@@ -1653,9 +1653,17 @@ class CreateReleaseTestCase(unittest.TestCase):
             released, CreateReleaseReturnValue.CREATE_RELEASE_ERROR
         )
 
-        git_instance_mock.push.assert_called_once_with(
-            follow_tags=True, remote=None
+        git_instance_mock.push.assert_has_calls(
+            [
+                call(follow_tags=True, remote=None),
+                call("v0.0.1", delete=True, remote=None),
+                call(force=True, remote=None),
+            ]
         )
+        git_instance_mock.reset.assert_called_once_with(
+            "HEAD^", mode=ResetMode.HARD
+        )
+        git_instance_mock.delete_tag.assert_called_once_with("v0.0.1")
         git_instance_mock.add.assert_called_once_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_once_with(
             "Automatic release to 0.0.1", verify=False, gpg_signing_key="1234"
