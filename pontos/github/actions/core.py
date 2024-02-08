@@ -4,6 +4,7 @@
 #
 
 import os
+import uuid
 from contextlib import contextmanager
 from io import TextIOWrapper
 from pathlib import Path
@@ -286,6 +287,37 @@ class ActionIO:
 
         with Path(output_filename).open("a", encoding="utf8") as f:
             f.write(f"{name}={value}\n")
+
+    @staticmethod
+    def multiline_output(name: str, value: SupportsStr):
+        """
+        Set an multiline action output
+
+        An action output can be consumed by another job
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.actions import ActionIO
+
+                ActionIO.output("foo", "bar")
+
+        Args:
+            name: Name of the output variable
+            value: Value of the output variable
+        """
+        output_filename = os.environ.get("GITHUB_OUTPUT")
+        if not output_filename:
+            raise GitHubActionsError(
+                "GITHUB_OUTPUT environment variable not set. Can't write "
+                "action output."
+            )
+
+        with Path(output_filename).open("a", encoding="utf8") as f:
+            delimiter = uuid.uuid1()
+            f.write(f"{name}<<{delimiter}")
+            f.write(f"{value}")
+            f.write(str(delimiter))
 
     @staticmethod
     def input(name: str, default: Optional[str] = None) -> Optional[str]:

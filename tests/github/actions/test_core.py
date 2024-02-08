@@ -107,6 +107,27 @@ class ActionIOTestCase(unittest.TestCase):
 
                 self.assertEqual(output, "foo=bar\nlorem=ipsum\n")
 
+    @patch("uuid.uuid1")
+    def test_multiline_output(self, uuid_mock):
+        deadbeef = "deadbeef"
+        name = "foo"
+        ml_string = """bar
+baz
+boing"""
+        expected_output = f"{name}<<{deadbeef}{ml_string}{deadbeef}"
+        uuid_mock.return_value = deadbeef
+        with temp_directory() as temp_dir:
+            file_path = temp_dir / "github.output"
+
+            with patch.dict(
+                "os.environ", {"GITHUB_OUTPUT": str(file_path)}, clear=True
+            ):
+                ActionIO.multiline_output("foo", ml_string)
+
+                output = file_path.read_text(encoding="utf8")
+
+                self.assertEqual(output, expected_output)
+
     @patch.dict("os.environ", {}, clear=True)
     def test_output_no_env(self):
         with self.assertRaises(GitHubActionsError):
