@@ -72,7 +72,7 @@ class Console:
 
             console = Console()
             with console.group("my-group"):
-                console.log("some message)
+                console.log("some message")
 
         Args:
             title: Title of the group
