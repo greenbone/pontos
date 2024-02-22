@@ -15,7 +15,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from pontos.terminal.terminal import ConsoleTerminal
-from pontos.testing import temp_file
+from pontos.testing import temp_directory, temp_file
 from pontos.updateheader.updateheader import (
     OLD_COMPANY,
     _compile_copyright_regex,
@@ -36,11 +36,16 @@ from pontos.updateheader.updateheader import (
 from pontos.updateheader.updateheader import (
     _remove_outdated_lines as remove_outdated_lines,
 )
-from pontos.updateheader.updateheader import _update_file as update_file
+from pontos.updateheader.updateheader import (
+    _update_file as update_file,
+)
 
 HEADER = """# SPDX-FileCopyrightText: {date} Greenbone AG
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later"""
+
+
+_here_ = Path(__file__).parent
 
 
 class Terminal(ConsoleTerminal):
@@ -49,49 +54,44 @@ class Terminal(ConsoleTerminal):
         return 999
 
 
-class UpdateHeaderTestCase(TestCase):
-    def setUp(self):
-        self.args = Namespace()
-        self.args.company = "Greenbone AG"
-
-        self.path = Path(__file__).parent
-
-        self.regex = re.compile(
-            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
-            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.args.company})"
-        )
-
+class GetModifiedYearTestCase(TestCase):
     @patch("pontos.updateheader.updateheader.run")
     def test_get_modified_year(self, run_mock):
-        test_file = self.path / "test.py"
-        test_file.touch(exist_ok=True)
+        with temp_file(name="test.py", change_into=True) as test_file:
+            run_mock.return_value = CompletedProcess(
+                args=[
+                    "git",
+                    "log",
+                    "-1",
+                    "--format=%ad",
+                    "--date=format:%Y",
+                    f"{test_file}",
+                ],
+                returncode=0,
+                stdout="2020\n",
+                stderr="",
+            )
 
-        run_mock.return_value = CompletedProcess(
-            args=[
-                "git",
-                "log",
-                "-1",
-                "--format=%ad",
-                "--date=format:%Y",
-                f"{test_file}",
-            ],
-            returncode=0,
-            stdout="2020\n",
-            stderr="",
-        )
-
-        year = get_modified_year(f=test_file)
-        self.assertEqual(year, "2020")
-
-        test_file.unlink()
+            year = get_modified_year(f=test_file)
+            self.assertEqual(year, "2020")
 
     def test_get_modified_year_error(self):
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaises(CalledProcessError),
+        ):
+            test_file = temp_dir / "test.py"
 
-        with self.assertRaises(CalledProcessError):
             get_modified_year(f=test_file)
+
+
+class FindCopyRightTestCase(TestCase):
+    def setUp(self):
+        self.company = "Greenbone AG"
+        self.regex = re.compile(
+            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
+            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.company})"
+        )
 
     def test_find_copyright(self):
         test_line = "# Copyright (C) 1995-2021 Greenbone AG"
@@ -109,7 +109,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
         self.assertEqual(match["modification_year"], "2021")
-        self.assertEqual(match["company"], self.args.company)
+        self.assertEqual(match["company"], self.company)
 
         # No modification Date
         found, match = find_copyright(
@@ -119,7 +119,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
         self.assertEqual(match["modification_year"], None)
-        self.assertEqual(match["company"], self.args.company)
+        self.assertEqual(match["company"], self.company)
 
         # No match
         found, match = find_copyright(
@@ -144,7 +144,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
         self.assertEqual(match["modification_year"], "2021")
-        self.assertEqual(match["company"], self.args.company)
+        self.assertEqual(match["company"], self.company)
 
         # No modification Date
         found, match = find_copyright(
@@ -154,7 +154,7 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIsNotNone(match)
         self.assertEqual(match["creation_year"], "1995")
         self.assertEqual(match["modification_year"], None)
-        self.assertEqual(match["company"], self.args.company)
+        self.assertEqual(match["company"], self.company)
 
         # No match
         found, match = find_copyright(
@@ -163,13 +163,18 @@ class UpdateHeaderTestCase(TestCase):
         self.assertFalse(found)
         self.assertIsNone(match)
 
+
+class AddHeaderTestCase(TestCase):
+    def setUp(self):
+        self.company = "Greenbone AG"
+
     def test_add_header(self):
         expected_header = HEADER.format(date="2021") + "\n"
 
         header = add_header(
             suffix=".py",
             license_id="AGPL-3.0-or-later",
-            company=self.args.company,
+            company=self.company,
             year="2021",
         )
 
@@ -180,7 +185,7 @@ class UpdateHeaderTestCase(TestCase):
             add_header(
                 suffix=".prr",
                 license_id="AGPL-3.0-or-later",
-                company=self.args.company,
+                company=self.company,
                 year="2021",
             )
 
@@ -189,9 +194,22 @@ class UpdateHeaderTestCase(TestCase):
             add_header(
                 suffix=".py",
                 license_id="AAAGPL-3.0-or-later",
-                company=self.args.company,
+                company=self.company,
                 year="2021",
             )
+
+
+class UpdateFileTestCase(TestCase):
+    def setUp(self):
+        self.args = Namespace()
+        self.args.company = "Greenbone AG"
+
+        self.path = Path(__file__).parent
+
+        self.regex = re.compile(
+            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
+            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.args.company})"
+        )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_not_existing(self, mock_stdout):
@@ -201,23 +219,22 @@ class UpdateHeaderTestCase(TestCase):
 
         term = Terminal()
 
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
+        with temp_directory(change_into=True) as temp_dir:
+            test_file = temp_dir / "test.py"
 
-        with self.assertRaises(FileNotFoundError):
-            update_file(
-                file=test_file,
-                copyright_regex=self.regex,
-                parsed_args=self.args,
-                term=term,
+            with self.assertRaises(FileNotFoundError):
+                update_file(
+                    file=test_file,
+                    copyright_regex=self.regex,
+                    parsed_args=self.args,
+                    term=term,
+                )
+
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: File is not existing.\n",
             )
-
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            ret,
-            f"{test_file}: File is not existing.\n",
-        )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_wrong_license(self, mock_stdout):
@@ -227,25 +244,21 @@ class UpdateHeaderTestCase(TestCase):
 
         term = Terminal()
 
-        test_file = self.path / "test.py"
-        test_file.touch()
+        with temp_file(name="test.py", change_into=True) as test_file:
+            code = update_file(
+                file=test_file,
+                copyright_regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
+            self.assertEqual(code, 1)
 
-        code = update_file(
-            file=test_file,
-            copyright_regex=self.regex,
-            parsed_args=self.args,
-            term=term,
-        )
-        self.assertEqual(code, 1)
-
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            ret,
-            f"{test_file}: License file for "
-            "AAAGPL-3.0-or-later is not existing.\n",
-        )
-
-        test_file.unlink()
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: License file for "
+                "AAAGPL-3.0-or-later is not existing.\n",
+            )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_suffix_invalid(self, mock_stdout):
@@ -255,24 +268,20 @@ class UpdateHeaderTestCase(TestCase):
 
         term = Terminal()
 
-        test_file = self.path / "test.pppy"
-        test_file.touch()
+        with temp_file(name="test.pppy", change_into=True) as test_file:
+            code = update_file(
+                file=test_file,
+                copyright_regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
+            self.assertEqual(code, 1)
 
-        code = update_file(
-            file=test_file,
-            copyright_regex=self.regex,
-            parsed_args=self.args,
-            term=term,
-        )
-        self.assertEqual(code, 1)
-
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            ret,
-            f"{test_file}: No license header for the format .pppy found.\n",
-        )
-
-        test_file.unlink()
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: No license header for the format .pppy found.\n",
+            )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_binary_file(self, mock_stdout):
@@ -282,16 +291,14 @@ class UpdateHeaderTestCase(TestCase):
 
         term = Terminal()
 
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
-
         # create a Binary file ...
         # https://stackoverflow.com/a/30148554
-        with open(test_file, "wb") as f:
-            f.write(struct.pack(">if", 42, 2.71828182846))
+        data = struct.pack(">if", 42, 2.71828182846)
 
-        with self.assertRaises(UnicodeDecodeError):
+        with (
+            temp_file(name="test.py", content=data) as test_file,
+            self.assertRaises(UnicodeDecodeError),
+        ):
             code = update_file(
                 file=test_file,
                 copyright_regex=self.regex,
@@ -306,8 +313,6 @@ class UpdateHeaderTestCase(TestCase):
             f"{test_file}: Ignoring binary file.\n",
         )
 
-        test_file.unlink()
-
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_changed(self, mock_stdout):
         self.args.year = "1995"
@@ -316,11 +321,12 @@ class UpdateHeaderTestCase(TestCase):
 
         term = Terminal()
 
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaises(FileNotFoundError),
+        ):
+            test_file = temp_dir / "test.py"
 
-        with self.assertRaises(FileNotFoundError):
             code = update_file(
                 file=test_file,
                 copyright_regex=self.regex,
@@ -329,13 +335,13 @@ class UpdateHeaderTestCase(TestCase):
             )
             self.assertEqual(code, 1)
 
-        ret = mock_stdout.getvalue()
+            ret = mock_stdout.getvalue()
 
-        self.assertIn(f"{test_file}", ret)
-        self.assertIn("Could not get date", ret)
-        self.assertIn("of last modification using git,", ret)
-        self.assertIn(f"using {self.args.year} instead.", ret)
-        self.assertIn("File is not existing.", ret)
+            self.assertIn(f"{test_file}", ret)
+            self.assertIn("Could not get date", ret)
+            self.assertIn("of last modification using git,", ret)
+            self.assertIn(f"using {self.args.year} instead.", ret)
+            self.assertIn("File is not existing.", ret)
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_create_header(self, mock_stdout):
@@ -347,24 +353,23 @@ class UpdateHeaderTestCase(TestCase):
 
         expected_header = HEADER.format(date="1995") + "\n\n"
 
-        test_file = self.path / "test.py"
-        test_file.touch()
+        with temp_file(name="test.py", change_into=True) as test_file:
+            code = update_file(
+                file=test_file,
+                copyright_regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
 
-        code = update_file(
-            file=test_file,
-            copyright_regex=self.regex,
-            parsed_args=self.args,
-            term=term,
-        )
-
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            f"{test_file}: Added license header.\n",
-            ret,
-        )
-        self.assertEqual(code, 0)
-        self.assertEqual(expected_header, test_file.read_text(encoding="utf-8"))
-        test_file.unlink()
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                f"{test_file}: Added license header.\n",
+                ret,
+            )
+            self.assertEqual(code, 0)
+            self.assertEqual(
+                expected_header, test_file.read_text(encoding="utf-8")
+            )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_header_in_file(self, mock_stdout):
@@ -375,33 +380,27 @@ class UpdateHeaderTestCase(TestCase):
         term = Terminal()
 
         header = HEADER.format(date="2020")
+        with temp_file(
+            content=header, name="test.py", change_into=True
+        ) as test_file:
+            code = update_file(
+                file=test_file,
+                copyright_regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
 
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
-
-        test_file.write_text(header, encoding="utf-8")
-
-        code = update_file(
-            file=test_file,
-            copyright_regex=self.regex,
-            parsed_args=self.args,
-            term=term,
-        )
-
-        self.assertEqual(code, 0)
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            ret,
-            f"{test_file}: Changed License Header "
-            "Copyright Year None -> 2021\n",
-        )
-        self.assertIn(
-            "# SPDX-FileCopyrightText: 2020-2021 Greenbone AG",
-            test_file.read_text(encoding="utf-8"),
-        )
-
-        test_file.unlink()
+            self.assertEqual(code, 0)
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: Changed License Header "
+                "Copyright Year None -> 2021\n",
+            )
+            self.assertIn(
+                "# SPDX-FileCopyrightText: 2020-2021 Greenbone AG",
+                test_file.read_text(encoding="utf-8"),
+            )
 
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_header_ok_in_file(self, mock_stdout):
@@ -412,32 +411,32 @@ class UpdateHeaderTestCase(TestCase):
         term = Terminal()
 
         header = HEADER.format(date="2021")
+        with temp_file(
+            content=header, name="test.py", change_into=True
+        ) as test_file:
+            code = update_file(
+                file=test_file,
+                copyright_regex=self.regex,
+                parsed_args=self.args,
+                term=term,
+            )
 
-        test_file = self.path / "test.py"
-        if test_file.exists():
-            test_file.unlink()
+            self.assertEqual(code, 0)
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: License Header is ok.\n",
+            )
+            self.assertIn(
+                "# SPDX-FileCopyrightText: 2021 Greenbone AG",
+                test_file.read_text(encoding="utf-8"),
+            )
 
-        test_file.write_text(header, encoding="utf-8")
 
-        code = update_file(
-            file=test_file,
-            copyright_regex=self.regex,
-            parsed_args=self.args,
-            term=term,
-        )
-
-        self.assertEqual(code, 0)
-        ret = mock_stdout.getvalue()
-        self.assertEqual(
-            ret,
-            f"{test_file}: License Header is ok.\n",
-        )
-        self.assertIn(
-            "# SPDX-FileCopyrightText: 2021 Greenbone AG",
-            test_file.read_text(encoding="utf-8"),
-        )
-
-        test_file.unlink()
+class ParseArgsTestCase(TestCase):
+    def setUp(self) -> None:
+        self.args = Namespace()
+        self.args.company = "Greenbone AG"
 
     def test_argparser_files(self):
         self.args.year = "2021"
@@ -470,7 +469,7 @@ class UpdateHeaderTestCase(TestCase):
 
     def test_get_exclude_list(self):
         # Try to find the current file from two directories up...
-        test_dirname = Path(__file__) / "../.."
+        test_dirname = Path(__file__).parent.parent.parent
         # with a relative glob
         test_ignore_file = Path("ignore.file")
         test_ignore_file.write_text("*.py\n", encoding="utf-8")
@@ -482,6 +481,12 @@ class UpdateHeaderTestCase(TestCase):
         self.assertIn(Path(__file__), exclude_list)
 
         test_ignore_file.unlink()
+
+
+class MainTestCase(TestCase):
+    def setUp(self) -> None:
+        self.args = Namespace()
+        self.args.company = "Greenbone AG"
 
     @patch("pontos.updateheader.updateheader.parse_args")
     def test_main(self, argparser_mock):
