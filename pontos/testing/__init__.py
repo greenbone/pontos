@@ -11,7 +11,15 @@ import os
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, AsyncIterator, Awaitable, Generator, Iterable, Optional
+from typing import (
+    Any,
+    AsyncIterator,
+    Awaitable,
+    Generator,
+    Iterable,
+    Optional,
+    Union,
+)
 
 from pontos.git._git import exec_git
 from pontos.helper import add_sys_path, ensure_unload_module, unload_module
@@ -136,7 +144,7 @@ def temp_git_repository(
 
 @contextmanager
 def temp_file(
-    content: Optional[str] = None,
+    content: Optional[Union[str, bytes]] = None,
     *,
     name: str = "test.toml",
     change_into: bool = False,
@@ -166,7 +174,10 @@ def temp_file(
     with temp_directory(change_into=change_into) as tmp_dir:
         test_file = tmp_dir / name
         if content:
-            test_file.write_text(content, encoding="utf8")
+            if isinstance(content, bytes):
+                test_file.write_bytes(content)
+            else:
+                test_file.write_text(content, encoding="utf8")
         else:
             test_file.touch()
 
