@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import struct
 import unittest
 from pathlib import Path
 
@@ -106,6 +107,14 @@ class TempFileTestCase(unittest.TestCase):
         with temp_file("my content") as test_file:
             self.assertTrue(test_file.exists())
             self.assertEqual("my content", test_file.read_text(encoding="utf8"))
+
+        self.assertFalse(test_file.exists())
+
+    def test_temp_binary_file(self):
+        data = struct.pack(">if", 42, 2.71828182846)
+        with temp_file(data) as test_file:
+            self.assertTrue(test_file.exists())
+            self.assertEqual(data, test_file.read_bytes())
 
         self.assertFalse(test_file.exists())
 
