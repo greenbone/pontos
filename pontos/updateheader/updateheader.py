@@ -245,8 +245,8 @@ def update_file(
 
 
 def _get_exclude_list(
-    exclude_file: Path, directories: List[Path]
-) -> List[Path]:
+    exclude_file: Path, directories: list[Path]
+) -> list[Path]:
     """Tries to get the list of excluded files / directories.
     If a file is given, it will be used. Otherwise it will be searched
     in the executed root path.
@@ -256,11 +256,11 @@ def _get_exclude_list(
 
     if exclude_file is None:
         exclude_file = Path(".pontos-header-ignore")
-    try:
-        exclude_lines = exclude_file.read_text(encoding="utf-8").split("\n")
-    except FileNotFoundError:
-        print("No exclude list file found.")
+
+    if not exclude_file.is_file():
         return []
+
+    exclude_lines = exclude_file.read_text(encoding="utf-8").splitlines()
 
     expanded_globs = [
         directory.rglob(line.strip())
