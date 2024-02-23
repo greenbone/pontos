@@ -12,7 +12,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Sequence, Union
 
 from pontos.errors import PontosError
 from pontos.git import Git
@@ -298,8 +298,8 @@ def _compile_copyright_regex(company: Union[str, list[str]]) -> re.Pattern:
     return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({'|'.join(company)})")
 
 
-def main() -> None:
-    parsed_args = parse_args()
+def main(args: Optional[Sequence[str]] = None) -> None:
+    parsed_args = parse_args(args)
     exclude_list = []
     year: str = parsed_args.year
     license_id: str = parsed_args.license_id
@@ -349,7 +349,7 @@ def main() -> None:
             except PontosError:
                 term.warning(
                     f"{file}: Could not get date of last modification"
-                    f" using git, using {year} instead."
+                    f" via git, using {year} instead."
                 )
 
         try:

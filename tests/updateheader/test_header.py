@@ -463,25 +463,17 @@ class MainTestCase(TestCase):
         self.args = Namespace()
         self.args.company = "Greenbone AG"
 
-    @patch("pontos.updateheader.updateheader.parse_args")
-    def test_main(self, argparser_mock):
-        self.args.year = "2021"
-        self.args.changed = False
-        self.args.license_id = "AGPL-3.0-or-later"
-        self.args.files = ["test.py"]
-        self.args.directories = None
-        self.args.verbose = 0
-        self.args.log_file = None
-        self.args.quiet = False
-        self.args.cleanup = False
-
-        argparser_mock.return_value = self.args
-
+    def test_main(self):
+        args = [
+            "--year",
+            "2021",
+            "--license",
+            "AGPL-3.0-or-later",
+            "--files",
+            "test.py",
+        ]
         with redirect_stdout(StringIO()):
-            code = True if not main() else False
-
-        # I have no idea how or why test main ...
-        self.assertTrue(code)
+            main(args)
 
     @patch("sys.stdout", new_callable=StringIO)
     @patch("pontos.updateheader.updateheader.parse_args")
@@ -508,33 +500,30 @@ class MainTestCase(TestCase):
             ret,
         )
 
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch("pontos.updateheader.updateheader.parse_args")
-    def test_update_file_changed(self, argparser_mock, mock_stdout):
-        self.args.year = "1995"
-        self.args.license_id = "AGPL-3.0-or-later"
-        self.args.changed = True
-        self.args.directories = None
-        self.args.verbose = 0
-        self.args.log_file = None
-        self.args.quiet = False
-        self.args.cleanup = False
+    def test_update_file_changed_no_git(self):
+        args = [
+            "--changed",
+            "--year",
+            "1999",
+            "--files",
+        ]
 
-        argparser_mock.return_value = self.args
-
-        with temp_directory(change_into=True) as temp_dir:
+        with (
+            redirect_stdout(StringIO()) as out,
+            temp_directory(change_into=True) as temp_dir,
+        ):
             test_file = temp_dir / "test.py"
-            self.args.files = str(test_file)
+            args.append(str(test_file))
 
-            main()
+            main(args)
 
-            ret = mock_stdout.getvalue()
+            ret = out.getvalue()
 
-            self.assertIn(f"{test_file}", ret)
-            self.assertIn("Could not get date", ret)
-            self.assertIn("of last modification using git,", ret)
-            self.assertIn(f"using {self.args.year} instead.", ret)
-            self.assertIn("File is not existing.", ret)
+            self.assertIn(
+                "Could not get date of last modification via git, "
+                f"using 1999 instead.{test_file}: File is not existing.",
+                ret.replace("\n", ""),
+            )
 
 
 class RemoveOutdatedLinesTestCase(TestCase):
