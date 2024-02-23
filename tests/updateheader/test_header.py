@@ -64,7 +64,7 @@ class GetModifiedYearTestCase(TestCase):
 class FindCopyRightTestCase(TestCase):
     def setUp(self) -> None:
         self.company = "Greenbone AG"
-        self.regex = _compile_copyright_regex(self.company)
+        self.regex = _compile_copyright_regex()
 
     def test_find_copyright(self):
         test_line = "# Copyright (C) 1995-2021 Greenbone AG"
@@ -420,6 +420,46 @@ foo.baz(bar.boing)
 """  # noqa: E501
 
         company = "Greenbone AG"
+        year = str(datetime.datetime.now().year)
+        license_id = "GPL-3.0-or-later"
+
+        with temp_file(content=test_content, name="foo.py") as tmp:
+
+            update_file(
+                tmp,
+                year,
+                license_id,
+                company,
+                cleanup=True,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
+
+    def test_cleanup_file_changed_company(self):
+        test_content = """
+# SPDX-FileCopyrightText: 2021 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        expected_content = f"""
+# SPDX-FileCopyrightText: 2021-{str(datetime.datetime.now().year)} ACME Inc.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        company = "ACME Inc."
         year = str(datetime.datetime.now().year)
         license_id = "GPL-3.0-or-later"
 
