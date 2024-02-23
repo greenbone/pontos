@@ -10,12 +10,11 @@ Also it appends a header if it is missing in the file.
 
 import re
 import sys
-from argparse import Namespace
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError, run
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
-from pontos.terminal import Terminal
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
 
@@ -79,20 +78,27 @@ def _get_modified_year(f: Path) -> str:
         raise e
 
 
+@dataclass
+class CopyrightMatch:
+    creation_year: str
+    modification_year: Optional[str]
+    company: str
+
+
 def _find_copyright(
     line: str,
     copyright_regex: re.Pattern,
-) -> Tuple[bool, Union[Dict[str, Union[str, None]], None]]:
+) -> Tuple[bool, Union[CopyrightMatch, None]]:
     """Match the line for the copyright_regex"""
     copyright_match = re.search(copyright_regex, line)
     if copyright_match:
         return (
             True,
-            {
-                "creation_year": copyright_match.group(2),
-                "modification_year": copyright_match.group(3),
-                "company": copyright_match.group(4),
-            },
+            CopyrightMatch(
+                creation_year=copyright_match.group(2),
+                modification_year=copyright_match.group(3),
+                company=copyright_match.group(4),
+            ),
         )
     return False, None
 
@@ -144,28 +150,19 @@ def _remove_outdated_lines(
     return None
 
 
-def _update_file(
+def update_file(
     file: Path,
+    year: str,
+    license_id: str,
+    company: str,
     copyright_regex: re.Pattern,
-    parsed_args: Namespace,
-    term: Terminal,
     cleanup_regexes: Optional[List[re.Pattern]] = None,
-) -> int:
-    """Function to update the given file.
-    Checks if header exists. If not it adds an
-    header to that file, else it checks if year
-    is up to date
+) -> None:
+    """Function to update the header of the given file
+
+    Checks if header exists. If not it adds an header to that file, otherwise it
+    checks if year is up to date
     """
-
-    if parsed_args.changed:
-        try:
-            parsed_args.year = _get_modified_year(file)
-        except CalledProcessError:
-            term.warning(
-                f"{file}: Could not get date of last modification"
-                f" using git, using {str(parsed_args.year)} instead."
-            )
-
     try:
         with file.open("r+") as fp:
             found = False
@@ -184,9 +181,9 @@ def _update_file(
                 try:
                     header = _add_header(
                         file.suffix,
-                        parsed_args.license_id,
-                        parsed_args.company,
-                        parsed_args.year,
+                        license_id,
+                        company,
+                        year,
                     )
                     if header:
                         fp.seek(0)  # back to beginning of file
@@ -194,7 +191,8 @@ def _update_file(
                         fp.seek(0)
                         fp.write(header + "\n" + rest_of_file)
                         print(f"{file}: Added license header.")
-                        return 0
+                        return
+
                 except ValueError:
                     print(
                         f"{file}: No license header for the"
@@ -202,21 +200,22 @@ def _update_file(
                     )
                 except FileNotFoundError:
                     print(
-                        f"{file}: License file for {parsed_args.license_id} "
+                        f"{file}: License file for {license_id} "
                         "is not existing."
                     )
-                return 1
+                return
+
             # replace found header and write it to file
             if copyright_match and (
-                not copyright_match["modification_year"]
-                and copyright_match["creation_year"] < parsed_args.year
-                or copyright_match["modification_year"]
-                and copyright_match["modification_year"] < parsed_args.year
+                not copyright_match.modification_year
+                and copyright_match.creation_year < year
+                or copyright_match.modification_year
+                and copyright_match.modification_year < year
             ):
                 copyright_term = (
                     f"SPDX-FileCopyrightText: "
-                    f'{copyright_match["creation_year"]}'
-                    f"-{parsed_args.year} {parsed_args.company}"
+                    f"{copyright_match.creation_year}"
+                    f"-{year} {company}"
                 )
                 new_line = re.sub(copyright_regex, copyright_term, line)
                 fp_write = fp.tell() - len(line)  # save position to insert
@@ -230,8 +229,8 @@ def _update_file(
                 fp.truncate()
                 print(
                     f"{file}: Changed License Header Copyright Year "
-                    f'{copyright_match["modification_year"]} -> '
-                    f"{parsed_args.year}"
+                    f"{copyright_match.modification_year} -> "
+                    f"{year}"
                 )
 
             else:
@@ -251,7 +250,6 @@ def _update_file(
         if new_content:
             file.write_text(new_content, encoding="utf-8")
             print(f"{file}: Cleaned up!")
-    return 0
 
 
 def _get_exclude_list(
@@ -312,8 +310,14 @@ def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
 def main() -> None:
     parsed_args = parse_args()
     exclude_list = []
+    year: str = parsed_args.year
+    license_id: str = parsed_args.license_id
+    company: str = parsed_args.company
+    changed: bool = parsed_args.changed
+    quiet: bool = parsed_args.quiet
+    cleanup: bool = parsed_args.cleanup
 
-    if parsed_args.quiet:
+    if quiet:
         term: Union[NullTerminal, RichTerminal] = NullTerminal()
     else:
         term = RichTerminal()
@@ -352,20 +356,30 @@ def main() -> None:
     )
 
     cleanup_regexes: Optional[List[re.Pattern]] = None
-    if parsed_args.cleanup:
+    if cleanup:
         cleanup_regexes = _compile_outdated_regex()
 
     for file in files:
+        if changed:
+            try:
+                year = _get_modified_year(file)
+            except CalledProcessError:
+                term.warning(
+                    f"{file}: Could not get date of last modification"
+                    f" using git, using {year} instead."
+                )
+
         try:
             if file.absolute() in exclude_list:
                 term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
-                _update_file(
-                    file=file,
-                    copyright_regex=copyright_regex,
-                    parsed_args=parsed_args,
-                    term=term,
-                    cleanup_regexes=cleanup_regexes,
+                update_file(
+                    file,
+                    year,
+                    license_id,
+                    company,
+                    copyright_regex,
+                    cleanup_regexes,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
