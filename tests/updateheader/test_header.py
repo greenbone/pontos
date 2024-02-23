@@ -475,6 +475,21 @@ class ParseArgsTestCase(TestCase):
 
         test_ignore_file.unlink()
 
+    def test_defaults(self):
+        args = ["-f", "foo.txt"]
+        args = parse_args(args)
+
+        self.assertFalse(args.quiet)
+        self.assertIsNone(args.log_file)
+        self.assertFalse(args.changed)
+        self.assertEqual(args.year, str(datetime.date.today().year))
+        self.assertEqual(args.license_id, "GPL-3.0-or-later")
+        self.assertEqual(args.company, "Greenbone AG")
+        self.assertEqual(args.files, ["foo.txt"])
+        self.assertIsNone(args.directories)
+        self.assertIsNone(args.exclude_file)
+        self.assertFalse(args.cleanup)
+
 
 class MainTestCase(TestCase):
     def setUp(self) -> None:
