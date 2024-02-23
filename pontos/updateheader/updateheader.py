@@ -12,9 +12,10 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from subprocess import CalledProcessError, run
 from typing import List, Optional, Tuple, Union
 
+from pontos.errors import PontosError
+from pontos.git import Git
 from pontos.terminal.null import NullTerminal
 from pontos.terminal.rich import RichTerminal
 
@@ -64,18 +65,7 @@ OLD_COMPANY = "Greenbone Networks GmbH"
 
 def _get_modified_year(f: Path) -> str:
     """In case of the changed arg, update year to last modified year"""
-    try:
-        cmd = ["git", "log", "-1", "--format=%ad", "--date=format:%Y", str(f)]
-        proc = run(
-            cmd,
-            text=True,
-            capture_output=True,
-            check=True,
-            universal_newlines=True,
-        )
-        return proc.stdout.rstrip()
-    except CalledProcessError as e:
-        raise e
+    return Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
 
 
 @dataclass
@@ -363,7 +353,7 @@ def main() -> None:
         if changed:
             try:
                 year = _get_modified_year(file)
-            except CalledProcessError:
+            except PontosError:
                 term.warning(
                     f"{file}: Could not get date of last modification"
                     f" using git, using {year} instead."

@@ -10,10 +10,10 @@ from argparse import Namespace
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
-from subprocess import CalledProcessError, CompletedProcess
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+from pontos.errors import PontosError
 from pontos.terminal.terminal import ConsoleTerminal
 from pontos.testing import temp_directory, temp_file
 from pontos.updateheader.updateheader import (
@@ -53,22 +53,12 @@ class Terminal(ConsoleTerminal):
 
 
 class GetModifiedYearTestCase(TestCase):
-    @patch("pontos.updateheader.updateheader.run")
-    def test_get_modified_year(self, run_mock):
+    @patch("pontos.updateheader.updateheader.Git")
+    def test_get_modified_year(self, git_mock):
         with temp_file(name="test.py", change_into=True) as test_file:
-            run_mock.return_value = CompletedProcess(
-                args=[
-                    "git",
-                    "log",
-                    "-1",
-                    "--format=%ad",
-                    "--date=format:%Y",
-                    f"{test_file}",
-                ],
-                returncode=0,
-                stdout="2020\n",
-                stderr="",
-            )
+            git_instance_mock = MagicMock()
+            git_instance_mock.log.return_value = ["2020"]
+            git_mock.return_value = git_instance_mock
 
             year = get_modified_year(f=test_file)
             self.assertEqual(year, "2020")
@@ -76,7 +66,7 @@ class GetModifiedYearTestCase(TestCase):
     def test_get_modified_year_error(self):
         with (
             temp_directory(change_into=True) as temp_dir,
-            self.assertRaises(CalledProcessError),
+            self.assertRaises(PontosError),
         ):
             test_file = temp_dir / "test.py"
 
