@@ -47,7 +47,8 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         default=False,
         help=(
             "Update modified year using git log modified year. "
-            "This will not changed all files to current year!"
+            "Used instead of --year. If the modified year could not be "
+            "determined via git it falls back to --year."
         ),
     )
     date_group.add_argument(
@@ -56,7 +57,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         default=str(datetime.now().year),
         help=(
             "If year is set, modified year will be "
-            "set to the specified year."
+            "set to the specified year. Default is %(default)s."
         ),
     )
 
@@ -66,7 +67,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         dest="license_id",
         choices=SUPPORTED_LICENSES,
         default="GPL-3.0-or-later",
-        help=("Use the passed license type"),
+        help="Use the passed license type. Default is %(default)s",
     )
 
     parser.add_argument(
@@ -74,7 +75,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         default="Greenbone AG",
         help=(
             "If a header will be added to file, "
-            "it will be licensed by company."
+            "it will be licensed by company. Default is %(default)s"
         ),
     )
 
