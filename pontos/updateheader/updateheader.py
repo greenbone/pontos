@@ -145,7 +145,8 @@ def update_file(
     year: str,
     license_id: str,
     company: str,
-    cleanup_regexes: Optional[list[re.Pattern]] = None,
+    *,
+    cleanup: bool = False,
 ) -> None:
     """Function to update the header of the given file
 
@@ -154,6 +155,7 @@ def update_file(
     """
 
     copyright_regex = _compile_copyright_regex(company=[company, OLD_COMPANY])
+    cleanup_regexes = _compile_outdated_regex() if cleanup else None
 
     try:
         with file.open("r+") as fp:
@@ -340,10 +342,6 @@ def main() -> None:
         term.error("Specify files to update!")
         sys.exit(1)
 
-    cleanup_regexes: Optional[list[re.Pattern]] = None
-    if cleanup:
-        cleanup_regexes = _compile_outdated_regex()
-
     for file in files:
         if changed:
             try:
@@ -363,7 +361,7 @@ def main() -> None:
                     year,
                     license_id,
                     company,
-                    cleanup_regexes,
+                    cleanup=cleanup,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue

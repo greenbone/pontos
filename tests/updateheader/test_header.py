@@ -380,7 +380,6 @@ foo.baz(bar.boing)
         company = "Greenbone AG"
         year = str(datetime.datetime.now().year)
         license_id = "GPL-3.0-or-later"
-        compiled_regexes = compile_outdated_regex()
 
         with temp_file(content=test_content, name="foo.py") as tmp:
 
@@ -389,7 +388,7 @@ foo.baz(bar.boing)
                 year,
                 license_id,
                 company,
-                cleanup_regexes=compiled_regexes,
+                cleanup=True,
             )
 
             new_content = tmp.read_text(encoding="utf-8")
