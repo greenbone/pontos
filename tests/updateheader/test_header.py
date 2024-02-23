@@ -430,6 +430,16 @@ class ParseArgsTestCase(TestCase):
         self.assertIsNone(args.exclude_file)
         self.assertFalse(args.cleanup)
 
+    def test_files_and_directories_mutual_exclusive(self):
+        args = ["--files", "foo", "--directories", "bar"]
+        with self.assertRaises(SystemExit) as cm:
+            args = parse_args(args)
+
+            self.assertIn(
+                "argument -d/--directories: not allowed with argument -f/--file",
+                cm.msg,
+            )
+
 
 class GetExcludeListTestCase(TestCase):
     def test_get_exclude_list(self):
