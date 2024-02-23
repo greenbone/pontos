@@ -427,53 +427,24 @@ foo.baz(bar.boing)
 
 
 class ParseArgsTestCase(TestCase):
-    def setUp(self) -> None:
-        self.args = Namespace()
-        self.args.company = "Greenbone AG"
-
     def test_argparser_files(self):
-        self.args.year = "2021"
-        self.args.changed = False
-        self.args.license_id = "AGPL-3.0-or-later"
-
         args = ["-f", "test.py", "-y", "2021", "-l", "AGPL-3.0-or-later"]
-
         args = parse_args(args)
-        self.assertIsNotNone(args)
-        self.assertEqual(args.company, self.args.company)
+
+        self.assertEqual(args.company, "Greenbone AG")
         self.assertEqual(args.files, ["test.py"])
-        self.assertEqual(args.year, self.args.year)
-        self.assertEqual(args.license_id, self.args.license_id)
+        self.assertEqual(args.year, "2021")
+        self.assertEqual(args.license_id, "AGPL-3.0-or-later")
 
     def test_argparser_dir(self):
-        self.args.year = "2020"
-        self.args.changed = False
-        self.args.license_id = "AGPL-3.0-or-later"
-
         args = ["-d", ".", "-c", "-l", "AGPL-3.0-or-later"]
-
         args = parse_args(args)
-        self.assertIsNotNone(args)
-        self.assertEqual(args.company, self.args.company)
+
         self.assertEqual(args.directories, ["."])
+        self.assertEqual(args.company, "Greenbone AG")
         self.assertTrue(args.changed)
         self.assertEqual(args.year, str(datetime.datetime.now().year))
-        self.assertEqual(args.license_id, self.args.license_id)
-
-    def test_get_exclude_list(self):
-        # Try to find the current file from two directories up...
-        test_dirname = Path(__file__).parent.parent.parent
-        # with a relative glob
-        test_ignore_file = Path("ignore.file")
-        test_ignore_file.write_text("*.py\n", encoding="utf-8")
-
-        exclude_list = get_exclude_list(
-            test_ignore_file, [test_dirname.resolve()]
-        )
-
-        self.assertIn(Path(__file__), exclude_list)
-
-        test_ignore_file.unlink()
+        self.assertEqual(args.license_id, "AGPL-3.0-or-later")
 
     def test_defaults(self):
         args = ["-f", "foo.txt"]
@@ -489,6 +460,23 @@ class ParseArgsTestCase(TestCase):
         self.assertIsNone(args.directories)
         self.assertIsNone(args.exclude_file)
         self.assertFalse(args.cleanup)
+
+
+class GetExcludeListTestCase(TestCase):
+    def test_get_exclude_list(self):
+        # Try to find the current file from two directories up...
+        test_dirname = Path(__file__).parent.parent.parent
+        # with a relative glob
+        test_ignore_file = Path("ignore.file")
+        test_ignore_file.write_text("*.py\n", encoding="utf-8")
+
+        exclude_list = get_exclude_list(
+            test_ignore_file, [test_dirname.resolve()]
+        )
+
+        self.assertIn(Path(__file__), exclude_list)
+
+        test_ignore_file.unlink()
 
 
 class MainTestCase(TestCase):
