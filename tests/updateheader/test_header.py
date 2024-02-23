@@ -4,7 +4,6 @@
 #
 
 import datetime
-import re
 import struct
 from argparse import Namespace
 from contextlib import redirect_stdout
@@ -16,14 +15,13 @@ from unittest.mock import MagicMock, patch
 from pontos.errors import PontosError
 from pontos.terminal.terminal import ConsoleTerminal
 from pontos.testing import temp_directory, temp_file
+from pontos.updateheader.updateheader import _add_header as add_header
 from pontos.updateheader.updateheader import (
-    OLD_COMPANY,
     _compile_copyright_regex,
     main,
     parse_args,
     update_file,
 )
-from pontos.updateheader.updateheader import _add_header as add_header
 from pontos.updateheader.updateheader import (
     _compile_outdated_regex as compile_outdated_regex,
 )
@@ -74,12 +72,9 @@ class GetModifiedYearTestCase(TestCase):
 
 
 class FindCopyRightTestCase(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.company = "Greenbone AG"
-        self.regex = re.compile(
-            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
-            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.company})"
-        )
+        self.regex = _compile_copyright_regex(self.company)
 
     def test_find_copyright(self):
         test_line = "# Copyright (C) 1995-2021 Greenbone AG"
@@ -193,11 +188,6 @@ class UpdateFileTestCase(TestCase):
 
         self.path = Path(__file__).parent
 
-        self.regex = re.compile(
-            "(SPDX-FileCopyrightText:|[Cc]opyright).*?(19[0-9]{2}|20[0-9]{2}) "
-            f"?-? ?(19[0-9]{{2}}|20[0-9]{{2}})? ({self.company})"
-        )
-
     @patch("sys.stdout", new_callable=StringIO)
     def test_update_file_not_existing(self, mock_stdout):
         year = "2020"
@@ -212,7 +202,6 @@ class UpdateFileTestCase(TestCase):
                     year,
                     license_id,
                     self.company,
-                    copyright_regex=self.regex,
                 )
 
             ret = mock_stdout.getvalue()
@@ -232,7 +221,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
             ret = mock_stdout.getvalue()
@@ -253,7 +241,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
             ret = mock_stdout.getvalue()
@@ -280,7 +267,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
         ret = mock_stdout.getvalue()
@@ -302,7 +288,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
             ret = mock_stdout.getvalue()
@@ -328,7 +313,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
             ret = mock_stdout.getvalue()
@@ -356,7 +340,6 @@ class UpdateFileTestCase(TestCase):
                 year,
                 license_id,
                 self.company,
-                copyright_regex=self.regex,
             )
 
             ret = mock_stdout.getvalue()
@@ -416,9 +399,6 @@ foo.baz(bar.boing)
                 year,
                 license_id,
                 company,
-                copyright_regex=_compile_copyright_regex(
-                    ["Greenbone AG", OLD_COMPANY]
-                ),
                 cleanup_regexes=compiled_regexes,
             )
 
