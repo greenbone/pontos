@@ -281,12 +281,9 @@ def _get_exclude_list(
     return exclude_list
 
 
-def _compile_outdated_regex() -> List[re.Pattern]:
+def _compile_outdated_regex() -> list[re.Pattern]:
     """prepare regex patterns to remove old copyright lines"""
-    regexes: List[re.Pattern] = []
-    for line in OLD_LINES:
-        regexes.append(re.compile(rf"^(([#*]|//) ?)?{line}"))
-    return regexes
+    return [re.compile(rf"^(([#*]|//) ?)?{line}") for line in OLD_LINES]
 
 
 def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
