@@ -173,6 +173,8 @@ class AddHeaderTestCase(TestCase):
 
 
 class UpdateFileTestCase(TestCase):
+    maxDiff = None
+
     def setUp(self):
         self.company = "Greenbone AG"
 
@@ -370,6 +372,46 @@ foo.baz(bar.boing)
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        company = "Greenbone AG"
+        year = str(datetime.datetime.now().year)
+        license_id = "GPL-3.0-or-later"
+
+        with temp_file(content=test_content, name="foo.py") as tmp:
+
+            update_file(
+                tmp,
+                year,
+                license_id,
+                company,
+                cleanup=True,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
+
+    def test_cleanup_file_spdx_header(self):
+        test_content = """
+# SPDX-FileCopyrightText: 2021 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import foo
+import bar
+
+foo.baz(bar.boing)
+"""  # noqa: E501
+
+        expected_content = f"""
+# SPDX-FileCopyrightText: 2021-{str(datetime.datetime.now().year)} Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import foo
 import bar
