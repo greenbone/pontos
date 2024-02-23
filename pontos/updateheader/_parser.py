@@ -39,8 +39,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         help="Activate logging using the given file path",
     ).complete = shtab.FILE  # type: ignore[attr-defined]
 
-    date_group = parser.add_mutually_exclusive_group()
-    date_group.add_argument(
+    parser.add_argument(
         "-c",
         "--changed",
         action="store_true",
@@ -51,7 +50,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
             "determined via git it falls back to --year."
         ),
     )
-    date_group.add_argument(
+    parser.add_argument(
         "-y",
         "--year",
         default=str(datetime.now().year),
