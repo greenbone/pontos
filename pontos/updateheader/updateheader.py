@@ -12,7 +12,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from pontos.errors import PontosError
 from pontos.git import Git
@@ -78,7 +78,7 @@ class CopyrightMatch:
 def _find_copyright(
     line: str,
     copyright_regex: re.Pattern,
-) -> Tuple[bool, Union[CopyrightMatch, None]]:
+) -> tuple[bool, Union[CopyrightMatch, None]]:
     """Match the line for the copyright_regex"""
     copyright_match = re.search(copyright_regex, line)
     if copyright_match:
@@ -117,7 +117,7 @@ def _add_header(
 
 
 def _remove_outdated_lines(
-    content: str, cleanup_regexes: List[re.Pattern]
+    content: str, cleanup_regexes: list[re.Pattern]
 ) -> Optional[str]:
     """Remove lines that contain outdated copyright header ..."""
     changed = False
@@ -145,7 +145,7 @@ def update_file(
     year: str,
     license_id: str,
     company: str,
-    cleanup_regexes: Optional[List[re.Pattern]] = None,
+    cleanup_regexes: Optional[list[re.Pattern]] = None,
 ) -> None:
     """Function to update the header of the given file
 
@@ -286,7 +286,7 @@ def _compile_outdated_regex() -> list[re.Pattern]:
     return [re.compile(rf"^(([#*]|//) ?)?{line}") for line in OLD_LINES]
 
 
-def _compile_copyright_regex(company: Union[str, List[str]]) -> re.Pattern:
+def _compile_copyright_regex(company: Union[str, list[str]]) -> re.Pattern:
     """prepare the copyright regex"""
     c_str = r"(SPDX-FileCopyrightText:|[Cc]opyright)"
     d_str = r"(19[0-9]{2}|20[0-9]{2})"
@@ -340,7 +340,7 @@ def main() -> None:
         term.error("Specify files to update!")
         sys.exit(1)
 
-    cleanup_regexes: Optional[List[re.Pattern]] = None
+    cleanup_regexes: Optional[list[re.Pattern]] = None
     if cleanup:
         cleanup_regexes = _compile_outdated_regex()
 
