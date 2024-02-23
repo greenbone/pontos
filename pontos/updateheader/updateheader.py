@@ -60,7 +60,6 @@ OLD_LINES = [
     "along with this program; if not, write to the Free Software",
     "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",  # noqa: E501
 ]
-OLD_COMPANY = "Greenbone Networks GmbH"
 
 
 def _get_modified_year(f: Path) -> str:
@@ -154,7 +153,7 @@ def update_file(
     checks if year is up to date
     """
 
-    copyright_regex = _compile_copyright_regex(company=[company, OLD_COMPANY])
+    copyright_regex = _compile_copyright_regex()
     cleanup_regexes = _compile_outdated_regex() if cleanup else None
 
     try:
@@ -288,14 +287,12 @@ def _compile_outdated_regex() -> list[re.Pattern]:
     return [re.compile(rf"^(([#*]|//) ?)?{line}") for line in OLD_LINES]
 
 
-def _compile_copyright_regex(company: Union[str, list[str]]) -> re.Pattern:
+def _compile_copyright_regex() -> re.Pattern:
     """prepare the copyright regex"""
     c_str = r"(SPDX-FileCopyrightText:|[Cc]opyright)"
     d_str = r"(19[0-9]{2}|20[0-9]{2})"
 
-    if isinstance(company, str):
-        return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({company})")
-    return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? ({'|'.join(company)})")
+    return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? (.+)")
 
 
 def main(args: Optional[Sequence[str]] = None) -> None:
