@@ -13,7 +13,6 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from pontos.errors import PontosError
-from pontos.terminal.terminal import ConsoleTerminal
 from pontos.testing import temp_directory, temp_file
 from pontos.updateheader.updateheader import _add_header as add_header
 from pontos.updateheader.updateheader import (
@@ -39,15 +38,6 @@ from pontos.updateheader.updateheader import (
 HEADER = """# SPDX-FileCopyrightText: {date} Greenbone AG
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later"""
-
-
-_here_ = Path(__file__).parent
-
-
-class Terminal(ConsoleTerminal):
-    @staticmethod
-    def get_width() -> int:
-        return 999
 
 
 class GetModifiedYearTestCase(TestCase):
