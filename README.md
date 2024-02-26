@@ -21,6 +21,9 @@ the titan of the sea.
   - [Install using pipx](#install-using-pipx)
   - [Install using pip](#install-using-pip)
   - [Install using poetry](#install-using-poetry)
+- [Command Completion](#command-completion)
+  - [Setup for bash](#setup-for-bash)
+  - [Setup for zsh](#setup-for-zsh)
 - [Development](#development)
 - [Maintainer](#maintainer)
 - [Contributing](#contributing)
@@ -66,12 +69,48 @@ a dependency for your current project using [poetry]
 
     poetry add pontos
 
+## Command Completion
+
+`pontos` comes with support for command line completion in bash and zsh. All
+pontos CLI commands support shell completion. As examples the following sections
+explain how to set up the completion for `pontos-release` with bash and zsh.
+
+### Setup for bash
+
+```bash
+echo "source ~/.pontos-release-complete.bash" >> ~/.bashrc
+pontos-release --print-completion bash > ~/.pontos-release-complete.bash
+```
+
+Alternatively, you can use the result of the completion command directly with
+the eval function of your bash shell:
+
+```bash
+eval "$(pontos-release --print-completion bash)"
+```
+
+### Setup for zsh
+
+```zsh
+echo 'fpath=("$HOME/.zsh.d" $fpath)' >> ~/.zsh
+mkdir -p ~/.zsh.d/
+pontos-release --print-completion zsh > ~/.zsh.d/_pontos_release
+```
+
+Alternatively, you can use the result of the completion command directly with
+the eval function of your zsh shell:
+
+```bash
+eval "$(pontos-release --print-completion zsh)"
+```
+
+
 ## Development
 
 **pontos** uses [poetry] for its own dependency management and build
 process.
 
-First install poetry via pipx
+First install poetry via [pipx]
 
     python3 -m pipx install poetry
 
