@@ -11,6 +11,7 @@ Also it appends a header if it is missing in the file.
 import re
 import sys
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Optional, Sequence, Union
 
@@ -282,11 +283,13 @@ def _get_exclude_list(
     return exclude_list
 
 
+@cache
 def _compile_outdated_regex() -> list[re.Pattern]:
     """prepare regex patterns to remove old copyright lines"""
     return [re.compile(rf"^(([#*]|//) ?)?{line}") for line in OLD_LINES]
 
 
+@cache
 def _compile_copyright_regex() -> re.Pattern:
     """prepare the copyright regex"""
     c_str = r"(SPDX-FileCopyrightText:|[Cc]opyright)"
