@@ -24,6 +24,7 @@ class EventName(StrEnum):
     CVE_REJECTED = "CVE Rejected"
     CVE_UNREJECTED = "CVE Unrejected"
     CVE_CISA_KEV_UPDATE = "CVE CISA KEV Update"
+    REFERENCE_TAG_UPDATE = "Reference Tag Update"
 
 
 @dataclass
