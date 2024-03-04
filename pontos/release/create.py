@@ -347,7 +347,7 @@ class CreateReleaseCommand(AsyncCommand):
             # check if files have been modified and create a commit
             status = list(self.git.status())
             if status:
-                commit_msg = f"""Automatic adjustments after release
+                commit_msg = f"""Automatic adjustments after release [skip ci]
 
 * Update to version {next_version}
 """

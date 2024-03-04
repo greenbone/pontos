@@ -232,7 +232,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.0.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -338,7 +338,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.0.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -442,7 +442,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.1.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -554,7 +554,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.0.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -666,7 +666,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     f"* Update to version {next_version}\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -780,7 +780,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 0.1.1.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -892,7 +892,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.1.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -1002,7 +1002,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 0.0.2a2.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -1114,7 +1114,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 0.0.2b2.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -1226,7 +1226,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 0.0.2rc2.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -1853,7 +1853,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
         git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -1950,7 +1950,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
         git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -2049,7 +2049,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
         git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -2148,7 +2148,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
         git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.1a1+dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -2204,7 +2204,7 @@ class CreateReleaseTestCase(unittest.TestCase):
             GoVersionCommand.version_file_path
         )
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.3.dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -2349,7 +2349,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.0.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
@@ -2436,7 +2436,7 @@ class CreateReleaseTestCase(unittest.TestCase):
 
         git_instance_mock.add.assert_called_with(Path("MyProject.conf"))
         git_instance_mock.commit.assert_called_with(
-            "Automatic adjustments after release\n\n"
+            "Automatic adjustments after release [skip ci]\n\n"
             "* Update to version 0.0.2.dev1\n",
             verify=False,
             gpg_signing_key="1234",
@@ -2540,7 +2540,7 @@ class CreateReleaseTestCase(unittest.TestCase):
                     gpg_signing_key="1234",
                 ),
                 call(
-                    "Automatic adjustments after release\n\n"
+                    "Automatic adjustments after release [skip ci]\n\n"
                     "* Update to version 1.0.0.dev1\n",
                     verify=False,
                     gpg_signing_key="1234",
