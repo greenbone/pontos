@@ -46,6 +46,16 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
             params={"per_page": "100"},
         )
 
+    async def test_delete_all(self):
+        response = create_response()
+        self.client.delete.return_value = response
+
+        await self.api.delete_all("foo/bar", 123)
+
+        self.client.delete.assert_awaited_once_with(
+            "/repos/foo/bar/issues/123/labels"
+        )
+
     async def test_set_all(self):
         response = create_response()
         self.client.post.return_value = response

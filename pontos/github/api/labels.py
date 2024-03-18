@@ -45,11 +45,31 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             for label in data:
                 yield label["name"]  # type: ignore
 
+    async def delete_all(self, repo: str, issue: Union[int, str]) -> None:
+        """
+        Deletes all labels in the issue/pr.
+
+        Args:
+            repo:   GitHub repository (owner/name) to use
+            issue:  Issue/Pull request number
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    await api.labels.delete_all("foo/bar", 123)
+        """
+        api = f"/repos/{repo}/issues/{issue}/labels"
+        response = await self._client.delete(api)
+        response.raise_for_status()
+
     async def set_all(
         self, repo: str, issue: Union[int, str], labels: Iterable[str]
     ) -> None:
         """
-        Set labels in the issue/pr. Existing labels will be overwritten
+        Set labels in the issue/pr.
 
         Args:
             repo:   GitHub repository (owner/name) to use
