@@ -16,8 +16,8 @@ from ._scheme import VersioningScheme
 # Note: This regex currently support any kind of
 # word-number combination for pre releases
 _PRE_RELEASE_REGEXP = re.compile(
-    r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)"
-    r"(?:-(?P<extra>[a-zA-Z]+)(?P<extra_version>0|[1-9][0-9]*))?$"
+    r"^(?P<name>[a-zA-Z]+)(?P<sep>\.?)(?P<version>0|[1-9][0-9]*)"
+    r"(?:-(?P<extra>[a-zA-Z]+)(?P<extra_sep>\.?)(?P<extra_version>0|[1-9][0-9]*))?$"
 )
 
 
@@ -146,10 +146,8 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        return (
-            self._version_info == other._version_info
-            and self._version_info.build == other._version_info.build
-        )
+        # do not compare build anymore
+        return self._version_info == other._version_info
 
     def __ne__(self, other: Any) -> bool:
         return not self == other
@@ -160,43 +158,8 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        if self._version_info.to_tuple()[:3] > other._version_info[:3]:  # type: ignore[operator] # noqa: E501
-            return True
-        if self._version_info.to_tuple()[:3] < other._version_info[:3]:  # type: ignore[operator] # noqa: E501
-            return False
-
-        # major, minor and patch are equal
-        if self.is_dev_release:
-            if not other.is_pre_release and not other.is_dev_release:
-                return False
-            if not self.is_pre_release and other.is_pre_release:
-                return False
-            if not self.is_pre_release:
-                return self.dev > other.dev  # type: ignore[operator]
-
-            if self.is_pre_release:
-                if other.is_dev_release and self.pre == other.pre:
-                    return self.dev > other.dev  # type: ignore[operator]
-                return self.pre > other.pre  # type: ignore[operator]
-
-        # not a dev release
-        if self.is_pre_release:
-            if not other.is_pre_release and not other.is_dev_release:
-                return False
-
-            if other.is_pre_release:
-                if other.is_dev_release:
-                    return self.pre >= other.pre  # type: ignore[operator]
-                return self.pre > other.pre  # type: ignore[operator]
-
-            # other is a dev release
-            return True
-
-        if other.is_dev_release or other.is_pre_release:
-            return True
-
-        # both are equal
-        return False
+        # only use semver comparison!
+        return self._version_info > other._version_info
 
     def __ge__(self, other: Any) -> bool:
         if not isinstance(other, Version):
