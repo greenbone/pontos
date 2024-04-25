@@ -1,0 +1,174 @@
+# SPDX-FileCopyrightText: 2024 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+from pontos.github.api.packages import GitHubAsyncRESTPackages
+from pontos.github.models.packages import (
+    Package,
+    PackageType,
+    PackageVisibility,
+)
+from pontos.testing import AsyncIteratorMock
+from tests.github.api import GitHubAsyncRESTTestCase, create_response
+
+OWNER_DICT = {
+    "login": "octocat",
+    "id": 1,
+    "node_id": "MDQ6VXNlcjE=",
+    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/octocat",
+    "html_url": "https://github.com/octocat",
+    "followers_url": "https://api.github.com/users/octocat/followers",
+    "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+    "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+    "organizations_url": "https://api.github.com/users/octocat/orgs",
+    "repos_url": "https://api.github.com/users/octocat/repos",
+    "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/octocat/received_events",
+    "type": "User",
+    "site_admin": False,
+}
+
+
+class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
+    api_cls = GitHubAsyncRESTPackages
+
+    async def test_exists(self):
+        response = create_response(is_success=True)
+        self.client.get.return_value = response
+
+        self.assertTrue(
+            await self.api.exists(
+                organization="foo",
+                package_type=PackageType.CONTAINER,
+                package_name="bar",
+            )
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar"
+        )
+
+    async def test_package(self):
+        response = create_response()
+        response.json.return_value = {
+            "id": 1,
+            "name": "bar",
+            "package_type": "container",
+            "owner": OWNER_DICT,
+            "version_count": 1,
+            "visibility": "public",
+            "url": "https://api.github.com/orgs/foo/packages/container/bar",
+            "tags": ["foo", "bar", "baz"],
+            "created_at": "2022-01-01T00:00:00Z",
+            "updated_at": "2022-01-01T00:00:00Z",
+            "html_url": "https://github.com/orgs/foo/packages/container/repo/bar",
+        }
+
+        self.client.get.return_value = response
+
+        package = await self.api.package("foo", PackageType.CONTAINER, "bar")
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar"
+        )
+
+        self.assertIsInstance(package, Package)
+        self.assertEqual(package.owner.login, "octocat")
+        self.assertEqual(package.name, "bar")
+        self.assertEqual(package.version_count, 1)
+        self.assertEqual(package.visibility, PackageVisibility.PUBLIC)
+        self.assertEqual(
+            package.url,
+            "https://api.github.com/orgs/foo/packages/container/bar",
+        )
+        self.assertEqual(package.tags, ["foo", "bar", "baz"])
+        self.assertEqual(package.created_at, "2022-01-01T00:00:00Z")
+        self.assertEqual(package.updated_at, "2022-01-01T00:00:00Z")
+        self.assertEqual(
+            package.html_url,
+            "https://github.com/orgs/foo/packages/container/repo/bar",
+        )
+
+    async def test_packages(self):
+        response = create_response()
+        response.json.return_value = [
+            {
+                "id": 1,
+                "name": "bar",
+                "package_type": "container",
+                "owner": OWNER_DICT,
+                "version_count": 1,
+                "visibility": "public",
+                "url": "https://api.github.com/orgs/foo/packages/container/bar",
+                "tags": ["foo", "bar", "baz"],
+                "created_at": "2022-01-01T00:00:00Z",
+                "updated_at": "2022-01-01T00:00:00Z",
+                "html_url": "https://github.com/orgs/foo/packages/container/repo/bar",
+            }
+        ]
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(
+            self.api.packages("foo", package_type=PackageType.CONTAINER)
+        )
+        package = await anext(async_it)
+        self.assertEqual(package.id, 1)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/packages/container",
+            params={"per_page": "100"},
+        )
+
+    async def test_package_version(self):
+        response = create_response()
+        response.json.return_value = {
+            "id": 1,
+            "name": "v1.0.0",
+            "url": "https://api.github.com/orgs/foo/packages/container/bar/versions/1",
+            "package_html_url": "https://github.com/orgs/foo/packages/container/bar/versions",
+            "created_at": "2022-01-01T00:00:00Z",
+            "updated_at": "2022-01-01T00:00:00Z",
+            "html_url": "https://github.com/orgs/foo/packages/container/bar/1",
+            "metadata": {
+                "package_type": "container",
+                "container": {"tags": ["latest"]},
+            },
+        }
+
+        self.client.get.return_value = response
+
+        package_version = await self.api.package_version(
+            "foo", PackageType.CONTAINER, "bar", 1
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1"
+        )
+
+        self.assertEqual(package_version.id, 1)
+        self.assertEqual(package_version.name, "v1.0.0")
+        self.assertEqual(
+            package_version.url,
+            "https://api.github.com/orgs/foo/packages/container/bar/versions/1",
+        )
+        self.assertEqual(
+            package_version.package_html_url,
+            "https://github.com/orgs/foo/packages/container/bar/versions",
+        )
+        self.assertEqual(package_version.created_at, "2022-01-01T00:00:00Z")
+        self.assertEqual(package_version.updated_at, "2022-01-01T00:00:00Z")
+        self.assertEqual(
+            package_version.html_url,
+            "https://github.com/orgs/foo/packages/container/bar/1",
+        )
+        self.assertEqual(package_version.package_type, PackageType.CONTAINER)
+        self.assertEqual(package_version.tags, ["latest"])
