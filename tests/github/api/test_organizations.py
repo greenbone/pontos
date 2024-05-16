@@ -24,7 +24,7 @@ from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent
 
-REPOSITORY_JSON = {
+REPOSITORY_DICT = {
     "id": 1,
     "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5",
     "name": "Hello-World",
@@ -123,7 +123,7 @@ REPOSITORY_JSON = {
     "watchers": 1,
 }
 
-MEMBER_JSON = {
+MEMBER_DICT = {
     "id": 1,
     "login": "octocat",
     "node_id": "MDQ6VXNlcjE=",
@@ -166,13 +166,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_repositories(self):
         response1 = create_response()
-        response1.json.return_value = [REPOSITORY_JSON]
+        response1.json.return_value = [REPOSITORY_DICT]
         response2 = create_response()
-        repository_json2 = deepcopy(REPOSITORY_JSON)
-        repository_json2["id"] = 2
-        repository_json3 = deepcopy(REPOSITORY_JSON)
-        repository_json3["id"] = 3
-        response2.json.return_value = [repository_json2, repository_json3]
+        repository_dict2 = deepcopy(REPOSITORY_DICT)
+        repository_dict2["id"] = 2
+        repository_dict3 = deepcopy(REPOSITORY_DICT)
+        repository_dict3["id"] = 3
+        response2.json.return_value = [repository_dict2, repository_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -196,13 +196,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_private_repositories(self):
         response1 = create_response()
-        response1.json.return_value = [REPOSITORY_JSON]
+        response1.json.return_value = [REPOSITORY_DICT]
         response2 = create_response()
-        repository_json2 = deepcopy(REPOSITORY_JSON)
-        repository_json2["id"] = 2
-        repository_json3 = deepcopy(REPOSITORY_JSON)
-        repository_json3["id"] = 3
-        response2.json.return_value = [repository_json2, repository_json3]
+        repository_dict2 = deepcopy(REPOSITORY_DICT)
+        repository_dict2["id"] = 2
+        repository_dict3 = deepcopy(REPOSITORY_DICT)
+        repository_dict3["id"] = 3
+        response2.json.return_value = [repository_dict2, repository_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -230,13 +230,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_members(self):
         response1 = create_response()
-        response1.json.return_value = [MEMBER_JSON]
+        response1.json.return_value = [MEMBER_DICT]
         response2 = create_response()
-        member_json2 = deepcopy(MEMBER_JSON)
-        member_json2["id"] = 2
-        member_json3 = deepcopy(MEMBER_JSON)
-        member_json3["id"] = 3
-        response2.json.return_value = [member_json2, member_json3]
+        member_dict2 = deepcopy(MEMBER_DICT)
+        member_dict2["id"] = 2
+        member_dict3 = deepcopy(MEMBER_DICT)
+        member_dict3["id"] = 3
+        response2.json.return_value = [member_dict2, member_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -260,13 +260,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_members_admins(self):
         response1 = create_response()
-        response1.json.return_value = [MEMBER_JSON]
+        response1.json.return_value = [MEMBER_DICT]
         response2 = create_response()
-        member_json2 = deepcopy(MEMBER_JSON)
-        member_json2["id"] = 2
-        member_json3 = deepcopy(MEMBER_JSON)
-        member_json3["id"] = 3
-        response2.json.return_value = [member_json2, member_json3]
+        member_dict2 = deepcopy(MEMBER_DICT)
+        member_dict2["id"] = 2
+        member_dict3 = deepcopy(MEMBER_DICT)
+        member_dict3["id"] = 3
+        response2.json.return_value = [member_dict2, member_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -290,13 +290,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_members_filter(self):
         response1 = create_response()
-        response1.json.return_value = [MEMBER_JSON]
+        response1.json.return_value = [MEMBER_DICT]
         response2 = create_response()
-        member_json2 = deepcopy(MEMBER_JSON)
-        member_json2["id"] = 2
-        member_json3 = deepcopy(MEMBER_JSON)
-        member_json3["id"] = 3
-        response2.json.return_value = [member_json2, member_json3]
+        member_dict2 = deepcopy(MEMBER_DICT)
+        member_dict2["id"] = 2
+        member_dict3 = deepcopy(MEMBER_DICT)
+        member_dict3["id"] = 3
+        response2.json.return_value = [member_dict2, member_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -411,13 +411,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_outside_collaborators(self):
         response1 = create_response()
-        response1.json.return_value = [MEMBER_JSON]
+        response1.json.return_value = [MEMBER_DICT]
         response2 = create_response()
-        member_json2 = deepcopy(MEMBER_JSON)
-        member_json2["id"] = 2
-        member_json3 = deepcopy(MEMBER_JSON)
-        member_json3["id"] = 3
-        response2.json.return_value = [member_json2, member_json3]
+        member_dict2 = deepcopy(MEMBER_DICT)
+        member_dict2["id"] = 2
+        member_dict3 = deepcopy(MEMBER_DICT)
+        member_dict3["id"] = 3
+        response2.json.return_value = [member_dict2, member_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
@@ -441,13 +441,13 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_outside_collaborators_filter(self):
         response1 = create_response()
-        response1.json.return_value = [MEMBER_JSON]
+        response1.json.return_value = [MEMBER_DICT]
         response2 = create_response()
-        member_json2 = deepcopy(MEMBER_JSON)
-        member_json2["id"] = 2
-        member_json3 = deepcopy(MEMBER_JSON)
-        member_json3["id"] = 3
-        response2.json.return_value = [member_json2, member_json3]
+        member_dict2 = deepcopy(MEMBER_DICT)
+        member_dict2["id"] = 2
+        member_dict3 = deepcopy(MEMBER_DICT)
+        member_dict3["id"] = 3
+        response2.json.return_value = [member_dict2, member_dict3]
 
         self.client.get_all.return_value = AsyncIteratorMock(
             [response1, response2]
