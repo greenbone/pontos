@@ -146,10 +146,11 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         print(package)
         """
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
-        response = await self._client.get(api)
-        if not response.is_success:
-            raise GitHubApiError(response)
-        return response.json()
+        async for response in self._client.get_all(api):
+            response.raise_for_status()
+
+            for version in response.json():
+                yield PackageVersion.from_dict(version)
 
     async def package_version(
         self,
@@ -194,7 +195,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         response = await self._client.get(api)
         if not response.is_success:
             raise GitHubApiError(response)
-        return PackageVersion(**response.json())
+        return PackageVersion.from_dict(response.json())
 
     async def package_version_tags(
         self,

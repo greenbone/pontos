@@ -3,12 +3,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
+from pontos.github.models.organization import Repository
 from pontos.models import StrEnum
 
-__all__ = ["PackageType"]
+__all__ = [
+    "PackageType",
+    "PackageVisibility",
+    "Package",
+    "Container",
+    "PackageVersionMetadata",
+    "PackageVersion",
+]
 
 
 class PackageType(StrEnum):
@@ -34,10 +43,21 @@ class Package(GitHubModel):
     version_count: int
     visibility: PackageVisibility
     url: str
-    tags: list[str]
     created_at: str
     updated_at: str
+    repository: Repository
     html_url: str
+
+
+@dataclass
+class Container(GitHubModel):
+    tags: list[str]
+
+
+@dataclass
+class PackageVersionMetadata(GitHubModel):
+    package_type: PackageType
+    container: Optional[Container] = field(default=None)
 
 
 @dataclass
@@ -49,5 +69,4 @@ class PackageVersion(GitHubModel):
     created_at: str
     updated_at: str
     html_url: str
-    package_type: PackageType
-    tags: list[str]
+    metadata: PackageVersionMetadata

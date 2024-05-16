@@ -7,31 +7,14 @@ from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.models.packages import (
     Package,
     PackageType,
+    PackageVersion,
     PackageVisibility,
 )
 from pontos.testing import AsyncIteratorMock
+from tests import aiter
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
-OWNER_DICT = {
-    "login": "octocat",
-    "id": 1,
-    "node_id": "MDQ6VXNlcjE=",
-    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/octocat",
-    "html_url": "https://github.com/octocat",
-    "followers_url": "https://api.github.com/users/octocat/followers",
-    "following_url": "https://api.github.com/users/octocat/following{/other_user}",
-    "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
-    "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
-    "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
-    "organizations_url": "https://api.github.com/users/octocat/orgs",
-    "repos_url": "https://api.github.com/users/octocat/repos",
-    "events_url": "https://api.github.com/users/octocat/events{/privacy}",
-    "received_events_url": "https://api.github.com/users/octocat/received_events",
-    "type": "User",
-    "site_admin": False,
-}
+from .test_organizations import MEMBER_DICT, REPOSITORY_DICT
 
 
 class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
@@ -59,13 +42,14 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "id": 1,
             "name": "bar",
             "package_type": "container",
-            "owner": OWNER_DICT,
+            "owner": MEMBER_DICT,
             "version_count": 1,
             "visibility": "public",
             "url": "https://api.github.com/orgs/foo/packages/container/bar",
             "tags": ["foo", "bar", "baz"],
             "created_at": "2022-01-01T00:00:00Z",
             "updated_at": "2022-01-01T00:00:00Z",
+            "repository": REPOSITORY_DICT,
             "html_url": "https://github.com/orgs/foo/packages/container/repo/bar",
         }
 
@@ -101,13 +85,14 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
                 "id": 1,
                 "name": "bar",
                 "package_type": "container",
-                "owner": OWNER_DICT,
+                "owner": MEMBER_DICT,
                 "version_count": 1,
                 "visibility": "public",
                 "url": "https://api.github.com/orgs/foo/packages/container/bar",
                 "tags": ["foo", "bar", "baz"],
                 "created_at": "2022-01-01T00:00:00Z",
                 "updated_at": "2022-01-01T00:00:00Z",
+                "repository": REPOSITORY_DICT,
                 "html_url": "https://github.com/orgs/foo/packages/container/repo/bar",
             }
         ]
@@ -146,7 +131,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
         self.client.get.return_value = response
 
-        package_version = await self.api.package_version(
+        package_version: PackageVersion = await self.api.package_version(
             "foo", PackageType.CONTAINER, "bar", 1
         )
 
@@ -170,5 +155,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             package_version.html_url,
             "https://github.com/orgs/foo/packages/container/bar/1",
         )
-        self.assertEqual(package_version.package_type, PackageType.CONTAINER)
-        self.assertEqual(package_version.tags, ["latest"])
+        self.assertEqual(
+            package_version.metadata.package_type, PackageType.CONTAINER
+        )
+        self.assertEqual(package_version.metadata.container.tags, ["latest"])
