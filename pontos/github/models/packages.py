@@ -4,7 +4,6 @@
 #
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
@@ -51,13 +50,13 @@ class Package(GitHubModel):
 
 @dataclass
 class Container(GitHubModel):
-    tags: list[str]
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
 class PackageVersionMetadata(GitHubModel):
     package_type: PackageType
-    container: Optional[Container] = field(default=None)
+    container: Container
 
 
 @dataclass
