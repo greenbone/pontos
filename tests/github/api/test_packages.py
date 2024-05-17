@@ -11,7 +11,7 @@ from pontos.github.models.packages import (
     PackageVisibility,
 )
 from pontos.testing import AsyncIteratorMock
-from tests import aiter
+from tests import aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 from .test_organizations import MEMBER_DICT, REPOSITORY_DICT
