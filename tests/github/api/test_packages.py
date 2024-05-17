@@ -16,6 +16,20 @@ from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 from .test_organizations import MEMBER_DICT, REPOSITORY_DICT
 
+PACKAGE_VERSION = {
+    "id": 1,
+    "name": "v1.0.0",
+    "url": "https://api.github.com/orgs/foo/packages/container/bar/versions/1",
+    "package_html_url": "https://github.com/orgs/foo/packages/container/bar/versions",
+    "created_at": "2022-01-01T00:00:00Z",
+    "updated_at": "2022-01-01T00:00:00Z",
+    "html_url": "https://github.com/orgs/foo/packages/container/bar/1",
+    "metadata": {
+        "package_type": "container",
+        "container": {"tags": ["latest"]},
+    },
+}
+
 
 class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTPackages
@@ -115,19 +129,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_package_version(self):
         response = create_response()
-        response.json.return_value = {
-            "id": 1,
-            "name": "v1.0.0",
-            "url": "https://api.github.com/orgs/foo/packages/container/bar/versions/1",
-            "package_html_url": "https://github.com/orgs/foo/packages/container/bar/versions",
-            "created_at": "2022-01-01T00:00:00Z",
-            "updated_at": "2022-01-01T00:00:00Z",
-            "html_url": "https://github.com/orgs/foo/packages/container/bar/1",
-            "metadata": {
-                "package_type": "container",
-                "container": {"tags": ["latest"]},
-            },
-        }
+        response.json.return_value = PACKAGE_VERSION
 
         self.client.get.return_value = response
 
@@ -159,3 +161,23 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             package_version.metadata.package_type, PackageType.CONTAINER
         )
         self.assertEqual(package_version.metadata.container.tags, ["latest"])
+
+    async def test_package_versions(self):
+        response1 = create_response()
+        response1.json.return_value = [PACKAGE_VERSION]
+        response2 = create_response()
+        package_version2 = PACKAGE_VERSION.copy()
+        package_version2["id"] = 2
+        response2.json.return_value = [package_version2]
+
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [response1, response2]
+        )
+
+        async_it = aiter(
+            self.api.package_versions("foo", PackageType.CONTAINER, "bar")
+        )
+        package_version = await anext(async_it)
+        self.assertEqual(package_version.id, 1)
+        package_version = await anext(async_it)
+        self.assertEqual(package_version.id, 2)
