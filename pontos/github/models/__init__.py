@@ -9,6 +9,7 @@ from pontos.github.models.artifact import *
 from pontos.github.models.base import *
 from pontos.github.models.branch import *
 from pontos.github.models.organization import *
+from pontos.github.models.packages import *
 from pontos.github.models.pull_request import *
 from pontos.github.models.release import *
 from pontos.github.models.search import *

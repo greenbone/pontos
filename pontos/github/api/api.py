@@ -22,6 +22,7 @@ from pontos.github.api.helper import (
 )
 from pontos.github.api.labels import GitHubAsyncRESTLabels
 from pontos.github.api.organizations import GitHubAsyncRESTOrganizations
+from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
 from pontos.github.api.release import GitHubAsyncRESTReleases
 from pontos.github.api.repositories import GitHubAsyncRESTRepositories
@@ -119,6 +120,13 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         Labels related API
         """
         return GitHubAsyncRESTLabels(self._client)
+
+    @property
+    def packages(self) -> GitHubAsyncRESTPackages:
+        """
+        Packages related API
+        """
+        return GitHubAsyncRESTPackages(self._client)
 
     @property
     @deprecated(
