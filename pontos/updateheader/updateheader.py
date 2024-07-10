@@ -350,19 +350,20 @@ def main(args: Optional[Sequence[str]] = None) -> None:
         sys.exit(1)
 
     for file in files:
-        if changed:
-            try:
-                year = _get_modified_year(file)
-            except PontosError:
-                term.warning(
-                    f"{file}: Could not get date of last modification"
-                    f" via git, using {year} instead."
-                )
 
         try:
             if file.absolute() in exclude_list:
                 term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
+                if changed:
+                    try:
+                        year = _get_modified_year(file)
+                    except PontosError:
+                        term.warning(
+                            f"{file}: Could not get date of last modification"
+                            f" via git, using {year} instead."
+                        )
+
                 update_file(
                     file,
                     year,
