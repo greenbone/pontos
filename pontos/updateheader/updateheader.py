@@ -70,7 +70,7 @@ def _get_modified_year(f: Path) -> str:
     try:
         ret = Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
     except IndexError:
-        raise PontosError(f"Empty \"git log -1\" output for {f}.")
+        raise PontosError(f'Empty "git log -1" output for {f}.')
 
     return ret
 
@@ -154,6 +154,7 @@ def update_file(
     company: str,
     *,
     cleanup: bool = False,
+    single_year: bool = False,
 ) -> None:
     """Function to update the header of the given file
 
@@ -213,6 +214,10 @@ def update_file(
                 or copyright_match.modification_year
                 and copyright_match.modification_year < year
             ):
+                if single_year:
+                    # In case of single year updating the license with modification date doesn't make sense.
+                    # Changing the existing license header with created-modified years to single year is not supported.
+                    return
                 copyright_term = (
                     f"SPDX-FileCopyrightText: "
                     f"{copyright_match.creation_year}"
@@ -314,6 +319,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     changed: bool = parsed_args.changed
     quiet: bool = parsed_args.quiet
     cleanup: bool = parsed_args.cleanup
+    single_year: bool = parsed_args.single_year
 
     if quiet:
         term: Union[NullTerminal, RichTerminal] = NullTerminal()
@@ -370,6 +376,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
                     license_id,
                     company,
                     cleanup=cleanup,
+                    single_year=single_year,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
