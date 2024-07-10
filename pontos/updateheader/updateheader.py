@@ -67,7 +67,12 @@ OLD_LINES = [
 
 def _get_modified_year(f: Path) -> str:
     """In case of the changed arg, update year to last modified year"""
-    return Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
+    try:
+        ret = Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
+    except IndexError:
+        raise PontosError(f"Empty \"git log -1\" output for {f}.")
+
+    return ret
 
 
 @dataclass
