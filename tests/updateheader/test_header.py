@@ -292,6 +292,26 @@ class UpdateFileTestCase(TestCase):
             )
 
     @patch("sys.stdout", new_callable=StringIO)
+    def test_update_create_header_single_year(self, mock_stdout):
+        year = "1995"
+        license_id = "AGPL-3.0-or-later"
+
+        expected_header = HEADER.format(date="1995") + "\n\n"
+
+        with temp_file(name="test.py", change_into=True) as test_file:
+            update_file(
+                test_file, year, license_id, self.company, single_year=True
+            )
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                f"{test_file}: Added license header.\n",
+                ret,
+            )
+            self.assertEqual(
+                expected_header, test_file.read_text(encoding="utf-8")
+            )
+
+    @patch("sys.stdout", new_callable=StringIO)
     def test_update_header_in_file(self, mock_stdout):
         year = "2021"
         license_id = "AGPL-3.0-or-later"
@@ -315,6 +335,28 @@ class UpdateFileTestCase(TestCase):
             )
             self.assertIn(
                 "# SPDX-FileCopyrightText: 2020-2021 Greenbone AG",
+                test_file.read_text(encoding="utf-8"),
+            )
+
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_update_header_in_file_single_year(self, mock_stdout):
+        year = "2021"
+        license_id = "AGPL-3.0-or-later"
+
+        header = HEADER.format(date="2020")
+        with temp_file(
+            content=header, name="test.py", change_into=True
+        ) as test_file:
+            update_file(
+                test_file,
+                year,
+                license_id,
+                self.company,
+                single_year=True,
+            )
+
+            self.assertIn(
+                "# SPDX-FileCopyrightText: 2020 Greenbone AG",
                 test_file.read_text(encoding="utf-8"),
             )
 
@@ -510,6 +552,7 @@ class ParseArgsTestCase(TestCase):
         self.assertEqual(args.files, ["foo.txt"])
         self.assertIsNone(args.directories)
         self.assertIsNone(args.exclude_file)
+        self.assertFalse(args.single_year)
         self.assertFalse(args.cleanup)
 
     def test_files_and_directories_mutual_exclusive(self):
@@ -569,6 +612,7 @@ class MainTestCase(TestCase):
         self.args.log_file = None
         self.args.quiet = False
         self.args.cleanup = False
+        self.args.single_year = False
 
         argparser_mock.return_value = self.args
 
