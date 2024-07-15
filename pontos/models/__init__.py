@@ -77,13 +77,13 @@ def _get_value_from_model_field_cls(
             value = value.replace(tzinfo=timezone.utc)
     elif isclass(model_field_cls) and issubclass(model_field_cls, date):
         value = date.fromisoformat(value)
-    elif get_origin(model_field_cls) == list:
+    elif get_origin(model_field_cls) is list:
         model_field_cls = get_args(model_field_cls)[0]
         value = _get_value_from_model_field_cls(model_field_cls, value)
-    elif get_origin(model_field_cls) == dict:
+    elif get_origin(model_field_cls) is dict:
         model_field_cls = dict
         value = _get_value_from_model_field_cls(model_field_cls, value)
-    elif get_origin(model_field_cls) == Union:
+    elif get_origin(model_field_cls) is Union:
         possible_types = get_args(model_field_cls)
         current_type = type(value)
         if current_type in possible_types:
