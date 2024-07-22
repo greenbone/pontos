@@ -17,6 +17,7 @@ from .helper import (
 )
 from .labels import GitHubAsyncRESTLabels
 from .organizations import GitHubAsyncRESTOrganizations
+from .packages import GitHubAsyncRESTPackages
 from .pull_requests import GitHubAsyncRESTPullRequests
 from .release import GitHubAsyncRESTReleases
 from .repositories import GitHubAsyncRESTRepositories
@@ -39,6 +40,7 @@ __all__ = [
     "GitHubAsyncRESTDependabot",
     "GitHubAsyncRESTLabels",
     "GitHubAsyncRESTOrganizations",
+    "GitHubAsyncRESTPackages",
     "GitHubAsyncRESTPullRequests",
     "GitHubAsyncRESTReleases",
     "GitHubAsyncRESTRepositories",
