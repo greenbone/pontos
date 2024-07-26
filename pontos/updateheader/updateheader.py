@@ -33,6 +33,8 @@ SUPPORTED_FILE_TYPES = [
     ".po",
     ".py",
     ".sh",
+    ".ts",
+    ".tsx",
     ".txt",
     ".xml",
     ".xsl",
