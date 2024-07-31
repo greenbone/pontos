@@ -83,6 +83,8 @@ pontos-update-header -d <dir1> <dir2>
 `.po`
 `.py`
 `.sh`
+`.ts`
+`.tsx`
 `.txt`
 `.xml`
 `.xsl`
