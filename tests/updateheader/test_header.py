@@ -511,6 +511,7 @@ class ParseArgsTestCase(TestCase):
         self.assertIsNone(args.directories)
         self.assertIsNone(args.exclude_file)
         self.assertFalse(args.cleanup)
+        self.assertFalse(args.dry)
 
     def test_files_and_directories_mutual_exclusive(self):
         args = ["--files", "foo", "--directories", "bar"]
