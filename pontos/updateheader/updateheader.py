@@ -361,7 +361,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
             else:
                 # do not update files in dry run mode
                 if dry:
-                    term.warning(f"'{file}' does not contain a license header.")
+                    term.warning(f"{file}")
                     continue
 
                 update_file(
