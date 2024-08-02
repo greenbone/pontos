@@ -570,6 +570,7 @@ class MainTestCase(TestCase):
         self.args.log_file = None
         self.args.quiet = False
         self.args.cleanup = False
+        self.args.dry = False
 
         argparser_mock.return_value = self.args
 
