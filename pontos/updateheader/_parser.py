@@ -115,7 +115,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         default=False,
         help=(
             "Perform a dry run: list files that would be updated without making changes."
-        )
+        ),
     )
 
     return parser.parse_args(args)
