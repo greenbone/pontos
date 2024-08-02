@@ -309,6 +309,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     changed: bool = parsed_args.changed
     quiet: bool = parsed_args.quiet
     cleanup: bool = parsed_args.cleanup
+    dry: bool = parsed_args.dry
 
     if quiet:
         term: Union[NullTerminal, RichTerminal] = NullTerminal()
@@ -358,6 +359,11 @@ def main(args: Optional[Sequence[str]] = None) -> None:
             if file.absolute() in exclude_list:
                 term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
+                # do not update files in dry run mode
+                if dry:
+                    term.warning(f"'{file}' does not contain a license header.")
+                    continue
+
                 update_file(
                     file,
                     year,

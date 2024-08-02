@@ -109,4 +109,13 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         help="Do a cleanup: Remove lines from outdated header format",
     )
 
+    parser.add_argument(
+        "--dry",
+        action="store_true",
+        default=False,
+        help=(
+            "Perform a dry run: list files that would be updated without making changes."
+        )
+    )
+
     return parser.parse_args(args)
