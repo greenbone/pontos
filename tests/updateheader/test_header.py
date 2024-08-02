@@ -609,6 +609,29 @@ class MainTestCase(TestCase):
                 ret.replace("\n", ""),
             )
 
+    def test_update_file_changed_dry(self):
+        args = [
+            "--dry",
+            "--files",
+            "test.py",
+        ]
+
+        with (
+            redirect_stdout(StringIO()) as out,
+            temp_directory(change_into=True) as temp_dir,
+        ):
+            test_file = temp_dir / "test.py"
+            args.append(str(test_file))
+
+            main(args)
+
+            ret = out.getvalue()
+
+            self.assertIn(
+                f"{test_file}",
+                ret.replace("\n", ""),
+            )
+
 
 class RemoveOutdatedLinesTestCase(TestCase):
     def setUp(self) -> None:
