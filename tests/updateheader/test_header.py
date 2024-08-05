@@ -16,10 +16,10 @@ from pontos.errors import PontosError
 from pontos.testing import temp_directory, temp_file
 from pontos.updateheader.updateheader import (
     _add_header as add_header,
-    has_license_header,
 )
 from pontos.updateheader.updateheader import (
     _compile_copyright_regex,
+    has_license_header,
     main,
     parse_args,
     update_file,
