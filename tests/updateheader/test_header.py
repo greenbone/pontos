@@ -622,7 +622,7 @@ package main
             found = has_license_header(tmp)
             self.assertTrue(found)
 
-    def test_update_file_dry(self):
+    def test_dry(self):
         args = [
             "--dry",
             "--files",
