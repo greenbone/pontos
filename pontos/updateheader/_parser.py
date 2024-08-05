@@ -114,7 +114,7 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         action="store_true",
         default=False,
         help=(
-            "Perform a dry run: list files that would be updated without making changes."
+            "Perform a dry run: list files that do not have a license header."
         ),
     )
 

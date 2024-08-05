@@ -7,7 +7,6 @@
 in the license header of source code files.\n
 Also it appends a header if it is missing in the file.
 """
-
 import re
 import sys
 from dataclasses import dataclass
@@ -140,6 +139,32 @@ def _remove_outdated_lines(
         new_content = "\n".join(splitted_lines) + "\n"
         return new_content
     return None
+
+
+def has_license_header(file: Path) -> bool:
+    """
+    Checks if the license header exists.
+    """
+    if Path(file.absolute()).suffix not in SUPPORTED_FILE_TYPES:
+        raise ValueError("Unsupported file type")
+
+    copyright_regex = _compile_copyright_regex()
+
+    with file.open("r+") as fp:
+        i = 10  # assume that copyright is in the first 10 lines
+        while i > 0:
+            line = fp.readline()
+            if line == "":
+                i = 0
+                continue
+            found, copyright_match = _find_copyright(
+                line=line, copyright_regex=copyright_regex
+            )
+
+            if found:
+                return True
+
+        return False
 
 
 def update_file(
@@ -361,7 +386,8 @@ def main(args: Optional[Sequence[str]] = None) -> None:
             else:
                 # do not update files in dry run mode
                 if dry:
-                    term.warning(f"{file}")
+                    if has_license_header(file) is False:
+                        term.warning(f"{file} does not have a license header.")
                     continue
 
                 update_file(

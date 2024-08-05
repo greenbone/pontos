@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 
 from pontos.errors import PontosError
 from pontos.testing import temp_directory, temp_file
-from pontos.updateheader.updateheader import _add_header as add_header
+from pontos.updateheader.updateheader import _add_header as add_header, has_license_header
 from pontos.updateheader.updateheader import (
     _compile_copyright_regex,
     main,
@@ -298,7 +298,7 @@ class UpdateFileTestCase(TestCase):
 
         header = HEADER.format(date="2020")
         with temp_file(
-            content=header, name="test.py", change_into=True
+                content=header, name="test.py", change_into=True
         ) as test_file:
             update_file(
                 test_file,
@@ -325,7 +325,7 @@ class UpdateFileTestCase(TestCase):
 
         header = HEADER.format(date="2021")
         with temp_file(
-            content=header, name="test.py", change_into=True
+                content=header, name="test.py", change_into=True
         ) as test_file:
             update_file(
                 test_file,
@@ -384,7 +384,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -424,7 +423,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -464,7 +462,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -609,26 +606,54 @@ class MainTestCase(TestCase):
                 ret.replace("\n", ""),
             )
 
-    def test_update_file_changed_dry(self):
+    def test_has_license_header(self):
+        test_content = """// SPDX-FileCopyrightText: 2048 Greenbone AG
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package main
+"""
+
+        with temp_file(content='', name="test.py") as tmp:
+            found = has_license_header(tmp)
+            self.assertFalse(found)
+
+        with temp_file(content=test_content, name="test.go") as tmp:
+            found = has_license_header(tmp)
+            self.assertTrue(found)
+
+    def test_update_file_dry(self):
         args = [
             "--dry",
             "--files",
-            "test.py",
         ]
+
+        test_content = """// SPDX-FileCopyrightText: 2048 Greenbone AG
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package main
+"""
 
         with (
             redirect_stdout(StringIO()) as out,
-            temp_directory(change_into=True) as temp_dir,
+            temp_file(content='', name="no_header.go") as test_file_no_header,
+            temp_file(content=test_content, name="has_header.go") as test_file_has_header,
         ):
-            test_file = temp_dir / "test.py"
-            args.append(str(test_file))
+            args.append(str(test_file_no_header))
+            args.append(str(test_file_has_header))
 
             main(args)
 
             ret = out.getvalue()
 
             self.assertIn(
-                f"{test_file}",
+                f"{test_file_no_header} does not have a license header.",
+                ret.replace("\n", ""),
+            )
+
+            self.assertNotIn(
+                f"{test_file_has_header} does not have a license header.",
                 ret.replace("\n", ""),
             )
 
