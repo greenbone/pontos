@@ -14,7 +14,10 @@ from unittest.mock import MagicMock, patch
 
 from pontos.errors import PontosError
 from pontos.testing import temp_directory, temp_file
-from pontos.updateheader.updateheader import _add_header as add_header, has_license_header
+from pontos.updateheader.updateheader import (
+    _add_header as add_header,
+    has_license_header,
+)
 from pontos.updateheader.updateheader import (
     _compile_copyright_regex,
     main,
@@ -298,7 +301,7 @@ class UpdateFileTestCase(TestCase):
 
         header = HEADER.format(date="2020")
         with temp_file(
-                content=header, name="test.py", change_into=True
+            content=header, name="test.py", change_into=True
         ) as test_file:
             update_file(
                 test_file,
@@ -325,7 +328,7 @@ class UpdateFileTestCase(TestCase):
 
         header = HEADER.format(date="2021")
         with temp_file(
-                content=header, name="test.py", change_into=True
+            content=header, name="test.py", change_into=True
         ) as test_file:
             update_file(
                 test_file,
@@ -614,7 +617,7 @@ class MainTestCase(TestCase):
 package main
 """
 
-        with temp_file(content='', name="test.py") as tmp:
+        with temp_file(content="", name="test.py") as tmp:
             found = has_license_header(tmp)
             self.assertFalse(found)
 
@@ -637,8 +640,10 @@ package main
 
         with (
             redirect_stdout(StringIO()) as out,
-            temp_file(content='', name="no_header.go") as test_file_no_header,
-            temp_file(content=test_content, name="has_header.go") as test_file_has_header,
+            temp_file(content="", name="no_header.go") as test_file_no_header,
+            temp_file(
+                content=test_content, name="has_header.go"
+            ) as test_file_has_header,
         ):
             args.append(str(test_file_no_header))
             args.append(str(test_file_has_header))
