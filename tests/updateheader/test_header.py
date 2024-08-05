@@ -616,6 +616,8 @@ class MainTestCase(TestCase):
 
 package main
 """
+        with temp_file(content='', name='testing_is_fun.gif') as tmp:
+            self.assertRaises(ValueError, has_license_header, tmp)
 
         with temp_file(content="", name="test.py") as tmp:
             found = has_license_header(tmp)
