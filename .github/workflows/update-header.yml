@@ -6,12 +6,14 @@ on:
     - cron: "0 0 1 1 *" # At 00:00 on day-of-month 1 in January.
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   update-header:
     name: Update headers
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     steps:
       - name: Run update header
         uses: greenbone/actions/update-header@v3
