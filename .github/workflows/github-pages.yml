@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
       - name: Install poetry and dependencies
         uses: greenbone/actions/poetry@v3
         with:
@@ -36,9 +36,9 @@ jobs:
         run: |
           cd docs && poetry run make html
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa #v3.0.1
         with:
           path: "docs/_build/html"
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e #v4.0.5

@@ -2,10 +2,12 @@ name: Auto-merge squash
 on: pull_request_target
     
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
     
 jobs:
   auto-merge:
+    permissions:
+      content: write
     uses: greenbone/workflows/.github/workflows/auto-merge.yml@main
     secrets: inherit
