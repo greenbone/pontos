@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
+
+permissions:
+  contents: read
+
 jobs:
   SBOM-upload:
     runs-on: ubuntu-latest
