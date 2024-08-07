@@ -21,9 +21,9 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install and check with black, pylint and pontos.version
-        uses: greenbone/actions/lint-python@v3
+        uses: greenbone/actions/lint-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
           packages: pontos tests
           python-version: ${{ matrix.python-version }}
@@ -40,9 +40,9 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install python, poetry and dependencies
-        uses: greenbone/actions/poetry@v3
+        uses: greenbone/actions/poetry@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run unit tests
@@ -59,9 +59,9 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Run mypy
-        uses: greenbone/actions/mypy-python@v3
+        uses: greenbone/actions/mypy-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -71,9 +71,9 @@ jobs:
     needs: test
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install and calculate and upload coverage to codecov.io
-        uses: greenbone/actions/coverage-python@v3
+        uses: greenbone/actions/coverage-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
           python-version: "3.10"
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -82,9 +82,9 @@ jobs:
     name: Check versioning for consistency
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install python, poetry and dependencies
-        uses: greenbone/actions/poetry@v3
+        uses: greenbone/actions/poetry@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
       - name: Check version
         run: |
           poetry run pontos-version verify current
