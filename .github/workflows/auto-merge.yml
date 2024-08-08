@@ -8,6 +8,6 @@ permissions:
 jobs:
   auto-merge:
     permissions:
-      content: write
+      contents: write
     uses: greenbone/workflows/.github/workflows/auto-merge.yml@main
     secrets: inherit
