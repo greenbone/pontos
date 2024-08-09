@@ -225,19 +225,38 @@ def update_file(
                         f"-{year} {company}"
                     )
 
-                with_multi_year = copyright_match.creation_year and copyright_match.modification_year
-                with_single_year_outdated = not copyright_match.modification_year and int(copyright_match.creation_year) < int(year)
-                with_multi_year_outdated = with_multi_year and int(copyright_match.modification_year) < int(year)
+                with_multi_year = (
+                    copyright_match.creation_year
+                    and copyright_match.modification_year
+                )
+                with_single_year_outdated = (
+                    not copyright_match.modification_year
+                    and int(copyright_match.creation_year) < int(year)
+                )
+
+                with_multi_year_outdated = False
+                if with_multi_year:
+                    # assert to silence mypy
+                    assert isinstance(copyright_match.modification_year, str)
+                    with_multi_year_outdated = int(
+                        copyright_match.modification_year
+                    ) < int(year)
 
                 if single_year and with_multi_year:
-                    _substitute_license_text(fp, line, copyright_regex, copyright_term)
+                    _substitute_license_text(
+                        fp, line, copyright_regex, copyright_term
+                    )
                     print(
                         f"{file}: Changed License Header Copyright Year format to single year "
                         f"{copyright_match.creation_year}-{year} -> "
                         f"{copyright_match.creation_year}"
                     )
-                elif not single_year and (with_multi_year_outdated or with_single_year_outdated):
-                    _substitute_license_text(fp, line, copyright_regex, copyright_term)
+                elif not single_year and (
+                    with_multi_year_outdated or with_single_year_outdated
+                ):
+                    _substitute_license_text(
+                        fp, line, copyright_regex, copyright_term
+                    )
                     print(
                         f"{file}: Changed License Header Copyright Year "
                         f"{copyright_match.modification_year} -> "
