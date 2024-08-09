@@ -226,8 +226,8 @@ def update_file(
                     )
 
                 with_multi_year = copyright_match.creation_year and copyright_match.modification_year
-                with_single_year_outdated = not copyright_match.modification_year and copyright_match.creation_year < year
-                with_multi_year_outdated = with_multi_year and copyright_match.modification_year < year
+                with_single_year_outdated = not copyright_match.modification_year and int(copyright_match.creation_year) < int(year)
+                with_multi_year_outdated = with_multi_year and int(copyright_match.modification_year) < int(year)
 
                 if single_year and with_multi_year:
                     _substitute_license_text(fp, line, copyright_regex, copyright_term)
