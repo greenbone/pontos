@@ -109,4 +109,15 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         help="Do a cleanup: Remove lines from outdated header format",
     )
 
+    parser.add_argument(
+        "--single-year",
+        action="store_true",
+        default=False,
+        help=(
+            "If set, will format license headers in from-to year format "
+            "into single (creation) year format. "
+            "Default is %(default)s."
+        ),
+    )
+
     return parser.parse_args(args)

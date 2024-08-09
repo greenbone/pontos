@@ -8,6 +8,7 @@ in the license header of source code files.\n
 Also it appends a header if it is missing in the file.
 """
 
+import io
 import re
 import sys
 from dataclasses import dataclass
@@ -67,7 +68,12 @@ OLD_LINES = [
 
 def _get_modified_year(f: Path) -> str:
     """In case of the changed arg, update year to last modified year"""
-    return Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
+    try:
+        ret = Git().log("-1", "--date=format:%Y", str(f), format="%ad")[0]
+    except IndexError:
+        raise PontosError(f'Empty "git log -1" output for {f}.')
+
+    return ret
 
 
 @dataclass
@@ -149,6 +155,7 @@ def update_file(
     company: str,
     *,
     cleanup: bool = False,
+    single_year: bool = False,
 ) -> None:
     """Function to update the header of the given file
 
@@ -202,35 +209,62 @@ def update_file(
                 return
 
             # replace found header and write it to file
-            if copyright_match and (
-                not copyright_match.modification_year
-                and copyright_match.creation_year < year
-                or copyright_match.modification_year
-                and copyright_match.modification_year < year
-            ):
-                copyright_term = (
-                    f"SPDX-FileCopyrightText: "
-                    f"{copyright_match.creation_year}"
-                    f"-{year} {company}"
+            if copyright_match:
+
+                # use different target license formats depending on provided single_year argument
+                if single_year:
+                    copyright_term = (
+                        f"SPDX-FileCopyrightText: "
+                        f"{copyright_match.creation_year} "
+                        f"{company}"
+                    )
+                else:
+                    copyright_term = (
+                        f"SPDX-FileCopyrightText: "
+                        f"{copyright_match.creation_year}"
+                        f"-{year} {company}"
+                    )
+
+                with_multi_year = (
+                    copyright_match.creation_year
+                    and copyright_match.modification_year
                 )
-                new_line = re.sub(copyright_regex, copyright_term, line)
-                fp_write = fp.tell() - len(line)  # save position to insert
-                rest_of_file = fp.read()
-                fp.seek(fp_write)
-                fp.write(new_line)
-                fp.write(rest_of_file)
-                # in some cases we replace "YYYY - YYYY" with "YYYY-YYYY"
-                # resulting in 2 characters left at the end of the file
-                # so we truncate the file, just in case!
-                fp.truncate()
-                print(
-                    f"{file}: Changed License Header Copyright Year "
-                    f"{copyright_match.modification_year} -> "
-                    f"{year}"
+                with_single_year_outdated = (
+                    not copyright_match.modification_year
+                    and int(copyright_match.creation_year) < int(year)
                 )
 
-            else:
-                print(f"{file}: License Header is ok.")
+                with_multi_year_outdated = False
+                if with_multi_year:
+                    # assert to silence mypy
+                    assert isinstance(copyright_match.modification_year, str)
+                    with_multi_year_outdated = int(
+                        copyright_match.modification_year
+                    ) < int(year)
+
+                if single_year and with_multi_year:
+                    _substitute_license_text(
+                        fp, line, copyright_regex, copyright_term
+                    )
+                    print(
+                        f"{file}: Changed License Header Copyright Year format to single year "
+                        f"{copyright_match.creation_year}-{year} -> "
+                        f"{copyright_match.creation_year}"
+                    )
+                elif not single_year and (
+                    with_multi_year_outdated or with_single_year_outdated
+                ):
+                    _substitute_license_text(
+                        fp, line, copyright_regex, copyright_term
+                    )
+                    print(
+                        f"{file}: Changed License Header Copyright Year "
+                        f"{copyright_match.modification_year} -> "
+                        f"{year}"
+                    )
+                else:
+                    print(f"{file}: License Header is ok.")
+
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
         raise e
@@ -246,6 +280,25 @@ def update_file(
         if new_content:
             file.write_text(new_content, encoding="utf-8")
             print(f"{file}: Cleaned up!")
+
+
+def _substitute_license_text(
+    fp: io.TextIOWrapper,
+    line: str,
+    copyright_regex: re.Pattern,
+    copyright_term: str,
+) -> None:
+    """Substitute the old license text in file fp, starting on provided line, with the new one provided in copyright_term"""
+    new_line = re.sub(copyright_regex, copyright_term, line)
+    fp_write = fp.tell() - len(line)  # save position to insert
+    rest_of_file = fp.read()
+    fp.seek(fp_write)
+    fp.write(new_line)
+    fp.write(rest_of_file)
+    # in some cases we replace "YYYY - YYYY" with "YYYY-YYYY"
+    # resulting in 2 characters left at the end of the file
+    # so we truncate the file, just in case!
+    fp.truncate()
 
 
 def _get_exclude_list(
@@ -309,6 +362,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     changed: bool = parsed_args.changed
     quiet: bool = parsed_args.quiet
     cleanup: bool = parsed_args.cleanup
+    single_year: bool = parsed_args.single_year
 
     if quiet:
         term: Union[NullTerminal, RichTerminal] = NullTerminal()
@@ -345,25 +399,27 @@ def main(args: Optional[Sequence[str]] = None) -> None:
         sys.exit(1)
 
     for file in files:
-        if changed:
-            try:
-                year = _get_modified_year(file)
-            except PontosError:
-                term.warning(
-                    f"{file}: Could not get date of last modification"
-                    f" via git, using {year} instead."
-                )
 
         try:
             if file.absolute() in exclude_list:
                 term.warning(f"{file}: Ignoring file from exclusion list.")
             else:
+                if changed:
+                    try:
+                        year = _get_modified_year(file)
+                    except PontosError:
+                        term.warning(
+                            f"{file}: Could not get date of last modification"
+                            f" via git, using {year} instead."
+                        )
+
                 update_file(
                     file,
                     year,
                     license_id,
                     company,
                     cleanup=cleanup,
+                    single_year=single_year,
                 )
         except (FileNotFoundError, UnicodeDecodeError, ValueError):
             continue
