@@ -114,8 +114,8 @@ def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
         action="store_true",
         default=False,
         help=(
-            "If set, will not update license with from-to years format "
-            "(YYYY-YYYY) if it has single (only creation) year format (YYYY). "
+            "If set, will format license headers in from-to year format "
+            "into single (creation) year format. "
             "Default is %(default)s."
         ),
     )

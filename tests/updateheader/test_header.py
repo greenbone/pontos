@@ -343,7 +343,7 @@ class UpdateFileTestCase(TestCase):
         year = "2021"
         license_id = "AGPL-3.0-or-later"
 
-        header = HEADER.format(date="2020")
+        header = HEADER.format(date="2020-2021")
         with temp_file(
             content=header, name="test.py", change_into=True
         ) as test_file:
@@ -353,6 +353,13 @@ class UpdateFileTestCase(TestCase):
                 license_id,
                 self.company,
                 single_year=True,
+            )
+
+            ret = mock_stdout.getvalue()
+            self.assertEqual(
+                ret,
+                f"{test_file}: Changed License Header Copyright Year format to single year "
+                "2020-2021 -> 2020\n",
             )
 
             self.assertIn(

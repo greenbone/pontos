@@ -8,6 +8,7 @@ in the license header of source code files.\n
 Also it appends a header if it is missing in the file.
 """
 
+import io
 import re
 import sys
 from dataclasses import dataclass
@@ -208,39 +209,43 @@ def update_file(
                 return
 
             # replace found header and write it to file
-            if copyright_match and (
-                not copyright_match.modification_year
-                and copyright_match.creation_year < year
-                or copyright_match.modification_year
-                and copyright_match.modification_year < year
-            ):
-                if single_year:
-                    # In case of single year updating the license with modification date doesn't make sense.
-                    # Changing the existing license header with created-modified years to single year is not supported.
-                    return
-                copyright_term = (
-                    f"SPDX-FileCopyrightText: "
-                    f"{copyright_match.creation_year}"
-                    f"-{year} {company}"
-                )
-                new_line = re.sub(copyright_regex, copyright_term, line)
-                fp_write = fp.tell() - len(line)  # save position to insert
-                rest_of_file = fp.read()
-                fp.seek(fp_write)
-                fp.write(new_line)
-                fp.write(rest_of_file)
-                # in some cases we replace "YYYY - YYYY" with "YYYY-YYYY"
-                # resulting in 2 characters left at the end of the file
-                # so we truncate the file, just in case!
-                fp.truncate()
-                print(
-                    f"{file}: Changed License Header Copyright Year "
-                    f"{copyright_match.modification_year} -> "
-                    f"{year}"
-                )
+            if copyright_match:
 
-            else:
-                print(f"{file}: License Header is ok.")
+                # use different target license formats depending on provided single_year argument
+                if single_year:
+                    copyright_term = (
+                        f"SPDX-FileCopyrightText: "
+                        f"{copyright_match.creation_year} "
+                        f"{company}"
+                    )
+                else:
+                    copyright_term = (
+                        f"SPDX-FileCopyrightText: "
+                        f"{copyright_match.creation_year}"
+                        f"-{year} {company}"
+                    )
+
+                with_multi_year = copyright_match.creation_year and copyright_match.modification_year
+                with_single_year_outdated = not copyright_match.modification_year and copyright_match.creation_year < year
+                with_multi_year_outdated = with_multi_year and copyright_match.modification_year < year
+
+                if single_year and with_multi_year:
+                    _substitute_license_text(fp, line, copyright_regex, copyright_term)
+                    print(
+                        f"{file}: Changed License Header Copyright Year format to single year "
+                        f"{copyright_match.creation_year}-{year} -> "
+                        f"{copyright_match.creation_year}"
+                    )
+                elif not single_year and (with_multi_year_outdated or with_single_year_outdated):
+                    _substitute_license_text(fp, line, copyright_regex, copyright_term)
+                    print(
+                        f"{file}: Changed License Header Copyright Year "
+                        f"{copyright_match.modification_year} -> "
+                        f"{year}"
+                    )
+                else:
+                    print(f"{file}: License Header is ok.")
+
     except FileNotFoundError as e:
         print(f"{file}: File is not existing.")
         raise e
@@ -256,6 +261,25 @@ def update_file(
         if new_content:
             file.write_text(new_content, encoding="utf-8")
             print(f"{file}: Cleaned up!")
+
+
+def _substitute_license_text(
+    fp: io.TextIOWrapper,
+    line: str,
+    copyright_regex: re.Pattern,
+    copyright_term: str,
+) -> None:
+    """Substitute the old license text in file fp, starting on provided line, with the new one provided in copyright_term"""
+    new_line = re.sub(copyright_regex, copyright_term, line)
+    fp_write = fp.tell() - len(line)  # save position to insert
+    rest_of_file = fp.read()
+    fp.seek(fp_write)
+    fp.write(new_line)
+    fp.write(rest_of_file)
+    # in some cases we replace "YYYY - YYYY" with "YYYY-YYYY"
+    # resulting in 2 characters left at the end of the file
+    # so we truncate the file, just in case!
+    fp.truncate()
 
 
 def _get_exclude_list(
