@@ -267,7 +267,7 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
 
     async def _load_next_data(self) -> None:
         if (
-            not self._current_request_results
+            self._current_request_results is None
             or self._downloaded_results < self._current_request_results
         ):
             params = self._params
