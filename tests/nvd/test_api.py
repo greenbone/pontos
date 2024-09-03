@@ -186,6 +186,29 @@ class NVDResultsTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             await anext(it)
 
+    async def test_items_no_results(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [],
+                "total_results": 0,
+                "results_per_page": 0,
+            },
+        ]
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+        )
+
+        it = aiter(results.items())
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
     async def test_aiter(self):
         response_mock = MagicMock(spec=Response)
         response_mock.json.side_effect = [
