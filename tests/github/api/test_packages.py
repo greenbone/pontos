@@ -181,3 +181,27 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         self.assertEqual(package_version.id, 1)
         package_version = await anext(async_it)
         self.assertEqual(package_version.id, 2)
+
+    #line 237-242
+    async def test_package_version_tags(self):
+        response = create_response()
+        response.json.return_value = PACKAGE_VERSION["metadata"]["container"]["tags"]
+        response2 = create_response()
+        response2.json.return_value = response.met
+
+        self.client.get.return_value = response
+
+        package_version: PackageVersion = await self.api.package_version_tags(
+            "foo", PackageType.CONTAINER, "bar", 1
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1/latest"
+        )
+
+        self.assertEqual(response, ["latest"])
+
+    #line 272-275
+#   async def test_delete_package(self):
+#       response = create_response()
+#       response.status = 204
