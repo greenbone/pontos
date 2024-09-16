@@ -182,12 +182,10 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         package_version = await anext(async_it)
         self.assertEqual(package_version.id, 2)
 
-    #line 237-242
+    # line 237-242
     async def test_package_version_tags(self):
         response = create_response()
         response.json.return_value = PACKAGE_VERSION["metadata"]["container"]["tags"]
-        response2 = create_response()
-        response2.json.return_value = response.met
 
         self.client.get.return_value = response
 
