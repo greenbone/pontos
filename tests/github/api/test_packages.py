@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from ....pontos.github.api.packages import GitHubAsyncRESTPackages
-from ....pontos.github.models.packages import (
+from pontos.github.api.packages import GitHubAsyncRESTPackages
+from pontos.github.models.packages import (
     Package,
     PackageType,
     PackageVersion,
     PackageVisibility,
 )
-from ....pontos.testing import AsyncIteratorMock
-from ....tests import aiter, anext
-from ....tests.github.api import GitHubAsyncRESTTestCase, create_response
+from pontos.testing import AsyncIteratorMock
+from tests import aiter, anext
+from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 from .test_organizations import MEMBER_DICT, REPOSITORY_DICT
 
