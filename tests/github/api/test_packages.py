@@ -30,6 +30,7 @@ PACKAGE_VERSION = {
     },
 }
 
+
 class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTPackages
 
