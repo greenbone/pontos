@@ -5,9 +5,9 @@
 
 from typing import AsyncIterator
 
-from pontos.github.api.client import GitHubAsyncREST
-from pontos.github.api.errors import GitHubApiError
-from pontos.github.models.packages import Package, PackageType, PackageVersion
+from ....pontos.github.api.client import GitHubAsyncREST
+from ....pontos.github.api.errors import GitHubApiError
+from ....pontos.github.models.packages import Package, PackageType, PackageVersion
 
 
 class GitHubAsyncRESTPackages(GitHubAsyncREST):
