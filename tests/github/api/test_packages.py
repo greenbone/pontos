@@ -182,36 +182,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         package_version = await anext(async_it)
         self.assertEqual(package_version.id, 2)
 
-    async def test_delete_package_version_tag(self):
-        response = create_response(is_success=True)
-        self.client.delete.return_value = response
-
-        await self.api.delete_package_version_tag(
-            organization="foo",
-            package_type=PackageType.CONTAINER,
-            package_name="bar",
-            tag="latest",
-        )
-
-        self.client.delete.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/tags/latest"
-        )
-
-    async def test_delete_package_version(self):
-        response = create_response(is_success=True)
-        self.client.delete.return_value = response
-
-        await self.api.delete_package_version(
-            organization="foo",
-            package_type=PackageType.CONTAINER,
-            package_name="bar",
-            version=1,
-        )
-
-        self.client.delete.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/1"
-        )
-
+# line 200 - 243
     async def test_package_version_tags(self):
         response = create_response()
         response.json.return_value = {"tags": ["latest", "stable"]}
@@ -230,3 +201,35 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.assertEqual(tags, ["latest", "stable"])
+
+# line 278 - 316
+    async def test_delete_package_version(self):
+        response = create_response(is_success=True)
+        self.client.delete.return_value = response
+
+        await self.api.delete_package_version(
+            organization="foo",
+            package_type=PackageType.CONTAINER,
+            package_name="bar",
+            version=1,
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1"
+        )
+
+# line 318 - 354
+    async def test_delete_package_version_tag(self):
+        response = create_response(is_success=True)
+        self.client.delete.return_value = response
+
+        await self.api.delete_package_version_tag(
+            organization="foo",
+            package_type=PackageType.CONTAINER,
+            package_name="bar",
+            tag="latest",
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/tags/latest"
+        )
