@@ -198,8 +198,3 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.assertEqual(response, ["latest"])
-
-    #line 272-275
-#   async def test_delete_package(self):
-#       response = create_response()
-#       response.status = 204
