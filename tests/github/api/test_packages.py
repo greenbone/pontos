@@ -197,36 +197,36 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
 
-        async def test_delete_package_version(self):
-            response = create_response(is_success=True)
-            self.client.delete.return_value = response
+    async def test_delete_package_version(self):
+        response = create_response(is_success=True)
+        self.client.delete.return_value = response
 
-            await self.api.delete_package_version(
-                organization="foo",
-                package_type=PackageType.CONTAINER,
-                package_name="bar",
-                version=1,
-            )
+        await self.api.delete_package_version(
+            organization="foo",
+            package_type=PackageType.CONTAINER,
+            package_name="bar",
+            version=1,
+        )
 
-            self.client.delete.assert_awaited_once_with(
-                "/orgs/foo/packages/container/bar/versions/1"
-            )
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1"
+        )
 
-        async def test_package_version_tags(self):
-            response = create_response()
-            response.json.return_value = {"tags": ["latest", "stable"]}
+    async def test_package_version_tags(self):
+        response = create_response()
+        response.json.return_value = {"tags": ["latest", "stable"]}
 
-            self.client.get.return_value = response
+        self.client.get.return_value = response
 
-            tags = await self.api.package_version_tags(
-                organization="foo",
-                package_type=PackageType.CONTAINER,
-                package_name="bar",
-                version=1,
-            )
+        tags = await self.api.package_version_tags(
+            organization="foo",
+            package_type=PackageType.CONTAINER,
+            package_name="bar",
+            version=1,
+        )
 
-            self.client.get.assert_awaited_once_with(
-                "/orgs/foo/packages/container/bar/versions/1/tags"
-            )
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1/tags"
+        )
 
-            self.assertEqual(tags, ["latest", "stable"])
+        self.assertEqual(tags, ["latest", "stable"])
