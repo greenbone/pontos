@@ -30,9 +30,13 @@ PACKAGE_VERSION = {
     },
 }
 
-
 class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTPackages
+
+    async def test_packages_property(self):
+        packages = self.api.packages
+        self.assertIsInstance(packages, GitHubAsyncRESTPackages)
+        self.assertEqual(packages._client, self.api._client)
 
     async def test_exists(self):
         response = create_response(is_success=True)
