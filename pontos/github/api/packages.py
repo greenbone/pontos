@@ -319,6 +319,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         organization: str,
         package_type: PackageType,
         package_name: str,
+        version: int,
         tag: str,
     ) -> None:
         """
@@ -346,8 +347,8 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        self._client.package_version(organization, package_type, package_name)  # type: ignore
-        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
+        self._client.package_versions(organization, package_type, package_name)  # type: ignore
+        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{version}/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
             raise GitHubApiError(response)
