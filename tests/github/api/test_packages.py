@@ -6,10 +6,10 @@
 from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.models.packages import (
     Package,
-    PackageType,
     PackageVersion,
     PackageVisibility,
 )
+from pontos.github.models.packages import PackageType
 from pontos.testing import AsyncIteratorMock
 from tests import aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
@@ -251,9 +251,9 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             tag="latest",
         )
 
-        self.client.delete.assert_any_await(
+        self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/1"
         )
-        self.client.delete.assert_any_await(
+        self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
