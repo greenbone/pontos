@@ -136,9 +136,9 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
     
         Example:
             .. code-block:: python
-    
+
                 from pontos.github.api import GitHubAsyncRESTApi
-    
+
                 async with GitHubAsyncRESTApi(token) as api:
                     async for package in api.packages.package_versions(
                         organization="foo",
@@ -150,7 +150,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
         async for response in self._client.get_all(api):
             response.raise_for_status()
-    
+
             versions = response.json()
             if versions:
                 for version in versions:
