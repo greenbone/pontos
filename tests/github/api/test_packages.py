@@ -227,7 +227,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
-        
+
     async def test_package_versions(self):
         response1 = create_response()
         response1.json.return_value = [PACKAGE_VERSION]
