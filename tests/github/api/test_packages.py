@@ -6,10 +6,10 @@
 from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.models.packages import (
     Package,
+    PackageType,
     PackageVersion,
     PackageVisibility,
 )
-from pontos.github.models.packages import PackageType
 from pontos.testing import AsyncIteratorMock
 from tests import aiter, anext
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
