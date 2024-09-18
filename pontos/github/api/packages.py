@@ -115,28 +115,28 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
     async def package_versions(
         self, organization: str, package_type: PackageType, package_name: str
-    )SyncIterator[PackageVersion]:
+    ) -> AsyncIterator[PackageVersion]:
         """
         Get information about package versions
-
+    
         https://docs.github.com/en/rest/reference/packages#list-package-versions-for-an-organization
-
+    
         Args:
             organization: GitHub organization to use
             package_type: Type of the package to get
             package_name: Name of the package to get
-
+    
         Raises:
             `httpx.HTTPStatusError`: If there was an error in the request
-
+    
         Returns:
             An async iterator yielding package versions
-
+    
         Example:
             .. code-block:: python
-
+    
                 from pontos.github.api import GitHubAsyncRESTApi
-
+    
                 async with GitHubAsyncRESTApi(token) as api:
                     async for package in api.packages.package_versions(
                         organization="foo",
@@ -148,9 +148,11 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
         async for response in self._client.get_all(api):
             response.raise_for_status()
-
-            for version in response.json():
-                yield PackageVersion.from_dict(version)
+    
+            versions = response.json()
+            if versions:
+                for version in versions:
+                    yield PackageVersion.from_dict(version)
 
     async def package_version(
         self,
@@ -347,8 +349,12 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        for package_version in self.package_versions(organization, package_type, package_name):
-           print(package_version)
+        async for package_version in self.package_versions(organization, package_type, package_name):
+            if tag in package_version.tags:
+                api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{package_version.id}"
+                response = await self._client.delete(api)
+                if not response.is_success:
+                    raise GitHubApiError(response)
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
