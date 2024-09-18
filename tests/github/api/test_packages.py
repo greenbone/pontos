@@ -232,6 +232,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/1"
         )
+
     async def test_delete_package_with_tag(self):
         response = create_response(is_success=True)
         self.client.delete.return_value = response
@@ -239,7 +240,9 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         # Mock the package_versions method to return versions with the specified tag
         version_with_tag = PACKAGE_VERSION.copy()
         version_with_tag["metadata"]["container"]["tags"] = ["latest"]
-        self.api.package_versions = AsyncIteratorMock([PackageVersion.from_dict(version_with_tag)])
+        self.api.package_versions = AsyncIteratorMock(
+            [PackageVersion.from_dict(version_with_tag)]
+        )
 
         await self.api.delete_package_with_tag(
             organization="foo",
