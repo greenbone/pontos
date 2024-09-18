@@ -340,7 +340,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                 from pontos.github.api import GitHubAsyncRESTApi
 
                 async with GitHubAsyncRESTApi(token) as api:
-                    api.packages.delete_package_version_tag(
+                    api.packages.delete_package_with_tag(
                         organization="foo",
                         package_type="container",
                         package_name="bar",
@@ -348,6 +348,12 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                     )
         """
         self._client.package_versions(organization, package_type, package_name)  # type: ignore
+        versions = self.package_versions(organization, package_type, package_name)
+        for version in versions:
+            for tags in version.tags[tags]:
+                if tag == tags:
+                    await self.delete_package_version(organization, package_type, package_name, version.version)
+                    return
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
