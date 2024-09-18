@@ -350,7 +350,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         self._client.package_versions(organization, package_type, package_name)  # type: ignore
         versions = self.package_versions(organization, package_type, package_name)
         for version in versions:
-            for tags in version.tags[tags]:
+            for tags in version.tags:
                 if tag == tags:
                     await self.delete_package_version(organization, package_type, package_name, version.version)
                     return
