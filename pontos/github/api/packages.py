@@ -347,8 +347,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        versions = await self.package_versions(organization, package_type, package_name)
-        async for version in versions:
+        async for version in self.package_versions(organization, package_type, package_name):
             for diftag in version.tags:
                 if tag == diftag:
                     await self.delete_package_version(organization, package_type, package_name, version.version)
