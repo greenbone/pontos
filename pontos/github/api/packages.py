@@ -115,7 +115,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
     async def package_versions(
         self, organization: str, package_type: PackageType, package_name: str
-    ) -> AsyncIterator[PackageVersion]:
+    ):
         """
         Get information about package versions
 
@@ -146,11 +146,8 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         print(package)
         """
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
-        async for response in self._client.get_all(api):
-            response.raise_for_status()
-
-            for version in response.json():
-                yield PackageVersion.from_dict(version)
+        package_versions = self._client.get_all(api)
+        return package_versions
 
     async def package_version(
         self,
