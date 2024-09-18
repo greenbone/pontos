@@ -354,8 +354,8 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         async for package_version in self.package_versions(
             organization, package_type, package_name
         ):
-            if tag in self.package_version_tags(organization, package_type, package_name, package_version):
-                api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{package_version}"
+            if tag in await self.package_version_tags(organization, package_type, package_name, package_version.version):
+                api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{package_version.version}"
                 response = await self._client.delete(api)
                 if not response.is_success:
                     raise GitHubApiError(response)
