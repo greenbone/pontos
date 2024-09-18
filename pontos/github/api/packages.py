@@ -239,6 +239,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         if not response.is_success:
             raise GitHubApiError(response)
         resp = response.json()
+        print(resp)
         return resp["tags"]
 
     async def delete_package(
@@ -314,16 +315,15 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         if not response.is_success:
             raise GitHubApiError(response)
 
-    async def delete_package_version_tag(
+    async def delete_package_with_tag(
         self,
         organization: str,
         package_type: PackageType,
         package_name: str,
-        version: int,
         tag: str,
     ) -> None:
         """
-        Delete a package version tag
+        Delete a package with a specific tag
 
         Args:
             organization: GitHub organization to use
