@@ -344,7 +344,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        async for package_version in self.package_versions(organization, package_type, package_name):
+        for package_version in self.package_versions(organization, package_type, package_name):
            print(package_version)
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)

@@ -162,7 +162,6 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
         self.assertEqual(package_version.metadata.container.tags, ["latest"])
 
-
     # line 200 - 242
     async def test_package_version_tags(self):
         response = create_response()
