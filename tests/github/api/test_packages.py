@@ -228,7 +228,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
         
-    async def test_package_versions(self): 
+    async def test_package_versions(self):
         response1 = create_response()
         response1.json.return_value = [PACKAGE_VERSION]
         response2 = create_response()

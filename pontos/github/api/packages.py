@@ -118,17 +118,19 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
     ) -> AsyncIterator[PackageVersion]:
         """
         Get information about package versions
-    
+
+
         https://docs.github.com/en/rest/reference/packages#list-package-versions-for-an-organization
-    
+
+
         Args:
             organization: GitHub organization to use
             package_type: Type of the package to get
             package_name: Name of the package to get
-    
+
         Raises:
             `httpx.HTTPStatusError`: If there was an error in the request
-    
+
         Returns:
             An async iterator yielding package versions
     
@@ -349,7 +351,9 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        async for package_version in self.package_versions(organization, package_type, package_name):
+        async for package_version in self.package_versions(
+            organization, package_type, package_name
+        ):
             if tag in package_version.tags:
                 api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{package_version.id}"
                 response = await self._client.delete(api)
