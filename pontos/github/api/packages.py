@@ -115,7 +115,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
     async def package_versions(
         self, organization: str, package_type: PackageType, package_name: str
-    ):
+    ) -> AsyncIterator[PackageVersion]:
         """
         Get information about package versions
 
@@ -347,11 +347,8 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-
-        async for version in self.package_versions(organization, package_type, package_name):
-            if version.tags == tag:
-                await self.delete_package_version(organization, package_type, package_name, version.version)
-                return
+        async for package_version in self.package_versions(organization, package_type, package_name):
+           print(package_version)
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
