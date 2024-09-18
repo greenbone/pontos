@@ -347,7 +347,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        versions = self.package_versions(organization, package_type, package_name)
+        versions = await self.package_versions(organization, package_type, package_name)
         for version in versions:
             for tags in version.tags:
                 if tag == tags:
