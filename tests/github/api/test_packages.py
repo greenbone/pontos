@@ -162,25 +162,6 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
         self.assertEqual(package_version.metadata.container.tags, ["latest"])
 
-    async def test_package_versions(self):
-        response1 = create_response()
-        response1.json.return_value = [PACKAGE_VERSION]
-        response2 = create_response()
-        package_version2 = PACKAGE_VERSION.copy()
-        package_version2["id"] = 2
-        response2.json.return_value = [package_version2]
-
-        self.client.get_all.return_value = AsyncIteratorMock(
-            [response1, response2]
-        )
-
-        async_it = aiter(
-            self.api.package_versions("foo", PackageType.CONTAINER, "bar")
-        )
-        package_version = await anext(async_it)
-        self.assertEqual(package_version.id, 1)
-        package_version = await anext(async_it)
-        self.assertEqual(package_version.id, 2)
 
     # line 200 - 242
     async def test_package_version_tags(self):
@@ -233,16 +214,28 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/packages/container/bar/versions/1"
         )
 
+    async def test_package_versions(self):
+        response = create_response()
+        response.json.return_value = [PACKAGE_VERSION]
+
+        self.client.get_all.return_value = AsyncIteratorMock([response])
+
+        async_it = aiter(
+            self.api.package_versions("foo", PackageType.CONTAINER, "bar")
+        )
+        package_version = await anext(async_it)
+        self.assertEqual(package_version["id"], 1)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(async_it)
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/packages/container/bar/versions"
+        )
+
     async def test_delete_package_with_tag(self):
         response = create_response(is_success=True)
         self.client.delete.return_value = response
-
-        # Mock the package_versions method to return versions with the specified tag
-        version_with_tag = PACKAGE_VERSION.copy()
-        version_with_tag["metadata"]["container"]["tags"] = ["latest"]
-        self.api.package_versions = AsyncIteratorMock(
-            [PackageVersion.from_dict(version_with_tag)]
-        )
 
         await self.api.delete_package_with_tag(
             organization="foo",
@@ -252,5 +245,5 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.client.delete.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/1"
+            "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
