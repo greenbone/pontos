@@ -133,7 +133,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
         Returns:
             An async iterator yielding package versions
-    
+
         Example:
             .. code-block:: python
 
