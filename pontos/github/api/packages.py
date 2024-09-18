@@ -347,11 +347,11 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
+
         async for version in self.package_versions(organization, package_type, package_name):
-            for diftag in version.tags:
-                if tag == diftag:
-                    await self.delete_package_version(organization, package_type, package_name, version.version)
-                    return
+            if version.tags == tag:
+                await self.delete_package_version(organization, package_type, package_name, version.version)
+                return
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
