@@ -348,7 +348,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                     )
         """
         self._client.package_versions(organization, package_type, package_name)  # type: ignore
-        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{version}/tags/{tag}"
+        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
         response = await self._client.delete(api)
         if not response.is_success:
             raise GitHubApiError(response)
