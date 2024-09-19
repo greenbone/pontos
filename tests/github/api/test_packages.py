@@ -254,3 +254,14 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
+
+        await self.api.delete_package_with_tag(
+            organization="foo",
+            package_type=PackageType.Container,
+            package_name="bar",
+            tag="broken"
+        )
+
+        self.client.delete.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/tags/latest"
+        )
