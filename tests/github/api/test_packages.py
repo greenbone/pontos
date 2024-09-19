@@ -263,5 +263,5 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.client.delete.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/tags/latest"
+            "/orgs/foo/packages/container/bar/versions/tags/youtube"
         )
