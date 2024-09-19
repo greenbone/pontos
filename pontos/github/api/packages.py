@@ -353,6 +353,8 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         async for package_version in self.package_versions(
             organization, package_type, package_name
         ):
+            print(package_version.id)
+            print(package_version.tags)
             if tag in await self.package_version_tags(
                 organization, package_type, package_name, package_version.id
             ):
