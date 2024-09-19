@@ -257,7 +257,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
         await self.api.delete_package_with_tag(
             organization="foo",
-            package_type=PackageType.Container,
+            package_type=PackageType.CONTAINER,
             package_name="bar",
             tag="broken"
         )
