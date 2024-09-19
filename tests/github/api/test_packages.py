@@ -247,7 +247,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             package_name="bar",
             tag="latest",
         )
-
+        print("I run")
         self.client.delete.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
