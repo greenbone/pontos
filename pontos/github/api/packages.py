@@ -360,3 +360,4 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                 response = await self._client.delete(api)
                 if not response.is_success:
                     raise GitHubApiError(response)
+                return response

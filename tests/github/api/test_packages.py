@@ -162,7 +162,6 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
         self.assertEqual(package_version.metadata.container.tags, ["latest"])
 
-    # line 200 - 242
     async def test_package_version_tags(self):
         response = create_response()
         response.json.return_value = {"tags": ["latest", "stable"]}
@@ -182,7 +181,6 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
         self.assertEqual(tags, ["latest", "stable"])
 
-    # line 244 - 275
     async def test_delete_package(self):
         response = create_response(is_success=True)
         self.client.delete.return_value = response
@@ -197,7 +195,6 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/packages/container/bar"
         )
 
-    # line 278 - 315
     async def test_delete_package_version(self):
         response = create_response(is_success=True)
         self.client.delete.return_value = response
