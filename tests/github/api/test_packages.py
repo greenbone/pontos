@@ -255,6 +255,10 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             "/orgs/foo/packages/container/bar/versions/tags/latest"
         )
 
+    async def test_delete_package_with_tag_not_found(self):
+        response = create_response(status=404)
+        self.client.delete.return_value = response
+        
         await self.api.delete_package_with_tag(
             organization="foo",
             package_type=PackageType.CONTAINER,
