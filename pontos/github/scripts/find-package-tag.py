@@ -41,16 +41,32 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             f"Package {args.package} does not exist in organization {args.organization}"
         )
         return 1
+    print(f"Found package {args.package} in organization {args.organization}")
 
     async for package in api.packages.package_versions(
         organization=args.organization,
         package_name=args.package,
         package_type=args.package_type,
     ):
+        print(f"Checking package {args.package} with id {package.id}")
         if package.metadata.container.tags:
             if args.tag in package.metadata.container.tags:
                 print(
                     f"Package {args.package} with id {package.id} has tag {args.tag}"
+                )
+                tags = await api.packages.package_version_tags(
+                    args.organization,
+                    args.package_type,
+                    args.package,
+                    package.id,
+                )
+                print(f"Tags: {tags}")
+
+                await api.packages.delete_package_version(
+                    args.organization,
+                    args.package_type,
+                    args.package,
+                    package.id,
                 )
                 return 0
 

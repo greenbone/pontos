@@ -211,6 +211,9 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         """
         Get information about package version tags
 
+        Uses https://docs.github.com/en/rest/reference/packages#get-a-package-version-for-an-organization
+        and only returns the tags
+
         Args:
             organization: GitHub organization to use
             package_type: Type of the package to get
@@ -238,12 +241,12 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
                     print(tags)
         """
-        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{version}/tags"
+        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{version}"
         response = await self._client.get(api)
         if not response.is_success:
             raise GitHubApiError(response)
         resp = response.json()
-        return resp["tags"]
+        return resp["metadata"][package_type]["tags"]
 
     async def delete_package(
         self, organization: str, package_type: PackageType, package_name: str
