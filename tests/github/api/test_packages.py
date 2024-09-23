@@ -164,7 +164,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_package_version_tags(self):
         response = create_response()
-        response.json.return_value = {"tags": ["latest", "stable"]}
+        response.json.return_value = {"metadata": {"container": {"tags": ["latest", "stable"]}}}
 
         self.client.get.return_value = response
 
@@ -243,17 +243,19 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
 
         package_version_response = create_response()
         package_version_response.json.return_value = [PACKAGE_VERSION]
-        self.client.get_all.return_value = AsyncIteratorMock([package_version_response])
+        self.client.get_all.return_value = AsyncIteratorMock(
+            [package_version_response]
+        )
 
         tags_response = create_response()
-        tags_response.json.return_value = {"tags": ["latest", "stable"]}
+        tags_response.json.return_value = {"metadata": {"container": {"tags": ["latest", "stable"]}}}
         self.client.get.return_value = tags_response
 
         await self.api.delete_package_with_tag(
             organization="foo",
             package_type=PackageType.CONTAINER,
             package_name="bar",
-            tag="latest"
+            tag="latest",
         )
 
         self.client.get_all.assert_called_once_with(
