@@ -23,7 +23,7 @@ def add_script_arguments(parser: ArgumentParser) -> None:
         help="package type",
         default=PackageType.CONTAINER,
     )
-    parser.add_argument('tag', help='The tag to be deleted.')
+    parser.add_argument("tag", help="The tag to be deleted.")
 
 
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
