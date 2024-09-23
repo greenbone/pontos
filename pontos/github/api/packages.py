@@ -353,7 +353,6 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                         tag="latest",
                     )
         """
-        print("Start of the run")
         async for package_version in self.package_versions(
             organization, package_type, package_name
         ):
