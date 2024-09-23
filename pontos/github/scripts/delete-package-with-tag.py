@@ -7,10 +7,12 @@ from argparse import ArgumentParser, Namespace
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.models.packages import PackageType
 
+
 def package_type(value: str) -> PackageType:
     if isinstance(value, PackageType):
         return value
     return PackageType(value.lower())
+
 
 def add_script_arguments(parser: ArgumentParser) -> None:
     parser.add_argument("organization", help="organization name")
@@ -23,7 +25,8 @@ def add_script_arguments(parser: ArgumentParser) -> None:
     )
     parser.add_argument('tag', help='The tag to be deleted.')
 
-async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> None:
+
+async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     if not await api.packages.exists(
         organization=args.organization,
         package_name=args.package,
@@ -41,4 +44,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> None:
         package_type=args.package_type,
         tag=args.tag,
     )
-    print(f"Deleted tag {args.tag} from package {args.package} in organization {args.organization}")
+    print(
+        f"Deleted tag {args.tag} from package {args.package} in organization {args.organization}"
+    )
+    return 0

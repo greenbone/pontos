@@ -199,7 +199,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             if versions:
                 for version in versions:
                     yield PackageVersion.from_dict(version)
-    
+
     async def package_version_tags(
         self,
         organization: str,
