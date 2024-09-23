@@ -35,45 +35,6 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         response = await self._client.get(api)
         return response.is_success
 
-    async def packages(
-        self, organization: str, package_type: str
-    ) -> AsyncIterator[Package]:
-        """
-        Get information about organization packages
-
-        https://docs.github.com/en/rest/reference/packages#list-packages-for-an-organization
-
-        Args:
-            organization: GitHub organization to use
-            package_type: Type of the packages to list
-
-
-        Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
-
-        Returns:
-            An async iterator yielding packages information
-
-        Example:
-            .. code-block:: python
-
-                from pontos.github.api import GitHubAsyncRESTApi
-
-                async with GitHubAsyncRESTApi(token) as api:
-                    async for package in api.packages.packages(
-                        organization="foo",
-                        package_type="container",
-                    ):
-                        print(package)
-        """
-        api = f"/orgs/{organization}/packages/{package_type}"
-        params = {"per_page": "100"}
-        async for response in self._client.get_all(api, params=params):
-            response.raise_for_status()
-
-            for package in response.json():
-                yield Package.from_dict(package)
-
     async def package(
         self, organization: str, package_type: PackageType, package_name: str
     ) -> Package:
@@ -113,26 +74,24 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         response.raise_for_status()
         return Package.from_dict(response.json())
 
-    async def package_versions(
-        self, organization: str, package_type: PackageType, package_name: str
-    ) -> AsyncIterator[PackageVersion]:
+    async def packages(
+        self, organization: str, package_type: str
+    ) -> AsyncIterator[Package]:
         """
-        Get information about package versions
+        Get information about organization packages
 
-
-        https://docs.github.com/en/rest/reference/packages#list-package-versions-for-an-organization
-
+        https://docs.github.com/en/rest/reference/packages#list-packages-for-an-organization
 
         Args:
             organization: GitHub organization to use
-            package_type: Type of the package to get
-            package_name: Name of the package to get
+            package_type: Type of the packages to list
+
 
         Raises:
             `httpx.HTTPStatusError`: If there was an error in the request
 
         Returns:
-            An async iterator yielding package versions
+            An async iterator yielding packages information
 
         Example:
             .. code-block:: python
@@ -140,21 +99,19 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
                 from pontos.github.api import GitHubAsyncRESTApi
 
                 async with GitHubAsyncRESTApi(token) as api:
-                    async for package in api.packages.package_versions(
+                    async for package in api.packages.packages(
                         organization="foo",
                         package_type="container",
-                        package_name="bar",
                     ):
                         print(package)
         """
-        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
-        async for response in self._client.get_all(api):
+        api = f"/orgs/{organization}/packages/{package_type}"
+        params = {"per_page": "100"}
+        async for response in self._client.get_all(api, params=params):
             response.raise_for_status()
 
-            versions = response.json()
-            if versions:
-                for version in versions:
-                    yield PackageVersion.from_dict(version)
+            for package in response.json():
+                yield Package.from_dict(package)
 
     async def package_version(
         self,
@@ -201,6 +158,48 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             raise GitHubApiError(response)
         return PackageVersion.from_dict(response.json())
 
+    async def package_versions(
+        self, organization: str, package_type: PackageType, package_name: str
+    ) -> AsyncIterator[PackageVersion]:
+        """
+        Get information about package versions
+
+
+        https://docs.github.com/en/rest/reference/packages#list-package-versions-for-an-organization
+
+
+        Args:
+            organization: GitHub organization to use
+            package_type: Type of the package to get
+            package_name: Name of the package to get
+
+        Raises:
+            `httpx.HTTPStatusError`: If there was an error in the request
+
+        Returns:
+            An async iterator yielding package versions
+
+        Example:
+            .. code-block:: python
+
+                from pontos.github.api import GitHubAsyncRESTApi
+
+                async with GitHubAsyncRESTApi(token) as api:
+                    async for package in api.packages.package_versions(
+                        organization="foo",
+                        package_type="container",
+                        package_name="bar",
+                    ):
+                        print(package)
+        """
+        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions"
+        async for response in self._client.get_all(api):
+            response.raise_for_status()
+            versions = response.json()
+            if versions:
+                for version in versions:
+                    yield PackageVersion.from_dict(version)
+    
     async def package_version_tags(
         self,
         organization: str,
@@ -246,7 +245,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         if not response.is_success:
             raise GitHubApiError(response)
         resp = response.json()
-        return resp["metadata"][package_type]["tags"]
+        return resp["tags"]
 
     async def delete_package(
         self, organization: str, package_type: PackageType, package_name: str
@@ -356,16 +355,10 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         async for package_version in self.package_versions(
             organization, package_type, package_name
         ):
-            print("id")
             if tag in await self.package_version_tags(
                 organization, package_type, package_name, package_version.id
             ):
                 api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/{package_version.id}"
                 response = await self._client.delete(api)
-                print("deleted")
                 if not response.is_success:
                     raise GitHubApiError(response)
-        api = f"/orgs/{organization}/packages/{package_type}/{package_name}/versions/tags/{tag}"
-        response = await self._client.delete(api)
-        if not response.is_success:
-            raise GitHubApiError(response)

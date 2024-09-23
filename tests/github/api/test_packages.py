@@ -176,7 +176,7 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         )
 
         self.client.get.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/1/tags"
+            "/orgs/foo/packages/container/bar/versions/1"
         )
 
         self.assertEqual(tags, ["latest", "stable"])
@@ -241,12 +241,27 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
         response = create_response(is_success=True)
         self.client.delete.return_value = response
 
+        package_version_response = create_response()
+        package_version_response.json.return_value = [PACKAGE_VERSION]
+        self.client.get_all.return_value = AsyncIteratorMock([package_version_response])
+
+        tags_response = create_response()
+        tags_response.json.return_value = {"tags": ["latest", "stable"]}
+        self.client.get.return_value = tags_response
+
         await self.api.delete_package_with_tag(
             organization="foo",
             package_type=PackageType.CONTAINER,
             package_name="bar",
-            tag="latest",
+            tag="latest"
+        )
+
+        self.client.get_all.assert_called_once_with(
+            "/orgs/foo/packages/container/bar/versions"
+        )
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar/versions/1"
         )
         self.client.delete.assert_awaited_once_with(
-            "/orgs/foo/packages/container/bar/versions/tags/latest"
+            "/orgs/foo/packages/container/bar/versions/1"
         )
