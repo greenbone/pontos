@@ -110,6 +110,29 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
             ("1.0.0-rc1", "1.0.0-rc1"),
             ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
+            ("1.0.0", "1.0.0+dev1"),  # true (build is not compared!)
+            ("1.0.0+dev1", "1.0.0+dev2"),  # true (build is not compared!)
+            (
+                "1.0.0-alpha1",
+                "1.0.0-alpha1+dev1",
+            ),  # true (build is not compared!)
+            (
+                "1.0.0-alpha1+dev1",
+                "1.0.0-alpha1+dev2",
+            ),  # true (build is not compared!)
+            (
+                "1.0.0-beta1",
+                "1.0.0-beta1+dev1",
+            ),  # true (build is not compared!)
+            (
+                "1.0.0-beta1+dev1",
+                "1.0.0-beta1+dev2",
+            ),  # true (build is not compared!)
+            ("1.0.0-rc1", "1.0.0-rc1+dev1"),  # true (build is not compared!)
+            (
+                "1.0.0-rc1+dev1",
+                "1.0.0-rc1+dev2",
+            ),  # true (build is not compared!)
         ]
         for version1, version2 in versions:
             self.assertTrue(
@@ -119,19 +142,11 @@ class SemanticVersionTestCase(unittest.TestCase):
 
         versions = [
             ("1.0.0", "1.0.1"),
-            ("1.0.0", "1.0.0+dev1"),
             ("1.0.0", "1.0.0-alpha1"),
             ("1.0.0", "1.0.0-alpha1"),
             ("1.0.0", "1.0.0-beta1"),
             ("1.0.0+dev1", "1.0.0-dev1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
             ("1.0.0-alpha1", "1.0.0-beta1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
         ]
         for version1, version2 in versions:
             self.assertFalse(
@@ -178,12 +193,35 @@ class SemanticVersionTestCase(unittest.TestCase):
 
     def test_not_equal(self):
         versions = [
-            ("1.0.0", "1.0.0"),
-            ("1.0.0+dev1", "1.0.0+dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev1"),
-            ("1.0.0-beta1", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-rc1"),
+            ("1.0.0", "1.0.0"),  # false (==)
+            ("1.0.0+dev1", "1.0.0+dev1"),  # false (==)
+            ("1.0.0-alpha1", "1.0.0-alpha1"),  # false (==)
+            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev1"),  # false (==)
+            ("1.0.0-beta1", "1.0.0-beta1"),  # false (==)
+            ("1.0.0-rc1", "1.0.0-rc1"),  # false (==)
+            ("1.0.0", "1.0.0+dev1"),  # false (build is not compared!)
+            ("1.0.0+dev1", "1.0.0+dev2"),  # false (build is not compared!)
+            (
+                "1.0.0-alpha1",
+                "1.0.0-alpha1+dev1",
+            ),  # false (build is not compared!)
+            (
+                "1.0.0-alpha1+dev1",
+                "1.0.0-alpha1+dev2",
+            ),  # false (build is not compared!)
+            (
+                "1.0.0-beta1",
+                "1.0.0-beta1+dev1",
+            ),  # false (build is not compared!)
+            (
+                "1.0.0-beta1+dev1",
+                "1.0.0-beta1+dev2",
+            ),  # false (build is not compared!)
+            ("1.0.0-rc1", "1.0.0-rc1+dev1"),  # false (build is not compared!)
+            (
+                "1.0.0-rc1+dev1",
+                "1.0.0-rc1+dev2",
+            ),  # false (build is not compared!)
         ]
         for version1, version2 in versions:
             self.assertFalse(
@@ -192,19 +230,11 @@ class SemanticVersionTestCase(unittest.TestCase):
             )
 
         versions = [
-            ("1.0.0", "1.0.1"),
-            ("1.0.0", "1.0.0+dev1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
-            ("1.0.0-alpha1", "1.0.0-beta1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+            ("1.0.0", "1.0.1"),  # true (!=)
+            ("1.0.0", "1.0.0-alpha1"),  # true (!=)
+            ("1.0.0", "1.0.0-alpha1"),  # true (!=)
+            ("1.0.0", "1.0.0-beta1"),  # true (!=)
+            ("1.0.0-alpha1", "1.0.0-beta1"),  # true (!=)
         ]
         for version1, version2 in versions:
             self.assertTrue(
@@ -230,25 +260,27 @@ class SemanticVersionTestCase(unittest.TestCase):
 
     def test_greater_then(self):
         versions = [
-            ("1.0.0", "0.9.9999"),
-            ("1.0.1", "1.0.0"),
-            ("1.0.0", "1.0.0-dev1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0", "1.0.0-rc1"),
-            ("1.0.0-alpha1", "1.0.0-dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha2", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-dev1"),
-            ("1.0.0-beta1", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta2", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-dev1"),
-            ("1.0.0-rc1", "1.0.0-alpha1"),
-            ("1.0.0-rc1", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc2", "1.0.0-rc1"),
+            ("2.0.0", "1.0.0"),  # true
+            ("1.0.0", "0.9.9999"),  # true
+            ("1.0.1", "1.0.0"),  # true
+            ("1.0.0", "1.0.0-dev1"),  # true
+            ("1.0.0", "1.0.0-alpha1"),  # true
+            ("1.0.0", "1.0.0-alpha.1"),  # true
+            ("1.0.0", "1.0.0-beta1"),  # true
+            ("1.0.0", "1.0.0-rc1"),  # true
+            ("1.0.0-alpha2", "1.0.0-alpha1"),  # true
+            ("1.0.0-alpha.2", "1.0.0-alpha.1"),  # true
+            ("1.0.0-alpha.10", "1.0.0-alpha.1"),  # true
+            ("1.0.0-beta1", "1.0.0-alpha1"),  # false
+            ("1.0.0-beta.1", "1.0.0-alpha.1"),  # false
+            ("1.0.0-beta2", "1.0.0-beta1"),  # true
+            ("1.0.0-rc1", "1.0.0-dev1"),  # true (r>d)
+            ("1.0.0-rc1", "1.0.0-alpha1"),  # true (r>a)
+            ("1.0.0-rc1", "1.0.0-beta1"),  # true (r>b)
+            ("1.0.0-rc2", "1.0.0-rc1"),  # true
+            ("1.0.0-dev1", "1.0.0-alpha1"),  # true (d > a)
+            ("1.0.0-dev1", "1.0.0-beta1"),  # true (d > a)
+            ("1.0.0-beta10", "1.0.0-beta1"),  # true (longer string)
         ]
         for version1, version2 in versions:
             self.assertTrue(
@@ -257,36 +289,66 @@ class SemanticVersionTestCase(unittest.TestCase):
             )
 
         versions = [
-            ("1.0.0", "1.0.0"),
-            ("1.0.0", "1.0.0+dev1"),
-            ("1.0.0-dev1", "1.0.0-dev1"),
-            ("1.0.0-dev1", "1.0.0-dev2"),
-            ("1.0.0", "1.0.1"),
-            ("1.0.0-dev1", "1.0.0"),
-            ("1.0.0-dev1", "1.0.0-alpha1"),
-            ("1.0.0-dev1", "1.0.0-beta1"),
-            ("1.0.0-dev1", "1.0.0-rc1"),
-            ("1.0.0+dev1", "1.0.0+dev1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
-            ("1.0.0-alpha1", "1.0.0-alpha1"),
-            ("1.0.0-alpha1", "1.0.0-beta1"),
-            ("1.0.0-alpha1", "1.0.0-rc1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
-            ("1.0.0-beta1", "1.0.0-rc1"),
-            ("1.0.0-beta1", "1.0.0-beta1"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
-            ("1.0.0-rc1", "1.0.0"),
-            ("1.0.0-rc1", "1.0.0-rc1"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
-            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+            # from above
+            ("1.0.0-rc1", "1.0.0-rc1-dev1"),  # false
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),  # false
+            (
+                "1.0.0-alpha.1",
+                "1.0.0+dev.1",
+            ),  # false (the build version is considered as '1.0.0')
+            (
+                "1.0.0-alpha.1",
+                "1.0.0-alpha1+dev.1",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-alpha.1",
+                "1.0.0-alpha.1+dev.1",
+            ),  # false (==) (build is not compared ...)
+            ("1.0.0-beta1", "1.0.0-dev1"),  # false (because b<d)
+            ("1.0.0-alpha10", "1.0.0-alpha2"),  # false (alpha10>alpha2 ^^)
+            # ...
+            ("1.0.0", "1.0.0"),  # false (==)
+            ("1.0.0-dev1", "1.0.0-dev1"),  # false (==)
+            ("1.0.0+dev1", "1.0.0+dev1"),  # false (==)
+            ("1.0.0-alpha1", "1.0.0-alpha1"),  # false (==)
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),  # false (==)
+            ("1.0.0-beta1", "1.0.0-beta1"),  # false (==)
+            ("1.0.0-rc1", "1.0.0-rc1"),  # false (==)
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),  # false (==)
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),  # false (==)
+            (
+                "1.0.0-alpha1+dev1",
+                "1.0.0-alpha1+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-beta1+dev1",
+                "1.0.0-beta1+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-rc1+dev1",
+                "1.0.0-rc1+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-rc1",
+                "1.0.0-rc1+dev1",
+            ),  # false (==) (build is not compared ...)
+            ("1.0.0", "1.0.0+dev1"),  # false (==) (build is not compared ...)
+            ("1.0.0", "1.0.1"),  # false (<)
+            ("1.0.0-dev1", "1.0.0"),  # false (<)
+            ("1.0.0-dev1", "1.0.0-rc1"),  # false (d < r)
+            ("1.0.0-dev.1", "1.0.0-rc.1"),  # false (d < r)
+            ("1.0.0+dev1", "1.0.0+dev2"),  # false (dev1<dev2)
+            ("1.0.0+dev1", "1.0.0+dev10"),  # false (dev1<dev10)
+            ("1.0.0-dev1", "1.0.0-dev2"),  # false (1<2)
+            ("1.0.0-alpha1", "1.0.0-beta1"),  # false (a<b)
+            ("1.0.0-alpha1", "1.0.0-rc1"),  # false (a<r)
+            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),  # false (shorter string)
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),  # false (...1<...2)
+            ("1.0.0-beta1", "1.0.0-rc1"),  # false (b < r)
+            ("1.0.0-beta1", "1.0.0-beta1+dev1"),  # false (shorter string)
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),  # false (...1<...2)
+            ("1.0.0-rc1", "1.0.0"),  # false (pre)
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),  # false (...1<...2)
         ]
         for version1, version2 in versions:
             self.assertFalse(
@@ -305,34 +367,62 @@ class SemanticVersionTestCase(unittest.TestCase):
 
     def test_greater_or_equal_then(self):
         versions = [
-            ("1.0.0", "0.9.9999"),
-            ("1.0.0", "1.0.0"),
-            ("1.0.1", "1.0.0"),
-            ("1.0.0", "1.0.0-dev1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0", "1.0.0-rc1"),
-            ("1.0.0-dev1", "1.0.0-dev1"),
-            ("1.0.0+dev1", "1.0.0+dev1"),
-            ("1.0.0-alpha1", "1.0.0-dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha2", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-dev1"),
-            ("1.0.0-beta1", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-beta1"),
-            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta2", "1.0.0-beta1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
-            ("1.0.0-rc1", "1.0.0-dev1"),
-            ("1.0.0-rc1", "1.0.0-alpha1"),
-            ("1.0.0-rc1", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-rc1"),
-            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc2", "1.0.0-rc1"),
-            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
+            ("1.0.0", "0.9.9999"),  # true (>)
+            ("1.0.0", "1.0.0"),  # true (==)
+            ("1.0.1", "1.0.0"),  # true (>)
+            ("1.0.0", "1.0.0-dev1"),  # true (>pre)
+            ("1.0.0", "1.0.0-alpha1"),  # true (>pre)
+            ("1.0.0", "1.0.0-alpha.1"),  # true (>pre)
+            ("1.0.0", "1.0.0-beta1"),  # true (>pre)
+            ("1.0.0", "1.0.0-beta.1"),  # true (>pre)
+            ("1.0.0", "1.0.0-rc1"),  # true (>pre)
+            ("1.0.0", "1.0.0-rc.1"),  # true (>pre)
+            ("1.0.0-dev1", "1.0.0-dev1"),  # true (==)
+            ("1.0.0+dev1", "1.0.0+dev1"),  # true (==)
+            ("1.0.0-alpha1", "1.0.0-alpha1"),  # true (==)
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),  # true (==)
+            ("1.0.0-alpha2", "1.0.0-alpha1"),  # true (2>1)
+            ("1.0.0-beta1", "1.0.0-alpha1"),  # true (b>a)
+            ("1.0.0-beta1", "1.0.0-beta1"),  # true (==)
+            ("1.0.0-beta2", "1.0.0-beta1"),  # true (2>1)
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),  # true (==)
+            ("1.0.0-rc1", "1.0.0-dev1"),  # true (r>d)
+            ("1.0.0-rc1", "1.0.0-alpha1"),  # true (r>a)
+            ("1.0.0-rc1", "1.0.0-beta1"),  # true (r>b)
+            ("1.0.0-rc2", "1.0.0-rc1"),  # true (2>1)
+            ("1.0.0-rc1", "1.0.0-rc1"),  # true (==)
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),  # true (==)
+            ("1.0.0", "1.0.0+dev1"),  # true (==) (build is not compared ...)
+            (
+                "1.0.0+dev1",
+                "1.0.0+dev2",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-alpha1",
+                "1.0.0-alpha1+dev1",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-alpha1+dev1",
+                "1.0.0-alpha1+dev2",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-beta1",
+                "1.0.0-beta1+dev1",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-beta1+dev1",
+                "1.0.0-beta1+dev2",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-rc1",
+                "1.0.0-rc1+dev1",
+            ),  # true (==) (build is not compared ...)
+            (
+                "1.0.0-rc1+dev1",
+                "1.0.0-rc1+dev2",
+            ),  # true (==) (build is not compared ...)
+            ("1.0.0-dev1", "1.0.0-alpha1"),  # true (d>a)
+            ("1.0.0-dev1", "1.0.0-beta1"),  # true (d>b)
         ]
         for version1, version2 in versions:
             self.assertTrue(
@@ -341,27 +431,22 @@ class SemanticVersionTestCase(unittest.TestCase):
             )
 
         versions = [
-            ("1.0.0", "1.0.0+dev1"),
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),  # false (shorter string)
+            ("1.0.0-rc1", "1.0.0-rc1-dev1"),  # false (shorter string)
+            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),  # false (shorter string)
+            ("1.0.0-alpha1", "1.0.0-dev1"),  # false (a<d)
+            ("1.0.0-beta1", "1.0.0-dev1"),  # false (b<d)
             ("1.0.0-dev1", "1.0.0-dev2"),
             ("1.0.0", "1.0.1"),
             ("1.0.0-dev1", "1.0.0"),
-            ("1.0.0-dev1", "1.0.0-alpha1"),
-            ("1.0.0-dev1", "1.0.0-beta1"),
             ("1.0.0-dev1", "1.0.0-rc1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
             ("1.0.0-alpha1", "1.0.0-beta1"),
             ("1.0.0-alpha1", "1.0.0-rc1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
             ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
             ("1.0.0-beta1", "1.0.0-rc1"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
             ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
             ("1.0.0-rc1", "1.0.0"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
             ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
         ]
         for version1, version2 in versions:
             self.assertFalse(
@@ -380,37 +465,31 @@ class SemanticVersionTestCase(unittest.TestCase):
 
     def test_less_then(self):
         versions = [
-            ("1.0.0", "0.9.9999"),
-            ("1.0.1", "1.0.0"),
-            ("1.0.0", "1.0.0-dev1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0", "1.0.0-rc1"),
-            ("1.0.0-alpha1", "1.0.0-dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha2", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-dev1"),
-            ("1.0.0-beta1", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta2", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-dev1"),
-            ("1.0.0-rc1", "1.0.0-alpha1"),
-            ("1.0.0-rc1", "1.0.0-beta1"),
+            ("0.9.9999", "1.0.0"),
+            ("1.0.0", "1.0.1"),
+            ("1.0.0-dev1", "1.0.0"),  # true for all pre-releases
+            ("1.0.0-alpha1", "1.0.0"),  # true for all pre-releases
+            ("1.0.0-alpha.1", "1.0.0-alpha1"),  # true
+            ("1.0.0-alpha.1", "1.0.0-alpha.2"),  # true (1<2)
+            ("1.0.0-alpha1", "1.0.0-dev1"),  # true (a < d)
+            ("1.0.0-alpha.1", "1.0.0-dev.1"),  # true (a < d)
+            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),  # true (longer string)
+            ("1.0.0-beta1", "1.0.0-dev1"),  # true (b < d)
+            ("1.0.0-beta1", "1.0.0-beta1-dev1"),  # true (longer string)
+            ("1.0.0-beta1", "1.0.0-rc1"),  # true (b<r)
+            ("1.0.0-dev1", "1.0.0-rc1"),  # true (d<r)
+            ("1.0.0-dev1", "1.0.0-dev2"),
+            ("1.0.0-rc1", "1.0.0"),  # true for all pre-releases
+            ("1.0.0-alpha1", "1.0.0-beta1"),
+            ("1.0.0-alpha1", "1.0.0-rc1"),
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
+            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-rc1", "1.0.0"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
             ("1.0.0-rc1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc2", "1.0.0-rc1"),
-            # the following ones are strange with current semver implementation
-            # because they are both less then and greater then at the same time
-            ("1.0.0", "1.0.0+dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
         ]
-        for version2, version1 in versions:
+        for version1, version2 in versions:
             self.assertTrue(
                 Version.from_string(version1) < Version.from_string(version2),
                 f"{version1} should be less then {version2}",
@@ -419,28 +498,54 @@ class SemanticVersionTestCase(unittest.TestCase):
         versions = [
             ("1.0.0", "1.0.0"),
             ("1.0.0-dev1", "1.0.0-dev1"),
-            ("1.0.0-dev1", "1.0.0-dev2"),
-            ("1.0.0", "1.0.1"),
-            ("1.0.0-dev1", "1.0.0"),
-            ("1.0.0-dev1", "1.0.0-alpha1"),
-            ("1.0.0-dev1", "1.0.0-beta1"),
-            ("1.0.0-dev1", "1.0.0-rc1"),
-            ("1.0.0+dev1", "1.0.0+dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1"),
-            ("1.0.0-alpha1", "1.0.0-beta1"),
-            ("1.0.0-alpha1", "1.0.0-rc1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
-            ("1.0.0-beta1", "1.0.0-rc1"),
-            ("1.0.0-beta1", "1.0.0-beta1"),
+            ("1.0.1", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-alpha1"),  # true (d > a)
+            ("1.0.0-dev1", "1.0.0-beta1"),  # false (d > b)
+            ("1.0.0-beta1", "1.0.0-alpha1"),  # false (b > a)
+            ("1.0.0+dev1", "1.0.0+dev1"),  # false (==)
+            ("1.0.0-alpha1", "1.0.0-alpha1"),  # false (==)
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),  # false (==)
+            ("1.0.0-beta1", "1.0.0-beta1"),  # false (==)
             ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
-            ("1.0.0-rc1", "1.0.0"),
             ("1.0.0-rc1", "1.0.0-rc1"),
             ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
+            ("1.0.0-alpha2", "1.0.0-alpha1"),  # false (2 > 1)
+            ("1.0.0-beta2", "1.0.0-beta1"),
+            ("1.0.0-rc1", "1.0.0-dev1"),
+            ("1.0.0-rc1", "1.0.0-alpha1"),
+            ("1.0.0-rc1", "1.0.0-beta1"),
+            ("1.0.0-rc2", "1.0.0-rc1"),
+            ("1.0.0", "1.0.0+dev1"),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-alpha1",
+                "1.0.0-alpha1+dev1",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0+dev1",
+                "1.0.0+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-alpha1+dev1",
+                "1.0.0-alpha1+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-beta1",
+                "1.0.0-beta1+dev1",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-beta1+dev1",
+                "1.0.0-beta1+dev2",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-rc1",
+                "1.0.0-rc1+dev1",
+            ),  # false (==) (build is not compared ...)
+            (
+                "1.0.0-rc1+dev1",
+                "1.0.0-rc1+dev2",
+            ),  # false (==) (build is not compared ...)
         ]
-        for version2, version1 in versions:
+        for version1, version2 in versions:
             self.assertFalse(
                 Version.from_string(version1) < Version.from_string(version2),
                 f"{version1} should not be less then {version2}",
@@ -457,69 +562,66 @@ class SemanticVersionTestCase(unittest.TestCase):
 
     def test_less_or_equal_then(self):
         versions = [
-            ("1.0.0", "0.9.9999"),
+            ("0.9.9999", "1.0.0"),
+            ("1.0.0", "1.0.1"),
             ("1.0.0", "1.0.0"),
-            ("1.0.1", "1.0.0"),
-            ("1.0.0", "1.0.0-dev1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-alpha1"),
-            ("1.0.0", "1.0.0-beta1"),
-            ("1.0.0", "1.0.0-rc1"),
-            ("1.0.0-dev1", "1.0.0-dev1"),
-            ("1.0.0+dev1", "1.0.0+dev1"),
-            ("1.0.0-alpha1", "1.0.0-dev1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1"),
-            ("1.0.0-alpha1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),
-            ("1.0.0-alpha2", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-dev1"),
-            ("1.0.0-beta1", "1.0.0-alpha1"),
-            ("1.0.0-beta1", "1.0.0-beta1"),
+            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-alpha1", "1.0.0"),
+            ("1.0.0-alpha1", "1.0.0"),
+            ("1.0.0-beta1", "1.0.0"),
+            ("1.0.0-rc1", "1.0.0"),
+            ("1.0.0-dev1", "1.0.0-dev1"),  # true (==)
+            ("1.0.0+dev1", "1.0.0+dev1"),  # true (==)
+            ("1.0.0-alpha1", "1.0.0-alpha1"),  # true (==)
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev1"),  # true (==)
+            ("1.0.0-alpha1", "1.0.0-alpha2"),
+            ("1.0.0-alpha1", "1.0.0-beta1"),
+            ("1.0.0-beta1", "1.0.0-beta1"),  # true (==)
             ("1.0.0-beta1", "1.0.0-beta1-dev1"),
-            ("1.0.0-beta2", "1.0.0-beta1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),
-            ("1.0.0-rc1", "1.0.0-dev1"),
-            ("1.0.0-rc1", "1.0.0-alpha1"),
-            ("1.0.0-rc1", "1.0.0-beta1"),
-            ("1.0.0-rc1", "1.0.0-rc1"),
-            ("1.0.0-rc1", "1.0.0-rc1-dev1"),
-            ("1.0.0-rc2", "1.0.0-rc1"),
+            ("1.0.0-beta1", "1.0.0-beta2"),
+            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev1"),  # true (==)
+            ("1.0.0-dev1", "1.0.0-rc1"),
+            ("1.0.0-alpha1", "1.0.0-rc1"),
+            ("1.0.0-beta1", "1.0.0-rc1"),
+            ("1.0.0-rc1", "1.0.0-rc1"),  # true (==)
+            ("1.0.0-rc1", "1.0.0-rc2"),  # true <
             ("1.0.0-rc1-dev1", "1.0.0-rc1-dev1"),
-            # the strange ones
-            ("1.0.0", "1.0.0+dev1"),
-            ("1.0.0+dev1", "1.0.0+dev2"),
-            ("1.0.0-alpha1", "1.0.0-alpha1+dev1"),
-            ("1.0.0-alpha1+dev1", "1.0.0-alpha1+dev2"),
-            ("1.0.0-beta1", "1.0.0-beta1+dev1"),
-            ("1.0.0-beta1+dev1", "1.0.0-beta1+dev2"),
-            ("1.0.0-rc1", "1.0.0-rc1+dev1"),
-            ("1.0.0-rc1+dev1", "1.0.0-rc1+dev2"),
+            ("1.0.0+dev1", "1.0.0"),  # true (==)
+            ("1.0.0+dev2", "1.0.0+dev1"),  # true (==)
+            ("1.0.0-alpha1+dev1", "1.0.0-alpha1"),  # true (==)
+            ("1.0.0-alpha1+dev2", "1.0.0-alpha1+dev1"),  # true (==)
+            ("1.0.0-beta1+dev2", "1.0.0-beta1+dev1"),  # true (==)
+            ("1.0.0-rc1+dev1", "1.0.0-rc1"),  # true (==)
+            ("1.0.0-rc1+dev2", "1.0.0-rc1+dev1"),  # true (==)
+            ("1.0.0-beta1+dev1", "1.0.0-beta1"),  # true (==)
+            ("1.0.0-dev1", "1.0.0-dev2"),  # true 1<2
         ]
-        for version2, version1 in versions:
+        for version1, version2 in versions:
             self.assertTrue(
                 Version.from_string(version1) <= Version.from_string(version2),
-                f"{version1} should be greater or equal then {version2}",
+                f"{version1} should be less or equal then {version2}",
             )
 
         versions = [
-            ("1.0.0-dev1", "1.0.0-dev2"),
-            ("1.0.0", "1.0.1"),
-            ("1.0.0-dev1", "1.0.0"),
+            ("1.0.0-rc1-dev1", "1.0.0-rc1"),  # false (longer)
+            ("1.0.0-dev1", "1.0.0-alpha1"),  # false >
+            ("1.0.0-alpha1-dev1", "1.0.0-alpha1"),  # false >
+            ("1.0.0-dev1", "1.0.0-beta1"),  # false d>b
+            ("1.0.1", "1.0.0"),
+            ("1.0.0", "1.0.0-dev1"),
             ("1.0.0-dev1", "1.0.0-alpha1"),
             ("1.0.0-dev1", "1.0.0-beta1"),
-            ("1.0.0-dev1", "1.0.0-rc1"),
-            ("1.0.0-alpha1", "1.0.0-beta1"),
-            ("1.0.0-alpha1", "1.0.0-rc1"),
-            ("1.0.0-alpha1-dev1", "1.0.0-alpha1-dev2"),
-            ("1.0.0-beta1", "1.0.0-rc1"),
-            ("1.0.0-beta1-dev1", "1.0.0-beta1-dev2"),
-            ("1.0.0-rc1", "1.0.0"),
-            ("1.0.0-rc1-dev1", "1.0.0-rc1-dev2"),
+            ("1.0.0-rc1", "1.0.0-dev1"),
+            ("1.0.0-beta1", "1.0.0-alpha1"),
+            ("1.0.0-rc1", "1.0.0-alpha1"),
+            ("1.0.0-beta1-dev2", "1.0.0-beta1-dev1"),
+            ("1.0.0-beta1-dev.2", "1.0.0-beta1-dev.1"),
+            ("1.0.0-rc1-dev.2", "1.0.0-rc1-dev.1"),
         ]
-        for version2, version1 in versions:
+        for version1, version2 in versions:
             self.assertFalse(
                 Version.from_string(version1) <= Version.from_string(version2),
-                f"{version1} should not be greater or equal then {version2}",
+                f"{version1} should not be less or equal then {version2}",
             )
 
         versions = [
