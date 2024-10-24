@@ -122,6 +122,8 @@ pontos-nvd-cves = 'pontos.nvd.cve:cves_main'
 pontos-nvd-cve-changes = 'pontos.nvd.cve_changes:main'
 pontos-nvd-cpe = 'pontos.nvd.cpe:cpe_main'
 pontos-nvd-cpes = 'pontos.nvd.cpe:cpes_main'
+pontos-nvd-cpe-match = 'pontos.nvd.cpe_matches:cpe_match_main'
+pontos-nvd-cpe-matches = 'pontos.nvd.cpe_matches:cpe_matches_main'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
