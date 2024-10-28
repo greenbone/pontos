@@ -21,7 +21,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install and check with black, pylint and pontos.version
         uses: greenbone/actions/lint-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
@@ -40,7 +40,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
@@ -59,7 +59,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Run mypy
         uses: greenbone/actions/mypy-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
@@ -71,7 +71,7 @@ jobs:
     needs: test
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
         with:
@@ -82,7 +82,7 @@ jobs:
     name: Check versioning for consistency
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
       - name: Check version
