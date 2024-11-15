@@ -89,6 +89,7 @@ class CPEMatchApi(NVDApi):
         last_modified_start_date: Optional[datetime] = None,
         last_modified_end_date: Optional[datetime] = None,
         cve_id: Optional[str] = None,
+        match_string_search: Optional[str] = None,
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
@@ -102,6 +103,7 @@ class CPEMatchApi(NVDApi):
             last_modified_start_date: Return all CPE matches last modified after this date.
             last_modified_end_date: Return all CPE matches last modified before this date.
             cve_id: Return all CPE matches for this Common Vulnerabilities and Exposures identifier.
+            match_string_search: Return all CPE matches that conform to the given pattern
             request_results: Number of CPE matches to download. Set to None
                 (default) to download all available matches.
             start_index: Index of the first CPE match to be returned. Useful
@@ -141,6 +143,8 @@ class CPEMatchApi(NVDApi):
 
         if cve_id:
             params["cveId"] = cve_id
+        if match_string_search:
+            params["matchStringSearch"] = match_string_search
 
         results_per_page = min(
             results_per_page or MAX_CPE_MATCHES_PER_PAGE,
