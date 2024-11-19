@@ -5,6 +5,7 @@
 from datetime import datetime
 from types import TracebackType
 from typing import (
+    Any,
     Iterator,
     Optional,
     Type,
@@ -23,7 +24,7 @@ from pontos.nvd.api import (
     format_date,
     now,
 )
-from pontos.nvd.models.cpe_match_string import CPEMatchString, CPEMatch
+from pontos.nvd.models.cpe_match_string import CPEMatchString
 
 __all__ = ("CPEMatchApi",)
 
