@@ -33,6 +33,7 @@ from pontos.helper import snake_case
 SLEEP_TIMEOUT = 30.0  # in seconds
 DEFAULT_TIMEOUT = 180.0  # three minutes
 DEFAULT_TIMEOUT_CONFIG = Timeout(DEFAULT_TIMEOUT)  # three minutes
+RETRY_DELAY = 2.0  # in seconds
 
 Headers = Dict[str, str]
 Params = Dict[str, Union[str, int]]
@@ -342,6 +343,7 @@ class NVDApi(ABC):
         token: Optional[str] = None,
         timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
+        attempts: int = 1,
     ) -> None:
         """
         Create a new instance of the CVE API.
@@ -357,6 +359,7 @@ class NVDApi(ABC):
                 rolling 30 second window.
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
+            attempts: The number of attempts per HTTP request. Defaults to 1.
         """
         self._url = url
         self._token = token
@@ -369,6 +372,8 @@ class NVDApi(ABC):
 
         self._request_count = 0
         self._last_sleep = time.monotonic()
+
+        self._attempts = attempts
 
     def _request_headers(self) -> Headers:
         """
@@ -409,9 +414,19 @@ class NVDApi(ABC):
         """
         headers = self._request_headers()
 
-        await self._consider_rate_limit()
+        for retry in range(self._attempts):
+            if retry > 0:
+                delay = RETRY_DELAY**retry
+                await asyncio.sleep(delay)
 
-        return await self._client.get(self._url, headers=headers, params=params)
+            await self._consider_rate_limit()
+            response = await self._client.get(
+                self._url, headers=headers, params=params
+            )
+            if not response.is_server_error:
+                break
+
+        return response
 
     async def __aenter__(self) -> "NVDApi":
         # reset rate limit counter
