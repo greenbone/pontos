@@ -343,7 +343,7 @@ class NVDApi(ABC):
         token: Optional[str] = None,
         timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
-        attempts: int = 1,
+        request_attempts: int = 1,
     ) -> None:
         """
         Create a new instance of the CVE API.
@@ -359,7 +359,7 @@ class NVDApi(ABC):
                 rolling 30 second window.
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
-            attempts: The number of attempts per HTTP request. Defaults to 1.
+            request_attempts: The number of attempts per HTTP request. Defaults to 1.
         """
         self._url = url
         self._token = token
@@ -373,7 +373,7 @@ class NVDApi(ABC):
         self._request_count = 0
         self._last_sleep = time.monotonic()
 
-        self._attempts = attempts
+        self._request_attempts = request_attempts
 
     def _request_headers(self) -> Headers:
         """
@@ -414,9 +414,9 @@ class NVDApi(ABC):
         """
         headers = self._request_headers()
 
-        for retry in range(self._attempts):
-            if retry > 0:
-                delay = RETRY_DELAY**retry
+        for attempt in range(self._request_attempts):
+            if attempt > 0:
+                delay = RETRY_DELAY**attempt
                 await asyncio.sleep(delay)
 
             await self._consider_rate_limit()
