@@ -61,7 +61,7 @@ class CPEApi(NVDApi):
         token: Optional[str] = None,
         timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
-        attempts: int = 1,
+        request_attempts: int = 1,
     ) -> None:
         """
         Create a new instance of the CPE API.
@@ -76,14 +76,14 @@ class CPEApi(NVDApi):
                 rolling 30 second window.
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
-            attempts: The number of attempts per HTTP request. Defaults to 1.
+            request_attempts: The number of attempts per HTTP request. Defaults to 1.
         """
         super().__init__(
             DEFAULT_NIST_NVD_CPES_URL,
             token=token,
             timeout=timeout,
             rate_limit=rate_limit,
-            attempts=attempts,
+            request_attempts=request_attempts,
         )
 
     async def cpe(self, cpe_name_id: Union[str, UUID]) -> CPE:
