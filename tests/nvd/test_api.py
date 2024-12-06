@@ -137,10 +137,10 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
         sleep_mock: MagicMock,
     ):
         response_mocks = [
-            MagicMock(spec=Response, status_code=500),
-            MagicMock(spec=Response, status_code=500),
-            MagicMock(spec=Response, status_code=500),
-            MagicMock(spec=Response, status_code=200),
+            MagicMock(spec=Response, is_server_error=True),
+            MagicMock(spec=Response, is_server_error=True),
+            MagicMock(spec=Response, is_server_error=True),
+            MagicMock(spec=Response, is_server_error=False),
         ]
         http_client = AsyncMock()
         http_client.get.side_effect = response_mocks
@@ -152,7 +152,7 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
 
         calls = [call(2.0), call(4.0), call(8.0)]
         sleep_mock.assert_has_calls(calls)
-        self.assertEqual(result.status_code, 200)
+        self.assertFalse(result.is_server_error)
 
     @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
@@ -162,7 +162,7 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
         sleep_mock: MagicMock,
     ):
         response_mock = MagicMock(spec=Response)
-        response_mock.status_code = 200
+        response_mock.is_server_error = False
 
         http_client = AsyncMock()
         http_client.get.return_value = response_mock
@@ -173,7 +173,7 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
         result = await api._get()
 
         sleep_mock.assert_not_called()
-        self.assertEqual(result.status_code, 200)
+        self.assertFalse(result.is_server_error)
 
 
 class Result:
