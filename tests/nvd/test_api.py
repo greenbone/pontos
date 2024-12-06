@@ -8,7 +8,7 @@
 import unittest
 from datetime import datetime
 from typing import Any, Iterator
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import AsyncClient, Response
 
@@ -128,6 +128,52 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
         await api._get()
 
         sleep_mock.assert_not_called()
+
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_retry(
+        self,
+        async_client: MagicMock,
+        sleep_mock: MagicMock,
+    ):
+        response_mocks = [
+            MagicMock(spec=Response, status_code=500),
+            MagicMock(spec=Response, status_code=500),
+            MagicMock(spec=Response, status_code=500),
+            MagicMock(spec=Response, status_code=200),
+        ]
+        http_client = AsyncMock()
+        http_client.get.side_effect = response_mocks
+        async_client.return_value = http_client
+
+        api = NVDApi("https://foo.bar/baz", request_attempts=4)
+
+        result = await api._get()
+
+        calls = [call(2.0), call(4.0), call(8.0)]
+        sleep_mock.assert_has_calls(calls)
+        self.assertEqual(result.status_code, 200)
+
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_no_retry(
+        self,
+        async_client: MagicMock,
+        sleep_mock: MagicMock,
+    ):
+        response_mock = MagicMock(spec=Response)
+        response_mock.status_code = 200
+
+        http_client = AsyncMock()
+        http_client.get.return_value = response_mock
+        async_client.return_value = http_client
+
+        api = NVDApi("https://foo.bar/baz")
+
+        result = await api._get()
+
+        sleep_mock.assert_not_called()
+        self.assertEqual(result.status_code, 200)
 
 
 class Result:
