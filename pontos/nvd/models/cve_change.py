@@ -11,7 +11,7 @@ from pontos.models import Model, StrEnum
 
 
 class EventName(StrEnum):
-    CVE_RECEIVED = "CVE Received"
+    NEW_CVE_RECEIVED = "New CVE Received"
     INITIAL_ANALYSIS = "Initial Analysis"
     REANALYSIS = "Reanalysis"
     CVE_MODIFIED = "CVE Modified"
