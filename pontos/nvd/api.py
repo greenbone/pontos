@@ -267,42 +267,41 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
 
     async def _load_next_data(self) -> None:
         if (
-            self._current_request_results is None
-            or self._downloaded_results < self._current_request_results
+            self._current_request_results is not None
+            and self._downloaded_results >= self._current_request_results
         ):
-            params = self._params
-            params["startIndex"] = self._current_index
-
-            if self._current_results_per_page is not None:
-                params["resultsPerPage"] = self._current_results_per_page
-
-            response = await self._api._get(params=params)
-            response.raise_for_status()
-
-            self._url = response.url
-            data: JSON = response.json(object_hook=convert_camel_case)
-
-            self._data = data
-            self._current_results_per_page = int(data["results_per_page"])  # type: ignore
-            self._total_results = int(data["total_results"])  # type: ignore
-            self._current_index += self._current_results_per_page
-            self._downloaded_results += self._current_results_per_page
-
-            if not self._current_request_results:
-                self._current_request_results = self._total_results
-
-            if (
-                self._request_results
-                and self._downloaded_results + self._current_results_per_page
-                > self._request_results
-            ):
-                # avoid downloading more results then requested
-                self._current_results_per_page = (
-                    self._request_results - self._downloaded_results
-                )
-
-        else:
             raise NoMoreResults()
+
+        params = self._params
+        params["startIndex"] = self._current_index
+
+        if self._current_results_per_page is not None:
+            params["resultsPerPage"] = self._current_results_per_page
+
+        response = await self._api._get(params=params)
+        response.raise_for_status()
+
+        self._url = response.url
+        data: JSON = response.json(object_hook=convert_camel_case)
+
+        self._data = data
+        self._current_results_per_page = int(data["results_per_page"])  # type: ignore
+        self._total_results = int(data["total_results"])  # type: ignore
+        self._current_index += self._current_results_per_page
+        self._downloaded_results += self._current_results_per_page
+
+        if not self._current_request_results:
+            self._current_request_results = self._total_results
+
+        if (
+            self._request_results
+            and self._downloaded_results + self._current_results_per_page
+            > self._request_results
+        ):
+            # avoid downloading more results then requested
+            self._current_results_per_page = (
+                self._request_results - self._downloaded_results
+            )
 
     async def _get_next_iterator(self) -> Iterator[T]:
         await self._load_next_data()
