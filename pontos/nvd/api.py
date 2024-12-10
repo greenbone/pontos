@@ -272,6 +272,12 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
         ):
             raise NoMoreResults()
 
+        if (
+            self._total_results is not None
+            and self._current_index >= self._total_results
+        ):
+            raise NoMoreResults()
+
         params = self._params
         params["startIndex"] = self._current_index
 
