@@ -68,17 +68,17 @@ class CPEMatchTestCase(unittest.TestCase):
         self.assertEqual(
             CPEMatch(
                 "cpe:2.3:a:sun:jre:1.3.0:update3:*:*:*:*:*:*",
-                UUID("2d284534-da21-43d5-9d89-07f19ae400ea")
+                UUID("2d284534-da21-43d5-9d89-07f19ae400ea"),
             ),
-            cpe_match_string.matches[0]
+            cpe_match_string.matches[0],
         )
 
         self.assertEqual(
             CPEMatch(
                 "cpe:2.3:a:sun:jre:1.6.0:update3:*:*:*:*:*:*",
-                UUID("c518a954-369e-453e-8e17-2af639150115")
+                UUID("c518a954-369e-453e-8e17-2af639150115"),
             ),
-            cpe_match_string.matches[-1]
+            cpe_match_string.matches[-1],
         )
 
     def test_including_version_limits(self):
