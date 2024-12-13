@@ -9,7 +9,7 @@ import unittest
 from datetime import datetime, timezone
 from uuid import UUID
 
-from pontos.nvd.models.cpe_match_string import CPEMatchString, CPEMatch
+from pontos.nvd.models.cpe_match_string import CPEMatch, CPEMatchString
 from tests.nvd import get_cpe_match_data
 
 
