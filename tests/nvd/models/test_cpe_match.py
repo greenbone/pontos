@@ -22,6 +22,7 @@ class CPEMatchTestCase(unittest.TestCase):
         data = get_cpe_match_data()
         data.__delitem__("matches")
         data.__delitem__("version_end_including")
+        data.__delitem__("cpe_last_modified")
 
         cpe_match_string = CPEMatchString.from_dict(data)
 
@@ -38,10 +39,6 @@ class CPEMatchTestCase(unittest.TestCase):
             cpe_match_string.status,
         )
         self.assertEqual(
-            datetime(2019, 7, 22, 16, 37, 38, 133000, tzinfo=timezone.utc),
-            cpe_match_string.cpe_last_modified,
-        )
-        self.assertEqual(
             datetime(2019, 6, 17, 9, 16, 33, 960000, tzinfo=timezone.utc),
             cpe_match_string.created,
         )
@@ -52,10 +49,20 @@ class CPEMatchTestCase(unittest.TestCase):
 
         self.assertEqual([], cpe_match_string.matches)
 
+        self.assertIsNone(cpe_match_string.cpe_last_modified)
         self.assertIsNone(cpe_match_string.version_start_excluding)
         self.assertIsNone(cpe_match_string.version_end_excluding)
         self.assertIsNone(cpe_match_string.version_start_including)
         self.assertIsNone(cpe_match_string.version_end_including)
+
+    def test_cpe_last_modified(self):
+        data = get_cpe_match_data()
+        cpe_match_string = CPEMatchString.from_dict(data)
+
+        self.assertEqual(
+            datetime(2019, 7, 22, 16, 37, 38, 133000, tzinfo=timezone.utc),
+            cpe_match_string.cpe_last_modified,
+        )
 
     def test_matches(self):
         """
