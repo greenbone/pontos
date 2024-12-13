@@ -38,7 +38,7 @@ class CPEMatchString(Model):
         version_end_including: Optional end of the matching version range, including the given version
         version_end_excluding: Optional end of the matching version range, excluding the given version
         status: Status of the CPE match
-        cpe_last_modified: The date the CPEs list of the match was last modified
+        cpe_last_modified: Optional date the CPEs list of the match was last modified
         created: Creation date of the CPE
         last_modified: Last modification date of the CPE
         matches: List of CPEs matching the criteria string and the optional range limits
@@ -47,9 +47,9 @@ class CPEMatchString(Model):
     match_criteria_id: UUID
     criteria: str
     status: str
-    cpe_last_modified: datetime
     created: datetime
     last_modified: datetime
+    cpe_last_modified: Optional[datetime] = None
     matches: List[CPEMatch] = field(default_factory=list)
     version_start_including: Optional[str] = None
     version_start_excluding: Optional[str] = None
