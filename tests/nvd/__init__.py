@@ -55,6 +55,46 @@ def get_cpe_data(update: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     return data
 
 
+def get_cpe_match_data(
+    update: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    data = {
+        "cpe_last_modified": "2019-07-22T16:37:38.133",
+        "created": "2019-06-17T09:16:33.960",
+        "criteria": "cpe:2.3:a:sun:jre:*:update3:*:*:*:*:*:*",
+        "last_modified": "2019-06-17T09:16:44.000",
+        "match_criteria_id": "EAB2C9C2-F685-450B-9980-553966FC3B63",
+        "matches": [
+            {
+                "cpe_name": "cpe:2.3:a:sun:jre:1.3.0:update3:*:*:*:*:*:*",
+                "cpe_name_id": "2D284534-DA21-43D5-9D89-07F19AE400EA",
+            },
+            {
+                "cpe_name": "cpe:2.3:a:sun:jre:1.4.1:update3:*:*:*:*:*:*",
+                "cpe_name_id": "CE55E1DF-8EA2-41EA-9C51-1BAE728CA094",
+            },
+            {
+                "cpe_name": "cpe:2.3:a:sun:jre:1.4.2:update3:*:*:*:*:*:*",
+                "cpe_name_id": "A09C4E47-6548-40C5-8458-5C07C3292C86",
+            },
+            {
+                "cpe_name": "cpe:2.3:a:sun:jre:1.5.0:update3:*:*:*:*:*:*",
+                "cpe_name_id": "C484A93A-2677-4501-A6E0-E4ADFFFB549E",
+            },
+            {
+                "cpe_name": "cpe:2.3:a:sun:jre:1.6.0:update3:*:*:*:*:*:*",
+                "cpe_name_id": "C518A954-369E-453E-8E17-2AF639150115",
+            },
+        ],
+        "status": "Active",
+        "version_end_including": "1.6.0",
+    }
+
+    if update:
+        data.update(update)
+    return data
+
+
 def get_cve_change_data(
     data: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
