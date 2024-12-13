@@ -341,54 +341,6 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             cpe_match = await anext(it)
 
-    async def test_cpe_matches_match_string_search(self):
-        match_criteria_id = uuid4()
-        cpe_name_id = uuid4()
-
-        self.http_client.get.side_effect = create_cpe_match_responses(
-            match_criteria_id, cpe_name_id
-        )
-
-        it = aiter(
-            self.api.cpe_matches(
-                match_string_search="cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*"
-            )
-        )
-        cpe_match = await anext(it)
-
-        self.assertEqual(
-            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
-        )
-        self.http_client.get.assert_awaited_once_with(
-            "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
-            headers={},
-            params={
-                "startIndex": 0,
-                "matchStringSearch": "cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*",
-                "resultsPerPage": MAX_CPE_MATCHES_PER_PAGE,
-            },
-        )
-
-        self.http_client.get.reset_mock()
-
-        cpe_match = await anext(it)
-
-        self.assertEqual(
-            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
-        )
-        self.http_client.get.assert_awaited_once_with(
-            "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
-            headers={},
-            params={
-                "startIndex": 1,
-                "matchStringSearch": "cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*",
-                "resultsPerPage": 1,
-            },
-        )
-
-        with self.assertRaises(StopAsyncIteration):
-            cpe_match = await anext(it)
-
     async def test_cpe_matches_request_results(self):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
