@@ -52,7 +52,7 @@ def create_cpe_match_response(
                             "cpe_name": generate_cpe_name(iteration, i),
                             "cpe_name_id": f"{uuid_replace_str(cpe_name_id, iteration, i)}",
                         }
-                    ]
+                    ],
                 }
             )
         }
@@ -70,8 +70,12 @@ def create_cpe_match_response(
     response.json.return_value = data
     return response
 
+
 def create_cpe_match_responses(
-    match_criteria_id: UUID, cpe_name_id: UUID, responses: int = 2, results_per_response: int = 1
+    match_criteria_id: UUID,
+    cpe_name_id: UUID,
+    responses: int = 2,
+    results_per_response: int = 1,
 ) -> list[MagicMock]:
     return [
         create_cpe_match_response(
@@ -114,7 +118,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid_replace(uuid4(), 1, 1)
         cpe_name_id = uuid_replace(uuid4(), 1, 1)
 
-        self.http_client.get.return_value = create_cpe_match_response(match_criteria_id, cpe_name_id)
+        self.http_client.get.return_value = create_cpe_match_response(
+            match_criteria_id, cpe_name_id
+        )
 
         cpe_match_string = await self.api.cpe_match(match_criteria_id)
 
@@ -129,7 +135,7 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             cpe_match_string.match_criteria_id,
         )
         self.assertEqual(
-            generate_cpe_name(1,1),
+            generate_cpe_name(1, 1),
             cpe_match_string.criteria,
         )
         self.assertEqual(
@@ -137,24 +143,30 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             cpe_match_string.matches[0].cpe_name_id,
         )
         self.assertEqual(
-            generate_cpe_name(1,1),
+            generate_cpe_name(1, 1),
             cpe_match_string.matches[0].cpe_name,
         )
 
     @patch("pontos.nvd.cpe_match.api.now", spec=now)
-    async def test_cpe_matches_last_modified_start_date(self, now_mock: MagicMock):
+    async def test_cpe_matches_last_modified_start_date(
+        self, now_mock: MagicMock
+    ):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
         now_mock.return_value = datetime(2019, 8, 30)
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id)
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id
+        )
 
         it = aiter(
             self.api.cpe_matches(last_modified_start_date=datetime(2019, 6, 1))
         )
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -170,7 +182,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -186,19 +200,25 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             cpe_match = await anext(it)
 
     @patch("pontos.nvd.cpe_match.api.now", spec=now)
-    async def test_cpe_matches_last_modified_end_date(self, now_mock: MagicMock):
+    async def test_cpe_matches_last_modified_end_date(
+        self, now_mock: MagicMock
+    ):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
         now_mock.return_value = datetime(2019, 8, 30)
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id)
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id
+        )
 
         it = aiter(
             self.api.cpe_matches(last_modified_end_date=datetime(2019, 8, 1))
         )
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -213,7 +233,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -231,14 +253,16 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id)
-
-        it = aiter(
-            self.api.cpe_matches(cve_id="CVE-2010-3574")
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id
         )
+
+        it = aiter(self.api.cpe_matches(cve_id="CVE-2010-3574"))
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -253,7 +277,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -271,14 +297,20 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id)
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id
+        )
 
         it = aiter(
-            self.api.cpe_matches(match_string_search="cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*")
+            self.api.cpe_matches(
+                match_string_search="cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*"
+            )
         )
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -293,7 +325,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -311,14 +345,20 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id)
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id
+        )
 
         it = aiter(
-            self.api.cpe_matches(match_string_search="cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*")
+            self.api.cpe_matches(
+                match_string_search="cpe:2.3:a:sun:jre:*:*:*:*:*:*:*:*"
+            )
         )
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -333,7 +373,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -360,7 +402,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cpe_matches(request_results=10))
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -372,14 +416,18 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.get.reset_mock()
         cpe_match = await anext(it)
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 2), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 2), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_not_called()
 
         self.http_client.get.reset_mock()
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={},
@@ -391,7 +439,9 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.get.reset_mock()
         cpe_match = await anext(it)
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 2), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 2), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_not_called()
 
         with self.assertRaises(Exception):
@@ -427,7 +477,9 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
         it = aiter(self.api.cpe_matches(request_results=10))
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={"apiKey": "token123"},
@@ -439,14 +491,18 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.get.reset_mock()
         cpe_match = await anext(it)
-        self.assertEqual(uuid_replace(match_criteria_id, 1, 2), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 1, 2), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_not_called()
 
         self.http_client.get.reset_mock()
 
         cpe_match = await anext(it)
 
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 1), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cpematch/2.0",
             headers={"apiKey": "token123"},
@@ -458,7 +514,9 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.get.reset_mock()
         cpe_match = await anext(it)
-        self.assertEqual(uuid_replace(match_criteria_id, 2, 2), cpe_match.match_criteria_id)
+        self.assertEqual(
+            uuid_replace(match_criteria_id, 2, 2), cpe_match.match_criteria_id
+        )
         self.http_client.get.assert_not_called()
 
         with self.assertRaises(Exception):
@@ -473,7 +531,9 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
     ):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
-        self.http_client.get.side_effect = create_cpe_match_responses(match_criteria_id, cpe_name_id,8)
+        self.http_client.get.side_effect = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id, 8
+        )
         monotonic_mock.side_effect = [10, 11]
 
         it = aiter(self.api.cpe_matches())
