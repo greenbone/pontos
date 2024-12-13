@@ -190,7 +190,7 @@ class CPEMatchApi(NVDApi):
             raise PontosError("Missing Match Criteria ID.")
 
         response = await self._get(
-            params={"matchCriteriaId": match_criteria_id}
+            params={"matchCriteriaId": str(match_criteria_id)}
         )
         response.raise_for_status()
         data = response.json(object_hook=convert_camel_case)
