@@ -155,7 +155,9 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
         while next_url:
             # Workaround for https://github.com/encode/httpx/issues/3433
-            new_params = httpx.URL(next_url).params.merge(params)
+            new_params = (
+                httpx.URL(next_url).params.merge(params) if params else None
+            )
             response = await self.get(next_url, params=new_params)
 
             yield response
