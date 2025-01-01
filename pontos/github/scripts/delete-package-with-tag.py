@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 This script delete a package from a repository, if it contains the specified tag.
 """
