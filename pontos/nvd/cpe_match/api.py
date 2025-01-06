@@ -82,10 +82,9 @@ class CPEMatchApi(NVDApi):
             timeout=timeout,
             rate_limit=rate_limit,
         )
+        self._cpe_match_cache: Optional[dict[str, Any]] = None
         if cache_cpe_matches:
             self._cpe_match_cache = {}
-        else:
-            self._cpe_match_cache = None
 
     def cpe_matches(
         self,
