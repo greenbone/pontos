@@ -34,13 +34,6 @@ DEFAULT_NIST_NVD_CPE_MATCH_URL = (
 MAX_CPE_MATCHES_PER_PAGE = 500
 
 
-def _result_iterator(data: JSON) -> Iterator[CPEMatchString]:
-    results: list[dict[str, Any]] = data.get("match_strings", [])  # type: ignore
-    return (
-        CPEMatchString.from_dict(result["match_string"]) for result in results
-    )
-
-
 class CPEMatchApi(NVDApi):
     """
     API for querying the NIST NVD CPE match information.
@@ -62,6 +55,7 @@ class CPEMatchApi(NVDApi):
         token: Optional[str] = None,
         timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
+        cache_cpe_matches: bool = True,
     ) -> None:
         """
         Create a new instance of the CPE API.
@@ -76,6 +70,11 @@ class CPEMatchApi(NVDApi):
                 rolling 30 second window.
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
+            cache_cpe_matches: If set to True (the default) the entries in the
+                lists of matching CPEs for each match string are cached and reused
+                to use less memory.
+                If set to False, a separate CPEMatch object is kept for each entry
+                to avoid possible side effects when modifying the data.
         """
         super().__init__(
             DEFAULT_NIST_NVD_CPE_MATCH_URL,
@@ -83,6 +82,10 @@ class CPEMatchApi(NVDApi):
             timeout=timeout,
             rate_limit=rate_limit,
         )
+        if cache_cpe_matches:
+            self._cpe_match_cache = {}
+        else:
+            self._cpe_match_cache = None
 
     def cpe_matches(
         self,
@@ -157,10 +160,28 @@ class CPEMatchApi(NVDApi):
         return NVDResults(
             self,
             params,
-            _result_iterator,
+            self._result_iterator,
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+        )
+
+    def _result_iterator(self, data: JSON) -> Iterator[CPEMatchString]:
+        """
+        Creates an iterator of all the CPEMatchStrings in given API response JSON
+
+        Args:
+            data: The JSON response data to get the match strings from
+
+        Returns:
+            An iterator over the CPEMatchStrings
+        """
+        results: list[dict[str, Any]] = data.get("match_strings", [])  # type: ignore
+        return (
+            CPEMatchString.from_dict_with_cache(
+                result["match_string"], self._cpe_match_cache
+            )
+            for result in results
         )
 
     async def cpe_match(self, match_criteria_id: str) -> CPEMatchString:
@@ -201,7 +222,9 @@ class CPEMatchApi(NVDApi):
             )
 
         match_string = match_strings[0]
-        return CPEMatchString.from_dict(match_string["match_string"])
+        return CPEMatchString.from_dict_with_cache(
+            match_string["match_string"], self._cpe_match_cache
+        )
 
     async def __aenter__(self) -> "CPEMatchApi":
         await super().__aenter__()
