@@ -58,7 +58,9 @@ class CPEMatchString(Model):
 
     @classmethod
     def from_dict_with_cache(
-        cls, data: Dict[str, Any], cpe_match_cache: Dict[str, CPEMatch] | None
+        cls,
+        data: Dict[str, Any],
+        cpe_match_cache: Optional[Dict[str, CPEMatch]],
     ):
         """
         Create a CPEMatchString model from a dict, reusing
