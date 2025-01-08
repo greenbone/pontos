@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
 from pontos.models import Model
@@ -59,8 +59,8 @@ class CPEMatchString(Model):
     @classmethod
     def from_dict_with_cache(
         cls,
-        data: Dict[str, Any],
-        cpe_match_cache: Optional[Dict[str, CPEMatch]],
+        data: dict[str, Any],
+        cpe_match_cache: dict[str, CPEMatch],
     ):
         """
         Create a CPEMatchString model from a dict, reusing
@@ -73,14 +73,11 @@ class CPEMatchString(Model):
                 to not cache and reused CPE matches
         """
         new_match_string = cls.from_dict(data)
-        if cpe_match_cache is None:
-            return new_match_string
 
         for i, match in enumerate(new_match_string.matches):
-            if match.cpe_name_id in cpe_match_cache:
-                cached_match: CPEMatch = cpe_match_cache[match.cpe_name_id]
-                if cached_match.cpe_name == match.cpe_name:
-                    new_match_string.matches[i] = cached_match
+            cached_match: Optional[CPEMatch] = cpe_match_cache.get(match.cpe_name_id)
+            if cached_match and cached_match.cpe_name == match.cpe_name:
+                new_match_string.matches[i] = cached_match
             else:
                 cpe_match_cache[match.cpe_name_id] = match
         return new_match_string

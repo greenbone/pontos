@@ -55,7 +55,6 @@ class CPEMatchApi(NVDApi):
         token: Optional[str] = None,
         timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
-        cache_cpe_matches: bool = True,
     ) -> None:
         """
         Create a new instance of the CPE API.
@@ -70,11 +69,6 @@ class CPEMatchApi(NVDApi):
                 rolling 30 second window.
                 See https://nvd.nist.gov/developers/start-here#divRateLimits
                 Default: True.
-            cache_cpe_matches: If set to True (the default) the entries in the
-                lists of matching CPEs for each match string are cached and reused
-                to use less memory.
-                If set to False, a separate CPEMatch object is kept for each entry
-                to avoid possible side effects when modifying the data.
         """
         super().__init__(
             DEFAULT_NIST_NVD_CPE_MATCH_URL,
@@ -82,9 +76,7 @@ class CPEMatchApi(NVDApi):
             timeout=timeout,
             rate_limit=rate_limit,
         )
-        self._cpe_match_cache: Optional[dict[str, Any]] = None
-        if cache_cpe_matches:
-            self._cpe_match_cache = {}
+        self._cpe_match_cache: dict[str, Any] = {}
 
     def cpe_matches(
         self,
