@@ -75,7 +75,9 @@ class CPEMatchString(Model):
         new_match_string = cls.from_dict(data)
 
         for i, match in enumerate(new_match_string.matches):
-            cached_match: Optional[CPEMatch] = cpe_match_cache.get(match.cpe_name_id)
+            cached_match: Optional[CPEMatch] = cpe_match_cache.get(
+                match.cpe_name_id
+            )
             if cached_match and cached_match.cpe_name == match.cpe_name:
                 new_match_string.matches[i] = cached_match
             else:
