@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
       - name: Install poetry and dependencies
-        uses: greenbone/actions/poetry@027c80b4a1e454af192f93aa55cb2bc58ce44b66 #v3.27.7
+        uses: greenbone/actions/poetry@v3
         with:
           python-version: "3.10"
       - name: Build Documentation
