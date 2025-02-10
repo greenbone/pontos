@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-""" Argument parser for pontos-github """
+"""Argument parser for pontos-github"""
 
 import os
 from argparse import ArgumentParser, FileType, Namespace
