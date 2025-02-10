@@ -56,7 +56,7 @@ def get_cpe_data(update: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
 
 def get_cpe_match_data(
-    update: Optional[Dict[str, Any]] = None
+    update: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     data = {
         "cpe_last_modified": "2019-07-22T16:37:38.133",
@@ -96,7 +96,7 @@ def get_cpe_match_data(
 
 
 def get_cve_change_data(
-    data: Optional[Dict[str, Any]] = None
+    data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     cve_changes = {
         "cve_id": "CVE-2022-0001",

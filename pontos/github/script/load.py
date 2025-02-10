@@ -24,7 +24,7 @@ GITHUB_SCRIPT_PARSER_FUNCTION_NAME = "add_script_arguments"
 
 @contextmanager
 def load_script(
-    script: Union[str, os.PathLike]
+    script: Union[str, os.PathLike],
 ) -> Generator[ModuleType, None, None]:
     """
     A context manager to load a script module.

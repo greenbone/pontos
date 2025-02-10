@@ -396,7 +396,7 @@ def deprecated(
 
 @contextmanager
 def add_sys_path(
-    directory: Union[str, os.PathLike]
+    directory: Union[str, os.PathLike],
 ) -> Generator[None, None, None]:
     """
     Context Manager to add a directory path to the module search path aka.
@@ -444,7 +444,7 @@ def unload_module(module: Union[str, ModuleType]) -> None:
 
 @contextmanager
 def ensure_unload_module(
-    module: Union[str, ModuleType]
+    module: Union[str, ModuleType],
 ) -> Generator[None, None, None]:
     """
     A context manager to ensure that a module gets removed even if an error
