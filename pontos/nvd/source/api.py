@@ -141,3 +141,7 @@ class SourceApi(NVDApi):
             results_per_page=results_per_page,
             start_index=start_index,
         )
+
+    async def __aenter__(self) -> "SourceApi":
+        await super().__aenter__()
+        return self
