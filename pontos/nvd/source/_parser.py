@@ -11,6 +11,7 @@ import shtab
 def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
     parser = ArgumentParser()
     shtab.add_argument_to(parser)
+    parser.add_argument("--token", help="API key to use for querying.")
     parser.add_argument(
         "--source-identifier",
         help="Get sources record for this source identifier",
