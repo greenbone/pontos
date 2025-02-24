@@ -127,3 +127,30 @@ def get_cve_change_data(
     if data:
         cve_changes.update(data)
     return cve_changes
+
+
+def get_source_data(
+    data: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    sources = {
+        "name": "MITRE",
+        "contact_email": "cve@mitre.org",
+        "source_identifiers": [
+            "cve@mitre.org",
+            "8254265b-2729-46b6-b9e3-3dfca2d5bfca",
+        ],
+        "last_modified": "2019-09-09T16:18:45.930",
+        "created": "2019-09-09T16:18:45.930",
+        "v3_acceptance_level": {
+            "description": "Contributor",
+            "last_modified": "2025-01-30T00:00:20.107",
+        },
+        "cwe_acceptance_level": {
+            "description": "Reference",
+            "last_modified": "2025-01-24T00:00:00.043",
+        },
+    }
+
+    if data:
+        sources.update(data)
+    return sources
