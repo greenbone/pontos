@@ -108,7 +108,7 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
         with self.assertRaises(StopAsyncIteration):
             await anext(it)
 
-    async def test_cve_changes_change_dates(self):
+    async def test_sources_change_dates(self):
         self.http_client.get.side_effect = create_source_responses()
 
         it = aiter(

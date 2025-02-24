@@ -24,7 +24,9 @@ from pontos.nvd.models.source import Source
 
 __all__ = ("SourceApi",)
 
-DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/source/2.0"
+DEFAULT_NIST_NVD_SOURCE_URL = (
+    "https://services.nvd.nist.gov/rest/json/source/2.0"
+)
 MAX_SOURCES_PER_PAGE = 1000
 
 
@@ -35,7 +37,7 @@ def _result_iterator(data: JSON) -> Iterator[Source]:
 
 class SourceApi(NVDApi):
     """
-    API for querying the NIST NVD CVE Change History information.
+    API for querying the NIST NVD source API.
 
     Should be used as an async context manager.
 
@@ -58,7 +60,7 @@ class SourceApi(NVDApi):
         request_attempts: int = 1,
     ) -> None:
         """
-        Create a new instance of the CVE API.
+        Create a new instance of the source API.
 
         Args:
             token: The API key to use. Using an API key allows to run more
@@ -73,7 +75,7 @@ class SourceApi(NVDApi):
             request_attempts: The number of attempts per HTTP request. Defaults to 1.
         """
         super().__init__(
-            DEFAULT_NIST_NVD_CVES_URL,
+            DEFAULT_NIST_NVD_SOURCE_URL,
             token=token,
             timeout=timeout,
             rate_limit=rate_limit,
@@ -96,12 +98,14 @@ class SourceApi(NVDApi):
         https://nvd.nist.gov/developers/data-sources#divGetSource
 
         Args:
-            last_modified_start_date: Return all CVEs modified after this date.
-            last_modified_end_date: Return all CVEs modified before this date.
+            last_modified_start_date: Return all sources modified after this date.
+            last_modified_end_date: Return all sources modified before this date.
                 If last_modified_start_date is set but no
                 last_modified_end_date is passed it is set to now.
-            source_identifier: Return all source records where the source identifier matches
-            start_index: Index of the first CVE to be returned. Useful only for
+            source_identifier: Return all source records where the source identifier matches.
+            request_results: Number of sources to download. Set to None
+                (default) to download all available CPEs.
+            start_index: Index of the first source to be returned. Useful only for
                 paginated requests that should not start at the first page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
