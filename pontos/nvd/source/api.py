@@ -45,7 +45,7 @@ class SourceApi(NVDApi):
             from pontos.nvd.source import SourceApi
 
             async with SourceApi() as api:
-                async for source in api.source():
+                async for source in api.sources():
                     print(source)
     """
 
@@ -115,7 +115,7 @@ class SourceApi(NVDApi):
                 from pontos.nvd.source import SourceApi
 
                 async with SourceApi() as api:
-                    async for source in api.source(source_identifier="cve@mitre.org"):
+                    async for source in api.sources(source_identifier="cve@mitre.org"):
                         print(source)
         """
         params: Params = {}
