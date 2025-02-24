@@ -13,7 +13,7 @@ __all__ = ("SourceApi",)
 
 
 async def query_changes(args: Namespace) -> None:
-    async with SourceApi() as api:
+    async with SourceApi(token=args.token) as api:
         async for source in api.sources(
             source_identifier=args.source_identifier,
             request_results=args.number,
