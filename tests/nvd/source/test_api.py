@@ -183,3 +183,10 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
 
         with self.assertRaises(StopAsyncIteration):
             await anext(it)
+
+    async def test_context_manager(self):
+        async with self.api:
+            pass
+
+        self.http_client.__aenter__.assert_awaited_once()
+        self.http_client.__aexit__.assert_awaited_once()
