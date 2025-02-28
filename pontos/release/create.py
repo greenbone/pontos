@@ -170,6 +170,7 @@ class CreateReleaseCommand(AsyncCommand):
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
         release_version: Optional[Version] = None,
+        last_release_version: Optional[Version] = None,
         next_version: Union[Version, Literal[False], None] = None,
         git_signing_key: Optional[str] = None,
         git_remote_name: Optional[str] = None,
@@ -194,6 +195,8 @@ class CreateReleaseCommand(AsyncCommand):
                 release_version.
             release_version: Optional release version to use. If not set the
                 to be released version will be determined from the project.
+            last_release_version: Optional last release version to use. If not
+                set the last release version will be determined from the project.
             next_version: Optional version to set after the release.
                 If set to None the next development version will be set.
                 If set to False the version will not be changed after the
@@ -225,21 +228,25 @@ class CreateReleaseCommand(AsyncCommand):
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
-        last_release_version = self._get_last_release_version(
-            versioning_scheme=versioning_scheme,
-            release_type=release_type,
-            release_series=release_series,
-        )
         if not last_release_version:
-            if not release_version:
-                self.print_error("Unable to determine last release version.")
-                return CreateReleaseReturnValue.NO_LAST_RELEASE_VERSION
-            else:
-                self.terminal.info(
-                    f"Creating the initial release {release_version}"
-                )
+            last_release_version = self._get_last_release_version(
+                versioning_scheme=versioning_scheme,
+                release_type=release_type,
+                release_series=release_series,
+            )
+            if not last_release_version:
+                if not release_version:
+                    self.print_error(
+                        "Unable to determine last release version."
+                    )
+                    return CreateReleaseReturnValue.NO_LAST_RELEASE_VERSION
+                else:
+                    self.terminal.info(
+                        f"Creating the initial release {release_version}"
+                    )
 
-        self.terminal.info(f"Last release is {last_release_version}")
+        if last_release_version:
+            self.terminal.info(f"Last release is {last_release_version}")
 
         calculator = versioning_scheme.calculator()
 
@@ -417,6 +424,7 @@ def create_release(
         versioning_scheme=args.versioning_scheme,
         release_type=args.release_type,
         release_version=args.release_version,
+        last_release_version=args.last_release_version,
         next_version=args.next_version,
         git_remote_name=args.git_remote_name,
         git_signing_key=args.git_signing_key,
