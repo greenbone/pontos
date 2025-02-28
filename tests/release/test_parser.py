@@ -138,6 +138,20 @@ class CreateParseArgsTestCase(unittest.TestCase):
                 ]
             )
 
+    def test_last_release_version(self):
+        _, _, args = parse_args(
+            [
+                "create",
+                "--release-type",
+                "patch",
+                "--last-release-version",
+                "1.2.3",
+            ]
+        )
+
+        self.assertEqual(args.func, create_release)
+        self.assertEqual(args.last_release_version, PEP440Version("1.2.3"))
+
     def test_release_type(self):
         _, _, args = parse_args(["create", "--release-type", "patch"])
 
