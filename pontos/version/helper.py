@@ -14,6 +14,7 @@ from ._version import ParseVersionFuncType, Version
 def get_last_release_versions(
     parse_version: ParseVersionFuncType,
     *,
+    git: Optional[Git] = None,
     git_tag_prefix: Optional[str] = "",
     ignore_pre_releases: Optional[bool] = False,
     tag_name: Optional[str] = None,
@@ -21,6 +22,7 @@ def get_last_release_versions(
     """Get the last released Versions from git.
 
     Args:
+        git: Git instance to use
         git_tag_prefix: Git tag prefix to consider
         ignore_pre_release: Ignore pre releases and only consider non pre
             releases. Default is False.
@@ -29,8 +31,8 @@ def get_last_release_versions(
     Returns:
         List of released versions
     """
-
-    tag_list = Git().list_tags(
+    git = git or Git()
+    tag_list = git.list_tags(
         sort=TagSort.VERSION,
         sort_suffix=DEFAULT_TAG_SORT_SUFFIX,
         tag_name=tag_name,
@@ -55,6 +57,7 @@ def get_last_release_versions(
 def get_last_release_version(
     parse_version: ParseVersionFuncType,
     *,
+    git: Optional[Git] = None,
     git_tag_prefix: Optional[str] = "",
     ignore_pre_releases: Optional[bool] = False,
     tag_name: Optional[str] = None,
@@ -62,6 +65,7 @@ def get_last_release_version(
     """Get the last released Version from git.
 
     Args:
+        git: Git instance to use
         git_tag_prefix: Git tag prefix to consider
         ignore_pre_release: Ignore pre releases and only consider non pre
             releases. Default is False.
@@ -73,6 +77,7 @@ def get_last_release_version(
     """
 
     it = get_last_release_versions(
+        git=git,
         parse_version=parse_version,
         git_tag_prefix=git_tag_prefix,
         ignore_pre_releases=ignore_pre_releases,
