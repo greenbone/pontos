@@ -180,6 +180,7 @@ class CreateReleaseCommand(AsyncCommand):
         release_series: Optional[str] = None,
         update_project: bool = True,
         github_pre_release: bool = False,
+        changelog: Optional[str] = None,
     ) -> CreateReleaseReturnValue:
         """
         Create a release
@@ -214,6 +215,8 @@ class CreateReleaseCommand(AsyncCommand):
             update_project: Update version in project files.
             github_pre_release: Enforce uploading a release as a GitHub pre
                 release
+            changelog: An optional changelog. If not set a changelog will be
+                gathered from the git commits since the last release.
         """
         self.git_tag_prefix = git_tag_prefix or ""
         self.repository = repository
@@ -300,9 +303,12 @@ class CreateReleaseCommand(AsyncCommand):
                 f"Creating changelog for {release_version} as initial release."
             )
 
-        release_text = self._create_changelog(
-            release_version, last_release_version, cc_config
-        )
+        if changelog:
+            release_text = changelog
+        else:
+            release_text = self._create_changelog(
+                release_version, last_release_version, cc_config
+            )
 
         commit_msg = f"Automatic release to {release_version}"
 
@@ -416,6 +422,10 @@ def create_release(
         )
         return CreateReleaseReturnValue.TOKEN_MISSING
 
+    changelog_file: Path = args.changelog
+    if changelog_file and not changelog_file.exists():
+        error_terminal.error(f"Changelog file {changelog_file} does not exist.")
+        return CreateReleaseReturnValue.CREATE_RELEASE_ERROR
     return CreateReleaseCommand(
         terminal=terminal, error_terminal=error_terminal
     ).run(
@@ -434,4 +444,5 @@ def create_release(
         release_series=args.release_series,
         update_project=args.update_project,
         github_pre_release=args.github_pre_release,
+        changelog=changelog_file.read_text() if changelog_file else None,
     )

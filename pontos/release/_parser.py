@@ -33,9 +33,7 @@ from .sign import sign
 DEFAULT_SIGNING_KEY = "0ED1E580"
 
 
-class ReleaseVersionAction(
-    argparse._StoreAction
-):  # pylint: disable=protected-access
+class ReleaseVersionAction(argparse._StoreAction):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, "release_type", ReleaseType.VERSION)
         setattr(namespace, self.dest, values)
@@ -145,13 +143,6 @@ def add_create_parser(
         "remote repository. Also do not create a GitHub release.",
     )
     create_parser.add_argument(
-        "--conventional-commits-config",
-        dest="cc_config",
-        type=Path,
-        help="Conventional commits config file (toml), including conventions."
-        " If not set defaults are used.",
-    )
-    create_parser.add_argument(
         "--update-project",
         help="Update version in project files like pyproject.toml. By default "
         "project files are updated.",
@@ -162,6 +153,19 @@ def add_create_parser(
         "--github-pre-release",
         help="Enforce uploading a release as GitHub pre-release. ",
         action="store_true",
+    )
+    changelog_parser = create_parser.add_mutually_exclusive_group()
+    changelog_parser.add_argument(
+        "--conventional-commits-config",
+        dest="cc_config",
+        type=Path,
+        help="Conventional commits config file (toml), including conventions."
+        " If not set defaults are used.",
+    )
+    changelog_parser.add_argument(
+        "--changelog",
+        type=Path,
+        help="Read the release notes from the given file.",
     )
 
 
