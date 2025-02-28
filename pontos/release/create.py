@@ -212,11 +212,6 @@ class CreateReleaseCommand(AsyncCommand):
             github_pre_release: Enforce uploading a release as a GitHub pre
                 release
         """
-        git_signing_key = (
-            git_signing_key
-            if git_signing_key is not None
-            else find_signing_key(self.terminal)
-        )
         self.git_tag_prefix = git_tag_prefix or ""
         self.repository = repository
 
@@ -303,6 +298,12 @@ class CreateReleaseCommand(AsyncCommand):
         )
 
         commit_msg = f"Automatic release to {release_version}"
+
+        git_signing_key = (
+            git_signing_key
+            if git_signing_key is not None
+            else find_signing_key(self.terminal)
+        )
 
         # check if files have been modified and create a commit
         status = list(self.git.status())
