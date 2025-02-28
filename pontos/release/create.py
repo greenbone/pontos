@@ -128,6 +128,40 @@ class CreateReleaseCommand(AsyncCommand):
             prerelease=release_version.is_pre_release or github_pre_release,
         )
 
+    def _get_last_release_version(
+        self,
+        *,
+        versioning_scheme: VersioningScheme,
+        release_type: ReleaseType,
+        release_series: Optional[str] = None,
+    ) -> Optional[Version]:
+        try:
+            return get_last_release_version(
+                git=self.git,
+                parse_version=versioning_scheme.parse_version,
+                git_tag_prefix=self.git_tag_prefix,
+                tag_name=(
+                    f"{self.git_tag_prefix}{release_series}.*"
+                    if release_series
+                    else None
+                ),
+                # include changes from pre-releases in release changelog for
+                # non pre-release changes
+                ignore_pre_releases=release_type
+                not in [
+                    ReleaseType.ALPHA,
+                    ReleaseType.BETA,
+                    ReleaseType.RELEASE_CANDIDATE,
+                ]
+                # but not when using a release series because then we might not
+                # be able to determine the last release if there are only
+                # pre-releases in the series yet
+                and not release_series,
+            )
+        except PontosError as e:
+            self.print_warning(f"Could not determine last release version. {e}")
+            return None
+
     async def async_run(  # type: ignore[override]
         self,
         *,
@@ -196,32 +230,11 @@ class CreateReleaseCommand(AsyncCommand):
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
 
-        try:
-            last_release_version = get_last_release_version(
-                parse_version=versioning_scheme.parse_version,
-                git_tag_prefix=self.git_tag_prefix,
-                tag_name=(
-                    f"{self.git_tag_prefix}{release_series}.*"
-                    if release_series
-                    else None
-                ),
-                # include changes from pre-releases in release changelog for
-                # non pre-release changes
-                ignore_pre_releases=release_type
-                not in [
-                    ReleaseType.ALPHA,
-                    ReleaseType.BETA,
-                    ReleaseType.RELEASE_CANDIDATE,
-                ]
-                # but not when using a release series because then we might not
-                # be able to determine the last release if there are only
-                # pre-releases in the series yet
-                and not release_series,
-            )
-        except PontosError as e:
-            last_release_version = None
-            self.print_warning(f"Could not determine last release version. {e}")
-
+        last_release_version = self._get_last_release_version(
+            versioning_scheme=versioning_scheme,
+            release_type=release_type,
+            release_series=release_series,
+        )
         if not last_release_version:
             if not release_version:
                 self.print_error("Unable to determine last release version.")
@@ -231,8 +244,7 @@ class CreateReleaseCommand(AsyncCommand):
                     f"Creating the initial release {release_version}"
                 )
 
-        else:
-            self.terminal.info(f"Last release was {last_release_version}")
+        self.terminal.info(f"Last release is {last_release_version}")
 
         calculator = versioning_scheme.calculator()
 
