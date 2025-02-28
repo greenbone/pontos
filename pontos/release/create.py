@@ -74,7 +74,12 @@ class CreateReleaseCommand(AsyncCommand):
         terminal: A Terminal for output
     """
 
-    def __init__(self, *, terminal: Terminal, error_terminal: Terminal) -> None:
+    def __init__(
+        self,
+        *,
+        terminal: Optional[Terminal] = None,
+        error_terminal: Optional[Terminal] = None,
+    ) -> None:
         super().__init__(terminal=terminal, error_terminal=error_terminal)
         self.git = Git()
 

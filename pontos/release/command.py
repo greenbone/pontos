@@ -4,17 +4,22 @@
 
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, SupportsInt
+from typing import Any, Optional, SupportsInt
 
-from pontos.terminal import Terminal
+from pontos.terminal import NullTerminal, Terminal
 
 
 class Command(ABC):
     """Base class for release related command"""
 
-    def __init__(self, *, terminal: Terminal, error_terminal: Terminal) -> None:
-        self.terminal = terminal
-        self.error_terminal = error_terminal
+    def __init__(
+        self,
+        *,
+        terminal: Optional[Terminal] = None,
+        error_terminal: Optional[Terminal] = None,
+    ) -> None:
+        self.terminal = terminal or NullTerminal()
+        self.error_terminal = error_terminal or NullTerminal()
 
     def print_error(self, *messages: Any, **kwargs: Any) -> None:
         """Print an error to the error terminal"""
