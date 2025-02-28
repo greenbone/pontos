@@ -92,6 +92,11 @@ def add_create_parser(
         "is required if the latest tag version is newer then the to be "
         'released version. Examples: "1.2", "2", "22.4"',
     )
+    create_parser.add_argument(
+        "--last-release-version",
+        help="Optional last release version. Will be determined if not set.",
+        type=str,
+    )
 
     next_version_group = create_parser.add_mutually_exclusive_group()
 
@@ -339,6 +344,12 @@ def parse_args(
     release_version = getattr(parsed_args, "release_version", None)
     if release_version:
         parsed_args.release_version = scheme.parse_version(release_version)
+
+    last_release_version = getattr(parsed_args, "last_release_version", None)
+    if last_release_version:
+        parsed_args.last_release_version = scheme.parse_version(
+            last_release_version
+        )
 
     token = os.environ.get("GITHUB_TOKEN")
     user = os.environ.get("GITHUB_USER")
