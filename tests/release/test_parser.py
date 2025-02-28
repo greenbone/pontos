@@ -256,6 +256,33 @@ class CreateParseArgsTestCase(unittest.TestCase):
 
         self.assertEqual(args.cc_config, Path("foo.toml"))
 
+    def test_changelog_conflict(self):
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(
+                [
+                    "create",
+                    "--release-type",
+                    "patch",
+                    "--changelog",
+                    "foo.md",
+                    "--conventional-commits-config",
+                    "bar.toml",
+                ]
+            )
+
+    def test_changelog(self):
+        _, _, args = parse_args(
+            [
+                "create",
+                "--changelog",
+                "foo.md",
+                "--release-type",
+                "patch",
+            ]
+        )
+
+        self.assertEqual(args.changelog, Path("foo.md"))
+
     def test_release_series(self):
         _, _, args = parse_args(
             ["create", "--release-type", "patch", "--release-series", "22.4"]

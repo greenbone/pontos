@@ -34,6 +34,7 @@ from pontos.version.schemes._pep440 import PEP440Version, PEP440VersioningScheme
 TOKEN = "foo"
 REPOSITORY = "greenbone/foo"
 GIT_SIGNING_KEY = "1234"
+CHANGELOG = "A Changelog"
 
 
 def mock_terminal() -> MagicMock:
@@ -141,15 +142,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_version(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -171,7 +167,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         ]
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -185,6 +180,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 release_version=release_version,
                 last_release_version=current_version,
                 next_version=PEP440Version("1.0.0.dev1"),
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -234,15 +230,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_with_repository(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -264,7 +255,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -278,6 +268,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 release_version=release_version,
                 last_release_version=current_version,
                 next_version=next_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -328,15 +319,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_initial_release_version(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         get_last_release_version_mock: MagicMock,
     ):
@@ -359,7 +345,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
         get_last_release_version_mock.return_value = None
 
         with temp_git_repository():
@@ -372,6 +357,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.VERSION,
                 release_version=release_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -421,15 +407,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_patch(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -451,7 +432,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -463,6 +443,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.PATCH,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -511,15 +492,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_calendar(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         today = datetime.today()
@@ -542,7 +518,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -554,6 +529,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.CALENDAR,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -605,15 +581,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_minor(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -635,7 +606,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -647,6 +617,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.MINOR,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -695,15 +666,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_major(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -725,7 +691,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -737,6 +702,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.MAJOR,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -785,15 +751,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_alpha(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -815,7 +776,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -827,6 +787,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.ALPHA,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -877,15 +838,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_beta(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -907,7 +863,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -919,6 +874,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.BETA,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -969,15 +925,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_release_candidate(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -999,7 +950,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
 
         with temp_git_repository():
             released = CreateReleaseCommand(
@@ -1011,6 +961,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.RELEASE_CANDIDATE,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1111,19 +1062,13 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project", autospec=True)
     def test_no_update_project(
         self,
         project_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         release_version = PEP440Version("0.0.2")
-        create_changelog_mock.return_value = "A Changelog"
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = []
 
@@ -1140,6 +1085,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 last_release_version=PEP440Version("0.0.1"),
                 next_version=PEP440Version("1.0.0.dev1"),
                 update_project=False,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1169,15 +1115,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_gather_last_release(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
         get_last_release_version_mock: MagicMock,
     ):
@@ -1200,7 +1141,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
         get_last_release_version_mock.return_value = current_version
 
         with temp_git_repository():
@@ -1213,6 +1153,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.MAJOR,
                 next_version=PEP440VersioningScheme.parse_version("1.0.1.dev1"),
+                changelog=CHANGELOG,
             )
 
         get_last_release_version_mock.assert_called_once_with(
@@ -1402,15 +1343,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_github_create_release_failure(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1429,7 +1365,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         create_release_mock.side_effect = HTTPStatusError(
             "Error during a request",
             request=MagicMock(spec=Request),
@@ -1451,6 +1386,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 release_version=release_version,
                 next_version=next_version,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         self.assertEqual(
@@ -1483,15 +1419,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_update_version_after_release_error(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1499,7 +1430,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         next_version = PEP440Version("0.0.2.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
         command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -1523,6 +1453,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 release_version=release_version,
                 next_version=next_version,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_called_once_with(follow_tags=True, remote=None)
@@ -1556,15 +1487,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_to_specific_git_remote(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1584,7 +1510,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
 
@@ -1601,6 +1526,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 git_remote_name="upstream",
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1639,15 +1565,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_without_git_prefix(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1667,7 +1588,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
 
@@ -1684,6 +1604,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 git_tag_prefix="",
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1719,15 +1640,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
     @patch("pontos.release.create.GitHubAsyncRESTApi", autospec=True)
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_github_api(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         github_api_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1747,7 +1663,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         create_api_mock = AsyncMock()
         github_api_mock.return_value.releases.create = create_api_mock
         git_mock = MagicMock(spec=Git)
@@ -1766,6 +1681,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 git_remote_name="upstream",
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1804,15 +1720,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
     @patch("pontos.release.create.GitHubAsyncRESTApi", autospec=True)
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_github_api_pre_release(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         github_api_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -1832,7 +1743,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         create_api_mock = AsyncMock()
         github_api_mock.return_value.releases.create = create_api_mock
         git_mock = MagicMock(spec=Git)
@@ -1851,6 +1761,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 git_remote_name="upstream",
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -1894,17 +1805,11 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     def test_release_with_go_project(
         self,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         release_version = PEP440Version("0.0.2")
-        create_changelog_mock.return_value = "A Changelog"
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [
             StatusEntry(f"M  {GoVersionCommand.version_file_path}")
@@ -1920,6 +1825,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 git_signing_key=GIT_SIGNING_KEY,
                 versioning_scheme=PEP440VersioningScheme,
                 release_type=ReleaseType.PATCH,
+                changelog=CHANGELOG,
             )
 
         self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
@@ -1949,7 +1855,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         autospec=True,
     )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
-    def test_release_with_changelog(
+    def test_release_with_gathered_changelog(
         self,
         gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
@@ -2071,19 +1977,112 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
 
         self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
 
+    @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     @patch(
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
+    @patch("pontos.release.create.Project._gather_commands", autospec=True)
+    def test_release_with_changelog(
+        self,
+        gather_commands_mock: MagicMock,
+        create_release_mock: AsyncMock,
+        cc_git_mock: MagicMock,
+    ):
+        current_version = PEP440Version("0.0.1")
+        release_version = PEP440Version("0.0.2")
+        next_version = PEP440Version("1.0.0.dev1")
+        command_mock = MagicMock(spec=GoVersionCommand)
+        gather_commands_mock.return_value = [command_mock]
+        command_mock.update_version.side_effect = [
+            VersionUpdate(
+                previous=current_version,
+                new=release_version,
+                changed_files=[Path("project.conf")],
+            ),
+            VersionUpdate(
+                previous=release_version,
+                new=next_version,
+                changed_files=[Path("project.conf"), Path("version.lang")],
+            ),
+        ]
+        git_mock = MagicMock(spec=Git)
+        git_mock.status.return_value = [StatusEntry("M  project.conf")]
+
+        with temp_git_repository():
+            released = CreateReleaseCommand(
+                git=git_mock,
+            ).run(
+                token=TOKEN,
+                repository=REPOSITORY,
+                git_signing_key=GIT_SIGNING_KEY,
+                versioning_scheme=PEP440VersioningScheme,
+                release_type=ReleaseType.VERSION,
+                release_version=release_version,
+                next_version=next_version,
+                last_release_version=current_version,
+                changelog="A changelog",
+            )
+
+        git_mock.list_tags.assert_called_once_with()
+
+        cc_git_mock.return_value.log.assert_not_called()
+
+        git_mock.push.assert_has_calls(
+            [
+                call(follow_tags=True, remote=None),
+                call(follow_tags=True, remote=None),
+            ]
+        )
+
+        command_mock.update_version.assert_has_calls(
+            [
+                call(release_version, force=False),
+                call(next_version, force=False),
+            ]
+        )
+
+        self.assertEqual(
+            create_release_mock.await_args.args[1:],  # type: ignore[union-attr]
+            (release_version, "foo", "A changelog", False),
+        )
+
+        git_mock.tag.assert_called_once_with(
+            "v0.0.2", gpg_key_id="1234", message="Automatic release to 0.0.2"
+        )
+        git_mock.add.assert_has_calls(
+            [
+                call(Path("project.conf")),
+                call(Path("project.conf")),
+                call(Path("version.lang")),
+            ]
+        )
+        git_mock.commit.assert_has_calls(
+            [
+                call(
+                    "Automatic release to 0.0.2",
+                    verify=False,
+                    gpg_signing_key="1234",
+                ),
+                call(
+                    "Automatic adjustments after release [skip ci]\n\n"
+                    "* Update to version 1.0.0.dev1\n",
+                    verify=False,
+                    gpg_signing_key="1234",
+                ),
+            ]
+        )
+
+        self.assertEqual(released, CreateReleaseReturnValue.SUCCESS)
+
     @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
+        "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_local(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.0")
@@ -2103,7 +2102,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 changed_files=[Path("MyProject.conf")],
             ),
         ]
-        create_changelog_mock.return_value = "A Changelog"
         git_mock = MagicMock(spec=Git)
         git_mock.status.return_value = [StatusEntry("M  MyProject.conf")]
 
@@ -2120,6 +2118,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 local=True,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_not_called()
@@ -2150,15 +2149,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_enforce_github_release(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -2166,7 +2160,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         next_version = PEP440Version("1.0.0.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
         command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -2194,6 +2187,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 next_version=next_version,
                 last_release_version=current_version,
                 github_pre_release=True,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
@@ -2242,15 +2236,10 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         "pontos.release.create.CreateReleaseCommand._create_release",
         autospec=True,
     )
-    @patch(
-        "pontos.release.create.CreateReleaseCommand._create_changelog",
-        autospec=True,
-    )
     @patch("pontos.release.create.Project._gather_commands", autospec=True)
     def test_release_no_next_release(
         self,
         gather_commands_mock: MagicMock,
-        create_changelog_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
         current_version = PEP440Version("0.0.1")
@@ -2258,7 +2247,6 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         next_version = PEP440Version("1.0.0.dev1")
         command_mock = MagicMock(spec=GoVersionCommand)
         gather_commands_mock.return_value = [command_mock]
-        create_changelog_mock.return_value = "A Changelog"
         command_mock.update_version.side_effect = [
             VersionUpdate(
                 previous=current_version,
@@ -2285,6 +2273,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
                 release_type=ReleaseType.PATCH,
                 next_version=False,
                 last_release_version=current_version,
+                changelog=CHANGELOG,
             )
 
         git_mock.push.assert_has_calls(
