@@ -17,6 +17,7 @@ from typing import Optional, Sequence, Tuple
 import shtab
 
 from pontos.enum import enum_choice, enum_type, to_choices
+from pontos.git._git import DEFAULT_TAG_PREFIX
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
     PEP440VersioningScheme,
@@ -115,7 +116,7 @@ def add_create_parser(
     )
     create_parser.add_argument(
         "--git-tag-prefix",
-        default="v",
+        default=DEFAULT_TAG_PREFIX,
         const="",
         nargs="?",
         help="Prefix for git tag versions. Default: %(default)s",

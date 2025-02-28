@@ -14,6 +14,7 @@ import httpx
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
 from pontos.git import Git, ResetMode
+from pontos.git._git import DEFAULT_TAG_PREFIX
 from pontos.github.actions.core import ActionIO
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.command import AsyncCommand
@@ -133,7 +134,7 @@ class CreateReleaseCommand(AsyncCommand):
         next_version: Union[Version, Literal[False], None],
         git_signing_key: str,
         git_remote_name: Optional[str],
-        git_tag_prefix: Optional[str],
+        git_tag_prefix: Optional[str] = DEFAULT_TAG_PREFIX,
         cc_config: Optional[Path],
         local: Optional[bool] = False,
         release_series: Optional[str] = None,
