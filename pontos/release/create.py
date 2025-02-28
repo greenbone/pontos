@@ -79,9 +79,10 @@ class CreateReleaseCommand(AsyncCommand):
         *,
         terminal: Optional[Terminal] = None,
         error_terminal: Optional[Terminal] = None,
+        git: Optional[Git] = None,
     ) -> None:
         super().__init__(terminal=terminal, error_terminal=error_terminal)
-        self.git = Git()
+        self.git = git or Git()
 
     def _has_tag(self, git_version: str) -> bool:
         git_tags = self.git.list_tags()
