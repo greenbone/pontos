@@ -119,12 +119,11 @@ class CreateReleaseCommand(AsyncCommand):
         github = GitHubAsyncRESTApi(token=token)
 
         git_version = f"{self.git_tag_prefix}{release_version}"
-        _, project = repository_split(self.repository)
 
         await github.releases.create(
             self.repository,
             git_version,
-            name=f"{project} {release_version}",
+            name=f"{self.project_name} {release_version}",
             body=release_text,
             prerelease=release_version.is_pre_release or github_pre_release,
         )
@@ -188,9 +187,11 @@ class CreateReleaseCommand(AsyncCommand):
         self.repository = repository
 
         try:
-            _, self.project_name = repository_split(repository)
-        except ValueError as e:
-            self.print_error(str(e))
+            self.project_name = repository_split(repository)[1]
+        except (ValueError, IndexError) as e:
+            self.print_error(
+                f"Invalid repository format. Should be <owner>/<project>. Error was {e}"
+            )
             return CreateReleaseReturnValue.INVALID_REPOSITORY
 
         self.terminal.info(f"Using versioning scheme {versioning_scheme.name}")
