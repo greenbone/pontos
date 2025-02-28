@@ -29,6 +29,8 @@ DEFAULT_TAG_SORT_SUFFIX = [
     "rc",
 ]
 
+DEFAULT_TAG_PREFIX = "v"
+
 
 class GitError(subprocess.CalledProcessError, PontosError):
     """

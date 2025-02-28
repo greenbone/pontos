@@ -4,6 +4,7 @@
 #
 
 from ._git import (
+    DEFAULT_TAG_PREFIX,
     DEFAULT_TAG_SORT_SUFFIX,
     ConfigScope,
     Git,
@@ -16,6 +17,7 @@ from ._status import Status, StatusEntry
 
 __all__ = (
     "DEFAULT_TAG_SORT_SUFFIX",
+    "DEFAULT_TAG_PREFIX",
     "ConfigScope",
     "Git",
     "GitError",
