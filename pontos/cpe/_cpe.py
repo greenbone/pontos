@@ -428,7 +428,7 @@ class CPEWellFormed:
     """
 
     part: Part
-    vendor: str
+    vendor: Optional[str] = None
     product: Optional[str] = None
     version: Optional[str] = None
     update: Optional[str] = None
@@ -496,7 +496,7 @@ class CPE:
         *,
         cpe_string: Optional[str] = None,
         part: Part,
-        vendor: str,
+        vendor: Optional[str] = None,
         product: Optional[str] = None,
         version: Optional[str] = None,
         update: Optional[str] = None,
