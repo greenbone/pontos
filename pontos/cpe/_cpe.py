@@ -36,6 +36,7 @@ class Part(StrEnum):
     APPLICATION = "a"
     OPERATING_SYSTEM = "o"
     HARDWARE_DEVICE = "h"
+    WILDCARD = "*"  # wildcard for requesting "all" possible cpe parts
 
 
 def is_uri_binding(cpe: str) -> bool:
@@ -428,7 +429,7 @@ class CPEWellFormed:
 
     part: Part
     vendor: str
-    product: str
+    product: Optional[str] = None
     version: Optional[str] = None
     update: Optional[str] = None
     edition: Optional[str] = None
@@ -496,7 +497,7 @@ class CPE:
         cpe_string: Optional[str] = None,
         part: Part,
         vendor: str,
-        product: str,
+        product: Optional[str] = None,
         version: Optional[str] = None,
         update: Optional[str] = None,
         edition: Optional[str] = None,

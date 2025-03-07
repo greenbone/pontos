@@ -456,6 +456,22 @@ class CPETestCase(unittest.TestCase):
         self.assertIsNone(cpe.target_hw)
         self.assertIsNone(cpe.other)
 
+        # example 7a
+        cpe = CPE.from_string("cpe:2.3:*:Microsoft")
+        self.assertFalse(cpe.is_uri_binding())
+        self.assertTrue(cpe.is_formatted_string_binding())
+        self.assertEqual(cpe.part, Part.WILDCARD)
+        self.assertEqual(cpe.vendor, "microsoft")
+        self.assertIsNone(cpe.product)
+        self.assertIsNone(cpe.version)
+        self.assertIsNone(cpe.update)
+        self.assertIsNone(cpe.language)
+        self.assertIsNone(cpe.edition)
+        self.assertIsNone(cpe.sw_edition)
+        self.assertIsNone(cpe.target_sw)
+        self.assertIsNone(cpe.target_hw)
+        self.assertIsNone(cpe.other)
+
         # example 8
         with self.assertRaisesRegex(
             CPEParsingError,
