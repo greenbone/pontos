@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from pathlib import Path
-from typing import Iterator, Literal, Tuple, Union
+from typing import Any, Iterator, Literal, Tuple, Union
 
 import tomlkit
+from tomlkit.items import Table
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -20,25 +21,31 @@ class CargoVersionCommand(VersionCommand):
     ) -> Iterator[Tuple[Path, tomlkit.TOMLDocument],]:
         """
         Parse the given origin and yields a tuple of path to a
-        cargo toml that contains a version
+        Cargo.toml that contains a version
+        Version should be in the table package or workspace.package
 
         If the origin is invalid toml than it will raise a VersionError.
         """
+        version: Any = None
         content = origin.read_text(encoding="utf-8")
         content = tomlkit.parse(content)
         package = content.get("package")
-        if package:
-            version = package.get("version")
-            if version:
-                yield (origin, content)
+        workspace = content.get("workspace")
+        if not isinstance(package, Table) and isinstance(workspace, Table):
+            package = workspace.get("package")
+        if isinstance(package, Table):
+            version = package.get("version", "")
+        if version:
+            yield (origin, content)
         else:
-            workspace = content.get("workspace")
-            if workspace:
+            # check sub directories for toml files with version
+            if isinstance(workspace, Table):
                 members = workspace.get("members")
-                for member in members:
-                    yield from self.__as_project_document(
-                        origin.parent / member / self.project_file_name
-                    )
+                if members:
+                    for member in members:
+                        yield from self.__as_project_document(
+                            origin.parent / member / self.project_file_name
+                        )
         return None
 
     def update_version(
@@ -68,9 +75,12 @@ class CargoVersionCommand(VersionCommand):
 
     def get_current_version(self) -> Version:
         (_, document) = next(self.__as_project_document(self.project_file_path))
-        current_version = self.versioning_scheme.parse_version(
-            document["package"]["version"]  # type: ignore[index, arg-type]
-        )
+        try:
+            version = document["package"]["version"]  # type: ignore[index, arg-type]
+        except KeyError:
+            version = document["workspace"]["package"]["version"]  # type: ignore[index, arg-type]
+        if isinstance(version, str):
+            current_version = self.versioning_scheme.parse_version(version)
         return self.versioning_scheme.from_version(current_version)
 
     def verify_version(
