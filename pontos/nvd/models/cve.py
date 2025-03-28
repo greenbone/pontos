@@ -268,12 +268,12 @@ class CVE(Model):
     """
 
     id: str
-    source_identifier: str
     published: datetime
     last_modified: datetime
-    vuln_status: str
     descriptions: List[Description]
     references: List[Reference]
+    source_identifier: Optional[str] = None
+    vuln_status: Optional[str] = None
     weaknesses: List[Weakness] = field(default_factory=list)
     configurations: List[Configuration] = field(default_factory=list)
     vendor_comments: List[VendorComment] = field(default_factory=list)
