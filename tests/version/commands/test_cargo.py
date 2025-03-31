@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Greenbone AG
+# SPDX-FileCopyrightText: 2023-2025 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -19,6 +19,13 @@ VERSION_EXAMPLE = """
 name = "nasl-syntax"
 version = "0.1.0"
 edition = "2021"
+license = "GPL-2.0-or-later"
+"""
+VERSION_WITH_WORKSPACE_EXAMPLE = """
+[workspace.package]
+name = "nasl-syntax"
+version = "1.1.1"
+edition = "2025"
 license = "GPL-2.0-or-later"
 """
 WORKSPACE_EXAMPLE = """
@@ -42,16 +49,18 @@ class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
         with temp_directory(change_into=True) as temporary_dir:
             workspace = temporary_dir / "Cargo.toml"
             workspace.write_text(WORKSPACE_EXAMPLE)
-            members = tomlkit.parse(WORKSPACE_EXAMPLE)["workspace"]["members"]
-            for cargo_workspace_member in members:
-                npath = temporary_dir / f"{cargo_workspace_member}"
-                npath.mkdir()
-                pf = npath / "Cargo.toml"
-                pf.write_text(
-                    VERSION_EXAMPLE.replace(
-                        "nasl-syntax", cargo_workspace_member
+            toml_file = tomlkit.parse(WORKSPACE_EXAMPLE)
+            members = toml_file["workspace"]["members"]  # type: ignore[index, arg-type]
+            if isinstance(members, tomlkit.items.Table):
+                for cargo_workspace_member in members:
+                    npath = temporary_dir / f"{cargo_workspace_member}"
+                    npath.mkdir()
+                    pf = npath / "Cargo.toml"
+                    pf.write_text(
+                        VERSION_EXAMPLE.replace(
+                            "nasl-syntax", cargo_workspace_member
+                        )
                     )
-                )
             yield temporary_dir
         return None
 
@@ -113,5 +122,15 @@ class VerifyCargoVersionCommandTestCase(unittest.TestCase):
             change_into=True,
         ):
             version = PEP440VersioningScheme.parse_version("0.1.0")
+            cargo = CargoVersionCommand(PEP440VersioningScheme)
+            cargo.verify_version(version)
+
+    def test_success_with_workspace(self):
+        with temp_file(
+            VERSION_WITH_WORKSPACE_EXAMPLE,
+            name="Cargo.toml",
+            change_into=True,
+        ):
+            version = PEP440VersioningScheme.parse_version("1.1.1")
             cargo = CargoVersionCommand(PEP440VersioningScheme)
             cargo.verify_version(version)
