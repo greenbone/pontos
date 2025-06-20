@@ -594,6 +594,17 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
 
         self.client.get.assert_awaited_once_with("/repos/foo/bar/pulls/123")
 
+    async def test_exists_error(self):
+        response = create_response(is_success=False, status_code=403)
+        error = HTTPStatusError("403", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.exists("foo/bar", 123)
+        self.client.get.assert_awaited_once_with("/repos/foo/bar/pulls/123")
+
     async def test_commits(self):
         response1 = create_response()
         response1.json.return_value = [

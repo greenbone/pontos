@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+from unittest.mock import MagicMock
+
+from httpx import HTTPStatusError
+
 from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.models.packages import (
     Package,
@@ -46,6 +50,39 @@ class GitHubAsyncRESTPackagesTestCase(GitHubAsyncRESTTestCase):
             )
         )
 
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar"
+        )
+
+    async def test_not_exists(self):
+        response = create_response(is_success=False, status_code=404)
+        self.client.get.return_value = response
+
+        self.assertFalse(
+            await self.api.exists(
+                organization="foo",
+                package_type=PackageType.CONTAINER,
+                package_name="bar",
+            )
+        )
+
+        self.client.get.assert_awaited_once_with(
+            "/orgs/foo/packages/container/bar"
+        )
+
+    async def test_exists_error(self):
+        response = create_response(is_success=False, status_code=403)
+        error = HTTPStatusError("403", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.exists(
+                organization="foo",
+                package_type=PackageType.CONTAINER,
+                package_name="bar",
+            )
         self.client.get.assert_awaited_once_with(
             "/orgs/foo/packages/container/bar"
         )

@@ -116,6 +116,21 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
             "/repos/foo/bar/releases/tags/v1.2.3"
         )
 
+    async def test_exists_error(self):
+        response = create_response(is_success=False, status_code=403)
+        error = httpx.HTTPStatusError(
+            "403", request=MagicMock(), response=response
+        )
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.exists("foo/bar", "v1.2.3")
+        self.client.get.assert_awaited_once_with(
+            "/repos/foo/bar/releases/tags/v1.2.3"
+        )
+
     async def test_create(self):
         response = create_response()
         response.json.return_value = RELEASE_JSON

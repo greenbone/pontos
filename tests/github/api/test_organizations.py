@@ -164,6 +164,19 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
         self.client.get.assert_awaited_once_with("/orgs/foo")
 
+    async def test_exists_error(self):
+        response = create_response(is_success=False, status_code=403)
+        error = httpx.HTTPStatusError(
+            "403", request=MagicMock(), response=response
+        )
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(httpx.HTTPStatusError):
+            await self.api.exists("foo")
+        self.client.get.assert_awaited_once_with("/orgs/foo")
+
     async def test_get_repositories(self):
         response1 = create_response()
         response1.json.return_value = [REPOSITORY_DICT]
