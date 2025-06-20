@@ -97,6 +97,17 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
         self.assertFalse(await self.api.exists("foo/bar", "baz"))
         self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
 
+    async def test_exists_error(self):
+        response = create_response(is_success=False, status_code=403)
+        error = HTTPStatusError("403", request=MagicMock(), response=response)
+        response.raise_for_status.side_effect = error
+
+        self.client.get.return_value = response
+
+        with self.assertRaises(HTTPStatusError):
+            await self.api.exists("foo/bar", "baz")
+        self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
+
     async def test_delete_branch(self):
         response = create_response()
         self.client.delete.return_value = response
