@@ -39,7 +39,15 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         """
         api = f"/orgs/{organization}"
         response = await self._client.get(api)
-        return response.is_success
+
+        if response.is_success:
+            return True
+
+        if response.status_code == 404:
+            return False
+
+        response.raise_for_status()
+        assert False, "unreachable"  # assert to silence mypy
 
     async def get_repositories(
         self,
