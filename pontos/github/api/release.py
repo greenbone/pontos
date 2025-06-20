@@ -102,7 +102,15 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/releases/tags/{tag}"
         response = await self._client.get(api)
-        return response.is_success
+
+        if response.is_success:
+            return True
+
+        if response.status_code == 404:
+            return False
+
+        response.raise_for_status()
+        assert False, "unreachable"  # assert to silence mypy
 
     async def get(self, repo: str, tag: str) -> Release:
         """

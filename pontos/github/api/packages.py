@@ -33,7 +33,15 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
         """
         api = f"/orgs/{organization}/packages/{package_type}/{package_name}"
         response = await self._client.get(api)
-        return response.is_success
+
+        if response.is_success:
+            return True
+
+        if response.status_code == 404:
+            return False
+
+        response.raise_for_status()
+        assert False, "unreachable"  # assert to silence mypy
 
     async def package(
         self, organization: str, package_type: PackageType, package_name: str
