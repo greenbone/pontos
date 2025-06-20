@@ -91,7 +91,7 @@ class GitHubAsyncRESTBranchesTestCase(GitHubAsyncRESTTestCase):
         self.client.get.assert_awaited_once_with("/repos/foo/bar/branches/baz")
 
     async def test_not_exists(self):
-        response = create_response(is_success=False)
+        response = create_response(is_success=False, status_code=404)
         self.client.get.return_value = response
 
         self.assertFalse(await self.api.exists("foo/bar", "baz"))
