@@ -18,7 +18,7 @@ from pontos.github.models.pull_request import (
 
 
 class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
-    async def exists(self, repo: str, pull_request: Union[int, str]) -> bool:
+    async def exists(self, repo: str, pull_request: Union[int, str]) -> bool:  # type: ignore[return]
         """
         Check if a single branch in a repository exists
 
@@ -47,7 +47,6 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             return False
 
         response.raise_for_status()
-        assert False, "unreachable"  # assert to silence mypy
 
     async def get(
         self, repo: str, pull_request: Union[int, str]

@@ -266,7 +266,7 @@ def update_from_applied_settings(
 
 
 class GitHubAsyncRESTBranches(GitHubAsyncREST):
-    async def exists(self, repo: str, branch: str) -> bool:
+    async def exists(self, repo: str, branch: str) -> bool:  # type: ignore[return]
         """
         Check if a single branch in a repository exists
 
@@ -295,7 +295,6 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
             return False
 
         response.raise_for_status()
-        assert False, "unreachable"  # assert to silence mypy
 
     async def delete(self, repo: str, branch: str) -> None:
         """

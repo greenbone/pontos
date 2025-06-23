@@ -11,7 +11,7 @@ from pontos.github.models.packages import Package, PackageType, PackageVersion
 
 
 class GitHubAsyncRESTPackages(GitHubAsyncREST):
-    async def exists(
+    async def exists(  # type: ignore[return]
         self, organization: str, package_type: PackageType, package_name: str
     ) -> bool:
         """
@@ -41,7 +41,6 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             return False
 
         response.raise_for_status()
-        assert False, "unreachable"  # assert to silence mypy
 
     async def package(
         self, organization: str, package_type: PackageType, package_name: str

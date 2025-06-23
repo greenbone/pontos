@@ -81,7 +81,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         response.raise_for_status()
         return Release.from_dict(response.json())
 
-    async def exists(self, repo: str, tag: str) -> bool:
+    async def exists(self, repo: str, tag: str) -> bool:  # type: ignore[return]
         """
         Check wether a GitHub release exists by tag
 
@@ -110,7 +110,6 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             return False
 
         response.raise_for_status()
-        assert False, "unreachable"  # assert to silence mypy
 
     async def get(self, repo: str, tag: str) -> Release:
         """
