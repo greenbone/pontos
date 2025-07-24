@@ -51,7 +51,7 @@ class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
             workspace.write_text(WORKSPACE_EXAMPLE)
             toml_file = tomlkit.parse(WORKSPACE_EXAMPLE)
             members = toml_file["workspace"]["members"]  # type: ignore[index, arg-type]
-            if isinstance(members, tomlkit.items.Table):
+            if isinstance(members, tomlkit.items.Array):
                 for cargo_workspace_member in members:
                     npath = temporary_dir / f"{cargo_workspace_member}"
                     npath.mkdir()
