@@ -6,7 +6,7 @@
 # pylint: disable=protected-access
 
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterator
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
@@ -42,6 +42,19 @@ class FormatDateTestCase(unittest.TestCase):
         fd = format_date(dt)
 
         self.assertEqual(fd, "2022-12-10T10:00:12.000+00:00")
+
+    def test_format_date_timespec_microseconds(self):
+        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=timezone.utc)
+        fd = format_date(dt, timespec="microseconds")
+
+        self.assertEqual(fd, "2022-12-10T10:00:12.000123+00:00")
+
+    def test_format_date_timezone(self):
+        tz = timezone(timedelta(hours=5))
+        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tz)
+        fd = format_date(dt)
+
+        self.assertEqual(fd, "2022-12-10T10:00:12.000+05:00")
 
 
 class NVDApiTestCase(IsolatedAsyncioTestCase):
