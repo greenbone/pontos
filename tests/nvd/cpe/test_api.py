@@ -159,11 +159,15 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
     @patch("pontos.nvd.cpe.api.now", spec=now)
     async def test_cves_last_modified_start_date(self, now_mock: MagicMock):
         uuid = uuid4()
-        now_mock.return_value = datetime(2022, 12, 31)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cpes_responses(uuid)
 
         it = aiter(
-            self.api.cpes(last_modified_start_date=datetime(2022, 12, 1))
+            self.api.cpes(
+                last_modified_start_date=datetime(
+                    2022, 12, 1, tzinfo=timezone.utc
+                )
+            )
         )
         cve = await anext(it)
 
@@ -173,8 +177,8 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
@@ -189,8 +193,8 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -204,8 +208,12 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cpes(
-                last_modified_start_date=datetime(2022, 12, 1),
-                last_modified_end_date=datetime(2022, 12, 31),
+                last_modified_start_date=datetime(
+                    2022, 12, 1, tzinfo=timezone.utc
+                ),
+                last_modified_end_date=datetime(
+                    2022, 12, 31, tzinfo=timezone.utc
+                ),
             )
         )
         cve = await anext(it)
@@ -216,8 +224,8 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CPES_PER_PAGE,
             },
         )
@@ -232,8 +240,8 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )

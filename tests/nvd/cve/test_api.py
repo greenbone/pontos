@@ -152,11 +152,15 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
     @patch("pontos.nvd.cve.api.now", spec=now)
     async def test_cves_last_modified_start_date(self, now_mock: MagicMock):
-        now_mock.return_value = datetime(2022, 12, 31)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cves_responses()
 
         it = aiter(
-            self.api.cves(last_modified_start_date=datetime(2022, 12, 1))
+            self.api.cves(
+                last_modified_start_date=datetime(
+                    2022, 12, 1, tzinfo=timezone.utc
+                )
+            )
         )
         cve = await anext(it)
 
@@ -166,8 +170,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
@@ -182,8 +186,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -196,8 +200,12 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cves(
-                last_modified_start_date=datetime(2022, 12, 1),
-                last_modified_end_date=datetime(2022, 12, 31),
+                last_modified_start_date=datetime(
+                    2022, 12, 1, tzinfo=timezone.utc
+                ),
+                last_modified_end_date=datetime(
+                    2022, 12, 31, tzinfo=timezone.utc
+                ),
             )
         )
         cve = await anext(it)
@@ -208,8 +216,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
@@ -224,8 +232,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2022-12-01T00:00:00",
-                "lastModEndDate": "2022-12-31T00:00:00",
+                "lastModStartDate": "2022-12-01T00:00:00.000+00:00",
+                "lastModEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -235,10 +243,14 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
     @patch("pontos.nvd.cve.api.now", spec=now)
     async def test_cves_published_start_date(self, now_mock: MagicMock):
-        now_mock.return_value = datetime(2022, 12, 31)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cves_responses()
 
-        it = aiter(self.api.cves(published_start_date=datetime(2022, 12, 1)))
+        it = aiter(
+            self.api.cves(
+                published_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc)
+            )
+        )
         cve = await anext(it)
 
         self.assertEqual(cve.id, "CVE-1-1")
@@ -247,8 +259,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "pubStartDate": "2022-12-01T00:00:00",
-                "pubEndDate": "2022-12-31T00:00:00",
+                "pubStartDate": "2022-12-01T00:00:00.000+00:00",
+                "pubEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
@@ -263,8 +275,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "pubStartDate": "2022-12-01T00:00:00",
-                "pubEndDate": "2022-12-31T00:00:00",
+                "pubStartDate": "2022-12-01T00:00:00.000+00:00",
+                "pubEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -277,8 +289,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cves(
-                published_start_date=datetime(2022, 12, 1),
-                published_end_date=datetime(2022, 12, 31),
+                published_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc),
+                published_end_date=datetime(2022, 12, 31, tzinfo=timezone.utc),
             )
         )
         cve = await anext(it)
@@ -289,8 +301,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "pubStartDate": "2022-12-01T00:00:00",
-                "pubEndDate": "2022-12-31T00:00:00",
+                "pubStartDate": "2022-12-01T00:00:00.000+00:00",
+                "pubEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVES_PER_PAGE,
             },
         )
@@ -305,8 +317,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "pubStartDate": "2022-12-01T00:00:00",
-                "pubEndDate": "2022-12-31T00:00:00",
+                "pubStartDate": "2022-12-01T00:00:00.000+00:00",
+                "pubEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )

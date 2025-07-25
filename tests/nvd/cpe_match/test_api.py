@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 # ruff: noqa: E501
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
@@ -154,13 +154,17 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        now_mock.return_value = datetime(2019, 8, 30)
+        now_mock.return_value = datetime(2019, 8, 30, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cpe_match_responses(
             match_criteria_id, cpe_name_id
         )
 
         it = aiter(
-            self.api.cpe_matches(last_modified_start_date=datetime(2019, 6, 1))
+            self.api.cpe_matches(
+                last_modified_start_date=datetime(
+                    2019, 6, 1, tzinfo=timezone.utc
+                )
+            )
         )
         cpe_match = await anext(it)
 
@@ -172,8 +176,8 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2019-06-01T00:00:00",
-                "lastModEndDate": "2019-08-30T00:00:00",
+                "lastModStartDate": "2019-06-01T00:00:00.000+00:00",
+                "lastModEndDate": "2019-08-30T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CPE_MATCHES_PER_PAGE,
             },
         )
@@ -190,8 +194,8 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2019-06-01T00:00:00",
-                "lastModEndDate": "2019-08-30T00:00:00",
+                "lastModStartDate": "2019-06-01T00:00:00.000+00:00",
+                "lastModEndDate": "2019-08-30T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -206,13 +210,15 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        now_mock.return_value = datetime(2019, 8, 30)
+        now_mock.return_value = datetime(2019, 8, 30, tzinfo=timezone.utc)
         self.http_client.get.side_effect = create_cpe_match_responses(
             match_criteria_id, cpe_name_id
         )
 
         it = aiter(
-            self.api.cpe_matches(last_modified_end_date=datetime(2019, 8, 1))
+            self.api.cpe_matches(
+                last_modified_end_date=datetime(2019, 8, 1, tzinfo=timezone.utc)
+            )
         )
         cpe_match = await anext(it)
 
@@ -224,7 +230,7 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 0,
-                "lastModEndDate": "2019-08-01T00:00:00",
+                "lastModEndDate": "2019-08-01T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CPE_MATCHES_PER_PAGE,
             },
         )
@@ -241,7 +247,7 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
             headers={},
             params={
                 "startIndex": 1,
-                "lastModEndDate": "2019-08-01T00:00:00",
+                "lastModEndDate": "2019-08-01T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )

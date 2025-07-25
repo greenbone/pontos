@@ -113,8 +113,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.changes(
-                change_start_date=datetime(2022, 12, 1),
-                change_end_date=datetime(2022, 12, 31),
+                change_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc),
+                change_end_date=datetime(2022, 12, 31, tzinfo=timezone.utc),
             )
         )
         cve_changes = await anext(it)
@@ -125,8 +125,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "changeStartDate": "2022-12-01T00:00:00",
-                "changeEndDate": "2022-12-31T00:00:00",
+                "changeStartDate": "2022-12-01T00:00:00.000+00:00",
+                "changeEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
@@ -141,8 +141,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "changeStartDate": "2022-12-01T00:00:00",
-                "changeEndDate": "2022-12-31T00:00:00",
+                "changeStartDate": "2022-12-01T00:00:00.000+00:00",
+                "changeEndDate": "2022-12-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
@@ -238,8 +238,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "changeStartDate": "2023-01-01T00:00:00+00:00",
-                "changeEndDate": "2023-01-02T00:00:00+00:00",
+                "changeStartDate": "2023-01-01T00:00:00.000+00:00",
+                "changeEndDate": "2023-01-02T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
@@ -264,8 +264,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "changeStartDate": "2023-01-01T00:00:00+00:00",
-                "changeEndDate": "2023-05-01T00:00:00+00:00",
+                "changeStartDate": "2023-01-01T00:00:00.000+00:00",
+                "changeEndDate": "2023-05-01T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
@@ -286,8 +286,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "changeStartDate": "2023-01-01T00:00:00+00:00",
-                "changeEndDate": "2023-05-01T00:00:00+00:00",
+                "changeStartDate": "2023-01-01T00:00:00.000+00:00",
+                "changeEndDate": "2023-05-01T00:00:00.000+00:00",
                 "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
