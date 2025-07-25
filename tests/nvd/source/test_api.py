@@ -113,8 +113,12 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.sources(
-                last_modified_start_date=datetime(2025, 1, 1),
-                last_modified_end_date=datetime(2025, 1, 31),
+                last_modified_start_date=datetime(
+                    2025, 1, 1, tzinfo=timezone.utc
+                ),
+                last_modified_end_date=datetime(
+                    2025, 1, 31, tzinfo=timezone.utc
+                ),
             )
         )
         source = await anext(it)
@@ -125,8 +129,8 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "lastModStartDate": "2025-01-01T00:00:00",
-                "lastModEndDate": "2025-01-31T00:00:00",
+                "lastModStartDate": "2025-01-01T00:00:00.000+00:00",
+                "lastModEndDate": "2025-01-31T00:00:00.000+00:00",
                 "resultsPerPage": MAX_SOURCES_PER_PAGE,
             },
         )
@@ -141,8 +145,8 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "lastModStartDate": "2025-01-01T00:00:00",
-                "lastModEndDate": "2025-01-31T00:00:00",
+                "lastModStartDate": "2025-01-01T00:00:00.000+00:00",
+                "lastModEndDate": "2025-01-31T00:00:00.000+00:00",
                 "resultsPerPage": 1,
             },
         )
