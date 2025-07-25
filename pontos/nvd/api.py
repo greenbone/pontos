@@ -55,17 +55,28 @@ def now() -> datetime:
     return datetime.now(tz=timezone.utc)
 
 
-def format_date(date: datetime) -> str:
+def format_date(
+    date: datetime,
+    fallback_timezone: timezone = timezone.utc,
+    timespec: str = "milliseconds",
+) -> str:
     """
     Format date matching to NVD api
 
     Args:
         date: Date to format
+        fallback_timezone: The timezone to attach if date
+                           is not timezone aware
+        timespec: Timespec to pass to datetime.isoformat
 
     Returns:
         Formatted date as string
     """
-    return date.isoformat(timespec="seconds")
+
+    if not date.tzinfo:
+        date = date.astimezone(fallback_timezone)
+
+    return date.isoformat(timespec=timespec)
 
 
 def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
