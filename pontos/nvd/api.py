@@ -57,6 +57,7 @@ def now() -> datetime:
 
 def format_date(
     date: datetime,
+    *,
     fallback_timezone: timezone = timezone.utc,
     timespec: str = "milliseconds",
 ) -> str:
