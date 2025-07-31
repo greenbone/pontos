@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-import logging
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from inspect import isclass
@@ -20,8 +19,6 @@ __all__ = (
     "StrEnum",
     "dotted_attributes",
 )
-
-logger = logging.getLogger(__name__)
 
 
 class ModelError(PontosError):
@@ -152,18 +149,10 @@ class Model:
                     model_field_cls = type_hints.get(name)
                     value = _get_value(model_field_cls, value)  # type: ignore # pylint: disable=line-too-long # noqa: E501,PLW2901
             except (ValueError, TypeError) as e:
-                # NVD data error, monitor for fixed source data
-                # and remove this fix
-                if name == "configurations" and value == [{}]:
-                    value = []  # noqa: PLW2901
-                    logger.warning(
-                        "Empty node configuration for %s", data["id"]
-                    )
-                else:
-                    raise ModelError(
-                        f"Error while creating {cls.__name__} model. Could not set "  # pylint: disable=line-too-long # noqa: E501
-                        f"value for property '{name}' from '{value}'."
-                    ) from e
+                raise ModelError(
+                    f"Error while creating {cls.__name__} model. Could not set "
+                    f"value for property '{name}' from '{value}'."
+                ) from e
 
             if name in type_hints:
                 kwargs[name] = value

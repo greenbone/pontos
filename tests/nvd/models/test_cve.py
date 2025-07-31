@@ -151,19 +151,6 @@ class CVETestCase(unittest.TestCase):
         self.assertIsNone(cpe_match.version_end_including)
         self.assertIsNone(cpe_match.version_end_excluding)
 
-    def test_configuration_node_empty_object(self):
-        # Once this is fixed from NVD side, implement a test
-        # that checks assertRaises(ModelError)
-        cve = CVE.from_dict(
-            get_cve_data(
-                {
-                    "configurations": [{}],
-                }
-            )
-        )
-
-        self.assertEqual(len(cve.configurations), 0)
-
     def test_metrics_v2(self):
         cve = CVE.from_dict(
             get_cve_data(
