@@ -2,11 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Dict, Iterable, Set
+from typing import Dict, Iterable, Set, Optional
 
 
 def iter_next_branches(
-    branch: Dict, limit_to_categories: Set[str] | None = None
+    branch: Dict, limit_to_categories: Optional[Set[str]] = None
 ) -> Iterable[Dict]:
     for inner_branch in branch.get("branches", []):
         if (

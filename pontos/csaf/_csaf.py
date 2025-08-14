@@ -5,7 +5,7 @@
 
 import json
 import logging
-from typing import Dict, Iterable, List, Set, Tuple
+from typing import Dict, Iterable, List, Set, Tuple, Optional
 
 from black.trans import defaultdict
 
@@ -55,7 +55,7 @@ class Csaf(dict):
         return self.document["tracking"]["id"]
 
     def iter_middle_branches(
-        self, limit_to_categories: Set[str] | None = None
+        self, limit_to_categories: Optional[Set[str]] = None
     ) -> Iterable[Dict]:
         if "branches" not in self.product_tree:
             logger.warning(
@@ -217,8 +217,8 @@ class Csaf(dict):
 
     def get_matching_relationships(
         self,
-        restrict_to_categories: Set[RelationshipCategory] | None = None,
-        restrict_to_parent_ids: Set[str] | None = None,
+        restrict_to_categories: Optional[Set[RelationshipCategory]] = None,
+        restrict_to_parent_ids: Optional[Set[str]] = None,
         apply_transitively: bool = False,
     ) -> Tuple[List[Relationship], List[Relationship]]:
         """Retrieves product relationships ('component of' etc.) based on product IDs
@@ -277,7 +277,7 @@ class Csaf(dict):
 
     def get_remediation_category_for_related_cves(
         self, prod_id: str
-    ) -> Dict[str, Set[str | None]]:
+    ) -> Dict[str, Set[Optional[str]]]:
         """Retrieves the CSAF-proposed remediations possible
 
         Best-case is "vendor_fix" remediation. _Mostly_ this relates to a strict update path.
@@ -309,7 +309,7 @@ class Csaf(dict):
         return dict(res)
 
     def get_all_cves_that_mention_one_of_the_product_ids_as_fixed(
-        self, restrict_to_product_ids: Set[str] | None = None
+        self, restrict_to_product_ids: Optional[Set[str]] = None
     ) -> Set[str]:
         """Only retrieves that subset of CVEs interested in.
 

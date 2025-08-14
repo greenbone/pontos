@@ -1,5 +1,4 @@
-# ruff: noqa: I100
-from ._enums import (
+from ._enums import (  # noqa: I001
     ProductStatus,
     RelationshipCategory,
     Remediation,
