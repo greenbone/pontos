@@ -7,7 +7,7 @@ class Revision(dict):
     # Defined in 3.2.1.12.6
     # shall only exist for non-pre-release document states
     @property
-    def date(self) -> "date":
+    def date(self) -> str:
         # string; format date-time
         return self["date"]
 
