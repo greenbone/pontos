@@ -1,0 +1,906 @@
+{
+  "document": {
+    "aggregate_severity": {
+      "namespace": "https://access.redhat.com/security/updates/classification/",
+      "text": "Important"
+    },
+    "category": "csaf_security_advisory",
+    "csaf_version": "2.0",
+    "distribution": {
+      "text": "Copyright © Red Hat, Inc. All rights reserved.",
+      "tlp": {
+        "label": "WHITE",
+        "url": "https://www.first.org/tlp/"
+      }
+    },
+    "lang": "en",
+    "notes": [
+      {
+        "category": "summary",
+        "text": "An update for openvswitch2.17 is now available for Fast Datapath for Red Hat Enterprise Linux 8.\n\nRed Hat Product Security has rated this update as having a security impact of Important. A Common Vulnerability Scoring System (CVSS) base score, which gives a detailed severity rating, is available for each vulnerability from the CVE link(s) in the References section.",
+        "title": "Topic"
+      },
+      {
+        "category": "general",
+        "text": "Open vSwitch provides standard network bridging functions and support for the OpenFlow protocol for remote per-flow control of traffic.\n\nSecurity Fix(es):\n\n* openvswsitch: ovs-vswitch fails to recover after malformed geneve metadata packet (CVE-2023-3966)\n\nFor more details about the security issue(s), including the impact, a CVSS score, acknowledgments, and other related information, refer to the CVE page(s) listed in the References section.",
+        "title": "Details"
+      },
+      {
+        "category": "legal_disclaimer",
+        "text": "This content is licensed under the Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/). If you distribute this content, or a modified version of it, you must provide attribution to Red Hat Inc. and provide a link to the original.",
+        "title": "Terms of Use"
+      }
+    ],
+    "publisher": {
+      "category": "vendor",
+      "contact_details": "https://access.redhat.com/security/team/contact/",
+      "issuing_authority": "Red Hat Product Security is responsible for vulnerability handling across all Red Hat products and services.",
+      "name": "Red Hat Product Security",
+      "namespace": "https://www.redhat.com"
+    },
+    "references": [
+      {
+        "category": "self",
+        "summary": "https://access.redhat.com/errata/RHSA-2024:1234",
+        "url": "https://access.redhat.com/errata/RHSA-2024:1234"
+      },
+      {
+        "category": "external",
+        "summary": "https://access.redhat.com/security/updates/classification/#important",
+        "url": "https://access.redhat.com/security/updates/classification/#important"
+      },
+      {
+        "category": "external",
+        "summary": "2178363",
+        "url": "https://bugzilla.redhat.com/show_bug.cgi?id=2178363"
+      },
+      {
+        "category": "external",
+        "summary": "FD-3267",
+        "url": "https://issues.redhat.com/browse/FD-3267"
+      },
+      {
+        "category": "external",
+        "summary": "FDP-308",
+        "url": "https://issues.redhat.com/browse/FDP-308"
+      },
+      {
+        "category": "self",
+        "summary": "Canonical URL",
+        "url": "https://security.access.redhat.com/data/csaf/v2/advisories/2024/rhsa-2024_1234.json"
+      }
+    ],
+    "title": "Red Hat Security Advisory: openvswitch2.17 security update",
+    "tracking": {
+      "current_release_date": "2024-12-11T15:32:02+00:00",
+      "generator": {
+        "date": "2024-12-11T15:32:02+00:00",
+        "engine": {
+          "name": "Red Hat SDEngine",
+          "version": "4.2.3"
+        }
+      },
+      "id": "RHSA-2024:1234",
+      "initial_release_date": "2024-03-07T18:20:50+00:00",
+      "revision_history": [
+        {
+          "date": "2024-03-07T18:20:50+00:00",
+          "number": "1",
+          "summary": "Initial version"
+        },
+        {
+          "date": "2024-03-07T18:20:50+00:00",
+          "number": "2",
+          "summary": "Last updated version"
+        },
+        {
+          "date": "2024-12-11T15:32:02+00:00",
+          "number": "3",
+          "summary": "Last generated version"
+        }
+      ],
+      "status": "final",
+      "version": "3"
+    }
+  },
+  "product_tree": {
+    "branches": [
+      {
+        "branches": [
+          {
+            "branches": [
+              {
+                "category": "product_name",
+                "name": "Fast Datapath for Red Hat Enterprise Linux 8",
+                "product": {
+                  "name": "Fast Datapath for Red Hat Enterprise Linux 8",
+                  "product_id": "8Base-Fast-Datapath",
+                  "product_identification_helper": {
+                    "cpe": "cpe:/o:redhat:enterprise_linux:8::fastdatapath"
+                  }
+                }
+              }
+            ],
+            "category": "product_family",
+            "name": "Fast Datapath"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/network-scripts-openvswitch2.17@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-devel@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-ipsec@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debugsource@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                "product": {
+                  "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                  "product_id": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=x86_64"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "x86_64"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/network-scripts-openvswitch2.17@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-devel@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-ipsec@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debugsource@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                "product": {
+                  "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_id": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=ppc64le"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "ppc64le"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/network-scripts-openvswitch2.17@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-devel@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-ipsec@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debugsource@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                "product": {
+                  "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                  "product_id": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=aarch64"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "aarch64"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/network-scripts-openvswitch2.17@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "openvswitch2.17-devel-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-devel@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-ipsec@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "python3-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debugsource@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              },
+              {
+                "category": "product_version",
+                "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                "product": {
+                  "name": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                  "product_id": "python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/python3-openvswitch2.17-debuginfo@2.17.0-148.el8fdp?arch=s390x"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "s390x"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-0:2.17.0-148.el8fdp.src",
+                "product": {
+                  "name": "openvswitch2.17-0:2.17.0-148.el8fdp.src",
+                  "product_id": "openvswitch2.17-0:2.17.0-148.el8fdp.src",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17@2.17.0-148.el8fdp?arch=src"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "src"
+          },
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "openvswitch2.17-test-0:2.17.0-148.el8fdp.noarch",
+                "product": {
+                  "name": "openvswitch2.17-test-0:2.17.0-148.el8fdp.noarch",
+                  "product_id": "openvswitch2.17-test-0:2.17.0-148.el8fdp.noarch",
+                  "product_identification_helper": {
+                    "purl": "pkg:rpm/redhat/openvswitch2.17-test@2.17.0-148.el8fdp?arch=noarch"
+                  }
+                }
+              }
+            ],
+            "category": "architecture",
+            "name": "noarch"
+          }
+        ],
+        "category": "vendor",
+        "name": "Red Hat"
+      }
+    ],
+    "relationships": [
+      {
+        "category": "default_component_of",
+        "full_product_name": {
+          "name": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64 as a component of Fast Datapath for Red Hat Enterprise Linux 8",
+          "product_id": "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64"
+        },
+        "product_reference": "network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+        "relates_to_product_reference": "8Base-Fast-Datapath"
+      },
+      {
+        "category": "optional_component_of",
+        "full_product_name": {
+          "name": "openvswitch2.17-0:2.17.0-148.el8fdp.aarch64 as a component of Fast Datapath for Red Hat Enterprise Linux 8",
+          "product_id": "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64"
+        },
+        "product_reference": "openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+        "relates_to_product_reference": "8Base-Fast-DatapathOtherParent"
+      },
+      {
+        "category": "default_component_of",
+        "full_product_name": {
+          "name": "pg_repack-0:1.4.8-1.module+el9.2.0+17405+aeb9ec60.aarch64 as a component of postgresql:15:9020020230619032405:rhel9 as a component of Red Hat Enterprise Linux AppStream (v. 9)",
+          "product_id": "AppStream-9.2.0.Z.MAIN.EUS:postgresql:15:9020020230619032405:rhel9:pg_repack-0:1.4.8-1.module+el9.2.0+17405+aeb9ec60.aarch64"
+        },
+        "product_reference": "pg_repack-0:1.4.8-1.module+el9.2.0+17405+aeb9ec60.aarch64",
+        "relates_to_product_reference": "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64"
+      }
+    ]
+  },
+  "vulnerabilities": [
+    {
+      "acknowledgments": [
+        {
+          "names": [
+            "Haresh Khandelwal",
+            "Timothy Redaelli"
+          ],
+          "organization": "Red Hat",
+          "summary": "This issue was discovered by Red Hat."
+        }
+      ],
+      "cve": "CVE-2023-3966",
+      "cwe": {
+        "id": "CWE-248",
+        "name": "Uncaught Exception"
+      },
+      "discovery_date": "2023-03-14T00:00:00+00:00",
+      "ids": [
+        {
+          "system_name": "Red Hat Bugzilla ID",
+          "text": "2178363"
+        }
+      ],
+      "notes": [
+        {
+          "category": "description",
+          "text": "A flaw was found in Open vSwitch where multiple versions are vulnerable to crafted Geneve packets, which may result in a denial of service and invalid memory accesses. Triggering this issue requires that hardware offloading via the netlink path is enabled.",
+          "title": "Vulnerability description"
+        },
+        {
+          "category": "summary",
+          "text": "openvswsitch: ovs-vswitch fails to recover after malformed geneve metadata packet",
+          "title": "Vulnerability summary"
+        },
+        {
+          "category": "general",
+          "text": "The CVSS score(s) listed for this vulnerability do not reflect the associated product's status, and are included for informational purposes to better understand the severity of this vulnerability.",
+          "title": "CVSS score applicability"
+        }
+      ],
+      "product_status": {
+        "fixed": [
+          "only_fixed_for_one_cve",
+          "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64"
+        ]
+      },
+      "references": [
+        {
+          "category": "self",
+          "summary": "Canonical URL",
+          "url": "https://access.redhat.com/security/cve/CVE-2023-3966"
+        },
+        {
+          "category": "external",
+          "summary": "RHBZ#2178363",
+          "url": "https://bugzilla.redhat.com/show_bug.cgi?id=2178363"
+        },
+        {
+          "category": "external",
+          "summary": "https://www.cve.org/CVERecord?id=CVE-2023-3966",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2023-3966"
+        },
+        {
+          "category": "external",
+          "summary": "https://nvd.nist.gov/vuln/detail/CVE-2023-3966",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-3966"
+        }
+      ],
+      "release_date": "2024-02-08T00:00:00+00:00",
+      "remediations": [
+        {
+          "category": "vendor_fix",
+          "date": "2024-03-07T18:20:50+00:00",
+          "details": "For details on how to apply this update, which includes the changes described in this advisory, refer to:\n\nhttps://access.redhat.com/articles/11258",
+          "product_ids": [
+            "only_fixed_for_one_cve",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64"
+          ],
+          "restart_required": {
+            "category": "none"
+          },
+          "url": "https://access.redhat.com/errata/RHSA-2024:1234"
+        }
+      ],
+      "scores": [
+        {
+          "cvss_v3": {
+            "attackComplexity": "LOW",
+            "attackVector": "NETWORK",
+            "availabilityImpact": "HIGH",
+            "baseScore": 7.5,
+            "baseSeverity": "HIGH",
+            "confidentialityImpact": "NONE",
+            "integrityImpact": "NONE",
+            "privilegesRequired": "NONE",
+            "scope": "UNCHANGED",
+            "userInteraction": "NONE",
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "version": "3.1"
+          },
+          "products": [
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64"
+          ]
+        }
+      ],
+      "threats": [
+        {
+          "category": "impact",
+          "details": "Important"
+        }
+      ],
+      "title": "openvswsitch: ovs-vswitch fails to recover after malformed geneve metadata packet"
+    },
+    {
+      "acknowledgments": [
+        {
+          "names": [
+            "Alex Katz",
+            "Slawomir Kaplonski"
+          ],
+          "organization": "Red Hat",
+          "summary": "This issue was discovered by Red Hat."
+        }
+      ],
+      "cve": "CVE-2023-5366",
+      "cwe": {
+        "id": "CWE-345",
+        "name": "Insufficient Verification of Data Authenticity"
+      },
+      "discovery_date": "2021-09-21T00:00:00+00:00",
+      "ids": [
+        {
+          "system_name": "Red Hat Bugzilla ID",
+          "text": "2006347"
+        }
+      ],
+      "notes": [
+        {
+          "category": "description",
+          "text": "A flaw was found in Open vSwitch that allows ICMPv6 Neighbor Advertisement packets between virtual machines to bypass OpenFlow rules. This issue may allow a local attacker to create specially crafted packets with a modified or spoofed target IP address field that can redirect ICMPv6 traffic to arbitrary IP addresses.",
+          "title": "Vulnerability description"
+        },
+        {
+          "category": "summary",
+          "text": "openvswitch: openvswitch don't match packets on nd_target field",
+          "title": "Vulnerability summary"
+        },
+        {
+          "category": "other",
+          "text": "Red Hat Enterprise Linux 7 provides the `openvswitch` package only through the unsupported Optional repository. Customers are advised to install Open vSwitch (OVS) from RHEL Fast Datapath instead.\nRed Hat OpenStack Platform 13/16 deployments are not affected because they use openvswitch directly from the Fast Datapath channel. A rhosp-openvswitch update will therefore not be provided at this time. Any updates will be distributed through that channel.",
+          "title": "Statement"
+        },
+        {
+          "category": "general",
+          "text": "The CVSS score(s) listed for this vulnerability do not reflect the associated product's status, and are included for informational purposes to better understand the severity of this vulnerability.",
+          "title": "CVSS score applicability"
+        }
+      ],
+      "product_status": {
+        "known_affected": [
+          "only_fixed_for_one_cve"
+        ],
+        "fixed": [
+          "only_in_fixed_status",
+          "in_fixed_status_and_remediations",
+          "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+          "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64"
+        ]
+      },
+      "references": [
+        {
+          "category": "self",
+          "summary": "Canonical URL",
+          "url": "https://access.redhat.com/security/cve/CVE-2023-5366"
+        },
+        {
+          "category": "external",
+          "summary": "RHBZ#2006347",
+          "url": "https://bugzilla.redhat.com/show_bug.cgi?id=2006347"
+        },
+        {
+          "category": "external",
+          "summary": "https://www.cve.org/CVERecord?id=CVE-2023-5366",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2023-5366"
+        },
+        {
+          "category": "external",
+          "summary": "https://nvd.nist.gov/vuln/detail/CVE-2023-5366",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-5366"
+        },
+        {
+          "category": "external",
+          "summary": "https://mail.openvswitch.org/pipermail/ovs-announce/2024-February/000342.html",
+          "url": "https://mail.openvswitch.org/pipermail/ovs-announce/2024-February/000342.html"
+        }
+      ],
+      "release_date": "2023-09-26T00:00:00+00:00",
+      "remediations": [
+        {
+          "category": "vendor_fix",
+          "date": "2024-03-07T18:20:50+00:00",
+          "details": "For details on how to apply this update, which includes the changes described in this advisory, refer to:\n\nhttps://access.redhat.com/articles/11258",
+          "product_ids": [
+            "only_in_remediations",
+            "in_fixed_status_and_remediations",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.src",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-test-0:2.17.0-148.el8fdp.noarch",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64"
+          ],
+          "restart_required": {
+            "category": "none"
+          },
+          "url": "https://access.redhat.com/errata/RHSA-2024:1234"
+        }
+      ],
+      "scores": [
+        {
+          "cvss_v3": {
+            "attackComplexity": "LOW",
+            "attackVector": "LOCAL",
+            "availabilityImpact": "NONE",
+            "baseScore": 5.5,
+            "baseSeverity": "MEDIUM",
+            "confidentialityImpact": "NONE",
+            "integrityImpact": "HIGH",
+            "privilegesRequired": "LOW",
+            "scope": "UNCHANGED",
+            "userInteraction": "NONE",
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N",
+            "version": "3.1"
+          },
+          "products": [
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:network-scripts-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.src",
+            "8Base-Fast-Datapath:openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-debugsource-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-devel-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:openvswitch2.17-ipsec-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:openvswitch2.17-test-0:2.17.0-148.el8fdp.noarch",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-0:2.17.0-148.el8fdp.x86_64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.aarch64",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.ppc64le",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.s390x",
+            "8Base-Fast-Datapath:python3-openvswitch2.17-debuginfo-0:2.17.0-148.el8fdp.x86_64"
+          ]
+        }
+      ],
+      "threats": [
+        {
+          "category": "impact",
+          "details": "Moderate"
+        }
+      ],
+      "title": "openvswitch: openvswitch don't match packets on nd_target field"
+    }
+  ]
+}
