@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Dict, Iterable, Set, Optional
+from typing import Dict, Iterable, Optional, Set
 
 
 def iter_next_branches(

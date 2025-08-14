@@ -5,7 +5,7 @@
 
 import json
 import logging
-from typing import Dict, Iterable, List, Set, Tuple, Optional
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from black.trans import defaultdict
 
