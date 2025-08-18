@@ -3,37 +3,47 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from collections import defaultdict
+from collections.abc import Container
 from copy import deepcopy
-from typing import Dict, List, Set
+from typing import Any, Dict, List, Set
 
 from pontos.csaf import RelationshipCategory
 
 
-class Relationship(dict):
+class Relationship:
+    def __init__(self, relationship: Dict[str, Any]):
+        self._data = relationship
+
     def __hash__(self):
         # Should be unique for a given CSAF.
-        return hash((self.parent_id, self.child_id, self.id, self.kind))
+        return hash((self.parent_id, self.child_id, self.id))
 
     def __eq__(self, other):
         if not isinstance(other, (Relationship, dict)):
             return False
-        return dict(self) == dict(other)
+        if isinstance(other, Relationship):
+            return self._data == other._data
+        return self._data == other
+
+    @property
+    def product(self) -> Dict[str, Any]:
+        return self._data["full_product_name"]
 
     @property
     def parent_id(self) -> str:
-        return self["relates_to_product_reference"]
+        return self._data["relates_to_product_reference"]
 
     @property
     def kind(self) -> RelationshipCategory:
-        return RelationshipCategory(self["category"])
+        return RelationshipCategory(self._data["category"])
 
     @property
     def child_id(self) -> str:
-        return self["product_reference"]
+        return self._data["product_reference"]
 
     @property
     def id(self) -> str:
-        return self["full_product_name"]["product_id"]
+        return self._data["full_product_name"]["product_id"]
 
     @staticmethod
     def create_combined_parent_to_child_mapping(
@@ -49,7 +59,7 @@ class Relationship(dict):
     def build_root_to_leaf_map(
         root_relationships: List["Relationship"],
         inner_tree_relationships: List["Relationship"],
-        leaf_product_ids: Set[str],
+        leaf_product_ids: Container[str],
     ) -> Dict[str, set[str]]:
 
         if not root_relationships:

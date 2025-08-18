@@ -5,7 +5,7 @@
 
 import json
 import logging
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Container, Dict, Iterable, List, Optional, Set, Tuple
 
 from black.trans import defaultdict
 
@@ -22,7 +22,7 @@ from pontos.errors import PontosError
 logger = logging.getLogger(__name__)
 
 
-class Csaf(dict):
+class Csaf:
     """
     Main purpose:
     1. Increased accessibility of common data structures without having
@@ -50,13 +50,16 @@ class Csaf(dict):
         iterable of len != 0 will evaluate to true.
     """
 
+    def __init__(self, csaf: Dict[str, Any]):
+        self._data = csaf
+
     @property
     def advisory_id(self) -> str:
         return self.document["tracking"]["id"]
 
     def iter_middle_branches(
-        self, limit_to_categories: Optional[Set[str]] = None
-    ) -> Iterable[Dict]:
+        self, limit_to_categories: Optional[Container[str]] = None
+    ) -> Iterable[Dict[str, Any]]:
         if "branches" not in self.product_tree:
             logger.warning(
                 "{}: product tree doesn't contain any branches.".format(
@@ -77,7 +80,7 @@ class Csaf(dict):
             ):
                 yield br
 
-    def iter_inner_product_branches(self) -> Iterable[Dict]:
+    def iter_inner_product_branches(self) -> Iterable[Dict[str, Any]]:
         """Provides all inner product branches - typically specific OSs/SW/HW versions.
 
 
@@ -94,7 +97,7 @@ class Csaf(dict):
             for br in iter_next_branches(second_layer_branch):
                 yield br
 
-    def iter_products_with_cpe(self) -> Iterable[tuple[Dict, str]]:
+    def iter_products_with_cpe(self) -> Iterable[Tuple[Dict[str, Any], str]]:
         """Provides all inner product branches that include a CPE for identification"""
         for prod in self.iter_inner_product_branches():
             if "cpe" not in prod["product"].get(
@@ -117,8 +120,8 @@ class Csaf(dict):
         return cves
 
     def iter_products_with_matching_id(
-        self, acceptable_ids: Set[str]
-    ) -> Iterable[Dict]:
+        self, acceptable_ids: Container[str]
+    ) -> Iterable[Dict[str, Any]]:
         """Retrieves complete product structures for these explicit IDs"""
         for prod in self.iter_inner_product_branches():
             if prod["product"]["product_id"] in acceptable_ids:
@@ -127,7 +130,11 @@ class Csaf(dict):
     def get_reference_urls(
         self, allow_self_references: bool, allow_external_references: bool
     ) -> Set[str]:
-        """Retrieve all URLs this document references to in its main section."""
+        """Retrieve all URLs this document references to in its main section.
+
+        Notes: Multiple different URLs may be published for the same category.
+
+        """
         # only 'self', and 'external' are CSAF-compliant enum entries for the
         # reference category
         allowed_categories = set()
@@ -161,18 +168,18 @@ class Csaf(dict):
     @property
     def vulnerabilities(self) -> List[Vulnerability]:
         """Retrieves all vulnerabilities listed in a parsed format."""
-        return [Vulnerability(v) for v in self.get("vulnerabilities", [])]
+        return [Vulnerability(v) for v in self._data.get("vulnerabilities", [])]
 
     @property
     def contains_product_tree(self) -> bool:
         # although *usually* contained, not required
         # and e.g., Microsoft doesn't always use it
-        return "product_tree" in self
+        return "product_tree" in self._data
 
     @property
-    def product_tree(self) -> Dict:
+    def product_tree(self) -> Dict[str, Any]:
         # optional in CSAF, but most common
-        return self["product_tree"]
+        return self._data["product_tree"]
 
     @property
     def relationships(self) -> List[Relationship]:
@@ -192,33 +199,32 @@ class Csaf(dict):
         ]
 
     @property
-    def document(self) -> Dict:
-        return self["document"]
+    def document(self) -> Dict[str, Any]:
+        return self._data["document"]
 
-    @property
-    def notes(self) -> Iterable[Dict]:
+    def iter_main_notes(self) -> Iterable[Dict[str, str]]:
         for note in self.document["notes"]:
             yield note
 
-    @property
-    def vulnerability_notes(self) -> Iterable[Dict]:
+    def iter_vulnerability_notes(self) -> Iterable[Dict[str, str]]:
         for vuln in self.vulnerabilities:
             for note in vuln.iter_notes():
                 yield note
 
-    @property
-    def raw_references(self) -> Iterable[Dict]:
+    def iter_raw_references(self) -> Iterable[Dict[str, str]]:
         for reference in self.document["references"]:
             yield reference
 
     @property
     def has_vulnerabilities(self) -> bool:
-        return "vulnerabilities" in self
+        return "vulnerabilities" in self._data
 
     def get_matching_relationships(
         self,
-        restrict_to_categories: Optional[Set[RelationshipCategory]] = None,
-        restrict_to_parent_ids: Optional[Set[str]] = None,
+        restrict_to_categories: Optional[
+            Container[RelationshipCategory]
+        ] = None,
+        restrict_to_parent_ids: Optional[Container[str]] = None,
         apply_transitively: bool = False,
     ) -> Tuple[List[Relationship], List[Relationship]]:
         """Retrieves product relationships ('component of' etc.) based on product IDs
@@ -227,7 +233,7 @@ class Csaf(dict):
 
         Args:
             restrict_to_categories: explicitly allowed kinds of relationships
-            restrict_to_parent_ids: explicitly allowed "parent" IDs (return keys).
+            restrict_to_parent_ids: explicitly allowed "parent" IDs.
             apply_transitively: store relationship IDs whose parent matched & extract all
                 relationship children of that relationship product ID.
 
