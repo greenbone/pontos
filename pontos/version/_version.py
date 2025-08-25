@@ -150,6 +150,11 @@ class Version(ABC):
     def __str__(self) -> str:
         """A string representation of the version"""
 
+    # --- Added for Ruff PLW1641 compliance ---
+    @abstractmethod
+    def __hash__(self) -> int:
+        pass
+
     def __repr__(self) -> str:
         """A representation of the Version"""
         return f"<{self.__class__.__name__}('{self}')>"

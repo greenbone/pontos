@@ -16,11 +16,12 @@
 import sys
 from pathlib import Path
 
+from pontos.version import __version__  # Moved to top for Ruff E402 compliance
+
 source_directory = str(Path(__file__).parent.absolute())
 
 sys.path.insert(0, source_directory)
 
-from pontos.version import __version__
 
 # -- Project information -----------------------------------------------------
 
