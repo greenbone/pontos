@@ -223,6 +223,10 @@ class SemanticVersion(Version):
         """A string representation of the version"""
         return str(self._version_info)
 
+    # --- Added for Ruff PLW1641 compliance ---
+    def __hash__(self) -> int:
+        return hash(self._version_info)
+
     @classmethod
     def from_string(cls, version: str) -> "SemanticVersion":
         """
