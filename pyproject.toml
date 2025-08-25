@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pontos"
-version = "25.8.1.dev1"
+version = "25.8.2.dev1"
 description = "Common utilities and tools maintained by Greenbone Networks"
 authors = ["Greenbone AG <info@greenbone.net>"]
 license = "GPL-3.0-or-later"
