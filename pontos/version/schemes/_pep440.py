@@ -237,6 +237,10 @@ class PEP440Version(Version):
     def __str__(self) -> str:
         return str(self._version)
 
+    # --- Added for Ruff PLW1641 compliance ---
+    def __hash__(self) -> int:
+        return hash(self._version)
+
 
 class PEP440VersionCalculator(VersionCalculator):
     version_cls = PEP440Version
