@@ -10,6 +10,8 @@ from pontos.version._errors import VersionError
 from pontos.version.schemes._pep440 import PEP440Version
 from pontos.version.schemes._semantic import (
     SemanticVersion,
+)
+from pontos.version.schemes._semantic import (
     SemanticVersion as Version,
 )
 from pontos.version.schemes._semantic import (
