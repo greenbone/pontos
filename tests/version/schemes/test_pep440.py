@@ -1003,9 +1003,11 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
                 f"{release_version} is not the next expected dev version "
                 f"{assert_version} for {current_version}",
             )
-    
+
     def test_hash(self):
-            self.assertEqual(hash(Version("22.2.2")), hash(Version("22.2.2")))
-            self.assertNotEqual(hash(Version("22.2.1")), hash(Version("22.2.2")))
-            self.assertNotEqual(hash(SemanticVersion("22.2.2")), hash("22.2.2"))
-            self.assertNotEqual(hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2")))
+        self.assertEqual(hash(Version("22.2.2")), hash(Version("22.2.2")))
+        self.assertNotEqual(hash(Version("22.2.1")), hash(Version("22.2.2")))
+        self.assertNotEqual(hash(SemanticVersion("22.2.2")), hash("22.2.2"))
+        self.assertNotEqual(
+            hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2"))
+        )
