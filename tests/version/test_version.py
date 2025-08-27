@@ -33,12 +33,22 @@ class VersionTestCase(unittest.TestCase):
             self.assertNotEqual(PEP440Version("22.2.2"), 22)
 
     def test_hash(self):
-        self.assertEqual(hash(PEP440Version("22.2.2")), hash(PEP440Version("22.2.2")))
-        self.assertNotEqual(hash(PEP440Version("22.2.1")), hash(PEP440Version("22.2.2")))
+        self.assertEqual(
+            hash(PEP440Version("22.2.2")), hash(PEP440Version("22.2.2"))
+        )
+        self.assertNotEqual(
+            hash(PEP440Version("22.2.1")), hash(PEP440Version("22.2.2"))
+        )
         self.assertNotEqual(hash(SemanticVersion("22.2.2")), hash("22.2.2"))
-        self.assertNotEqual(hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2")))
-    
+        self.assertNotEqual(
+            hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2"))
+        )
+
     def test_hash_semantic(self):
-        self.assertEqual(hash(SemanticVersion("22.2.2")), hash(SemanticVersion("22.2.2")))
-        self.assertNotEqual(hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2")))
+        self.assertEqual(
+            hash(SemanticVersion("22.2.2")), hash(SemanticVersion("22.2.2"))
+        )
+        self.assertNotEqual(
+            hash(SemanticVersion("22.2.1")), hash(SemanticVersion("22.2.2"))
+        )
         self.assertNotEqual(hash(SemanticVersion("22.2.2")), hash("22.2.2"))
