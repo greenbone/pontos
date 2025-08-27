@@ -155,7 +155,6 @@ class Version(ABC):
     def __hash__(self) -> int:
         raise NotImplementedError  # pragma: no cover
 
-
     def __repr__(self) -> str:
         """A representation of the Version"""
         return f"<{self.__class__.__name__}('{self}')>"
