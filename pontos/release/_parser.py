@@ -18,6 +18,7 @@ import shtab
 
 from pontos.enum import enum_choice, enum_type, to_choices
 from pontos.git._git import DEFAULT_TAG_PREFIX
+from pontos.version.commands import ProjectType
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
     PEP440VersioningScheme,
@@ -94,6 +95,13 @@ def add_create_parser(
         "--last-release-version",
         help="Optional last release version. Will be determined if not set.",
         type=str,
+    )
+    create_parser.add_argument(
+        "--project-types",
+        help="Project types to use for version information. Default is to consider all project types.",
+        nargs="*",
+        choices=enum_choice(ProjectType),
+        type=enum_type(ProjectType),
     )
 
     next_version_group = create_parser.add_mutually_exclusive_group()

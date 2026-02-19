@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Iterable, Tuple, Type
+from typing import Iterable, Optional, Type
+
+from pontos.enum import StrEnum
 
 from ._cargo import CargoVersionCommand
 from ._cmake import CMakeVersionCommand
@@ -21,21 +23,36 @@ __all__ = (
     "JavaVersionCommand",
     "PythonVersionCommand",
     "CargoVersionCommand",
+    "ProjectType",
     "get_commands",
 )
 
-__COMMANDS: Tuple[Type[VersionCommand]] = (  # type: ignore[assignment]
-    CMakeVersionCommand,
-    GoVersionCommand,
-    JavaVersionCommand,
-    JavaScriptVersionCommand,
-    PythonVersionCommand,
-    CargoVersionCommand,
-)
+
+class ProjectType(StrEnum):
+    CMAKE = "cmake"
+    CARGO = "cargo"
+    GO = "go"
+    JAVA = "java"
+    NPM = "npm"
+    PYPROJECT = "pyproject"
 
 
-def get_commands() -> Iterable[Type[VersionCommand]]:
+_COMMANDS: dict[ProjectType, Type[VersionCommand]] = {
+    ProjectType.CMAKE: CMakeVersionCommand,
+    ProjectType.CARGO: CargoVersionCommand,
+    ProjectType.GO: GoVersionCommand,
+    ProjectType.JAVA: JavaVersionCommand,
+    ProjectType.NPM: JavaScriptVersionCommand,
+    ProjectType.PYPROJECT: PythonVersionCommand,
+}
+
+
+def get_commands(
+    names: Optional[Iterable[ProjectType]] = None,
+) -> list[Type[VersionCommand]]:
     """
     Returns the available VersionCommands
     """
-    return __COMMANDS
+    if not names:
+        return list(_COMMANDS.values())
+    return [command for name, command in _COMMANDS.items() if name in names]

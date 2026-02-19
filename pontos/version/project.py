@@ -4,11 +4,11 @@
 #
 
 
-from typing import List, Literal, Type, Union
+from typing import Iterable, Literal, Optional, Type, Union
 
 from ._errors import ProjectError
 from ._version import Version, VersionUpdate
-from .commands import VersionCommand, get_commands
+from .commands import ProjectType, VersionCommand, get_commands
 from .schemes import VersioningScheme
 
 __all__ = ("Project",)
@@ -28,21 +28,28 @@ class Project:
     """
 
     def __init__(
-        self, versioning_scheme: Union[VersioningScheme, Type[VersioningScheme]]
+        self,
+        versioning_scheme: Union[VersioningScheme, Type[VersioningScheme]],
+        *,
+        project_types: Optional[Iterable[ProjectType]] = None,
     ) -> None:
         """
         Creates a new project instance
 
         Args:
             versioning_scheme: Scheme for version handling
+            project_types: Project types to use for version information.
+                Default is to consider all project types.
 
         Raises:
             ProjectError: If no fitting VersionCommand could be found
         """
         self._versioning_scheme = versioning_scheme
-        self._commands = self._gather_commands()
+        self._commands = self._gather_commands(project_types)
 
-    def _gather_commands(self) -> List[VersionCommand]:
+    def _gather_commands(
+        self, project_type: Optional[Iterable[ProjectType]]
+    ) -> list[VersionCommand]:
         """
         Initialize the project with the fitting VersionCommands of the current
         working directory
@@ -51,7 +58,7 @@ class Project:
             ProjectError: If no fitting VersionCommand could be found
         """
         commands = []
-        for cmd in get_commands():
+        for cmd in get_commands(project_type):
             command = cmd(versioning_scheme=self._versioning_scheme)
             if command.project_found():
                 commands.append(command)

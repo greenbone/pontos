@@ -27,7 +27,10 @@ def main(args: Optional[List[str]] = None) -> NoReturn:
     parsed_args = parse_args(args)
 
     try:
-        project = Project(parsed_args.versioning_scheme)
+        project = Project(
+            parsed_args.versioning_scheme,
+            project_types=parsed_args.project_types,
+        )
     except PontosError:
         print("No project found.", file=sys.stderr)
         sys.exit(VersionExitCode.NO_PROJECT)
