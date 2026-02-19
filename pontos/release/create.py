@@ -7,7 +7,7 @@ from argparse import Namespace
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Literal, Optional, SupportsInt, Union
+from typing import Iterable, Literal, Optional, SupportsInt, Union
 
 import httpx
 
@@ -20,6 +20,7 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.release.command import AsyncCommand
 from pontos.terminal import Terminal
 from pontos.version import Version, VersionError
+from pontos.version.commands import ProjectType
 from pontos.version.helper import get_last_release_version
 from pontos.version.project import Project
 from pontos.version.schemes import VersioningScheme
@@ -181,6 +182,7 @@ class CreateReleaseCommand(AsyncCommand):
         update_project: bool = True,
         github_pre_release: bool = False,
         changelog: Optional[str] = None,
+        project_types: Optional[Iterable[ProjectType]] = None,
     ) -> CreateReleaseReturnValue:
         """
         Create a release
@@ -217,6 +219,8 @@ class CreateReleaseCommand(AsyncCommand):
                 release
             changelog: An optional changelog. If not set a changelog will be
                 gathered from the git commits since the last release.
+            project_types: Project types to use for version information.
+                Default is to consider all project types.
         """
         self.git_tag_prefix = git_tag_prefix or ""
         self.repository = repository
@@ -274,7 +278,9 @@ class CreateReleaseCommand(AsyncCommand):
 
         if update_project:
             try:
-                project = Project(versioning_scheme)
+                project = Project(
+                    versioning_scheme, project_types=project_types
+                )
             except PontosError as e:
                 self.print_error(f"Unable to determine project settings. {e}")
                 return CreateReleaseReturnValue.PROJECT_SETTINGS_NOT_FOUND
@@ -445,4 +451,5 @@ def create_release(
         update_project=args.update_project,
         github_pre_release=args.github_pre_release,
         changelog=changelog_file.read_text() if changelog_file else None,
+        project_types=args.project_types,
     )

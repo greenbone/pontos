@@ -8,7 +8,9 @@ from typing import Optional, Sequence
 
 import shtab
 
+from pontos.enum import enum_choice, enum_type
 from pontos.errors import PontosError
+from pontos.version.commands import ProjectType
 from pontos.version.schemes import (
     VERSIONING_SCHEMES,
     VersioningScheme,
@@ -52,6 +54,13 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         default="pep440",
         type=versioning_scheme_argument_type,
     )
+    verify_parser.add_argument(
+        "--project-types",
+        help="Project types to use for version information. Default is to consider all project types.",
+        nargs="*",
+        choices=enum_choice(ProjectType),
+        type=enum_type(ProjectType),
+    )
 
     show_parser = subparsers.add_parser(
         "show", help="Show version information of the current project"
@@ -63,6 +72,13 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         "Default: %(default)s",
         default="pep440",
         type=versioning_scheme_argument_type,
+    )
+    show_parser.add_argument(
+        "--project-types",
+        help="Project types to use for version information. Default is to consider all project types.",
+        nargs="*",
+        choices=enum_choice(ProjectType),
+        type=enum_type(ProjectType),
     )
 
     update_parser = subparsers.add_parser(
@@ -79,6 +95,13 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         "Default: %(default)s",
         default="pep440",
         type=versioning_scheme_argument_type,
+    )
+    update_parser.add_argument(
+        "--project-types",
+        help="Project types to use for version information. Default is to consider all project types.",
+        nargs="*",
+        choices=enum_choice(ProjectType),
+        type=enum_type(ProjectType),
     )
     update_parser.add_argument(
         "--force",
@@ -111,6 +134,13 @@ def initialize_default_parser() -> argparse.ArgumentParser:
         "Default: %(default)s",
         default="pep440",
         type=versioning_scheme_argument_type,
+    )
+    next_parser.add_argument(
+        "--project-types",
+        help="Project types to use for version information. Default is to consider all project types.",
+        nargs="*",
+        choices=enum_choice(ProjectType),
+        type=enum_type(ProjectType),
     )
     return parser
 

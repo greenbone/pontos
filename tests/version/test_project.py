@@ -6,6 +6,7 @@
 import unittest
 
 from pontos.testing import temp_directory, temp_python_module
+from pontos.version.commands import ProjectType
 from pontos.version.project import Project, ProjectError
 from pontos.version.schemes import PEP440VersioningScheme
 
@@ -145,3 +146,50 @@ class ProjectTestCase(unittest.TestCase):
             self.assertEqual(update.new, new_version)
 
             self.assertEqual(len(update.changed_files), 5)
+
+    def test_go_project_with_missing_go_project_type(self):
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+
+        with (
+            temp_directory(change_into=True) as temp_dir,
+            self.assertRaisesRegex(
+                ProjectError, "No project settings file found"
+            ),
+        ):
+            project_file = temp_dir / "go.mod"
+            project_file.touch()
+            version_file = temp_dir / "version.go"
+            version_file.write_text(f'var version = "{current_version}"')
+
+            Project(
+                PEP440VersioningScheme,
+                project_types=[
+                    ProjectType.CMAKE,
+                    ProjectType.JAVA,
+                    ProjectType.NPM,
+                    ProjectType.PYPROJECT,
+                    ProjectType.CARGO,
+                ],
+            )
+
+    def test_go_project_with_go_project_type(self):
+        current_version = PEP440VersioningScheme.parse_version("1.2.3")
+        new_version = PEP440VersioningScheme.parse_version("1.2.4")
+
+        with temp_directory(change_into=True) as temp_dir:
+            project_file = temp_dir / "go.mod"
+            project_file.touch()
+            version_file = temp_dir / "version.go"
+            version_file.write_text(f'var version = "{current_version}"')
+
+            project = Project(
+                PEP440VersioningScheme, project_types=[ProjectType.GO]
+            )
+            self.assertEqual(project.get_current_version(), current_version)
+
+            update = project.update_version(new_version)
+
+            self.assertEqual(update.previous, current_version)
+            self.assertEqual(update.new, new_version)
+
+            self.assertEqual(len(update.changed_files), 1)
