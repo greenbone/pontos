@@ -37,7 +37,7 @@ The documentation for pontos can be found at https://greenbone.github.io/pontos/
 
 ### Requirements
 
-Python 3.9 and later is supported.
+Python 3.10 and later is supported.
 
 ### Install using pipx
 
