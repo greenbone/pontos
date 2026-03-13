@@ -73,6 +73,14 @@ class FindCopyRightTestCase(TestCase):
             "# This program is free software: "
             "you can redistribute it and/or modify"
         )
+        not_a_copyright_line = """
+package product
+
+type FooProduct struct {
+	Version       string     `json:"version"`
+	SPDXLicenseID string     `json:"spdx-license-identifier"`
+	Copyright     string     `json:"copyright"`
+"""  # noqa: E501
 
         # Full match
         found, match = find_copyright(
@@ -97,6 +105,13 @@ class FindCopyRightTestCase(TestCase):
         # No match
         found, match = find_copyright(
             copyright_regex=self.regex, line=invalid_line
+        )
+        self.assertFalse(found)
+        self.assertIsNone(match)
+
+        # Looks like a copyright, but isn't
+        found, match = find_copyright(
+            copyright_regex=self.regex, line=not_a_copyright_line
         )
         self.assertFalse(found)
         self.assertIsNone(match)
