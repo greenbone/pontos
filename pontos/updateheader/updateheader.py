@@ -258,11 +258,19 @@ def update_file(
                     _substitute_license_text(
                         fp, line, copyright_regex, copyright_term
                     )
-                    print(
-                        f"{file}: Changed License Header Copyright Year "
-                        f"{copyright_match.modification_year} -> "
-                        f"{year}"
-                    )
+                    if with_multi_year:
+                        print(
+                            f"{file}: Changed License Header Copyright Year "
+                            f"{copyright_match.creation_year}-"
+                            f"{copyright_match.modification_year} -> "
+                            f"{copyright_match.creation_year}-{year}"
+                        )
+                    else:
+                        print(
+                            f"{file}: Changed License Header Copyright Year "
+                            f"{copyright_match.creation_year} -> "
+                            f"{copyright_match.creation_year}-{year}"
+                        )
                 else:
                     print(f"{file}: License Header is ok.")
 
