@@ -1,24 +1,24 @@
-[tool.poetry]
+[project]
 name = "pontos"
 version = "26.2.1.dev1"
 description = "Common utilities and tools maintained by Greenbone Networks"
-authors = ["Greenbone AG <info@greenbone.net>"]
+authors = [
+  {name = "Greenbone AG", email = "info@greenbone.net"}
+]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://github.com/greenbone/pontos/"
-repository = "https://github.com/greenbone/pontos/"
-documentation = "https://greenbone.github.io/pontos/"
+requires-python = ">=3.10,<4.0"
 
 classifiers = [
   # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
   "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)", # pylint: disable=line-too-long
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -30,17 +30,22 @@ packages = [
 ]
 include = ["pontos/updateheader/templates/", "pontos/github/pr_template.md"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-colorful = ">=0.5.4"
-tomlkit = ">=0.5.11"
-packaging = ">=20.3"
-httpx = { extras = ["http2"], version = ">=0.23" }
-rich = ">=12.4.4"
-python-dateutil = ">=2.8.2"
-semver = ">=2.13"
-lxml = ">=4.9.0"
-shtab = ">=1.7.0"
+dependencies = [
+  "colorful>=0.5.4",
+  "tomlkit>=0.5.11",
+  "packaging>=20.3",
+  "httpx[http2]>=0.23",
+  "rich>=12.4.4",
+  "python-dateutil>=2.8.2",
+  "semver>=2.13",
+  "lxml>=4.9.0",
+  "shtab>=1.7.0",
+]
+
+[project.urls]
+homepage = "https://github.com/greenbone/pontos/"
+repository = "https://github.com/greenbone/pontos/"
+documentation = "https://greenbone.github.io/pontos/"
 
 [tool.poetry.group.dev.dependencies]
 autohooks = ">=22.7.0"
@@ -56,7 +61,7 @@ sphinx-autobuild = ">=2021.3.14"
 
 [tool.black]
 line-length = 80
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313', 'py314']
 exclude = '''
 /(
     \.git
@@ -84,7 +89,7 @@ line_length = 80
 
 [tool.ruff]
 line-length = 80
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 extend-select = ["I", "PLE", "PLW"]
@@ -108,7 +113,7 @@ branch = true
 omit = ["tests/*", "pontos/github/scripts/*", "*/__init__.py"]
 source = ["pontos"]
 
-[tool.poetry.scripts]
+[project.scripts]
 pontos = 'pontos:main'
 pontos-version = 'pontos.version:main'
 pontos-release = 'pontos.release:main'
