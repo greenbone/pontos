@@ -91,7 +91,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
         ) as tmp_module:
             tmp_file = tmp_module.parent / "pyproject.toml"
             tmp_file.write_text(
-                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[project]\nversion = "1.2.3"\n'
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
@@ -103,6 +103,41 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             )
 
     def test_get_current_semantic_version(self):
+        with temp_python_module(
+            "__version__ = '1.2.3a1'", name="foo", change_into=True
+        ) as tmp_module:
+            tmp_file = tmp_module.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[project]\nversion = "1.2.3a1"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(SemanticVersioningScheme)
+            version = cmd.get_current_version()
+
+            self.assertEqual(
+                version, PEP440VersioningScheme.parse_version("1.2.3a1")
+            )
+            self.assertIsInstance(version, PEP440VersioningScheme.version_cls)
+
+    def test_get_current_version_poetry(self):
+        with temp_python_module(
+            "__version__ = '1.2.3'", name="foo", change_into=True
+        ) as tmp_module:
+            tmp_file = tmp_module.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = cmd.get_current_version()
+
+            self.assertEqual(
+                version, PEP440VersioningScheme.parse_version("1.2.3")
+            )
+
+    def test_get_current_semantic_version_poetry(self):
         with temp_python_module(
             "__version__ = '1.2.3a1'", name="foo", change_into=True
         ) as tmp_module:
@@ -123,6 +158,34 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
 
 class UpdatePythonVersionTestCase(unittest.TestCase):
     def test_update_version_file(self):
+        content = "__version__ = '21.1'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[project]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("21.1")
+
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = temp.read_text(encoding="utf8")
+
+        *_, version_line, _last_line = text.split("\n")
+
+        self.assertEqual(version_line, '__version__ = "22.2"')
+
+    def test_update_version_file_poetry(self):
         content = "__version__ = '21.1'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
             tmp_file = temp.parent / "pyproject.toml"
