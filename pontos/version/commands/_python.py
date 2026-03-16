@@ -29,9 +29,18 @@ class PythonVersionCommand(VersionCommand):
 
     def _get_version_from_pyproject_toml(self) -> Version:
         """
-        Return the version information from the [tool.poetry] section of the
-        pyproject.toml file. The version may be in non standardized form.
+        Return the version information from the [project] section of the
+        pyproject.toml file, fall back to the [tool.poetry] for backwards
+        compatibility. The version may be in non standardized form.
         """
+
+        if (
+            "project" in self.pyproject_toml
+            and "version" in self.pyproject_toml["project"]  # type: ignore[operator,index] # noqa: E501
+        ):
+            return PEP440VersioningScheme.parse_version(
+                str(self.pyproject_toml["project"]["version"])  # type: ignore[index] # noqa: E501
+            )
 
         if (
             "tool" in self.pyproject_toml
