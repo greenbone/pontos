@@ -35,8 +35,7 @@ TEMPLATE_UPGRADE_VERSION_MULTI_JSON = """{
 }
 """
 
-TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template(
-    """{
+TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template("""{
   "files": [
     {
       "path": "README.md",
@@ -44,8 +43,7 @@ TEMPLATE_UPGRADE_VERSION_WITH_LINE_JSON = Template(
     }
   ]
 }
-"""
-)
+""")
 
 TEMPLATE_UPGRADE_VERSION_MARKDOWN = """# Task service
 
