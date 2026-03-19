@@ -314,4 +314,4 @@ class GitHubAsyncREST:
             response.raise_for_status()
             data: JSON_OBJECT = response.json()
             for item in data.get(name, []):  # type: ignore
-                yield model_cls.from_dict(item)  # type:ignore
+                yield model_cls.from_dict(item)  # type: ignore

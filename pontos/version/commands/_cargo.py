@@ -95,7 +95,7 @@ class CargoVersionCommand(VersionCommand):
         )
 
     def get_current_version(self) -> Version:
-        (_, document) = self.__as_project_document(self.project_file_path)
+        _, document = self.__as_project_document(self.project_file_path)
 
         version: Any = None
         if self.__has_workspace_package_version(document):
