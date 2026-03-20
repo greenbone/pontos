@@ -38,6 +38,14 @@ class SemanticVersionTestCase(unittest.TestCase):
             "22.4.1",
             "22.4.1-dev1",
             "22.4.1-dev3",
+            # Dot-separated pre-release identifiers (SemVer standard)
+            "1.2.3-alpha.1",
+            "1.2.3-beta.1",
+            "1.2.3-rc.1",
+            "1.2.3-dev.1",
+            "1.2.3-alpha.1-dev.1",
+            "1.2.3-beta.3-dev.2",
+            "0.2.1-alpha.5",
         ]
         for version in versions:
             self.assertEqual(Version.from_string(version), Version(version))
@@ -102,6 +110,80 @@ class SemanticVersionTestCase(unittest.TestCase):
                 VersionError, f"^Invalid prerelease .* in {version}"
             ):
                 Version.from_string(version)
+
+    def test_dot_separated_prerelease_properties(self):
+        """Dot-separated pre-release identifiers should parse to the
+        same semantic properties as compact identifiers."""
+        # alpha.1 has same properties as alpha1
+        v = Version.from_string("1.2.3-alpha.1")
+        self.assertTrue(v.is_pre_release)
+        self.assertTrue(v.is_alpha_release)
+        self.assertFalse(v.is_beta_release)
+        self.assertFalse(v.is_release_candidate)
+        self.assertEqual(v.pre, ("alpha", 1))
+
+        # beta.3 has same properties as beta3
+        v = Version.from_string("1.2.3-beta.3")
+        self.assertTrue(v.is_pre_release)
+        self.assertTrue(v.is_beta_release)
+        self.assertEqual(v.pre, ("beta", 3))
+
+        # rc.2 has same properties as rc2
+        v = Version.from_string("1.2.3-rc.2")
+        self.assertTrue(v.is_pre_release)
+        self.assertTrue(v.is_release_candidate)
+        self.assertEqual(v.pre, ("rc", 2))
+
+        # dev.1 is a dev release
+        v = Version.from_string("1.2.3-dev.1")
+        self.assertTrue(v.is_dev_release)
+        self.assertEqual(v.dev, 1)
+
+        # alpha.1-dev.1 has both pre-release and dev
+        v = Version.from_string("1.2.3-alpha.1-dev.1")
+        self.assertTrue(v.is_pre_release)
+        self.assertTrue(v.is_dev_release)
+        self.assertTrue(v.is_alpha_release)
+        self.assertEqual(v.pre, ("alpha", 1))
+        self.assertEqual(v.dev, 1)
+
+    def test_dot_separated_equals_compact(self):
+        """Dot-separated and compact pre-release versions with the same
+        name and number should be semantically equal."""
+        pairs = [
+            ("1.2.3-alpha.1", "1.2.3-alpha1"),
+            ("1.2.3-beta.3", "1.2.3-beta3"),
+            ("1.2.3-rc.2", "1.2.3-rc2"),
+            ("1.2.3-dev.1", "1.2.3-dev1"),
+        ]
+        for dot_version, compact_version in pairs:
+            v_dot = Version.from_string(dot_version)
+            v_compact = Version.from_string(compact_version)
+            self.assertEqual(
+                v_dot.pre,
+                v_compact.pre,
+                f"pre mismatch: {dot_version} vs {compact_version}",
+            )
+            self.assertEqual(
+                v_dot.dev,
+                v_compact.dev,
+                f"dev mismatch: {dot_version} vs {compact_version}",
+            )
+            self.assertEqual(
+                v_dot.major,
+                v_compact.major,
+                f"major mismatch: {dot_version} vs {compact_version}",
+            )
+            self.assertEqual(
+                v_dot.minor,
+                v_compact.minor,
+                f"minor mismatch: {dot_version} vs {compact_version}",
+            )
+            self.assertEqual(
+                v_dot.patch,
+                v_compact.patch,
+                f"patch mismatch: {dot_version} vs {compact_version}",
+            )
 
     def test_equal(self):
         versions = [

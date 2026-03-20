@@ -13,11 +13,13 @@ from .._errors import VersionError
 from .._version import Version
 from ._scheme import VersioningScheme
 
-# Note: This regex currently support any kind of
-# word-number combination for pre releases
+# Note: This regex supports word-number combinations for pre releases.
+# An optional dot separator is allowed between name and version to support
+# both SemVer-standard format (e.g. "alpha.1") and the compact format
+# (e.g. "alpha1"). The same applies to the extra (dev) segment.
 _PRE_RELEASE_REGEXP = re.compile(
-    r"^(?P<name>[a-zA-Z]+)(?P<version>0|[1-9][0-9]*)"
-    r"(?:-(?P<extra>[a-zA-Z]+)(?P<extra_version>0|[1-9][0-9]*))?$"
+    r"^(?P<name>[a-zA-Z]+)\.?(?P<version>0|[1-9][0-9]*)"
+    r"(?:-(?P<extra>[a-zA-Z]+)\.?(?P<extra_version>0|[1-9][0-9]*))?$"
 )
 
 
