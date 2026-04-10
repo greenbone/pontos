@@ -177,6 +177,8 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
     def test_empty_tool_poetry_section(self):
         content = "__version__ = '22.1'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
+            temp_poetry_lock = temp.parent / "poetry.lock"
+            temp_poetry_lock.touch()
             tmp_file = temp.parent / "pyproject.toml"
             tmp_file.write_text(
                 "[tool.poetry]\n"
@@ -200,12 +202,38 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
 
+    def test_empty_project_section(self):
+        content = "__version__ = '22.1'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                "[project]\n"
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("22.1")
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = tmp_file.read_text(encoding="utf8")
+
+            toml = tomlkit.parse(text)
+
+            self.assertEqual(toml["project"]["version"], "22.2")
+
     def test_override_existing_version(self):
         content = "__version__ = '1.2.3'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
             tmp_file = temp.parent / "pyproject.toml"
             tmp_file.write_text(
-                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[project]\nversion = "1.2.3"\n'
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
@@ -224,14 +252,14 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             toml = tomlkit.parse(text)
 
-            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+            self.assertEqual(toml["project"]["version"], "22.2")
 
     def test_development_version(self):
         content = "__version__ = '1.2.3'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
             tmp_file = temp.parent / "pyproject.toml"
             tmp_file.write_text(
-                '[tool.poetry]\nversion = "1.2.3"\n'
+                '[project]\nversion = "1.2.3"\n'
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
@@ -250,7 +278,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             toml = tomlkit.parse(text)
 
-            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2.dev1")
+            self.assertEqual(toml["project"]["version"], "22.2.dev1")
 
     def test_no_update(self):
         content = "__version__ = '1.2.3'"
@@ -320,7 +348,32 @@ class VerifyVersionTestCase(unittest.TestCase):
             version = PEP440VersioningScheme.parse_version("1.2.3")
             cmd.verify_version(version)
 
-    def test_current_version(self):
+    def test_current_version_with_project_version(self):
+        fake_version_py = Path("foo.py")
+        content = (
+            '[project]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
+
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
+            ),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+        ):
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd.verify_version("current")
+
+    def test_current_version_with_poetry_version(self):
         fake_version_py = Path("foo.py")
         content = (
             '[tool.poetry]\nversion = "1.2.3"\n'
@@ -345,7 +398,36 @@ class VerifyVersionTestCase(unittest.TestCase):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
-    def test_current_failure(self):
+    def test_current_failure_with_project_version(self):
+        fake_version_py = Path("foo.py")
+        content = (
+            '[project]\nversion = "1.2.4"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
+
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
+            ),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+            self.assertRaisesRegex(
+                VersionError,
+                "The version .* in .* doesn't match the current version .*.",
+            ),
+        ):
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd.verify_version("current")
+
+    def test_current_failure_with_poetry_version(self):
         fake_version_py = Path("foo.py")
         content = (
             '[tool.poetry]\nversion = "1.2.4"\n'
@@ -374,7 +456,37 @@ class VerifyVersionTestCase(unittest.TestCase):
             cmd = PythonVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
-    def test_provided_version_mismatch(self):
+    def test_provided_version_mismatch_with_project_version(self):
+        fake_version_py = Path("foo.py")
+        content = (
+            '[project]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
+
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
+            ),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+        ):
+            with self.assertRaisesRegex(
+                VersionError,
+                "Provided version .* does not match the current version .*.",
+            ):
+                cmd = PythonVersionCommand(PEP440VersioningScheme)
+                version = PEP440VersioningScheme.parse_version("1.2.4")
+                cmd.verify_version(version)
+
+    def test_provided_version_mismatch_with_poetry_version(self):
         fake_version_py = Path("foo.py")
         content = (
             '[tool.poetry]\nversion = "1.2.3"\n'
@@ -404,7 +516,34 @@ class VerifyVersionTestCase(unittest.TestCase):
                 version = PEP440VersioningScheme.parse_version("1.2.4")
                 cmd.verify_version(version)
 
-    def test_verify_success(self):
+    def test_verify_success_with_project_version(self):
+        fake_version_py = Path("foo.py")
+        content = (
+            '[project]\nversion = "1.2.3"\n'
+            '[tool.pontos.version]\nversion-module-file = "foo.py"'
+        )
+
+        with (
+            temp_file(content, name="pyproject.toml", change_into=True),
+            patch.object(
+                PythonVersionCommand,
+                "get_current_version",
+                MagicMock(
+                    return_value=PEP440VersioningScheme.parse_version("1.2.3")
+                ),
+            ),
+            patch.object(
+                PythonVersionCommand,
+                "version_file_path",
+                new=PropertyMock(return_value=fake_version_py),
+            ),
+        ):
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = PEP440VersioningScheme.parse_version("1.2.3")
+
+            cmd.verify_version(version)
+
+    def test_verify_success_with_poetry_version(self):
         fake_version_py = Path("foo.py")
         content = (
             '[tool.poetry]\nversion = "1.2.3"\n'

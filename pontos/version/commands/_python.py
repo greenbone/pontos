@@ -34,6 +34,14 @@ class PythonVersionCommand(VersionCommand):
         """
 
         if (
+            "project" in self.pyproject_toml
+            and "version" in self.pyproject_toml["project"]  # type: ignore[operator]
+        ):
+            return PEP440VersioningScheme.parse_version(
+                str(self.pyproject_toml["project"]["version"])  # type: ignore[operator, index]
+            )
+
+        if (
             "tool" in self.pyproject_toml
             and "poetry" in self.pyproject_toml["tool"]  # type: ignore[operator] # noqa: E501
             and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore[operator,index] # noqa: E501
@@ -43,8 +51,7 @@ class PythonVersionCommand(VersionCommand):
             )
 
         raise VersionError(
-            "Version information not found in "
-            f"{self.project_file_path} file."
+            f"Version information not found in {self.project_file_path} file."
         )
 
     def _update_version_file(self, new_version: Version) -> None:
@@ -66,16 +73,23 @@ class PythonVersionCommand(VersionCommand):
             self.project_file_path.read_text(encoding="utf-8")
         )
 
-        if "tool" not in pyproject_toml:
-            tool_table = tomlkit.table()
-            pyproject_toml["tool"] = tool_table
+        poetry_lock_file_path = self.project_file_path.parent / "poetry.lock"
+        if poetry_lock_file_path.exists():
+            if "tool" not in pyproject_toml:
+                tool_table = tomlkit.table()
+                pyproject_toml["tool"] = tool_table
 
-        if "poetry" not in pyproject_toml["tool"]:  # type: ignore
-            poetry_table = tomlkit.table()
-            # pylint: disable=line-too-long, no-member # ignore pylint (2.13.9) error: pontos/version/python.py:128:12: E1101: Instance of 'OutOfOrderTableProxy' has no 'add' member (no-member) # noqa: E501
-            pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
+            if "poetry" not in pyproject_toml["tool"]:  # type: ignore
+                poetry_table = tomlkit.table()
+                pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
 
-        pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore # pylint: disable=line-too-long # noqa: E501
+            pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore
+        else:
+            if "project" not in pyproject_toml:
+                project_table = tomlkit.table()
+                pyproject_toml["project"] = project_table
+
+            pyproject_toml["project"]["version"] = str(new_version)  # type: ignore
 
         self.project_file_path.write_text(
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
