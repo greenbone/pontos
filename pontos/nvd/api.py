@@ -110,7 +110,7 @@ class InvalidState(PontosError):
 
 T = TypeVar("T")
 
-result_iterator_func = Callable[[JSON], Iterator[T]]
+result_iterator_func = Callable[[JSON, bool], Iterator[T]]
 
 
 class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
@@ -129,6 +129,7 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
         request_results: Optional[int] = None,
         results_per_page: Optional[int] = None,
         start_index: int = 0,
+        return_exceptions: bool = False,
     ) -> None:
         self._api = api
         self._params = params
@@ -148,6 +149,7 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
         self._current_results_per_page = results_per_page
 
         self._result_func = result_func
+        self._return_exceptions = return_exceptions
 
     async def chunks(self) -> AsyncIterator[Sequence[T]]:
         """
@@ -324,7 +326,7 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
 
     async def _get_next_iterator(self) -> Iterator[T]:
         await self._load_next_data()
-        return self._result_func(self._data)  # type: ignore
+        return self._result_func(self._data, self._return_exceptions)  # type: ignore
 
     async def _next_iterator(self) -> "NVDResults":
         self._it = await self._get_next_iterator()
