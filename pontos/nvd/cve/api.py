@@ -37,11 +37,16 @@ DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 MAX_CVES_PER_PAGE = 2000
 
 
-def _result_iterator(data: JSON) -> Iterator[CVE]:
+def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[CVE]:
     vulnerabilities: Iterable = data.get("vulnerabilities", [])  # type: ignore
-    return (
-        CVE.from_dict(vulnerability["cve"]) for vulnerability in vulnerabilities
-    )
+    for vulnerability in vulnerabilities:
+        try:
+            yield CVE.from_dict(vulnerability["cve"])
+        except Exception as exception:
+            if return_exceptions:
+                yield exception  # type: ignore
+            else:
+                raise exception
 
 
 class CVEApi(NVDApi):
@@ -114,6 +119,7 @@ class CVEApi(NVDApi):
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
+        return_exceptions: bool = False,
     ) -> NVDResults[CVE]:
         """
         Get all CVEs for the provided arguments
@@ -168,6 +174,8 @@ class CVEApi(NVDApi):
                 paginated requests that should not start at the first page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
+            return_exceptions: If True, exceptions during parsing of API
+                response will be returned instead of raised. Default: False.
 
         Returns:
             A NVDResponse for CVEs
@@ -257,6 +265,7 @@ class CVEApi(NVDApi):
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+            return_exceptions=return_exceptions,
         )
 
     async def cve(self, cve_id: str) -> CVE:
