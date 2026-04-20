@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 from httpx import AsyncClient, Response
 
+from pontos.models import ModelError
 from pontos.nvd.models.source import AcceptanceLevel
 from pontos.nvd.source.api import MAX_SOURCES_PER_PAGE, SourceApi
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
@@ -194,3 +195,39 @@ class SourceAPITestCase(IsolatedAsyncioTestCase):
 
         self.http_client.__aenter__.assert_awaited_once()
         self.http_client.__aexit__.assert_awaited_once()
+
+    async def test_sources_broken_response_return_exceptions(self):
+        responses = create_source_responses(3)
+        responses[1].json.return_value["sources"][0][
+            "published"
+        ] = "I'm an invalid date"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.sources(return_exceptions=True))
+
+        source = await anext(it)
+        self.assertEqual(source.name, "MITRE-1")
+
+        source = await anext(it)
+        self.assertIsInstance(source, ModelError)
+
+        source = await anext(it)
+        self.assertEqual(source.name, "MITRE-3")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+    async def test_sources_broken_response(self):
+        responses = create_source_responses(3)
+        responses[1].json.return_value["sources"][0][
+            "published"
+        ] = "I'm an invalid date"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.sources(return_exceptions=False))
+
+        source = await anext(it)
+        self.assertEqual(source.name, "MITRE-1")
+
+        with self.assertRaises(ModelError):
+            await anext(it)
