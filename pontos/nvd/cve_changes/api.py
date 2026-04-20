@@ -28,9 +28,18 @@ DEFAULT_NIST_NVD_CVE_HISTORY_URL = (
 MAX_CVE_CHANGES_PER_PAGE = 5000
 
 
-def _result_iterator(data: JSON) -> Iterator[CVEChange]:
+def _result_iterator(
+    data: JSON, return_exceptions: bool
+) -> Iterator[CVEChange]:
     results: list[dict[str, Any]] = data.get("cve_changes", [])  # type: ignore
-    return (CVEChange.from_dict(result["change"]) for result in results)
+    for result in results:
+        try:
+            yield CVEChange.from_dict(result["change"])
+        except Exception as e:
+            if return_exceptions:
+                yield e  # type: ignore
+            else:
+                raise e
 
 
 class CVEChangesApi(NVDApi):
@@ -90,6 +99,7 @@ class CVEChangesApi(NVDApi):
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
+        return_exceptions: bool = False,
     ) -> NVDResults[CVEChange]:
         """
         Get all CVEs for the provided arguments
@@ -108,6 +118,8 @@ class CVEChangesApi(NVDApi):
                 page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
+            return_exceptions: If True, exceptions during parsing of API response will be
+                returned instead of raised. Default: False.
 
         Returns:
             A NVDResponse for CVE changes
@@ -163,6 +175,7 @@ class CVEChangesApi(NVDApi):
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+            return_exceptions=return_exceptions,
         )
 
     async def __aenter__(self) -> "CVEChangesApi":
