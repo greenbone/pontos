@@ -191,11 +191,19 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
 
 class Result:
     def __init__(self, value: int) -> None:
-        self.value = value
+        # Parsing as int to pretend some kind of processing that could raise an exception
+        self.value = int(value)
 
 
-def result_func(data: JSON) -> Iterator[Result]:
-    return (Result(d) for d in data["values"])  # type: ignore
+def result_func(data: JSON, return_exceptions: bool) -> Iterator[Result]:
+    for result in data["values"]:  # type: ignore
+        try:
+            yield Result(result)  # type: ignore
+        except Exception as e:
+            if return_exceptions:
+                yield e  # type: ignore
+            else:
+                raise e
 
 
 class NVDResultsTestCase(IsolatedAsyncioTestCase):
@@ -545,6 +553,59 @@ class NVDResultsTestCase(IsolatedAsyncioTestCase):
                 "resultsPerPage": 3,
             }
         )
+
+    async def test_return_errors_true(self):
+        response_mock = MagicMock(spec=Response)
+        response_mock.json.side_effect = [
+            {
+                "values": [1, 2],
+                "total_results": 6,
+                "results_per_page": 2,
+            },
+            {
+                "values": ["I'm not an int", 4],
+                "total_results": 6,
+                "results_per_page": 2,
+            },
+            {
+                "values": [5, 6],
+                "total_results": 6,
+                "results_per_page": 2,
+            },
+        ]
+
+        api_mock = AsyncMock(spec=NVDApi)
+        api_mock._get.return_value = response_mock
+
+        nvd_results: NVDResults[Result] = NVDResults(
+            api_mock,
+            {},
+            result_func,
+            return_exceptions=True,
+        )
+
+        it = aiter(nvd_results.items())
+
+        result = await anext(it)
+        self.assertEqual(result.value, 1)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 2)
+
+        result = await anext(it)
+        self.assertIsInstance(result, ValueError)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 4)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 5)
+
+        result = await anext(it)
+        self.assertEqual(result.value, 6)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
 
     async def test_request_results_limit(self):
         response_mock = MagicMock(spec=Response)
