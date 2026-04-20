@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
+from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cpe_match.api import MAX_CPE_MATCHES_PER_PAGE, CPEMatchApi
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
@@ -563,3 +564,56 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
         await anext(it)
 
         sleep_mock.assert_not_called()
+
+    async def test_cpe_matches_broken_response_return_exceptions(self):
+        match_criteria_id = uuid4()
+        cpe_name_id = uuid4()
+        responses = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id, 3
+        )
+        responses[1].json.return_value["match_strings"][0]["match_string"][
+            "match_criteria_id"
+        ] = "I'm an invalid UUID"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cpe_matches(return_exceptions=True))
+
+        cpe_match = await anext(it)
+        self.assertEqual(
+            cpe_match.match_criteria_id,
+            uuid_replace(match_criteria_id, 1, 1),
+        )
+
+        cpe_match = await anext(it)
+        self.assertIsInstance(cpe_match, ModelError)
+
+        cpe_match = await anext(it)
+        self.assertEqual(
+            cpe_match.match_criteria_id,
+            uuid_replace(match_criteria_id, 3, 1),
+        )
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+    async def test_cpe_matches_broken_response(self):
+        match_criteria_id = uuid4()
+        cpe_name_id = uuid4()
+        responses = create_cpe_match_responses(
+            match_criteria_id, cpe_name_id, 3
+        )
+        responses[1].json.return_value["match_strings"][0]["match_string"][
+            "match_criteria_id"
+        ] = "I'm an invalid UUID"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cpe_matches(return_exceptions=False))
+
+        cpe_match = await anext(it)
+        self.assertEqual(
+            cpe_match.match_criteria_id,
+            uuid_replace(match_criteria_id, 1, 1),
+        )
+
+        with self.assertRaises(ModelError):
+            await anext(it)
