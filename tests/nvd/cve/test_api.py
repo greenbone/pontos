@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
+from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cve.api import MAX_CVES_PER_PAGE, CVEApi
 from pontos.nvd.models import cvss_v2, cvss_v3
@@ -930,3 +931,39 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         await anext(it)
 
         sleep_mock.assert_called_once_with(20.0)
+
+    async def test_cves_broken_response_return_exceptions(self):
+        responses = create_cves_responses(3)
+        responses[1].json.return_value["vulnerabilities"][0]["cve"][
+            "published"
+        ] = "I'm an invalid date"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cves(return_exceptions=True))
+
+        cve = await anext(it)
+        self.assertEqual(cve.id, "CVE-1-1")
+
+        cve = await anext(it)
+        self.assertIsInstance(cve, ModelError)
+
+        cve = await anext(it)
+        self.assertEqual(cve.id, "CVE-3-1")
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+    async def test_cves_broken_response(self):
+        responses = create_cves_responses(3)
+        responses[1].json.return_value["vulnerabilities"][0]["cve"][
+            "published"
+        ] = "I'm an invalid date"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cves(return_exceptions=False))
+
+        cve = await anext(it)
+        self.assertEqual(cve.id, "CVE-1-1")
+
+        with self.assertRaises(ModelError):
+            await anext(it)
