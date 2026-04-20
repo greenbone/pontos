@@ -35,11 +35,11 @@ def _result_iterator(
     for result in results:
         try:
             yield CVEChange.from_dict(result["change"])
-        except Exception as e:
+        except Exception as exception:
             if return_exceptions:
-                yield e  # type: ignore
+                yield exception  # type: ignore
             else:
-                raise e
+                raise exception
 
 
 class CVEChangesApi(NVDApi):
