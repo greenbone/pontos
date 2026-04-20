@@ -7,12 +7,21 @@ import logging
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from inspect import isclass
-from typing import Any, Dict, Type, Union, get_args, get_origin, get_type_hints
+from typing import (
+    Any,
+    Dict,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from dateutil import parser as dateparser
 
 from pontos.enum import StrEnum
 from pontos.errors import PontosError
+from pontos.nvd.api import JSON
 
 __all__ = (
     "Model",
@@ -28,6 +37,10 @@ class ModelError(PontosError):
     """
     Errors raised for Models
     """
+
+    def __init__(self, message: str, data: JSON):
+        super().__init__(message)
+        self.data = data
 
 
 def dotted_attributes(obj: Any, data: Dict[str, Any]) -> Any:
@@ -162,7 +175,8 @@ class Model:
                 else:
                     raise ModelError(
                         f"Error while creating {cls.__name__} model. Could not set "  # pylint: disable=line-too-long # noqa: E501
-                        f"value for property '{name}' from '{value}'."
+                        f"value for property '{name}' from '{value}'.",
+                        data,
                     ) from e
 
             if name in type_hints:
