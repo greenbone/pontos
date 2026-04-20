@@ -35,9 +35,16 @@ DEFAULT_NIST_NVD_CPES_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
 MAX_CPES_PER_PAGE = 10000
 
 
-def _result_iterator(data: JSON) -> Iterator[CPE]:
+def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[CPE]:
     results: list[dict[str, Any]] = data.get("products", [])  # type: ignore
-    return (CPE.from_dict(result["cpe"]) for result in results)
+    for result in results:
+        try:
+            yield CPE.from_dict(result["cpe"])
+        except Exception as exception:
+            if return_exceptions:
+                yield exception  # type: ignore
+            else:
+                raise exception
 
 
 class CPEApi(NVDApi):
@@ -133,6 +140,7 @@ class CPEApi(NVDApi):
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
+        return_exceptions: bool = False,
     ) -> NVDResults[CPE]:
         """
         Get all CPEs for the provided arguments
@@ -156,6 +164,8 @@ class CPEApi(NVDApi):
                 paginated requests that should not start at the first page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
+            return_exceptions: If True, exceptions during parsing of API
+                response will be returned instead of raised. Default: False.
 
         Returns:
             A NVDResponse for CPEs
@@ -211,6 +221,7 @@ class CPEApi(NVDApi):
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+            return_exceptions=return_exceptions,
         )
 
     async def __aenter__(self) -> "CPEApi":
