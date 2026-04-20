@@ -38,7 +38,7 @@ def create_source_responses(count: int = 2) -> list[MagicMock]:
     ]
 
 
-class SourceAPITestCase(IsolatedAsyncioTestCase):
+class SourceApiTestCase(IsolatedAsyncioTestCase):
     @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
     def setUp(self, async_client: MagicMock) -> None:
         self.http_client = AsyncMock()
