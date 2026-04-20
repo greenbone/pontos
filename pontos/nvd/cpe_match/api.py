@@ -88,6 +88,7 @@ class CPEMatchApi(NVDApi):
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
+        return_exceptions: bool = False,
     ) -> NVDResults[CPEMatchString]:
         """
         Get all CPE matches for the provided arguments
@@ -106,6 +107,8 @@ class CPEMatchApi(NVDApi):
                 page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
+            return_exceptions: If True, exceptions during parsing of API
+                response will be returned instead of raised. Default: False.
 
         Returns:
             A NVDResponse for CPE matches
@@ -155,9 +158,12 @@ class CPEMatchApi(NVDApi):
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+            return_exceptions=return_exceptions,
         )
 
-    def _result_iterator(self, data: JSON) -> Iterator[CPEMatchString]:
+    def _result_iterator(
+        self, data: JSON, return_exceptions: bool
+    ) -> Iterator[CPEMatchString]:
         """
         Creates an iterator of all the CPEMatchStrings in given API response JSON
 
@@ -168,12 +174,16 @@ class CPEMatchApi(NVDApi):
             An iterator over the CPEMatchStrings
         """
         results: list[dict[str, Any]] = data.get("match_strings", [])  # type: ignore
-        return (
-            CPEMatchString.from_dict_with_cache(
-                result["match_string"], self._cpe_match_cache
-            )
-            for result in results
-        )
+        for result in results:
+            try:
+                yield CPEMatchString.from_dict_with_cache(
+                    result["match_string"], self._cpe_match_cache
+                )
+            except Exception as exception:
+                if return_exceptions:
+                    yield exception  # type: ignore
+                else:
+                    raise exception
 
     async def cpe_match(self, match_criteria_id: str) -> CPEMatchString:
         """
