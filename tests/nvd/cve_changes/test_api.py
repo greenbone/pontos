@@ -11,6 +11,7 @@ from uuid import UUID
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
+from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cve_changes.api import MAX_CVE_CHANGES_PER_PAGE, CVEChangesApi
 from pontos.nvd.models.cve_change import Detail, EventName
@@ -321,3 +322,53 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.__aenter__.assert_awaited_once()
         self.http_client.__aexit__.assert_awaited_once()
+
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_cve_changes_broken_response_return_exceptions(
+        self, async_client: MagicMock
+    ):
+        self.http_client = AsyncMock()
+        async_client.return_value = self.http_client
+
+        responses = create_cve_changes_responses(3)
+        responses[1].json.return_value["cve_changes"][0]["change"][
+            "event_name"
+        ] = "I'm an invalid event name"
+        self.http_client.get.side_effect = responses
+
+        self.api = CVEChangesApi(token="token")
+
+        it = aiter(self.api.changes(return_exceptions=True))
+
+        cve_change = await anext(it)
+        self.assertEqual(cve_change.cve_id, "CVE-1")
+
+        cve_change = await anext(it)
+        self.assertIsInstance(cve_change, ModelError)
+
+        cve_change = await anext(it)
+        self.assertEqual(cve_change.cve_id, "CVE-3")
+
+        with self.assertRaises(StopAsyncIteration):
+            cve_change = await anext(it)
+
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_cve_changes_broken_response(self, async_client: MagicMock):
+        self.http_client = AsyncMock()
+        async_client.return_value = self.http_client
+
+        responses = create_cve_changes_responses(3)
+        responses[1].json.return_value["cve_changes"][0]["change"][
+            "event_name"
+        ] = "I'm an invalid event name"
+        self.http_client.get.side_effect = responses
+
+        self.api = CVEChangesApi(token="token")
+
+        it = aiter(self.api.changes(return_exceptions=False))
+
+        cve_change = await anext(it)
+        self.assertEqual(cve_change.cve_id, "CVE-1")
+
+        with self.assertRaises(ModelError):
+            cve_change = await anext(it)
