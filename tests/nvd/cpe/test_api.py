@@ -15,6 +15,7 @@ from uuid import UUID, uuid4
 from httpx import AsyncClient, Response
 
 from pontos.errors import PontosError
+from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cpe.api import MAX_CPES_PER_PAGE, CPEApi
 from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
@@ -455,3 +456,41 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.__aenter__.assert_awaited_once()
         self.http_client.__aexit__.assert_awaited_once()
+
+    async def test_cpes_broken_response_return_exceptions(self):
+        uuid = uuid4()
+        responses = create_cpes_responses(uuid, 3)
+        responses[1].json.return_value["products"][0]["cpe"][
+            "cpe_name_id"
+        ] = "I'm an invalid UUID"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cpes(return_exceptions=True))
+
+        cpe = await anext(it)
+        self.assertEqual(cpe.cpe_name_id, uuid_replace(uuid, 1, 1))
+
+        cpe = await anext(it)
+        self.assertIsInstance(cpe, ModelError)
+
+        cpe = await anext(it)
+        self.assertEqual(cpe.cpe_name_id, uuid_replace(uuid, 3, 1))
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+    async def test_cpes_broken_response(self):
+        uuid = uuid4()
+        responses = create_cpes_responses(uuid, 3)
+        responses[1].json.return_value["products"][0]["cpe"][
+            "cpe_name_id"
+        ] = "I'm an invalid UUID"
+        self.http_client.get.side_effect = responses
+
+        it = aiter(self.api.cpes(return_exceptions=False))
+
+        cpe = await anext(it)
+        self.assertEqual(cpe.cpe_name_id, uuid_replace(uuid, 1, 1))
+
+        with self.assertRaises(ModelError):
+            await anext(it)
