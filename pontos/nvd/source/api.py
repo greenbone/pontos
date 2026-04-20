@@ -30,9 +30,16 @@ DEFAULT_NIST_NVD_SOURCE_URL = (
 MAX_SOURCES_PER_PAGE = 1000
 
 
-def _result_iterator(data: JSON) -> Iterator[Source]:
+def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[Source]:
     sources: Iterable = data.get("sources", [])  # type: ignore
-    return (Source.from_dict(source) for source in sources)
+    for source in sources:
+        try:
+            yield Source.from_dict(source)
+        except Exception as exception:
+            if return_exceptions:
+                yield exception  # type: ignore
+            else:
+                raise exception
 
 
 class SourceApi(NVDApi):
@@ -91,6 +98,7 @@ class SourceApi(NVDApi):
         request_results: Optional[int] = None,
         start_index: int = 0,
         results_per_page: Optional[int] = None,
+        return_exceptions: bool = False,
     ) -> NVDResults[Source]:
         """
         Get all sources for the provided arguments
@@ -109,6 +117,8 @@ class SourceApi(NVDApi):
                 paginated requests that should not start at the first page.
             results_per_page: Number of results in a single requests. Mostly
                 useful for paginated requests.
+            return_exceptions: If True, exceptions during parsing of API
+                response will be returned instead of raised. Default: False.
 
         Returns:
             A NVDResponse for sources
@@ -144,6 +154,7 @@ class SourceApi(NVDApi):
             request_results=request_results,
             results_per_page=results_per_page,
             start_index=start_index,
+            return_exceptions=return_exceptions,
         )
 
     async def __aenter__(self) -> "SourceApi":
