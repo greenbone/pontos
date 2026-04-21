@@ -26,6 +26,7 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
+    return_or_raise,
 )
 from pontos.nvd.models.cve import CVE
 from pontos.nvd.models.cvss_v2 import Severity as CVSSv2Severity
@@ -42,13 +43,10 @@ def _result_iterator(
 ) -> Iterator[CVE | Exception]:
     vulnerabilities: Iterable = data.get("vulnerabilities", [])  # type: ignore
     for vulnerability in vulnerabilities:
-        try:
-            yield CVE.from_dict(vulnerability["cve"])
-        except Exception as exception:
-            if return_exceptions:
-                yield exception  # type: ignore
-            else:
-                raise exception
+        yield return_or_raise(
+            lambda: CVE.from_dict(vulnerability["cve"]),
+            return_exceptions,
+        )
 
 
 class CVEApi(NVDApi):

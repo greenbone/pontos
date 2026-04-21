@@ -19,6 +19,7 @@ from pontos.nvd.api import (
     Params,
     format_date,
     now,
+    return_or_raise,
 )
 from pontos.nvd.models.source import Source
 
@@ -35,13 +36,10 @@ def _result_iterator(
 ) -> Iterator[Source | Exception]:
     sources: Iterable = data.get("sources", [])  # type: ignore
     for source in sources:
-        try:
-            yield Source.from_dict(source)
-        except Exception as exception:
-            if return_exceptions:
-                yield exception  # type: ignore
-            else:
-                raise exception
+        yield return_or_raise(
+            lambda: Source.from_dict(source),
+            return_exceptions,
+        )
 
 
 class SourceApi(NVDApi):

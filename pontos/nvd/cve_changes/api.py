@@ -16,6 +16,7 @@ from pontos.nvd.api import (
     Params,
     format_date,
     now,
+    return_or_raise,
 )
 from pontos.nvd.models.cve_change import CVEChange, EventName
 
@@ -33,13 +34,10 @@ def _result_iterator(
 ) -> Iterator[CVEChange | Exception]:
     results: list[dict[str, Any]] = data.get("cve_changes", [])  # type: ignore
     for result in results:
-        try:
-            yield CVEChange.from_dict(result["change"])
-        except Exception as exception:
-            if return_exceptions:
-                yield exception  # type: ignore
-            else:
-                raise exception
+        yield return_or_raise(
+            lambda: CVEChange.from_dict(result["change"]),
+            return_exceptions,
+        )
 
 
 class CVEChangesApi(NVDApi):

@@ -23,6 +23,7 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
+    return_or_raise,
 )
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 
@@ -175,15 +176,12 @@ class CPEMatchApi(NVDApi):
         """
         results: list[dict[str, Any]] = data.get("match_strings", [])  # type: ignore
         for result in results:
-            try:
-                yield CPEMatchString.from_dict_with_cache(
+            yield return_or_raise(
+                lambda: CPEMatchString.from_dict_with_cache(
                     result["match_string"], self._cpe_match_cache
-                )
-            except Exception as exception:
-                if return_exceptions:
-                    yield exception  # type: ignore
-                else:
-                    raise exception
+                ),
+                return_exceptions,
+            )
 
     async def cpe_match(self, match_criteria_id: str) -> CPEMatchString:
         """
