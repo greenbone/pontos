@@ -30,7 +30,9 @@ DEFAULT_NIST_NVD_SOURCE_URL = (
 MAX_SOURCES_PER_PAGE = 1000
 
 
-def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[Source]:
+def _result_iterator(
+    data: JSON, return_exceptions: bool
+) -> Iterator[Source | Exception]:
     sources: Iterable = data.get("sources", [])  # type: ignore
     for source in sources:
         try:

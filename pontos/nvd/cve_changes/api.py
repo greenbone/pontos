@@ -30,7 +30,7 @@ MAX_CVE_CHANGES_PER_PAGE = 5000
 
 def _result_iterator(
     data: JSON, return_exceptions: bool
-) -> Iterator[CVEChange]:
+) -> Iterator[CVEChange | Exception]:
     results: list[dict[str, Any]] = data.get("cve_changes", [])  # type: ignore
     for result in results:
         try:

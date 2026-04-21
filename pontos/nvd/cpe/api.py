@@ -35,7 +35,9 @@ DEFAULT_NIST_NVD_CPES_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
 MAX_CPES_PER_PAGE = 10000
 
 
-def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[CPE]:
+def _result_iterator(
+    data: JSON, return_exceptions: bool
+) -> Iterator[CPE | Exception]:
     results: list[dict[str, Any]] = data.get("products", [])  # type: ignore
     for result in results:
         try:
