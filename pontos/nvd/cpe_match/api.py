@@ -163,7 +163,7 @@ class CPEMatchApi(NVDApi):
 
     def _result_iterator(
         self, data: JSON, return_exceptions: bool
-    ) -> Iterator[CPEMatchString]:
+    ) -> Iterator[CPEMatchString | Exception]:
         """
         Creates an iterator of all the CPEMatchStrings in given API response JSON
 

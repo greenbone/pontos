@@ -37,7 +37,9 @@ DEFAULT_NIST_NVD_CVES_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 MAX_CVES_PER_PAGE = 2000
 
 
-def _result_iterator(data: JSON, return_exceptions: bool) -> Iterator[CVE]:
+def _result_iterator(
+    data: JSON, return_exceptions: bool
+) -> Iterator[CVE | Exception]:
     vulnerabilities: Iterable = data.get("vulnerabilities", [])  # type: ignore
     for vulnerability in vulnerabilities:
         try:

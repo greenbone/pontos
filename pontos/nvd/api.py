@@ -110,7 +110,7 @@ class InvalidState(PontosError):
 
 T = TypeVar("T")
 
-result_iterator_func = Callable[[JSON, bool], Iterator[T]]
+result_iterator_func = Callable[[JSON, bool], Iterator[T | Exception]]
 
 
 class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
