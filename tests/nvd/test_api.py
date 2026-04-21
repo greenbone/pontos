@@ -20,6 +20,7 @@ from pontos.nvd.api import (
     NVDResults,
     convert_camel_case,
     format_date,
+    return_or_raise,
 )
 from tests import IsolatedAsyncioTestCase, aiter, anext
 
@@ -55,6 +56,22 @@ class FormatDateTestCase(unittest.TestCase):
         fd = format_date(dt)
 
         self.assertEqual(fd, "2022-12-10T10:00:12.000+05:00")
+
+
+class YieldOrRaiseTestCase(unittest.TestCase):
+    def test_ok(self):
+        result = return_or_raise(lambda: Result(1), True)
+
+        self.assertEqual(result.value, 1)
+
+    def test_return_exceptions(self):
+        result = return_or_raise(lambda: Result("I'm not an int"), True)
+
+        self.assertIsInstance(result, ValueError)
+
+    def test_raise_exceptions(self):
+        with self.assertRaises(ValueError):
+            return_or_raise(lambda: Result("I'm not an int"), False)
 
 
 class NVDApiTestCase(IsolatedAsyncioTestCase):
@@ -195,15 +212,11 @@ class Result:
         self.value = int(value)
 
 
-def result_func(data: JSON, return_exceptions: bool) -> Iterator[Result]:
-    for result in data["values"]:  # type: ignore
-        try:
-            yield Result(result)  # type: ignore
-        except Exception as e:
-            if return_exceptions:
-                yield e  # type: ignore
-            else:
-                raise e
+def result_func(
+    data: JSON, return_exceptions: bool
+) -> Iterator[Result | Exception]:
+    for value in data["values"]:  # type: ignore
+        yield return_or_raise(lambda: Result(value), return_exceptions)  # type: ignore
 
 
 class NVDResultsTestCase(IsolatedAsyncioTestCase):

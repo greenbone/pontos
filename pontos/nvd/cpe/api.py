@@ -28,6 +28,7 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
+    return_or_raise,
 )
 from pontos.nvd.models.cpe import CPE
 
@@ -40,13 +41,10 @@ def _result_iterator(
 ) -> Iterator[CPE | Exception]:
     results: list[dict[str, Any]] = data.get("products", [])  # type: ignore
     for result in results:
-        try:
-            yield CPE.from_dict(result["cpe"])
-        except Exception as exception:
-            if return_exceptions:
-                yield exception  # type: ignore
-            else:
-                raise exception
+        yield return_or_raise(
+            lambda: CPE.from_dict(result["cpe"]),
+            return_exceptions,
+        )
 
 
 class CPEApi(NVDApi):

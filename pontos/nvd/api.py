@@ -43,6 +43,7 @@ __all__ = (
     "convert_camel_case",
     "format_date",
     "now",
+    "return_or_raise",
     "NVDApi",
     "NVDResults",
 )
@@ -111,6 +112,29 @@ class InvalidState(PontosError):
 T = TypeVar("T")
 
 result_iterator_func = Callable[[JSON, bool], Iterator[T | Exception]]
+
+
+def return_or_raise(
+    func: Callable[[], T],
+    return_exceptions: bool,
+) -> T | Exception:
+    """
+    Execute a function and return the result or the exception or raise the exception.
+
+    Args:
+        func: Callable to execute.
+        return_exceptions: If True, return exceptions. If False, raise them.
+
+    Returns:
+        The result of the function or the exception if return_exceptions is True.
+    """
+    try:
+        return func()
+    except Exception as exception:
+        if return_exceptions:
+            return exception
+
+        raise exception
 
 
 class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
