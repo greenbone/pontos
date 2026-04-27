@@ -567,6 +567,34 @@ foo.baz(bar.boing)
             new_content = tmp.read_text(encoding="utf-8")
             self.assertEqual(expected_content, new_content)
 
+    def test_handle_file_with_shebang(self):
+        test_content = """#!/bin/bash
+"""  # noqa: E501
+
+        expected_content = f"""#!/bin/bash
+# SPDX-FileCopyrightText: {str(datetime.datetime.now().year)} Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""  # noqa: E501
+
+        company = "Greenbone AG"
+        year = str(datetime.datetime.now().year)
+        license_id = "GPL-3.0-or-later"
+
+        with temp_file(content=test_content, name="foo.sh") as tmp:
+
+            update_file(
+                tmp,
+                year,
+                license_id,
+                company,
+                cleanup=True,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
+
 
 class ParseArgsTestCase(TestCase):
     def test_argparser_files(self):

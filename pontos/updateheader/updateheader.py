@@ -191,9 +191,18 @@ def update_file(
                     )
                     if header:
                         fp.seek(0)  # back to beginning of file
-                        rest_of_file = fp.read()
-                        fp.seek(0)
-                        fp.write(header + "\n" + rest_of_file)
+                        first_line = fp.readline()
+
+                        # first line is a shebang, leave it
+                        if first_line.startswith("#!"):
+                            rest_of_file = fp.read()
+                            fp.seek(0)
+                            fp.write(first_line + header + "\n" + rest_of_file)
+                        else:
+                            rest_of_file = first_line + fp.read()
+                            fp.seek(0)
+                            fp.write(header + "\n" + rest_of_file)
+
                         print(f"{file}: Added license header.")
                         return
 
