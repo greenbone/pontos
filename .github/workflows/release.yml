@@ -2,7 +2,8 @@ name: Release
 
 on:
   pull_request:
-    types: [closed]
+    types:
+      - closed
   workflow_dispatch:
 
 permissions:
@@ -10,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    name: Pontos
+    name: Create a new release
     # If the event is a workflow_dispatch or the label 'make release' is set and PR is closed because of a merge
     if: (github.event_name == 'workflow_dispatch') || (contains( github.event.pull_request.labels.*.name, 'make release') && github.event.pull_request.merged == true)
     runs-on: "ubuntu-latest"
@@ -23,7 +24,8 @@ jobs:
           else
             echo "ref=${{ github.base_ref }}" >> $GITHUB_OUTPUT
           fi
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v4
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -34,6 +36,17 @@ jobs:
           git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
           git remote set-url origin https://${{ secrets.GREENBONE_BOT_TOKEN }}@github.com/${{ github.repository }}
       - uses: greenbone/actions/poetry@v3
+      - name: Determine release versions
+        id: release-version
+        run: |
+          poetry run pontos-release show --release-type calendar --output-format env --versioning-scheme pep440
+          poetry run pontos-release show --release-type calendar --output-format github-action --versioning-scheme pep440
+      - name: Determine changelog
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
       - name: Allow admin users bypassing protection on ${{ steps.release.outputs.ref }} branch
         run: |
           poetry run pontos-github-script pontos.github.scripts.enforce-admins ${{ github.repository }} ${{ steps.release.outputs.ref }} --allow
@@ -42,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       - name: Create release
         run: |
-          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar
+          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release-version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
@@ -59,7 +72,7 @@ jobs:
           rm tmp.file
       - name: Sign assets for released version
         run: |
-          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }}
+          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release-version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
