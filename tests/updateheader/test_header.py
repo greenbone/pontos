@@ -595,6 +595,66 @@ foo.baz(bar.boing)
             new_content = tmp.read_text(encoding="utf-8")
             self.assertEqual(expected_content, new_content)
 
+    def test_handle_file_xml_with_xml_declaration(self):
+        test_content = """<?xml version="1.0"?>
+"""  # noqa: E501
+
+        expected_content = f"""<?xml version="1.0"?>
+<!--
+SPDX-FileCopyrightText: {str(datetime.datetime.now().year)} Greenbone AG
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+"""  # noqa: E501
+
+        company = "Greenbone AG"
+        year = str(datetime.datetime.now().year)
+        license_id = "GPL-3.0-or-later"
+
+        with temp_file(content=test_content, name="foo.xml") as tmp:
+
+            update_file(
+                tmp,
+                year,
+                license_id,
+                company,
+                cleanup=True,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
+
+    def test_handle_file_xml_without_xml_declaration(self):
+        test_content = """<greeting>Hello, world!</greeting>
+"""  # noqa: E501
+
+        expected_content = f"""<!--
+SPDX-FileCopyrightText: {str(datetime.datetime.now().year)} Greenbone AG
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<greeting>Hello, world!</greeting>
+"""  # noqa: E501
+
+        company = "Greenbone AG"
+        year = str(datetime.datetime.now().year)
+        license_id = "GPL-3.0-or-later"
+
+        with temp_file(content=test_content, name="foo.xml") as tmp:
+
+            update_file(
+                tmp,
+                year,
+                license_id,
+                company,
+                cleanup=True,
+            )
+
+            new_content = tmp.read_text(encoding="utf-8")
+            self.assertEqual(expected_content, new_content)
+
 
 class ParseArgsTestCase(TestCase):
     def test_argparser_files(self):
