@@ -193,8 +193,10 @@ def update_file(
                         fp.seek(0)  # back to beginning of file
                         first_line = fp.readline()
 
-                        # first line is a shebang, leave it
-                        if first_line.startswith("#!"):
+                        # first line is a shebang or XML declaration, leave it
+                        if first_line.startswith("#!") or first_line.startswith(
+                            "<?xml"
+                        ):
                             rest_of_file = fp.read()
                             fp.seek(0)
                             fp.write(first_line + header + "\n" + rest_of_file)
