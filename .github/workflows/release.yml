@@ -46,7 +46,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          poetry run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
+          poetry run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
       - name: Allow admin users bypassing protection on ${{ steps.release.outputs.ref }} branch
         run: |
           poetry run pontos-github-script pontos.github.scripts.enforce-admins ${{ github.repository }} ${{ steps.release.outputs.ref }} --allow
@@ -55,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       - name: Create release
         run: |
-          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release-version }}
+          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release_version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
@@ -72,7 +72,7 @@ jobs:
           rm tmp.file
       - name: Sign assets for released version
         run: |
-          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release-version }}
+          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release_version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
