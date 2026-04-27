@@ -46,7 +46,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
+          poetry run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
       - name: Allow admin users bypassing protection on ${{ steps.release.outputs.ref }} branch
         run: |
           poetry run pontos-github-script pontos.github.scripts.enforce-admins ${{ github.repository }} ${{ steps.release.outputs.ref }} --allow
