@@ -436,7 +436,7 @@ class UpdateFileTestCase(TestCase):
             )
 
     def test_cleanup_file(self):
-        test_content = """# Copyright (C) 2021-2022 Greenbone Networks GmbH
+        test_content = """# Copyright (C) 2021-2022 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
