@@ -26,6 +26,7 @@ class EventName(StrEnum):
     CVE_CISA_KEV_UPDATE = "CVE CISA KEV Update"
     REFERENCE_TAG_UPDATE = "Reference Tag Update"
     STATUS_CHANGE = "Status Change"
+    DATA_REMEDIATION = "Data Remediation"
 
 
 @dataclass
