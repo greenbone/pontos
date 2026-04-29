@@ -1,7 +1,7 @@
 # Pontos - Greenbone Python Utilities and Tools
 
 The pontos Python package is a collection of utilities, tools, classes and
-functions maintained by Greenbone Networks.
+functions maintained by Greenbone AG.
 
 ## User Guide
 
