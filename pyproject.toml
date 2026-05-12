@@ -34,7 +34,7 @@ include = ["pontos/updateheader/templates/", "pontos/github/pr_template.md"]
 [tool.poetry.dependencies]
 python = "^3.10"
 colorful = ">=0.5.4"
-tomlkit = ">=0.5.11"
+tomlkit = ">=0.15.0"
 packaging = ">=20.3"
 httpx = { extras = ["http2"], version = ">=0.23" }
 rich = ">=12.4.4"
@@ -49,7 +49,7 @@ autohooks-plugin-black = ">=22.7.0"
 autohooks-plugin-ruff = ">=23.6.1"
 autohooks-plugin-mypy = ">=23.3.0"
 rope = ">=1.9.0"
-coverage = ">=7.2"
+coverage = ">=7.14.0"
 myst-parser = ">=0.19.1"
 Sphinx = ">=7.0.1"
 furo = ">=2023.5.20"
