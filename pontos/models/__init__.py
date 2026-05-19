@@ -7,6 +7,7 @@ import logging
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from inspect import isclass
+from types import UnionType
 from typing import (
     Any,
     Union,
@@ -97,7 +98,7 @@ def _get_value_from_model_field_cls(
     elif get_origin(model_field_cls) is dict:
         model_field_cls = dict
         value = _get_value_from_model_field_cls(model_field_cls, value)
-    elif get_origin(model_field_cls) is Union:
+    elif get_origin(model_field_cls) in (Union, UnionType):
         possible_types = get_args(model_field_cls)
         current_type = type(value)
         if current_type in possible_types:
