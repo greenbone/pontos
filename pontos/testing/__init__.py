@@ -56,7 +56,7 @@ def temp_directory(
             with temp_directory(change_into=True) as tmp:
                 new_file = tmp / "test.txt"
     """
-    temp_dir = tempfile.TemporaryDirectory()
+    temp_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
     dir_path = Path(temp_dir.name)
 
     if change_into:
