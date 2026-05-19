@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from typing import AsyncIterator, Optional, Union
+from collections.abc import AsyncIterator
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import SortOrder
@@ -23,13 +23,13 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
         self,
         api: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        severity: Union[Severity, str, None] = None,
-        ecosystem: Optional[str] = None,
-        packages: Optional[list[str]] = None,
-        scope: Union[DependencyScope, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        severity: Severity | str | None = None,
+        ecosystem: str | None = None,
+        packages: list[str] | None = None,
+        scope: DependencyScope | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[DependabotAlert]:
         params = {"per_page": "100"}
 
@@ -59,13 +59,13 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
         self,
         enterprise: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        severity: Union[Severity, str, None] = None,
-        ecosystem: Optional[str] = None,
-        packages: Optional[list[str]] = None,
-        scope: Union[DependencyScope, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        severity: Severity | str | None = None,
+        ecosystem: str | None = None,
+        packages: list[str] | None = None,
+        scope: DependencyScope | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[DependabotAlert]:
         """
         Get the list of dependabot alerts for all repositories of a GitHub
@@ -120,13 +120,13 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        severity: Union[Severity, str, None] = None,
-        ecosystem: Optional[str] = None,
-        packages: Optional[list[str]] = None,
-        scope: Union[DependencyScope, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        severity: Severity | str | None = None,
+        ecosystem: str | None = None,
+        packages: list[str] | None = None,
+        scope: DependencyScope | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[DependabotAlert]:
         """
         Get the list of dependabot alerts for all repositories of a GitHub
@@ -181,13 +181,13 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
         self,
         repo: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        severity: Union[Severity, str, None] = None,
-        ecosystem: Optional[str] = None,
-        packages: Optional[list[str]] = None,
-        scope: Union[DependencyScope, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        severity: Severity | str | None = None,
+        ecosystem: str | None = None,
+        packages: list[str] | None = None,
+        scope: DependencyScope | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[DependabotAlert]:
         """
         Get the list of dependabot alerts for a repository
@@ -240,7 +240,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
     async def alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
+        alert_number: str | int,
     ) -> DependabotAlert:
         """
         Get a single dependabot alert
@@ -275,10 +275,10 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
     async def update_alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
-        state: Union[AlertState, str],
+        alert_number: str | int,
+        state: AlertState | str,
         *,
-        dismissed_reason: Union[DismissedReason, str, None] = None,
+        dismissed_reason: DismissedReason | str | None = None,
         dismissed_comment: str,
     ) -> DependabotAlert:
         """

@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import ArgumentTypeError
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Type, TypeVar, Union
+from typing import TypeVar
 
 
 class StrEnum(str, Enum):
@@ -17,14 +18,14 @@ class StrEnum(str, Enum):
         return self.value
 
 
-def enum_choice(enum: Type[Enum]) -> list[str]:
+def enum_choice(enum: type[Enum]) -> list[str]:
     """
     Return a sequence of choices for argparse from an enum
     """
     return [str(e) for e in enum]
 
 
-def to_choices(enum: Type[Enum]) -> str:
+def to_choices(enum: type[Enum]) -> str:
     """
     Convert an enum to a comma separated string of choices. For example useful
     in help messages for argparse.
@@ -35,12 +36,12 @@ def to_choices(enum: Type[Enum]) -> str:
 T = TypeVar("T", bound=Enum)
 
 
-def enum_type(enum: Type[T]) -> Callable[[Union[str, T]], T]:
+def enum_type(enum: type[T]) -> Callable[[str | T], T]:
     """
     Create a argparse type function for converting the string input into an Enum
     """
 
-    def convert(value: Union[str, T]) -> T:
+    def convert(value: str | T) -> T:
         if isinstance(value, str):
             try:
                 return enum(value)

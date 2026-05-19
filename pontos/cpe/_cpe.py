@@ -5,17 +5,17 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from pontos.errors import PontosError
 from pontos.models import StrEnum
 
 __all__ = (
     "ANY",
+    "CPE",
     "NA",
     "CPEParsingError",
     "Part",
-    "CPE",
 )
 
 ANY = "*"
@@ -75,11 +75,11 @@ def _url_unquote(value: str) -> str:
 
 
 def pack_extended_attributes(
-    edition: Optional[str],
-    sw_edition: Optional[str],
-    target_sw: Optional[str],
-    target_hw: Optional[str],
-    other: Optional[str],
+    edition: str | None,
+    sw_edition: str | None,
+    target_sw: str | None,
+    target_hw: str | None,
+    other: str | None,
 ) -> str:
     """
     Pack the extended attributes (v2.3) for an edition attribute (v2.2)
@@ -104,7 +104,7 @@ def pack_extended_attributes(
         )
 
 
-def unpack_edition(edition: str) -> dict[str, Optional[str]]:
+def unpack_edition(edition: str) -> dict[str, str | None]:
     """
     Unpack the edition attribute of v2.2 into extended attributes of v2.3
     """
@@ -122,7 +122,7 @@ def unpack_edition(edition: str) -> dict[str, Optional[str]]:
     )
 
 
-def bind_value_for_formatted_string(value: Optional[str]) -> str:
+def bind_value_for_formatted_string(value: str | None) -> str:
     """
     Convert an attribute value for formatted string representation
     """
@@ -205,7 +205,7 @@ def _add_quoting(value: str) -> str:
     return "".join(result)
 
 
-def unbind_value_from_formatted_string(value: Optional[str]) -> Optional[str]:
+def unbind_value_from_formatted_string(value: str | None) -> str | None:
     """
     Convert a formatted string representation to an attribute value for WNF
     """
@@ -237,7 +237,7 @@ def _transform_for_uri(value: str) -> str:
         # percent encoding
         if c == "\\":
             index += 1
-            next = value[index]
+            next = value[index]  # noqa: A001
             transformed += _url_quote(convert_double_backslash(next))
             index += 1
             continue
@@ -253,7 +253,7 @@ def _transform_for_uri(value: str) -> str:
     return transformed
 
 
-def bind_value_for_uri(value: Optional[str]) -> str:
+def bind_value_for_uri(value: str | None) -> str:
     """
     Convert an attribute value for uri representation
     """
@@ -267,7 +267,7 @@ def bind_value_for_uri(value: Optional[str]) -> str:
         raise CPEParsingError(f"Can't bind '{value}' for URI") from e
 
 
-def unbind_value_uri(value: Optional[str]) -> Optional[str]:
+def unbind_value_uri(value: str | None) -> str | None:
     """
     Convert an uri representation to an attribute value
     """
@@ -329,7 +329,7 @@ def unbind_value_uri(value: Optional[str]) -> Optional[str]:
     return result
 
 
-def unquote_attribute_value(value: Optional[str]) -> Optional[str]:
+def unquote_attribute_value(value: str | None) -> str | None:
     """
     Unquote a Well-Formed CPE Name Data Model (WFN) attribute value
     """
@@ -428,16 +428,16 @@ class CPEWellFormed:
     """
 
     part: Part
-    vendor: Optional[str] = None
-    product: Optional[str] = None
-    version: Optional[str] = None
-    update: Optional[str] = None
-    edition: Optional[str] = None
-    language: Optional[str] = None
-    sw_edition: Optional[str] = None
-    target_sw: Optional[str] = None
-    target_hw: Optional[str] = None
-    other: Optional[str] = None
+    vendor: str | None = None
+    product: str | None = None
+    version: str | None = None
+    update: str | None = None
+    edition: str | None = None
+    language: str | None = None
+    sw_edition: str | None = None
+    target_sw: str | None = None
+    target_hw: str | None = None
+    other: str | None = None
 
 
 class CPE:
@@ -494,18 +494,18 @@ class CPE:
     def __init__(
         self,
         *,
-        cpe_string: Optional[str] = None,
+        cpe_string: str | None = None,
         part: Part,
-        vendor: Optional[str] = None,
-        product: Optional[str] = None,
-        version: Optional[str] = None,
-        update: Optional[str] = None,
-        edition: Optional[str] = None,
-        language: Optional[str] = None,
-        sw_edition: Optional[str] = None,
-        target_sw: Optional[str] = None,
-        target_hw: Optional[str] = None,
-        other: Optional[str] = None,
+        vendor: str | None = None,
+        product: str | None = None,
+        version: str | None = None,
+        update: str | None = None,
+        edition: str | None = None,
+        language: str | None = None,
+        sw_edition: str | None = None,
+        target_sw: str | None = None,
+        target_hw: str | None = None,
+        other: str | None = None,
     ) -> None:
         self.cpe_string = cpe_string
         self.__wnf__ = CPEWellFormed(
@@ -542,7 +542,7 @@ class CPE:
         parts = split_cpe(cleaned_cpe)
 
         if is_uri_binding(cleaned_cpe):
-            values: dict[str, Optional[str]] = dict(
+            values: dict[str, str | None] = dict(
                 zip(
                     [
                         "vendor",

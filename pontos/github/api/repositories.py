@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Any, Iterable, Optional, Union
+from collections.abc import Iterable
+from typing import Any
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -79,32 +80,30 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         organization: str,
         name: str,
         *,
-        description: Optional[str] = None,
-        homepage: Optional[str] = None,
-        private: Optional[bool] = False,
-        has_issues: Optional[bool] = True,
-        has_projects: Optional[bool] = True,
-        has_wiki: Optional[bool] = True,
-        has_downloads: Optional[bool] = True,
-        is_template: Optional[bool] = False,
-        team_id: Optional[SupportsStr] = None,
-        auto_init: Optional[bool] = False,
-        gitignore_template: Optional[Union[GitIgnoreTemplate, str]] = None,
-        license_template: Optional[Union[LicenseType, str]] = None,
-        allow_squash_merge: Optional[bool] = True,
-        allow_merge_commit: Optional[bool] = True,
-        allow_rebase_merge: Optional[bool] = True,
-        allow_auto_merge: Optional[bool] = False,
-        allow_update_branch: Optional[bool] = False,
-        delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[
-            Union[SquashMergeCommitTitle, str]
-        ] = None,
-        squash_merge_commit_message: Optional[
-            Union[SquashMergeCommitMessage, str]
-        ] = None,
-        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
-        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
+        description: str | None = None,
+        homepage: str | None = None,
+        private: bool | None = False,
+        has_issues: bool | None = True,
+        has_projects: bool | None = True,
+        has_wiki: bool | None = True,
+        has_downloads: bool | None = True,
+        is_template: bool | None = False,
+        team_id: SupportsStr | None = None,
+        auto_init: bool | None = False,
+        gitignore_template: GitIgnoreTemplate | str | None = None,
+        license_template: LicenseType | str | None = None,
+        allow_squash_merge: bool | None = True,
+        allow_merge_commit: bool | None = True,
+        allow_rebase_merge: bool | None = True,
+        allow_auto_merge: bool | None = False,
+        allow_update_branch: bool | None = False,
+        delete_branch_on_merge: bool | None = False,
+        squash_merge_commit_title: SquashMergeCommitTitle | str | None = None,
+        squash_merge_commit_message: SquashMergeCommitMessage
+        | str
+        | None = None,
+        merge_commit_title: MergeCommitTitle | str | None = None,
+        merge_commit_message: MergeCommitMessage | str | None = None,
     ) -> Repository:
         """
         Create a new repository at GitHub
@@ -303,31 +302,29 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         self,
         repo: str,
         *,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        homepage: Optional[str] = None,
-        private: Optional[bool] = False,
-        has_issues: Optional[bool] = True,
-        has_projects: Optional[bool] = True,
-        has_wiki: Optional[bool] = True,
-        is_template: Optional[bool] = False,
-        default_branch: Optional[str] = None,
-        allow_squash_merge: Optional[bool] = True,
-        allow_merge_commit: Optional[bool] = True,
-        allow_rebase_merge: Optional[bool] = True,
-        allow_auto_merge: Optional[bool] = False,
-        allow_update_branch: Optional[bool] = False,
-        delete_branch_on_merge: Optional[bool] = False,
-        squash_merge_commit_title: Optional[
-            Union[SquashMergeCommitTitle, str]
-        ] = None,
-        squash_merge_commit_message: Optional[
-            Union[SquashMergeCommitMessage, str]
-        ] = None,
-        merge_commit_title: Optional[Union[MergeCommitTitle, str]] = None,
-        merge_commit_message: Optional[Union[MergeCommitMessage, str]] = None,
-        allow_forking: Optional[bool] = False,
-        web_commit_signoff_required: Optional[bool] = False,
+        name: str | None = None,
+        description: str | None = None,
+        homepage: str | None = None,
+        private: bool | None = False,
+        has_issues: bool | None = True,
+        has_projects: bool | None = True,
+        has_wiki: bool | None = True,
+        is_template: bool | None = False,
+        default_branch: str | None = None,
+        allow_squash_merge: bool | None = True,
+        allow_merge_commit: bool | None = True,
+        allow_rebase_merge: bool | None = True,
+        allow_auto_merge: bool | None = False,
+        allow_update_branch: bool | None = False,
+        delete_branch_on_merge: bool | None = False,
+        squash_merge_commit_title: SquashMergeCommitTitle | str | None = None,
+        squash_merge_commit_message: SquashMergeCommitMessage
+        | str
+        | None = None,
+        merge_commit_title: MergeCommitTitle | str | None = None,
+        merge_commit_message: MergeCommitMessage | str | None = None,
+        allow_forking: bool | None = False,
+        web_commit_signoff_required: bool | None = False,
     ) -> Repository:
         """
         Create a new repository at GitHub
@@ -540,7 +537,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         """
         api = f"/repos/{repo}/topics"
         data = {"names": list(new_topics)}
-        response = await self._client.put(api, data=data)  # type: ignore[arg-type] # noqa: E501
+        response = await self._client.put(api, data=data)  # type: ignore[arg-type]
         response.raise_for_status()
 
         data: dict[str, Any] = response.json()

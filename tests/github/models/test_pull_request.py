@@ -1285,7 +1285,7 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertEqual(user.type, "User")
         self.assertFalse(user.site_admin)
 
-        license = repo.license  # pylint: disable=redefined-builtin
+        license = repo.license  # noqa: A001
         self.assertEqual(license.key, "mit")
         self.assertEqual(license.name, "MIT License")
         self.assertEqual(license.url, "https://api.github.com/licenses/mit")

@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any
 
 from pontos.helper import DownloadProgressIterable
 

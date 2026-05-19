@@ -5,7 +5,6 @@
 import json
 from argparse import Namespace
 from enum import IntEnum, auto
-from typing import Optional
 
 from pontos.enum import StrEnum
 from pontos.errors import PontosError
@@ -47,9 +46,9 @@ class ShowReleaseCommand(Command):
         output_format: OutputFormat = OutputFormat.ENV,
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
-        release_version: Optional[Version],
-        release_series: Optional[str] = None,
-        git_tag_prefix: Optional[str] = None,
+        release_version: Version | None,
+        release_series: str | None = None,
+        git_tag_prefix: str | None = None,
     ) -> int:
         git_tag_prefix = git_tag_prefix or ""
 

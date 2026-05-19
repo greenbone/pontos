@@ -7,8 +7,8 @@
 
 import os
 from argparse import ArgumentParser, FileType, Namespace
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 import shtab
 
@@ -35,7 +35,7 @@ def from_env(name: str) -> str:
     return os.environ.get(name, name)
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
+def parse_args(args: Sequence[str] | None = None) -> Namespace:
     """
     Parsing args for Pontos GitHub
 

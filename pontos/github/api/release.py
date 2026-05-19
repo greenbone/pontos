@@ -4,15 +4,9 @@
 #
 
 import asyncio
+from collections.abc import AsyncIterator, Iterable
+from contextlib import AbstractAsyncContextManager
 from pathlib import Path
-from typing import (
-    AsyncContextManager,
-    AsyncIterator,
-    Iterable,
-    Optional,
-    Tuple,
-    Union,
-)
 
 import httpx
 
@@ -28,9 +22,9 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         repo: str,
         tag: str,
         *,
-        body: Optional[str] = None,
-        name: Optional[str] = None,
-        target_commitish: Optional[str] = None,
+        body: str | None = None,
+        name: str | None = None,
+        target_commitish: str | None = None,
         draft: bool = False,
         prerelease: bool = False,
     ) -> Release:
@@ -143,7 +137,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
     def download_release_tarball(
         self, repo: str, tag: str
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
+    ) -> AbstractAsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         # pylint: disable=line-too-long
         """
         Download a release tarball (tar.gz) file
@@ -168,7 +162,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         async for content, progress in download:
                             f.write(content)
                             print(progress)
-        """  # noqa: E501
+        """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.tar.gz"
         return download_async(self._client.stream(api), url=api)
 
@@ -176,7 +170,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         self,
         repo: str,
         tag: str,
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
+    ) -> AbstractAsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         # pylint: disable=line-too-long
         """
         Download a release zip file
@@ -201,7 +195,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         async for content, progress in download:
                             f.write(content)
                             print(progress)
-        """  # noqa: E501
+        """
         api = f"https://github.com/{repo}/archive/refs/tags/{tag}.zip"
         return download_async(self._client.stream(api), url=api)
 
@@ -210,9 +204,12 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         repo: str,
         tag: str,
         *,
-        match_pattern: Optional[str] = None,
+        match_pattern: str | None = None,
     ) -> AsyncIterator[
-        Tuple[str, AsyncContextManager[AsyncDownloadProgressIterable[bytes]]]
+        tuple[
+            str,
+            AbstractAsyncContextManager[AsyncDownloadProgressIterable[bytes]],
+        ]
     ]:
         # pylint: disable=line-too-long
         """
@@ -253,7 +250,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         )
 
                     file_paths = await asyncio.gather(*tasks)
-        """  # noqa: E501
+        """
         release = await self.get(repo, tag)
         assets_url = release.assets_url
         if not assets_url:
@@ -282,7 +279,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
         self,
         repo: str,
         tag: str,
-        files: Iterable[Union[Path, Tuple[Path, str]]],
+        files: Iterable[Path | tuple[Path, str]],
     ) -> AsyncIterator[Path]:
         # pylint: disable=line-too-long
         """
@@ -321,13 +318,13 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
                         "foo/bar", "1.2.3", files
                     ):
                         print(f"Uploaded: {uploaded_file}")
-        """  # noqa: E501
+        """
         release = await self.get(repo, tag)
         asset_url = release.upload_url.replace("{?name,label}", "")
 
         async def upload_file(
             file_path: Path, content_type: str
-        ) -> Tuple[httpx.Response, Path]:
+        ) -> tuple[httpx.Response, Path]:
             response = await self._client.post(
                 asset_url,
                 params={"name": file_path.name},

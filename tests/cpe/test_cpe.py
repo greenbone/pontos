@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# ruff: noqa: E501
 
 import unittest
 

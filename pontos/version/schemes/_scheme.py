@@ -4,7 +4,6 @@
 #
 
 from abc import ABC
-from typing import Type
 
 from .._calculator import VersionCalculator
 from .._version import Version
@@ -26,8 +25,8 @@ class VersioningScheme(ABC):
                 version_calculator_cls = MyVersionCalculator
     """
 
-    version_cls: Type[Version]
-    version_calculator_cls: Type[VersionCalculator]
+    version_cls: type[Version]
+    version_calculator_cls: type[VersionCalculator]
     name: str
 
     @classmethod
@@ -49,7 +48,7 @@ class VersioningScheme(ABC):
         return cls.version_cls.from_version(version)
 
     @classmethod
-    def calculator(cls) -> Type[VersionCalculator]:
+    def calculator(cls) -> type[VersionCalculator]:
         """
         Return a matching version calculator for the implemented versioning
         schema.

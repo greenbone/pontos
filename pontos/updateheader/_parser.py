@@ -4,8 +4,8 @@
 
 
 from argparse import ArgumentParser, FileType, Namespace
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Optional, Sequence
 
 import shtab
 
@@ -17,7 +17,7 @@ SUPPORTED_LICENSES = [
 ]
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
+def parse_args(args: Sequence[str] | None = None) -> Namespace:
     """Parsing the args"""
 
     parser = ArgumentParser(

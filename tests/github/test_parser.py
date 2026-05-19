@@ -106,7 +106,7 @@ class TestArgparsing(unittest.TestCase):
             with patch.dict("os.environ", {}, clear=True):
                 parsed_args = parse_args(argv)
 
-            output = open(tmp_dir / "some.file", mode="w", encoding="utf-8")
+            output = (tmp_dir / "some.file").open(mode="w", encoding="utf-8")
 
             expected_args = Namespace(
                 command="FS",

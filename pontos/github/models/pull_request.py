@@ -5,7 +5,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 from pontos.github.models.base import FileStatus, GitHubModel, Team, User
 from pontos.github.models.organization import Repository
@@ -77,8 +76,8 @@ class PullRequestCommitVerification(GitHubModel):
 
     verified: bool
     reason: str
-    signature: Optional[str] = None
-    payload: Optional[str] = None
+    signature: str | None = None
+    payload: str | None = None
 
 
 @dataclass
@@ -101,8 +100,8 @@ class PullRequestCommitDetails(GitHubModel):
     tree: Tree
     url: str
     verification: PullRequestCommitVerification
-    author: Optional[PullRequestCommitUser] = None
-    committer: Optional[PullRequestCommitUser] = None
+    author: PullRequestCommitUser | None = None
+    committer: PullRequestCommitUser | None = None
 
 
 @dataclass
@@ -118,7 +117,7 @@ class PullRequestCommitParent(GitHubModel):
 
     url: str
     sha: str
-    html_url: Optional[str] = None
+    html_url: str | None = None
 
 
 @dataclass
@@ -165,8 +164,8 @@ class DiffEntry(GitHubModel):
     raw_url: str
     sha: str
     status: FileStatus
-    patch: Optional[str] = None
-    previous_filename: Optional[str] = None
+    patch: str | None = None
+    previous_filename: str | None = None
 
 
 @dataclass
@@ -195,10 +194,10 @@ class PullRequestCommit(GitHubModel):
     comments_url: str
     commit: PullRequestCommitDetails
     author: User
-    stats: Optional[Stats] = None
-    files: List[DiffEntry] = field(default_factory=list)
-    committer: Optional[User] = None
-    parents: List[PullRequestCommitParent] = field(default_factory=list)
+    stats: Stats | None = None
+    files: list[DiffEntry] = field(default_factory=list)
+    committer: User | None = None
+    parents: list[PullRequestCommitParent] = field(default_factory=list)
 
 
 @dataclass
@@ -222,7 +221,7 @@ class Label(GitHubModel):
     name: str
     color: str
     default: bool
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class MilestoneState(StrEnum):
@@ -274,10 +273,10 @@ class Milestone(GitHubModel):
     title: str
     updated_at: datetime
     url: str
-    closed_at: Optional[datetime] = None
-    creator: Optional[User] = None
-    description: Optional[str] = None
-    due_on: Optional[datetime] = None
+    closed_at: datetime | None = None
+    creator: User | None = None
+    description: str | None = None
+    due_on: datetime | None = None
 
 
 @dataclass
@@ -391,9 +390,9 @@ class Comment(GitHubModel):
     created_at: datetime
     updated_at: datetime
     author_association: AuthorAssociation
-    body: Optional[str] = None
-    user: Optional[User] = None
-    reactions: Optional[Reactions] = None
+    body: str | None = None
+    user: User | None = None
+    reactions: Reactions | None = None
 
 
 class MergeMethod(StrEnum):
@@ -516,19 +515,19 @@ class PullRequest(GitHubModel):
     updated_at: datetime
     url: str
     user: User
-    active_lock_reason: Optional[str] = None
-    assignee: Optional[User] = None
-    assignees: List[User] = field(default_factory=list)
-    auto_merge: Optional[AutoMerge] = None
-    body: Optional[str] = None
-    closed_at: Optional[datetime] = None
-    draft: Optional[bool] = None
-    labels: List[Label] = field(default_factory=list)
-    merge_commit_sha: Optional[str] = None
-    mergeable: Optional[bool] = None
-    merged_at: Optional[datetime] = None
-    merged_by: Optional[User] = None
-    milestone: Optional[Milestone] = None
-    rebaseable: Optional[bool] = None
-    requested_reviewers: List[User] = field(default_factory=list)
-    requested_teams: List[Team] = field(default_factory=list)
+    active_lock_reason: str | None = None
+    assignee: User | None = None
+    assignees: list[User] = field(default_factory=list)
+    auto_merge: AutoMerge | None = None
+    body: str | None = None
+    closed_at: datetime | None = None
+    draft: bool | None = None
+    labels: list[Label] = field(default_factory=list)
+    merge_commit_sha: str | None = None
+    mergeable: bool | None = None
+    merged_at: datetime | None = None
+    merged_by: User | None = None
+    milestone: Milestone | None = None
+    rebaseable: bool | None = None
+    requested_reviewers: list[User] = field(default_factory=list)
+    requested_teams: list[Team] = field(default_factory=list)

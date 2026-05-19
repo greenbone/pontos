@@ -4,7 +4,7 @@
 
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Optional, SupportsInt
+from typing import Any, SupportsInt
 
 from pontos.terminal import NullTerminal, Terminal
 
@@ -15,8 +15,8 @@ class Command(ABC):
     def __init__(
         self,
         *,
-        terminal: Optional[Terminal] = None,
-        error_terminal: Optional[Terminal] = None,
+        terminal: Terminal | None = None,
+        error_terminal: Terminal | None = None,
     ) -> None:
         self.terminal = terminal or NullTerminal()
         self.error_terminal = error_terminal or NullTerminal()

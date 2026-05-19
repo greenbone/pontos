@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.errors import GitHubApiError

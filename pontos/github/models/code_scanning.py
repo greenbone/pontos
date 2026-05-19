@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
@@ -94,13 +93,13 @@ class Rule(GitHubModel):
 
     name: str
     description: str
-    id: Optional[str] = None
-    full_description: Optional[str] = None
-    severity: Optional[Severity] = None
-    security_severity_level: Optional[SecuritySeverityLevel] = None
-    tags: Optional[list[str]] = None
-    help: Optional[str] = None
-    help_uri: Optional[str] = None
+    id: str | None = None
+    full_description: str | None = None
+    severity: Severity | None = None
+    security_severity_level: SecuritySeverityLevel | None = None
+    tags: list[str] | None = None
+    help: str | None = None
+    help_uri: str | None = None
 
 
 @dataclass
@@ -169,8 +168,8 @@ class Instance(GitHubModel):
     commit_sha: str
     message: Message
     location: Location
-    html_url: Optional[str] = None
-    classifications: Optional[list[Classification]] = None
+    html_url: str | None = None
+    classifications: list[Classification] | None = None
 
 
 @dataclass
@@ -187,8 +186,8 @@ class Tool(GitHubModel):
     """
 
     name: str
-    version: Optional[str] = None
-    guid: Optional[str] = None
+    version: str | None = None
+    guid: str | None = None
 
 
 @dataclass
@@ -227,13 +226,13 @@ class CodeScanningAlert(GitHubModel):
     rule: Rule
     tool: Tool
     most_recent_instance: Instance
-    repository: Optional[Repository] = None
-    updated_at: Optional[datetime] = None
-    fixed_at: Optional[datetime] = None
-    dismissed_by: Optional[User] = None
-    dismissed_at: Optional[datetime] = None
-    dismissed_reason: Optional[DismissedReason] = None
-    dismissed_comment: Optional[str] = None
+    repository: Repository | None = None
+    updated_at: datetime | None = None
+    fixed_at: datetime | None = None
+    dismissed_by: User | None = None
+    dismissed_at: datetime | None = None
+    dismissed_reason: DismissedReason | None = None
+    dismissed_comment: str | None = None
 
 
 @dataclass
@@ -313,7 +312,7 @@ class CodeQLDatabase(GitHubModel):
     created_at: datetime
     updated_at: datetime
     url: str
-    commit_oid: Optional[str] = None
+    commit_oid: str | None = None
 
 
 class DefaultSetupState(StrEnum):
@@ -367,8 +366,8 @@ class DefaultSetup(GitHubModel):
     state: DefaultSetupState
     languages: list[Language]
     query_suite: QuerySuite
-    updated_at: Optional[datetime] = None
-    schedule: Optional[str] = None
+    updated_at: datetime | None = None
+    schedule: str | None = None
 
 
 class SarifProcessingStatus(StrEnum):
@@ -396,5 +395,5 @@ class SarifUploadInformation(GitHubModel):
     """
 
     processing_status: SarifProcessingStatus
-    analyses_url: Optional[str] = None
-    errors: Optional[list[str]] = None
+    analyses_url: str | None = None
+    errors: list[str] | None = None

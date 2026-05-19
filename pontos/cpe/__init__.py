@@ -10,8 +10,8 @@ Module for parsing and handling Common Platform Enumeration (CPE) information
 
 __all__ = (
     "ANY",
+    "CPE",
     "NA",
     "CPEParsingError",
     "Part",
-    "CPE",
 )

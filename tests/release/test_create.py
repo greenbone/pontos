@@ -6,11 +6,11 @@
 # pylint: disable=too-many-lines, line-too-long, invalid-name
 
 import unittest
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Iterator, Optional, Union
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import HTTPStatusError, Request, Response
@@ -41,7 +41,7 @@ def mock_terminal() -> MagicMock:
     return MagicMock(spec=Terminal)
 
 
-def str_or_list(values: Union[str, Iterable[str]]) -> Iterable[str]:
+def str_or_list(values: str | Iterable[str]) -> Iterable[str]:
     if values and isinstance(values, str):
         return [values]
     return values
@@ -49,7 +49,7 @@ def str_or_list(values: Union[str, Iterable[str]]) -> Iterable[str]:
 
 @contextmanager
 def setup_go_project(
-    *, current_version: str, tags: Union[str, Iterable[str], None] = None
+    *, current_version: str, tags: str | Iterable[str] | None = None
 ) -> Iterator[Path]:
     with temp_git_repository() as tmp_git:
         git = Git(tmp_git)
@@ -2336,9 +2336,9 @@ class Release:
     release_type: str
     current_version: str
     expected_release_version: str
-    tags: Union[str, list[str]]
-    expected_last_release_version: Optional[str] = None
-    release_series: Optional[str] = None
+    tags: str | list[str]
+    expected_last_release_version: str | None = None
+    release_series: str | None = None
 
 
 @patch.dict(

@@ -9,13 +9,13 @@ from .main import main
 from .sign import SignatureError, SignCommand, SignReturnValue
 
 __all__ = (
-    "ReleaseType",
-    "get_git_repository_name",
-    "find_signing_key",
     "CreateReleaseCommand",
     "CreateReleaseReturnValue",
+    "ReleaseType",
     "SignCommand",
-    "SignatureError",
     "SignReturnValue",
+    "SignatureError",
+    "find_signing_key",
+    "get_git_repository_name",
     "main",
 )

@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel
 
@@ -64,4 +63,4 @@ class EmailInformation(GitHubModel):
     verified: bool
     # visibility should be an enum but the schema didn't define the possible
     # values. therefore be safe and just use a str
-    visibility: Optional[str] = None
+    visibility: str | None = None

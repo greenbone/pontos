@@ -4,7 +4,7 @@
 #
 
 import argparse
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import shtab
 
@@ -145,7 +145,7 @@ def initialize_default_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
+def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser = initialize_default_parser()
 
     parsed_args = parser.parse_args(args)

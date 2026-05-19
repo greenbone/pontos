@@ -4,7 +4,6 @@
 #
 
 # pylint: disable=too-many-lines, redefined-builtin, line-too-long
-# ruff: noqa: E501
 
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
@@ -13,7 +12,7 @@ import httpx
 
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.models.tag import GitObjectType, Tag, VerificationReason
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 TAG_JSON = {
@@ -68,7 +67,7 @@ TAGS_JSON = [
 class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
     api_cls = GitHubAsyncRESTTags
 
-    def assertTag(self, tag: Tag):  # pylint: disable=invalid-name
+    def assertTag(self, tag: Tag):  # noqa: N802
         self.assertEqual(
             tag.node_id,
             "MDM6VGFnOTQwYmQzMzYyNDhlZmFlMGY5ZWU1YmM3YjJkNWM5ODU4ODdiMTZhYw==",

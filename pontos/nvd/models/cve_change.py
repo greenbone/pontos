@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pontos.models import Model, StrEnum
@@ -32,9 +31,9 @@ class EventName(StrEnum):
 @dataclass
 class Detail:
     type: str
-    action: Optional[str] = None
-    old_value: Optional[str] = None
-    new_value: Optional[str] = None
+    action: str | None = None
+    old_value: str | None = None
+    new_value: str | None = None
 
 
 @dataclass
@@ -43,5 +42,5 @@ class CVEChange(Model):
     event_name: EventName
     cve_change_id: UUID
     source_identifier: str
-    created: Optional[datetime] = None
-    details: Optional[list[Detail]] = None
+    created: datetime | None = None
+    details: list[Detail] | None = None

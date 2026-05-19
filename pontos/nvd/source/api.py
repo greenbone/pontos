@@ -2,12 +2,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import Iterable, Iterator
 from datetime import datetime
-from typing import (
-    Iterable,
-    Iterator,
-    Optional,
-)
 
 from httpx import Timeout
 
@@ -61,8 +57,8 @@ class SourceApi(NVDApi):
     def __init__(
         self,
         *,
-        token: Optional[str] = None,
-        timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
+        token: str | None = None,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
         request_attempts: int = 1,
     ) -> None:
@@ -92,12 +88,12 @@ class SourceApi(NVDApi):
     def sources(
         self,
         *,
-        last_modified_start_date: Optional[datetime] = None,
-        last_modified_end_date: Optional[datetime] = None,
-        source_identifier: Optional[str] = None,
-        request_results: Optional[int] = None,
+        last_modified_start_date: datetime | None = None,
+        last_modified_end_date: datetime | None = None,
+        source_identifier: str | None = None,
+        request_results: int | None = None,
         start_index: int = 0,
-        results_per_page: Optional[int] = None,
+        results_per_page: int | None = None,
         return_exceptions: bool = False,
     ) -> NVDResults[Source]:
         """

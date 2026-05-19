@@ -9,7 +9,6 @@ organization
 """
 
 from argparse import ArgumentParser, Namespace
-from typing import Union
 
 from rich.console import Console
 from rich.table import Table
@@ -18,13 +17,13 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.api.organizations import MemberFilter, MemberRole
 
 
-def member_filter_type(value: Union[str, MemberFilter]) -> MemberFilter:
+def member_filter_type(value: str | MemberFilter) -> MemberFilter:
     if isinstance(value, MemberFilter):
         return value
     return MemberFilter[value.upper()]
 
 
-def member_role_type(value: Union[str, MemberRole]) -> MemberRole:
+def member_role_type(value: str | MemberRole) -> MemberRole:
     if isinstance(value, MemberRole):
         return value
     return MemberRole[value.upper()]

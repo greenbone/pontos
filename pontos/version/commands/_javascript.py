@@ -6,7 +6,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Literal
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -20,7 +20,7 @@ class JavaScriptVersionCommand(VersionCommand):
     _package = None
 
     @property
-    def package(self) -> Dict[str, Any]:
+    def package(self) -> dict[str, Any]:
         if self._package:
             return self._package
 
@@ -48,9 +48,7 @@ class JavaScriptVersionCommand(VersionCommand):
 
         return self._package
 
-    def _get_current_file_version(
-        self, version_file: Path
-    ) -> Optional[Version]:
+    def _get_current_file_version(self, version_file: Path) -> Version | None:
         if not version_file.exists():
             return None
 
@@ -68,7 +66,7 @@ class JavaScriptVersionCommand(VersionCommand):
         return self.versioning_scheme.parse_version(self.package["version"])
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()
@@ -109,7 +107,7 @@ class JavaScriptVersionCommand(VersionCommand):
             with self.project_file_path.open(mode="w") as fp:
                 json.dump(obj=self.package, fp=fp, indent=2)
 
-        except EnvironmentError as e:
+        except OSError as e:
             raise VersionError(
                 "No version tag found. Maybe this "
                 "module has not been released at all."

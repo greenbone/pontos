@@ -4,10 +4,11 @@
 #
 
 from argparse import Namespace
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Iterable, Literal, Optional, SupportsInt, Union
+from typing import Literal, SupportsInt
 
 import httpx
 
@@ -35,10 +36,10 @@ from .helper import (
 
 @dataclass
 class ReleaseInformation:
-    last_release_version: Optional[Version]
+    last_release_version: Version | None
     release_version: Version
     git_release_tag: str
-    next_version: Optional[Version]
+    next_version: Version | None
 
     def write_github_output(self):
         with ActionIO.out() as output:
@@ -78,9 +79,9 @@ class CreateReleaseCommand(AsyncCommand):
     def __init__(
         self,
         *,
-        terminal: Optional[Terminal] = None,
-        error_terminal: Optional[Terminal] = None,
-        git: Optional[Git] = None,
+        terminal: Terminal | None = None,
+        error_terminal: Terminal | None = None,
+        git: Git | None = None,
     ) -> None:
         super().__init__(terminal=terminal, error_terminal=error_terminal)
         self.git = git or Git()
@@ -92,8 +93,8 @@ class CreateReleaseCommand(AsyncCommand):
     def _create_changelog(
         self,
         release_version: Version,
-        last_release_version: Optional[Version],
-        cc_config: Optional[Path],
+        last_release_version: Version | None,
+        cc_config: Path | None,
     ) -> str:
         changelog_builder = ChangelogBuilder(
             repository=self.repository,
@@ -134,8 +135,8 @@ class CreateReleaseCommand(AsyncCommand):
         *,
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
-        release_series: Optional[str] = None,
-    ) -> Optional[Version]:
+        release_series: str | None = None,
+    ) -> Version | None:
         try:
             return get_last_release_version(
                 git=self.git,
@@ -170,19 +171,19 @@ class CreateReleaseCommand(AsyncCommand):
         repository: str,
         versioning_scheme: VersioningScheme,
         release_type: ReleaseType,
-        release_version: Optional[Version] = None,
-        last_release_version: Optional[Version] = None,
-        next_version: Union[Version, Literal[False], None] = None,
-        git_signing_key: Optional[str] = None,
-        git_remote_name: Optional[str] = None,
-        git_tag_prefix: Optional[str] = DEFAULT_TAG_PREFIX,
-        cc_config: Optional[Path] = None,
+        release_version: Version | None = None,
+        last_release_version: Version | None = None,
+        next_version: Version | Literal[False] | None = None,
+        git_signing_key: str | None = None,
+        git_remote_name: str | None = None,
+        git_tag_prefix: str | None = DEFAULT_TAG_PREFIX,
+        cc_config: Path | None = None,
         local: bool = False,
-        release_series: Optional[str] = None,
+        release_series: str | None = None,
         update_project: bool = True,
         github_pre_release: bool = False,
-        changelog: Optional[str] = None,
-        project_types: Optional[Iterable[ProjectType]] = None,
+        changelog: str | None = None,
+        project_types: Iterable[ProjectType] | None = None,
     ) -> CreateReleaseReturnValue:
         """
         Create a release

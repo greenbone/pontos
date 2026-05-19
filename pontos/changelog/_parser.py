@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import ArgumentParser, Namespace
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 import shtab
 
@@ -15,7 +15,7 @@ from pontos.version.schemes import (
 )
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
+def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="Conventional commits utility. Create a changelog markdown "
         " text from conventional commits between the current and next release.",

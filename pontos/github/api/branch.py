@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Any, Dict, Iterable, Optional, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.branch import BranchProtection
@@ -13,38 +14,38 @@ GITHUB_ACTIONS_APP_ID = 15368
 
 def update_from_applied_settings(
     branch_protection: BranchProtection,
-    required_status_checks: Optional[Iterable[Tuple[str, str]]] = None,
-    require_branches_to_be_up_to_date: Optional[bool] = None,
-    enforce_admins: Optional[bool] = None,
-    dismissal_restrictions_users: Optional[Iterable[str]] = None,
-    dismissal_restrictions_teams: Optional[Iterable[str]] = None,
-    dismissal_restrictions_apps: Optional[Iterable[str]] = None,
-    dismiss_stale_reviews: Optional[bool] = None,
-    require_code_owner_reviews: Optional[bool] = None,
-    required_approving_review_count: Optional[int] = None,
-    require_last_push_approval: Optional[bool] = None,
-    bypass_pull_request_allowances_users: Optional[Iterable[str]] = None,
-    bypass_pull_request_allowances_teams: Optional[Iterable[str]] = None,
-    bypass_pull_request_allowances_apps: Optional[Iterable[str]] = None,
-    restrictions_users: Optional[Iterable[str]] = None,
-    restrictions_teams: Optional[Iterable[str]] = None,
-    restrictions_apps: Optional[Iterable[str]] = None,
-    required_linear_history: Optional[bool] = None,
-    allow_force_pushes: Optional[bool] = None,
-    allow_deletions: Optional[bool] = None,
-    block_creations: Optional[bool] = None,
-    required_conversation_resolution: Optional[bool] = None,
-    lock_branch: Optional[bool] = None,
-    allow_fork_syncing: Optional[bool] = None,
-    required_signatures: Optional[bool] = None,
-) -> Dict[str, Any]:
+    required_status_checks: Iterable[tuple[str, str]] | None = None,
+    require_branches_to_be_up_to_date: bool | None = None,
+    enforce_admins: bool | None = None,
+    dismissal_restrictions_users: Iterable[str] | None = None,
+    dismissal_restrictions_teams: Iterable[str] | None = None,
+    dismissal_restrictions_apps: Iterable[str] | None = None,
+    dismiss_stale_reviews: bool | None = None,
+    require_code_owner_reviews: bool | None = None,
+    required_approving_review_count: int | None = None,
+    require_last_push_approval: bool | None = None,
+    bypass_pull_request_allowances_users: Iterable[str] | None = None,
+    bypass_pull_request_allowances_teams: Iterable[str] | None = None,
+    bypass_pull_request_allowances_apps: Iterable[str] | None = None,
+    restrictions_users: Iterable[str] | None = None,
+    restrictions_teams: Iterable[str] | None = None,
+    restrictions_apps: Iterable[str] | None = None,
+    required_linear_history: bool | None = None,
+    allow_force_pushes: bool | None = None,
+    allow_deletions: bool | None = None,
+    block_creations: bool | None = None,
+    required_conversation_resolution: bool | None = None,
+    lock_branch: bool | None = None,
+    allow_fork_syncing: bool | None = None,
+    required_signatures: bool | None = None,
+) -> dict[str, Any]:
     """
     Update branch protection rules from applied settings.
 
     Return keyword arguments for update_protection_rules by merging existing
     settings with desired updated values.
     """
-    kwargs: Dict[str, Any] = {}
+    kwargs: dict[str, Any] = {}
     if enforce_admins is not None:
         kwargs["enforce_admins"] = enforce_admins
     elif branch_protection.enforce_admins:
@@ -358,30 +359,30 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         repo: str,
         branch: str,
         *,
-        required_status_checks: Optional[Iterable[Tuple[str, str]]] = None,
-        require_branches_to_be_up_to_date: Optional[bool] = None,
-        enforce_admins: Optional[bool] = None,
-        dismissal_restrictions_users: Optional[Iterable[str]] = None,
-        dismissal_restrictions_teams: Optional[Iterable[str]] = None,
-        dismissal_restrictions_apps: Optional[Iterable[str]] = None,
-        dismiss_stale_reviews: Optional[bool] = None,
-        require_code_owner_reviews: Optional[bool] = None,
-        required_approving_review_count: Optional[int] = None,
-        require_last_push_approval: Optional[bool] = None,
-        bypass_pull_request_allowances_users: Optional[Iterable[str]] = None,
-        bypass_pull_request_allowances_teams: Optional[Iterable[str]] = None,
-        bypass_pull_request_allowances_apps: Optional[Iterable[str]] = None,
-        restrictions_users: Optional[Iterable[str]] = None,
-        restrictions_teams: Optional[Iterable[str]] = None,
-        restrictions_apps: Optional[Iterable[str]] = None,
-        required_linear_history: Optional[bool] = None,
-        allow_force_pushes: Optional[bool] = None,
-        allow_deletions: Optional[bool] = None,
-        block_creations: Optional[bool] = None,
-        required_conversation_resolution: Optional[bool] = None,
-        lock_branch: Optional[bool] = None,
-        allow_fork_syncing: Optional[bool] = None,
-        required_signatures: Optional[bool] = None,
+        required_status_checks: Iterable[tuple[str, str]] | None = None,
+        require_branches_to_be_up_to_date: bool | None = None,
+        enforce_admins: bool | None = None,
+        dismissal_restrictions_users: Iterable[str] | None = None,
+        dismissal_restrictions_teams: Iterable[str] | None = None,
+        dismissal_restrictions_apps: Iterable[str] | None = None,
+        dismiss_stale_reviews: bool | None = None,
+        require_code_owner_reviews: bool | None = None,
+        required_approving_review_count: int | None = None,
+        require_last_push_approval: bool | None = None,
+        bypass_pull_request_allowances_users: Iterable[str] | None = None,
+        bypass_pull_request_allowances_teams: Iterable[str] | None = None,
+        bypass_pull_request_allowances_apps: Iterable[str] | None = None,
+        restrictions_users: Iterable[str] | None = None,
+        restrictions_teams: Iterable[str] | None = None,
+        restrictions_apps: Iterable[str] | None = None,
+        required_linear_history: bool | None = None,
+        allow_force_pushes: bool | None = None,
+        allow_deletions: bool | None = None,
+        block_creations: bool | None = None,
+        required_conversation_resolution: bool | None = None,
+        lock_branch: bool | None = None,
+        allow_fork_syncing: bool | None = None,
+        required_signatures: bool | None = None,
     ) -> BranchProtection:
         """
         Update or create branch protection rules for a specific repository
@@ -466,7 +467,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
                     )
         """
         api = f"/repos/{repo}/branches/{branch}/protection"
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "enforce_admins": None,
             "required_status_checks": None,
             "required_pull_request_reviews": None,
@@ -754,8 +755,8 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         repo: str,
         branch: str,
         *,
-        required_status_checks: Optional[Iterable[Tuple[str, str]]] = None,
-        require_branches_to_be_up_to_date: Optional[bool] = None,
+        required_status_checks: Iterable[tuple[str, str]] | None = None,
+        require_branches_to_be_up_to_date: bool | None = None,
     ) -> None:
         """
         Update required status check branch protection rules of a repository
@@ -794,7 +795,7 @@ class GitHubAsyncRESTBranches(GitHubAsyncREST):
         api = (
             f"/repos/{repo}/branches/{branch}/protection/required_status_checks"
         )
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
         if require_branches_to_be_up_to_date is not None:
             data["strict"] = require_branches_to_be_up_to_date
         if required_status_checks is not None:

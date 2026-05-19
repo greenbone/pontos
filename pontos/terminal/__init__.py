@@ -8,7 +8,7 @@ from .rich import RichTerminal
 from .terminal import Terminal
 
 __all__ = (
-    "Terminal",
     "NullTerminal",
     "RichTerminal",
+    "Terminal",
 )

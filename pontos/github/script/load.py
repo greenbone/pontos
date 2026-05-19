@@ -7,10 +7,10 @@ import asyncio
 import importlib
 import os
 from argparse import ArgumentParser, Namespace
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
-from typing import Generator, Union
 
 from httpx import Timeout
 
@@ -24,7 +24,7 @@ GITHUB_SCRIPT_PARSER_FUNCTION_NAME = "add_script_arguments"
 
 @contextmanager
 def load_script(
-    script: Union[str, os.PathLike],
+    script: str | os.PathLike,
 ) -> Generator[ModuleType, None, None]:
     """
     A context manager to load a script module.

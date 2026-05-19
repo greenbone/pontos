@@ -4,7 +4,6 @@
 #
 
 # pylint: disable=line-too-long
-# ruff: noqa: E501
 
 import unittest
 from datetime import date, datetime, timezone
@@ -545,14 +544,14 @@ class CVETestCase(unittest.TestCase):
         cve = CVE.from_dict(
             get_cve_data(
                 {
-                    "evaluator_impact": "This Common Vulnerabilities and Exposures (CVE) entry is a configuration issue and not a software flaw. As such, it doesn’t fit in the CVE software flaw list. The Common Vulnerability Scoring System (CVSS) base score for this CVE entry has been set to 0 because this CVE entry has no impact as a software flaw according to CVSS. This does not mean that the configuration issue is not important and there may be security implications relative to computers having this configuration."
+                    "evaluator_impact": "This Common Vulnerabilities and Exposures (CVE) entry is a configuration issue and not a software flaw. As such, it doesn't fit in the CVE software flaw list. The Common Vulnerability Scoring System (CVSS) base score for this CVE entry has been set to 0 because this CVE entry has no impact as a software flaw according to CVSS. This does not mean that the configuration issue is not important and there may be security implications relative to computers having this configuration."
                 }
             )
         )
 
         self.assertEqual(
             cve.evaluator_impact,
-            "This Common Vulnerabilities and Exposures (CVE) entry is a configuration issue and not a software flaw. As such, it doesn’t fit in the CVE software flaw list. The Common Vulnerability Scoring System (CVSS) base score for this CVE entry has been set to 0 because this CVE entry has no impact as a software flaw according to CVSS. This does not mean that the configuration issue is not important and there may be security implications relative to computers having this configuration.",
+            "This Common Vulnerabilities and Exposures (CVE) entry is a configuration issue and not a software flaw. As such, it doesn't fit in the CVE software flaw list. The Common Vulnerability Scoring System (CVSS) base score for this CVE entry has been set to 0 because this CVE entry has no impact as a software flaw according to CVSS. This does not mean that the configuration issue is not important and there may be security implications relative to computers having this configuration.",
         )
 
     def test_cisa(self):

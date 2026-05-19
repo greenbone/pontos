@@ -5,7 +5,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.models import StrEnum
@@ -128,9 +127,9 @@ class License(GitHubModel):
     key: str
     name: str
     node_id: str
-    url: Optional[str] = None
-    spdx_id: Optional[str] = None
-    html_url: Optional[str] = None
+    url: str | None = None
+    spdx_id: str | None = None
+    html_url: str | None = None
 
 
 @dataclass
@@ -149,8 +148,8 @@ class RepositoryPermissions(GitHubModel):
     admin: bool
     push: bool
     pull: bool
-    maintain: Optional[bool] = None
-    triage: Optional[bool] = None
+    maintain: bool | None = None
+    triage: bool | None = None
 
 
 @dataclass
@@ -199,10 +198,10 @@ class Organization(GitHubModel):
     subscriptions_url: str
     type: str
     url: str
-    email: Optional[str] = None
-    gravatar_id: Optional[str] = None
-    name: Optional[str] = None
-    starred_at: Optional[datetime] = None
+    email: str | None = None
+    gravatar_id: str | None = None
+    name: str | None = None
+    starred_at: datetime | None = None
 
 
 @dataclass
@@ -262,10 +261,10 @@ class SecurityAndAnalysis(GitHubModel):
             Protection is used
     """
 
-    advanced_security: Optional[SecurityAndAnalysisType] = None
-    dependabot_security_updates: Optional[SecurityAndAnalysisType] = None
-    secret_scanning: Optional[SecurityAndAnalysisType] = None
-    secret_scanning_push_protection: Optional[SecurityAndAnalysisType] = None
+    advanced_security: SecurityAndAnalysisType | None = None
+    dependabot_security_updates: SecurityAndAnalysisType | None = None
+    secret_scanning: SecurityAndAnalysisType | None = None
+    secret_scanning_push_protection: SecurityAndAnalysisType | None = None
 
 
 @dataclass
@@ -419,59 +418,59 @@ class Repository(GitHubModel):
     teams_url: str
     trees_url: str
     url: str
-    allow_auto_merge: Optional[bool] = None
-    allow_forking: Optional[bool] = None
-    allow_merge_commit: Optional[bool] = None
-    allow_rebase_merge: Optional[bool] = None
-    allow_squash_merge: Optional[bool] = None
-    allow_update_branch: Optional[bool] = None
-    anonymous_access_enabled: Optional[bool] = None
-    archived: Optional[bool] = None
-    clone_url: Optional[str] = None
-    code_of_conduct: Optional[CodeOfConduct] = None
-    created_at: Optional[datetime] = None
-    default_branch: Optional[str] = None
-    delete_branch_on_merge: Optional[bool] = None
-    description: Optional[str] = None
-    disabled: Optional[bool] = None
-    forks_count: Optional[int] = None
-    forks: Optional[int] = None
-    git_url: Optional[str] = None
-    has_discussions: Optional[bool] = None
-    has_downloads: Optional[bool] = None
-    has_issues: Optional[bool] = None
-    has_pages: Optional[bool] = None
-    has_projects: Optional[bool] = None
-    has_wiki: Optional[bool] = None
-    homepage: Optional[str] = None
-    is_template: Optional[bool] = None
-    language: Optional[str] = None
-    license: Optional[License] = None
-    merge_commit_title: Optional[MergeCommitTitle] = None
-    merge_commit_message: Optional[MergeCommitMessage] = None
-    mirror_url: Optional[str] = None
-    network_count: Optional[int] = None
-    open_issues_count: Optional[int] = None
-    open_issues: Optional[int] = None
-    organization: Optional[Organization] = None
-    permissions: Optional[RepositoryPermissions] = None
-    pushed_at: Optional[datetime] = None
-    security_and_analysis: Optional[SecurityAndAnalysis] = None
-    size: Optional[int] = None
-    ssh_url: Optional[str] = None
-    stargazers_count: Optional[int] = None
-    subscribers_count: Optional[int] = None
-    svn_url: Optional[str] = None
-    squash_merge_commit_message: Optional[SquashMergeCommitMessage] = None
-    squash_merge_commit_title: Optional[SquashMergeCommitTitle] = None
-    temp_clone_token: Optional[str] = None
-    topics: Optional[List[str]] = field(default_factory=list[str])
-    updated_at: Optional[datetime] = None
-    use_squash_pr_title_as_default: Optional[bool] = None
-    visibility: Optional[str] = None
-    watchers_count: Optional[int] = None
-    watchers: Optional[int] = None
-    web_commit_signoff_required: Optional[bool] = None
+    allow_auto_merge: bool | None = None
+    allow_forking: bool | None = None
+    allow_merge_commit: bool | None = None
+    allow_rebase_merge: bool | None = None
+    allow_squash_merge: bool | None = None
+    allow_update_branch: bool | None = None
+    anonymous_access_enabled: bool | None = None
+    archived: bool | None = None
+    clone_url: str | None = None
+    code_of_conduct: CodeOfConduct | None = None
+    created_at: datetime | None = None
+    default_branch: str | None = None
+    delete_branch_on_merge: bool | None = None
+    description: str | None = None
+    disabled: bool | None = None
+    forks_count: int | None = None
+    forks: int | None = None
+    git_url: str | None = None
+    has_discussions: bool | None = None
+    has_downloads: bool | None = None
+    has_issues: bool | None = None
+    has_pages: bool | None = None
+    has_projects: bool | None = None
+    has_wiki: bool | None = None
+    homepage: str | None = None
+    is_template: bool | None = None
+    language: str | None = None
+    license: License | None = None
+    merge_commit_title: MergeCommitTitle | None = None
+    merge_commit_message: MergeCommitMessage | None = None
+    mirror_url: str | None = None
+    network_count: int | None = None
+    open_issues_count: int | None = None
+    open_issues: int | None = None
+    organization: Organization | None = None
+    permissions: RepositoryPermissions | None = None
+    pushed_at: datetime | None = None
+    security_and_analysis: SecurityAndAnalysis | None = None
+    size: int | None = None
+    ssh_url: str | None = None
+    stargazers_count: int | None = None
+    subscribers_count: int | None = None
+    svn_url: str | None = None
+    squash_merge_commit_message: SquashMergeCommitMessage | None = None
+    squash_merge_commit_title: SquashMergeCommitTitle | None = None
+    temp_clone_token: str | None = None
+    topics: list[str] | None = field(default_factory=list[str])
+    updated_at: datetime | None = None
+    use_squash_pr_title_as_default: bool | None = None
+    visibility: str | None = None
+    watchers_count: int | None = None
+    watchers: int | None = None
+    web_commit_signoff_required: bool | None = None
 
 
 class MemberFilter(StrEnum):

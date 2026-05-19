@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import AsyncIterator, Iterable, Optional, Union
+from collections.abc import AsyncIterator, Iterable
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.errors import GitHubApiError
@@ -52,7 +52,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        repository_type: Union[RepositoryType, str] = RepositoryType.ALL,
+        repository_type: RepositoryType | str = RepositoryType.ALL,
     ) -> AsyncIterator[Repository]:
         """
         Get information about organization repositories
@@ -92,8 +92,8 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        member_filter: Union[MemberFilter, str] = MemberFilter.ALL,
-        role: Union[MemberRole, str] = MemberRole.ALL,
+        member_filter: MemberFilter | str = MemberFilter.ALL,
+        role: MemberRole | str = MemberRole.ALL,
     ) -> AsyncIterator[User]:
         """
         Get information about organization members
@@ -138,10 +138,10 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        email: Optional[str] = None,
-        invitee_id: Optional[Union[str, int]] = None,
-        role: Union[InvitationRole, str] = InvitationRole.DIRECT_MEMBER,
-        team_ids: Optional[Iterable[Union[str, int]]] = None,
+        email: str | None = None,
+        invitee_id: str | int | None = None,
+        role: InvitationRole | str = InvitationRole.DIRECT_MEMBER,
+        team_ids: Iterable[str | int] | None = None,
     ) -> None:
         """
         Invite a user to a GitHub Organization
@@ -227,7 +227,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        member_filter: Union[MemberFilter, str] = MemberFilter.ALL,
+        member_filter: MemberFilter | str = MemberFilter.ALL,
     ) -> AsyncIterator[User]:
         """
         Get information about outside collaborators of an organization

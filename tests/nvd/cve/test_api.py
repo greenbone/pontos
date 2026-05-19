@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from httpx import AsyncClient, Response
@@ -16,14 +16,14 @@ from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cve.api import MAX_CVES_PER_PAGE, CVEApi
 from pontos.nvd.models import cvss_v2, cvss_v3
-from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
+from tests import AsyncMock, IsolatedAsyncioTestCase
 from tests.nvd import get_cve_data
 
 
 def create_cve_response(
     cve_id: str,
     *,
-    update: Optional[Dict[str, Any]] = None,
+    update: dict[str, Any] | None = None,
     results: int = 1,
 ) -> MagicMock:
     data = {
@@ -43,7 +43,7 @@ def create_cve_response(
 
 def create_cves_responses(
     requests: int = 2, results_per_response: int = 1
-) -> List[MagicMock]:
+) -> list[MagicMock]:
     return [
         create_cve_response(
             f"CVE-{i}",

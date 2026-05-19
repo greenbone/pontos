@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import Iterator
 from datetime import datetime, timedelta
-from typing import Any, Iterator, Optional, Union
+from typing import Any
 
 from httpx import Timeout
 
@@ -59,8 +60,8 @@ class CVEChangesApi(NVDApi):
     def __init__(
         self,
         *,
-        token: Optional[str] = None,
-        timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
+        token: str | None = None,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
         request_attempts: int = 1,
     ) -> None:
@@ -90,13 +91,13 @@ class CVEChangesApi(NVDApi):
     def changes(
         self,
         *,
-        change_start_date: Optional[datetime] = None,
-        change_end_date: Optional[datetime] = None,
-        cve_id: Optional[str] = None,
-        event_name: Optional[Union[EventName, str]] = None,
-        request_results: Optional[int] = None,
+        change_start_date: datetime | None = None,
+        change_end_date: datetime | None = None,
+        cve_id: str | None = None,
+        event_name: EventName | str | None = None,
+        request_results: int | None = None,
         start_index: int = 0,
-        results_per_page: Optional[int] = None,
+        results_per_page: int | None = None,
         return_exceptions: bool = False,
     ) -> NVDResults[CVEChange]:
         """

@@ -6,7 +6,7 @@
 """Argument parser for pontos-github-actions"""
 
 from argparse import ArgumentParser, Namespace
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import shtab
 
@@ -19,7 +19,7 @@ def split_pairs(value: str):
     return tuple(value.split("=", 1))
 
 
-def parse_args(args: Optional[Sequence[str]] = None) -> Namespace:
+def parse_args(args: Sequence[str] | None = None) -> Namespace:
     """
     Parsing args for Pontos GitHub Actions
     """

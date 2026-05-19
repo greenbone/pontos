@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Iterator, Optional
+from collections.abc import Iterator
 
 from pontos.git import DEFAULT_TAG_SORT_SUFFIX, Git, TagSort
 
@@ -14,10 +14,10 @@ from ._version import ParseVersionFuncType, Version
 def get_last_release_versions(
     parse_version: ParseVersionFuncType,
     *,
-    git: Optional[Git] = None,
-    git_tag_prefix: Optional[str] = "",
-    ignore_pre_releases: Optional[bool] = False,
-    tag_name: Optional[str] = None,
+    git: Git | None = None,
+    git_tag_prefix: str | None = "",
+    ignore_pre_releases: bool | None = False,
+    tag_name: str | None = None,
 ) -> Iterator[Version]:
     """Get the last released Versions from git.
 
@@ -57,11 +57,11 @@ def get_last_release_versions(
 def get_last_release_version(
     parse_version: ParseVersionFuncType,
     *,
-    git: Optional[Git] = None,
-    git_tag_prefix: Optional[str] = "",
-    ignore_pre_releases: Optional[bool] = False,
-    tag_name: Optional[str] = None,
-) -> Optional[Version]:
+    git: Git | None = None,
+    git_tag_prefix: str | None = "",
+    ignore_pre_releases: bool | None = False,
+    tag_name: str | None = None,
+) -> Version | None:
     """Get the last released Version from git.
 
     Args:

@@ -4,7 +4,6 @@
 #
 
 # pylint: disable=redefined-builtin, line-too-long, too-many-lines
-# ruff: noqa: E501
 
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -13,7 +12,7 @@ from httpx import HTTPStatusError
 
 from pontos.github.api.pull_requests import GitHubAsyncRESTPullRequests
 from pontos.github.models.base import FileStatus
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent
@@ -770,7 +769,7 @@ class GitHubAsyncRESTPullRequestsTestCase(GitHubAsyncRESTTestCase):
             {
                 "url": "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
                 "sha": "6dcb09b5b57875f334f61aebed695e2e4193db53",
-                "node_id": "MDY6Q29tbWl0NmRjYjA5YjViNTc4NzVmMzM0ZjYxYWViZWQ2OTVlMmU0MTkzZGI1ZQ==",  # noqa: E501
+                "node_id": "MDY6Q29tbWl0NmRjYjA5YjViNTc4NzVmMzM0ZjYxYWViZWQ2OTVlMmU0MTkzZGI1ZQ==",
                 "html_url": "https://github.com/octocat/Hello-World/commit/6dcb09b5b57875f334f61aebed695e2e4193db5e",
                 "comments_url": "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e/comments",
                 "commit": {

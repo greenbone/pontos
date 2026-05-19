@@ -4,7 +4,6 @@
 #
 
 from dataclasses import dataclass
-from typing import List, Optional
 
 from pontos.github.models.base import App, GitHubModel, Team, User
 
@@ -12,14 +11,14 @@ __all__ = (
     "BranchProtection",
     "BranchProtectionFeature",
     "BypassPullRequestAllowances",
-    "DismissalRestrictions",
-    "Restrictions",
-    "RequiredStatusChecks",
-    "StatusCheck",
-    "RequiredPullRequestReviews",
-    "RequiredStatusChecks",
     "BypassPullRequestAllowances",
     "DismissalRestrictions",
+    "DismissalRestrictions",
+    "RequiredPullRequestReviews",
+    "RequiredStatusChecks",
+    "RequiredStatusChecks",
+    "Restrictions",
+    "StatusCheck",
 )
 
 
@@ -41,9 +40,9 @@ class DismissalRestrictions(GitHubModel):
     url: str
     users_url: str
     teams_url: str
-    users: List[User]
-    teams: List[Team]
-    apps: List[App]
+    users: list[User]
+    teams: list[Team]
+    apps: list[App]
 
 
 @dataclass
@@ -57,9 +56,9 @@ class BypassPullRequestAllowances(GitHubModel):
         apps: List of apps allowed to bypass required pull request reviews
     """
 
-    users: List[User]
-    teams: List[Team]
-    apps: List[App]
+    users: list[User]
+    teams: list[Team]
+    apps: list[App]
 
 
 @dataclass
@@ -84,8 +83,8 @@ class RequiredPullRequestReviews(GitHubModel):
     require_code_owner_reviews: bool
     required_approving_review_count: int
     require_last_push_approval: bool
-    dismissal_restrictions: Optional[DismissalRestrictions] = None
-    bypass_pull_request_allowances: Optional[BypassPullRequestAllowances] = None
+    dismissal_restrictions: DismissalRestrictions | None = None
+    bypass_pull_request_allowances: BypassPullRequestAllowances | None = None
 
 
 @dataclass
@@ -99,7 +98,7 @@ class StatusCheck(GitHubModel):
     """
 
     context: str
-    app_id: Optional[int] = None
+    app_id: int | None = None
 
 
 @dataclass
@@ -116,8 +115,8 @@ class RequiredStatusChecks(GitHubModel):
 
     url: str
     strict: bool
-    checks: List[StatusCheck]
-    enforcement_level: Optional[str] = None
+    checks: list[StatusCheck]
+    enforcement_level: str | None = None
 
 
 @dataclass
@@ -139,9 +138,9 @@ class Restrictions(GitHubModel):
     users_url: str
     teams_url: str
     apps_url: str
-    users: List[User]
-    teams: List[Team]
-    apps: List[App]
+    users: list[User]
+    teams: list[Team]
+    apps: list[App]
 
 
 @dataclass
@@ -155,7 +154,7 @@ class BranchProtectionFeature(GitHubModel):
     """
 
     enabled: bool
-    url: Optional[str] = None
+    url: str | None = None
 
 
 @dataclass
@@ -185,15 +184,15 @@ class BranchProtection(GitHubModel):
     """
 
     url: str
-    required_status_checks: Optional[RequiredStatusChecks] = None
-    required_pull_request_reviews: Optional[RequiredPullRequestReviews] = None
-    restrictions: Optional[Restrictions] = None
-    enforce_admins: Optional[BranchProtectionFeature] = None
-    required_linear_history: Optional[BranchProtectionFeature] = None
-    allow_force_pushes: Optional[BranchProtectionFeature] = None
-    allow_deletions: Optional[BranchProtectionFeature] = None
-    block_creations: Optional[BranchProtectionFeature] = None
-    required_conversation_resolution: Optional[BranchProtectionFeature] = None
-    lock_branch: Optional[BranchProtectionFeature] = None
-    allow_fork_syncing: Optional[BranchProtectionFeature] = None
-    required_signatures: Optional[BranchProtectionFeature] = None
+    required_status_checks: RequiredStatusChecks | None = None
+    required_pull_request_reviews: RequiredPullRequestReviews | None = None
+    restrictions: Restrictions | None = None
+    enforce_admins: BranchProtectionFeature | None = None
+    required_linear_history: BranchProtectionFeature | None = None
+    allow_force_pushes: BranchProtectionFeature | None = None
+    allow_deletions: BranchProtectionFeature | None = None
+    block_creations: BranchProtectionFeature | None = None
+    required_conversation_resolution: BranchProtectionFeature | None = None
+    lock_branch: BranchProtectionFeature | None = None
+    allow_fork_syncing: BranchProtectionFeature | None = None
+    required_signatures: BranchProtectionFeature | None = None

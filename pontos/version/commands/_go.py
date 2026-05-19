@@ -5,7 +5,7 @@
 
 import re
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -60,7 +60,7 @@ class GoVersionCommand(VersionCommand):
             )
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         """Verify the current version of this project"""
         current_version = self.get_current_version()

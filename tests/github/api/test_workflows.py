@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 import httpx
 
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent

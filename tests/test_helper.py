@@ -4,7 +4,6 @@
 #
 
 # pylint: disable=redefined-builtin,disallowed-name
-# ruff: noqa: E501
 
 import unittest
 from enum import Enum
@@ -33,8 +32,6 @@ from tests import (
     AsyncIteratorMock,
     AsyncMock,
     IsolatedAsyncioTestCase,
-    aiter,
-    anext,
 )
 from tests.github.api import create_response
 
@@ -501,14 +498,14 @@ class AddSysPathTestCase(unittest.TestCase):
     def test_add_sys_path(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule  # noqa: F811,F401
+            import mymodule
 
         with (
             temp_file("", name="mymodule.py") as module_path,
             add_sys_path(module_path.parent),
         ):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule  # noqa: F811,F401
+            import mymodule  # noqa: F401
 
         unload_module("mymodule")
 
@@ -520,11 +517,11 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
             ensure_unload_module("bar"),
         ):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import bar  # noqa: F401,F811
+            import bar
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import bar  # noqa: F401,F811
+            import bar  # noqa: F401
 
     def test_ensure_unload_module_exception(self):
         with self.assertRaisesRegex(ValueError, "Ipsum"):
@@ -546,7 +543,7 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
     def test_add_sys_path_exception(self):
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule  # noqa: F811,F401
+            import mymodule
 
         try:
             with (
@@ -554,7 +551,7 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
                 add_sys_path(module_path.parent),
             ):
                 # pylint: disable=import-error,import-outside-toplevel,unused-import
-                import mymodule  # noqa: F811,F401
+                import mymodule
 
                 raise ValueError()
         except ValueError:
@@ -564,7 +561,7 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import
-            import mymodule  # noqa: F401,F811
+            import mymodule  # noqa: F401
 
 
 class SnakeCaseTestCase(unittest.TestCase):

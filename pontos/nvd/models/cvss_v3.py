@@ -4,7 +4,6 @@
 #
 
 from dataclasses import dataclass
-from typing import Optional
 
 from pontos.models import Model, StrEnum
 
@@ -127,29 +126,29 @@ class CVSSData(Model):
     vector_string: str
     base_score: float
     base_severity: Severity
-    attack_vector: Optional[AttackVector] = None
-    attack_complexity: Optional[AttackComplexity] = None
-    privileges_required: Optional[PrivilegesRequired] = None
-    user_interaction: Optional[UserInteraction] = None
-    scope: Optional[Scope] = None
-    confidentiality_impact: Optional[Impact] = None
-    integrity_impact: Optional[Impact] = None
-    availability_impact: Optional[Impact] = None
-    exploit_code_maturity: Optional[ExploitCodeMaturity] = None
-    remediation_level: Optional[RemediationLevel] = None
-    report_confidence: Optional[Confidence] = None
-    temporal_score: Optional[float] = None
-    temporal_severity: Optional[Severity] = None
-    confidentiality_requirement: Optional[Requirement] = None
-    integrity_requirement: Optional[Requirement] = None
-    availability_requirement: Optional[Requirement] = None
-    modified_attack_vector: Optional[ModifiedAttackVector] = None
-    modified_attack_complexity: Optional[ModifiedAttackComplexity] = None
-    modified_privileges_required: Optional[ModifiedPrivilegesRequired] = None
-    modified_user_interaction: Optional[ModifiedUserInteraction] = None
-    modified_scope: Optional[ModifiedScope] = None
-    modified_confidentiality_impact: Optional[ModifiedImpact] = None
-    modified_integrity_impact: Optional[ModifiedImpact] = None
-    modified_availability_impact: Optional[ModifiedImpact] = None
-    environmental_score: Optional[float] = None
-    environmental_severity: Optional[Severity] = None
+    attack_vector: AttackVector | None = None
+    attack_complexity: AttackComplexity | None = None
+    privileges_required: PrivilegesRequired | None = None
+    user_interaction: UserInteraction | None = None
+    scope: Scope | None = None
+    confidentiality_impact: Impact | None = None
+    integrity_impact: Impact | None = None
+    availability_impact: Impact | None = None
+    exploit_code_maturity: ExploitCodeMaturity | None = None
+    remediation_level: RemediationLevel | None = None
+    report_confidence: Confidence | None = None
+    temporal_score: float | None = None
+    temporal_severity: Severity | None = None
+    confidentiality_requirement: Requirement | None = None
+    integrity_requirement: Requirement | None = None
+    availability_requirement: Requirement | None = None
+    modified_attack_vector: ModifiedAttackVector | None = None
+    modified_attack_complexity: ModifiedAttackComplexity | None = None
+    modified_privileges_required: ModifiedPrivilegesRequired | None = None
+    modified_user_interaction: ModifiedUserInteraction | None = None
+    modified_scope: ModifiedScope | None = None
+    modified_confidentiality_impact: ModifiedImpact | None = None
+    modified_integrity_impact: ModifiedImpact | None = None
+    modified_availability_impact: ModifiedImpact | None = None
+    environmental_score: float | None = None
+    environmental_severity: Severity | None = None

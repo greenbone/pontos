@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Any, AsyncIterator, Dict, Optional, Union
+from collections.abc import AsyncIterator
+from typing import Any
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import Event
@@ -44,7 +45,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/workflows"
         return self._get_paged_items(api, "workflows", Workflow)  # type: ignore
 
-    async def get(self, repo: str, workflow: Union[str, int]) -> Workflow:
+    async def get(self, repo: str, workflow: str | int) -> Workflow:
         """
         Get the information for the given workflow
 
@@ -79,10 +80,10 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
     async def create_workflow_dispatch(
         self,
         repo: str,
-        workflow: Union[str, int],
+        workflow: str | int,
         *,
         ref: str,
-        inputs: Optional[Dict[str, str]] = None,
+        inputs: dict[str, str] | None = None,
     ) -> None:
         """
         Create a workflow dispatch event to manually trigger a GitHub Actions
@@ -115,7 +116,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                     )
         """
         api = f"/repos/{repo}/actions/workflows/{workflow}/dispatches"
-        data: Dict[str, Any] = {"ref": ref}
+        data: dict[str, Any] = {"ref": ref}
 
         if inputs:
             data["inputs"] = inputs
@@ -126,14 +127,14 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
     def get_workflow_runs(
         self,
         repo: str,
-        workflow: Optional[Union[str, int]] = None,
+        workflow: str | int | None = None,
         *,
-        actor: Optional[str] = None,
-        branch: Optional[str] = None,
-        event: Optional[Union[Event, str]] = None,
-        status: Optional[Union[WorkflowRunStatus, str]] = None,
-        created: Optional[str] = None,
-        exclude_pull_requests: Optional[bool] = None,
+        actor: str | None = None,
+        branch: str | None = None,
+        event: Event | str | None = None,
+        status: WorkflowRunStatus | str | None = None,
+        created: str | None = None,
+        exclude_pull_requests: bool | None = None,
     ) -> AsyncIterator[WorkflowRun]:
         # pylint: disable=line-too-long
         """
@@ -188,7 +189,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             if workflow
             else f"/repos/{repo}/actions/runs"
         )
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if actor:
             params["actor"] = actor
         if branch:
@@ -206,9 +207,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             api, "workflow_runs", WorkflowRun, params=params
         )
 
-    async def get_workflow_run(
-        self, repo: str, run: Union[str, int]
-    ) -> WorkflowRun:
+    async def get_workflow_run(self, repo: str, run: str | int) -> WorkflowRun:
         """
         Get information about a single workflow run
 

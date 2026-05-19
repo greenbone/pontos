@@ -3,16 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+from collections.abc import Iterable, Iterator
 from datetime import datetime
 from types import TracebackType
-from typing import (
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Type,
-    Union,
-)
 
 from httpx import Timeout
 
@@ -67,8 +60,8 @@ class CVEApi(NVDApi):
     def __init__(
         self,
         *,
-        token: Optional[str] = None,
-        timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
+        token: str | None = None,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
         request_attempts: int = 1,
     ) -> None:
@@ -98,27 +91,27 @@ class CVEApi(NVDApi):
     def cves(
         self,
         *,
-        last_modified_start_date: Optional[datetime] = None,
-        last_modified_end_date: Optional[datetime] = None,
-        published_start_date: Optional[datetime] = None,
-        published_end_date: Optional[datetime] = None,
-        cpe_name: Optional[str] = None,
-        is_vulnerable: Optional[bool] = None,
-        cvss_v2_vector: Optional[str] = None,
-        cvss_v2_severity: Optional[CVSSv2Severity] = None,
-        cvss_v3_vector: Optional[str] = None,
-        cvss_v3_severity: Optional[CVSSv3Severity] = None,
-        keywords: Optional[Union[List[str], str]] = None,
-        cwe_id: Optional[str] = None,
-        source_identifier: Optional[str] = None,
-        virtual_match_string: Optional[str] = None,
-        has_cert_alerts: Optional[bool] = None,
-        has_cert_notes: Optional[bool] = None,
-        has_kev: Optional[bool] = None,
-        has_oval: Optional[bool] = None,
-        request_results: Optional[int] = None,
+        last_modified_start_date: datetime | None = None,
+        last_modified_end_date: datetime | None = None,
+        published_start_date: datetime | None = None,
+        published_end_date: datetime | None = None,
+        cpe_name: str | None = None,
+        is_vulnerable: bool | None = None,
+        cvss_v2_vector: str | None = None,
+        cvss_v2_severity: CVSSv2Severity | None = None,
+        cvss_v3_vector: str | None = None,
+        cvss_v3_severity: CVSSv3Severity | None = None,
+        keywords: list[str] | str | None = None,
+        cwe_id: str | None = None,
+        source_identifier: str | None = None,
+        virtual_match_string: str | None = None,
+        has_cert_alerts: bool | None = None,
+        has_cert_notes: bool | None = None,
+        has_kev: bool | None = None,
+        has_oval: bool | None = None,
+        request_results: int | None = None,
         start_index: int = 0,
-        results_per_page: Optional[int] = None,
+        results_per_page: int | None = None,
         return_exceptions: bool = False,
     ) -> NVDResults[CVE]:
         """
@@ -233,7 +226,7 @@ class CVEApi(NVDApi):
                 keywords = [keywords]
 
             params["keywordSearch"] = " ".join(keywords)
-            if any((" " in keyword for keyword in keywords)):
+            if any(" " in keyword for keyword in keywords):
                 params["keywordExactMatch"] = ""
 
         if cwe_id:
@@ -311,10 +304,10 @@ class CVEApi(NVDApi):
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
         return await super().__aexit__(  # type: ignore
             exc_type, exc_value, traceback
         )

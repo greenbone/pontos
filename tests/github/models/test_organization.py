@@ -4,7 +4,6 @@
 #
 
 # pylint: disable=line-too-long, redefined-builtin
-# ruff: noqa: E501
 
 import unittest
 from datetime import datetime, timezone
@@ -22,7 +21,7 @@ class LicenseTestCase(unittest.TestCase):
             "node_id": "MDc6TGljZW5zZTk=",
         }
 
-        license = License.from_dict(data)
+        license = License.from_dict(data)  # noqa: A001
 
         self.assertEqual(license.key, "gpl-3.0")
         self.assertEqual(license.name, "GNU General Public License v3.0")

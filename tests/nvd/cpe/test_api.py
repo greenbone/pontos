@@ -4,11 +4,10 @@
 #
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
-# ruff: noqa: E501
 
 from datetime import datetime, timezone
 from itertools import repeat
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -18,7 +17,7 @@ from pontos.errors import PontosError
 from pontos.models import ModelError
 from pontos.nvd.api import now
 from pontos.nvd.cpe.api import MAX_CPES_PER_PAGE, CPEApi
-from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
+from tests import AsyncMock, IsolatedAsyncioTestCase
 from tests.nvd import get_cpe_data
 
 
@@ -36,7 +35,7 @@ def uuid_replace(uuid: UUID, iteration: int, number: int) -> UUID:
 def create_cpe_response(
     cpe_name_id: UUID,
     *,
-    update: Optional[dict[str, Any]] = None,
+    update: dict[str, Any] | None = None,
     results: int = 1,
     iteration: int = 1,
 ) -> MagicMock:

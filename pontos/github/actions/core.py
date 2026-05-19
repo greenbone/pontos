@@ -5,10 +5,10 @@
 
 import os
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Generator, Optional
 
 from pontos.typing import SupportsStr
 
@@ -16,12 +16,12 @@ from .errors import GitHubActionsError
 
 
 def _to_options(
-    name: Optional[str] = None,
-    line: Optional[str] = None,
-    end_line: Optional[str] = None,
-    column: Optional[str] = None,
-    end_column: Optional[str] = None,
-    title: Optional[str] = None,
+    name: str | None = None,
+    line: str | None = None,
+    end_line: str | None = None,
+    column: str | None = None,
+    end_column: str | None = None,
+    title: str | None = None,
 ):
     options = []
     if name:
@@ -43,12 +43,12 @@ def _message(
     message_type: str,
     message: str,
     *,
-    name: Optional[str] = None,
-    line: Optional[str] = None,
-    end_line: Optional[str] = None,
-    column: Optional[str] = None,
-    end_column: Optional[str] = None,
-    title: Optional[str] = None,
+    name: str | None = None,
+    line: str | None = None,
+    end_line: str | None = None,
+    column: str | None = None,
+    end_column: str | None = None,
+    title: str | None = None,
 ):
     options = _to_options(name, line, end_line, column, end_column, title)
     print(f"::{message_type} {options}::{message}")
@@ -102,12 +102,12 @@ class Console:
     def warning(
         message: str,
         *,
-        name: Optional[str] = None,
-        line: Optional[str] = None,
-        end_line: Optional[str] = None,
-        column: Optional[str] = None,
-        end_column: Optional[str] = None,
-        title: Optional[str] = None,
+        name: str | None = None,
+        line: str | None = None,
+        end_line: str | None = None,
+        column: str | None = None,
+        end_column: str | None = None,
+        title: str | None = None,
     ):
         """
         Print a warning message
@@ -129,12 +129,12 @@ class Console:
     def error(
         message: str,
         *,
-        name: Optional[str] = None,
-        line: Optional[str] = None,
-        end_line: Optional[str] = None,
-        column: Optional[str] = None,
-        end_column: Optional[str] = None,
-        title: Optional[str] = None,
+        name: str | None = None,
+        line: str | None = None,
+        end_line: str | None = None,
+        column: str | None = None,
+        end_column: str | None = None,
+        title: str | None = None,
     ):
         """
         Print an error message
@@ -156,12 +156,12 @@ class Console:
     def notice(
         message: str,
         *,
-        name: Optional[str] = None,
-        line: Optional[str] = None,
-        end_line: Optional[str] = None,
-        column: Optional[str] = None,
-        end_column: Optional[str] = None,
-        title: Optional[str] = None,
+        name: str | None = None,
+        line: str | None = None,
+        end_line: str | None = None,
+        column: str | None = None,
+        end_column: str | None = None,
+        title: str | None = None,
     ):
         """
         Print a warning message
@@ -196,7 +196,7 @@ class Console:
 
         These messages are only shown if the secret ACTIONS_STEP_DEBUG is set to true.
         See https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging#enabling-step-debug-logging
-        """  # noqa: E501
+        """
         print(f"::debug::{message}")
 
 
@@ -320,7 +320,7 @@ class ActionIO:
             f.write(str(delimiter))
 
     @staticmethod
-    def input(name: str, default: Optional[str] = None) -> Optional[str]:
+    def input(name: str, default: str | None = None) -> str | None:
         """
         Get the value of an action input
 

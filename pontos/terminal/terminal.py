@@ -4,11 +4,12 @@
 #
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
 from shutil import get_terminal_size
-from typing import Any, Callable, Generator, Optional
+from typing import Any
 
 import colorful as cf  # type: ignore
 
@@ -168,7 +169,7 @@ class ConsoleTerminal(Terminal):
 
     # Keep arguments for backwards compatibility but ignore them
     # pylint: disable=unused-argument
-    def __init__(self, *, verbose: int = 1, log_file: Optional[Path] = None):
+    def __init__(self, *, verbose: int = 1, log_file: Path | None = None):
         super().__init__()
 
     @staticmethod

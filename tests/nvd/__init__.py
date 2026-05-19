@@ -4,10 +4,10 @@
 
 # pylint: disable=line-too-long
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
-def get_cve_data(data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def get_cve_data(data: dict[str, Any] | None = None) -> dict[str, Any]:
     cve = {
         "id": "CVE-2022-45536",
         "source_identifier": "cve@mitre.org",
@@ -41,7 +41,7 @@ def get_cve_data(data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     return cve
 
 
-def get_cpe_data(update: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def get_cpe_data(update: dict[str, Any] | None = None) -> dict[str, Any]:
     data = {
         "deprecated": False,
         "cpe_name": "cpe:2.3:o:microsoft:windows_10_22h2:-:*:*:*:*:*:arm64:*",
@@ -56,8 +56,8 @@ def get_cpe_data(update: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
 
 def get_cpe_match_data(
-    update: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    update: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     data = {
         "cpe_last_modified": "2019-07-22T16:37:38.133",
         "created": "2019-06-17T09:16:33.960",
@@ -96,8 +96,8 @@ def get_cpe_match_data(
 
 
 def get_cve_change_data(
-    data: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     cve_changes = {
         "cve_id": "CVE-2022-0001",
         "event_name": "Initial Analysis",
@@ -130,8 +130,8 @@ def get_cve_change_data(
 
 
 def get_source_data(
-    data: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     sources = {
         "name": "MITRE",
         "contact_email": "cve@mitre.org",

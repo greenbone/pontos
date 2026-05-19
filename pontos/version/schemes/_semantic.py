@@ -4,7 +4,7 @@
 #
 
 import re
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from semver import VersionInfo
 
@@ -81,17 +81,17 @@ class SemanticVersion(Version):
                 )
 
     @property
-    def pre(self) -> Optional[Tuple[str, int]]:
+    def pre(self) -> tuple[str, int] | None:
         """The pre-release segment of the version."""
         return self._pre_release
 
     @property
-    def dev(self) -> Optional[int]:
+    def dev(self) -> int | None:
         """The development number of the version."""
         return self._dev
 
     @property
-    def local(self) -> Optional[Tuple[str, int]]:
+    def local(self) -> tuple[str, int] | None:
         """The local version segment of the version."""
         return self._build
 
@@ -110,17 +110,17 @@ class SemanticVersion(Version):
     @property
     def is_alpha_release(self) -> bool:
         """Whether this version is a alpha release."""
-        return self.is_pre_release and self.pre[0] == "alpha"  # type: ignore[index] # noqa: E501
+        return self.is_pre_release and self.pre[0] == "alpha"  # type: ignore[index]
 
     @property
     def is_beta_release(self) -> bool:
         """Whether this version is a beta release."""
-        return self.is_pre_release and self.pre[0] == "beta"  # type: ignore[index] # noqa: E501
+        return self.is_pre_release and self.pre[0] == "beta"  # type: ignore[index]
 
     @property
     def is_release_candidate(self) -> bool:
         """Whether this version is a release candidate."""
-        return self.is_pre_release and self.pre[0] == "rc"  # type: ignore[index] # noqa: E501
+        return self.is_pre_release and self.pre[0] == "rc"  # type: ignore[index]
 
     @property
     def major(self) -> int:
@@ -162,9 +162,9 @@ class SemanticVersion(Version):
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
-        if self._version_info.to_tuple()[:3] > other._version_info[:3]:  # type: ignore[operator] # noqa: E501
+        if self._version_info.to_tuple()[:3] > other._version_info[:3]:  # type: ignore[operator]
             return True
-        if self._version_info.to_tuple()[:3] < other._version_info[:3]:  # type: ignore[operator] # noqa: E501
+        if self._version_info.to_tuple()[:3] < other._version_info[:3]:  # type: ignore[operator]
             return False
 
         # major, minor and patch are equal
@@ -347,7 +347,7 @@ class SemanticVersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}-"
-                f"{current_version.pre[0]}{current_version.pre[1] + 1}-dev1"  # type: ignore[index] # noqa: E501
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}-dev1"  # type: ignore[index]
             )
 
         return cls.version_from_string(

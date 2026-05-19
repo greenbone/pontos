@@ -27,11 +27,10 @@ from .teams import GitHubAsyncRESTTeams
 from .workflows import GitHubAsyncRESTWorkflows
 
 __all__ = [
-    "DEFAULT_TIMEOUT_CONFIG",
     "DEFAULT_GITHUB_API_URL",
+    "DEFAULT_TIMEOUT_CONFIG",
     "JSON",
     "JSON_OBJECT",
-    "update_from_applied_settings",
     "GitHubApiError",
     "GitHubAsyncRESTApi",
     "GitHubAsyncRESTArtifacts",
@@ -48,4 +47,5 @@ __all__ = [
     "GitHubAsyncRESTTags",
     "GitHubAsyncRESTTeams",
     "GitHubAsyncRESTWorkflows",
+    "update_from_applied_settings",
 ]

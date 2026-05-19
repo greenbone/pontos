@@ -9,7 +9,6 @@ organization
 """
 
 from argparse import ArgumentParser, Namespace
-from typing import Union
 
 from rich.console import Console
 from rich.table import Table
@@ -18,7 +17,7 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.models.organization import RepositoryType
 
 
-def repository_type(value: Union[str, RepositoryType]) -> RepositoryType:
+def repository_type(value: str | RepositoryType) -> RepositoryType:
     if isinstance(value, RepositoryType):
         return value
     return RepositoryType[value.upper()]

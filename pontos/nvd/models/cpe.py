@@ -5,17 +5,16 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 from uuid import UUID
 
 from pontos.models import Model, StrEnum
 
 __all__ = (
-    "DeprecatedBy",
-    "ReferenceType",
-    "Reference",
-    "Title",
     "CPE",
+    "DeprecatedBy",
+    "Reference",
+    "ReferenceType",
+    "Title",
 )
 
 
@@ -65,7 +64,7 @@ class Reference(Model):
     """
 
     ref: str
-    type: Optional[ReferenceType] = None
+    type: ReferenceType | None = None
 
 
 @dataclass
@@ -78,8 +77,8 @@ class DeprecatedBy(Model):
         cpe_name_id: ID of the CPE that deprecates this CPE
     """
 
-    cpe_name: Optional[str] = None
-    cpe_name_id: Optional[UUID] = None
+    cpe_name: str | None = None
+    cpe_name_id: UUID | None = None
 
 
 @dataclass
@@ -104,6 +103,6 @@ class CPE(Model):
     deprecated: bool
     last_modified: datetime
     created: datetime
-    titles: List[Title] = field(default_factory=list)
-    refs: List[Reference] = field(default_factory=list)
-    deprecated_by: List[DeprecatedBy] = field(default_factory=list)
+    titles: list[Title] = field(default_factory=list)
+    refs: list[Reference] = field(default_factory=list)
+    deprecated_by: list[DeprecatedBy] = field(default_factory=list)

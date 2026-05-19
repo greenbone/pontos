@@ -5,7 +5,6 @@
 
 import json
 from argparse import Namespace
-from typing import List, Tuple
 
 from pontos.terminal import Terminal
 
@@ -16,14 +15,14 @@ def actions_output(_terminal: Terminal, args: Namespace) -> None:
     """
     Set output variables
     """
-    output: List[Tuple[str, str]] = args.output
+    output: list[tuple[str, str]] = args.output
     for pair in output:
         name, value = pair
         ActionIO.output(name, value)
 
 
 def actions_input(terminal: Terminal, args: Namespace) -> None:
-    names: List[str] = args.input
+    names: list[str] = args.input
 
     inputs = {}
     for name in names:

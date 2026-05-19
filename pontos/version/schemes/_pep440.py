@@ -4,7 +4,7 @@
 #
 
 import re
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from packaging.version import InvalidVersion
 from packaging.version import Version as PackagingVersion
@@ -66,7 +66,7 @@ class PEP440Version(Version):
         return self._version.micro
 
     @property
-    def pre(self) -> Optional[Tuple[str, int]]:
+    def pre(self) -> tuple[str, int] | None:
         """The pre-release segment of the version."""
         if not self._version.pre:
             return None
@@ -74,12 +74,12 @@ class PEP440Version(Version):
         return (_pre_release_name(self._version.pre[0]), self._version.pre[1])
 
     @property
-    def dev(self) -> Optional[int]:
+    def dev(self) -> int | None:
         """The development number of the version."""
         return self._version.dev
 
     @property
-    def local(self) -> Optional[Tuple[str, int]]:
+    def local(self) -> tuple[str, int] | None:
         """The local version segment of the version."""
         return self._local
 
@@ -264,7 +264,7 @@ class PEP440VersionCalculator(VersionCalculator):
                     f"{current_version.major}."  # type: ignore[operator]
                     f"{current_version.minor}."
                     f"{current_version.patch}"
-                    f"-{current_version.pre[0]}{current_version.pre[1]}"  # type: ignore[index] # noqa: E501
+                    f"-{current_version.pre[0]}{current_version.pre[1]}"  # type: ignore[index]
                     f".dev{current_version.dev + 1}"  # type: ignore[operator]
                 )
             return cls.version_from_string(
@@ -279,7 +279,7 @@ class PEP440VersionCalculator(VersionCalculator):
                 f"{current_version.major}."
                 f"{current_version.minor}."
                 f"{current_version.patch}"
-                f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"  # type: ignore[index] # noqa: E501
+                f"{current_version.pre[0]}{current_version.pre[1] + 1}.dev1"  # type: ignore[index]
             )
 
         return cls.version_from_string(
@@ -321,7 +321,7 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}a{current_version.pre[1] + 1}"  # type: ignore[index] # noqa: E501
+                f"{current_version.patch}a{current_version.pre[1] + 1}"  # type: ignore[index]
             )
 
         return cls.version_from_string(
@@ -409,7 +409,7 @@ class PEP440VersionCalculator(VersionCalculator):
             return cls.version_from_string(
                 f"{current_version.major}."
                 f"{current_version.minor}."
-                f"{current_version.patch}rc{current_version.pre[1] + 1}"  # type: ignore[index] # noqa: E501
+                f"{current_version.patch}rc{current_version.pre[1] + 1}"  # type: ignore[index]
             )
 
         return cls.version_from_string(

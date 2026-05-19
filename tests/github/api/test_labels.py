@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import httpx
 
 from pontos.github.api.labels import GitHubAsyncRESTLabels
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 

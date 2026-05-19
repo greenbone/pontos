@@ -13,7 +13,7 @@ from pontos.github.api.client import (
     GitHubAsyncRESTClient,
 )
 from pontos.github.api.helper import DEFAULT_GITHUB_API_URL
-from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
+from tests import AsyncMock, IsolatedAsyncioTestCase
 
 
 class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):

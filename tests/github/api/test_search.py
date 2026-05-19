@@ -13,7 +13,7 @@ from pontos.github.models.search import (
     RepositorySort,
     SortOrder,
 )
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 

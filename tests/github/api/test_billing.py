@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# ruff: noqa:E501
 
 from pontos.github.api.billing import GitHubAsyncRESTBilling
 from tests.github.api import GitHubAsyncRESTTestCase, create_response

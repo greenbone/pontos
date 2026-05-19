@@ -5,7 +5,6 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Type
 
 from ._errors import VersionError
 from ._version import Version
@@ -16,7 +15,7 @@ class VersionCalculator(ABC):
     An abstract base class for calculating a next version from a version
     """
 
-    version_cls: Type[Version]
+    version_cls: type[Version]
 
     @classmethod
     def version_from_string(cls, version: str) -> Version:

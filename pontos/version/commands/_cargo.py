@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from pathlib import Path
-from typing import Any, Literal, Tuple, Union
+from typing import Any, Literal
 
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
@@ -38,7 +38,7 @@ class CargoVersionCommand(VersionCommand):
 
     def __as_project_document(
         self, origin: Path
-    ) -> Tuple[Path, tomlkit.TOMLDocument]:
+    ) -> tuple[Path, tomlkit.TOMLDocument]:
         """
         Parse the given origin and returns a tuple of path to a
         Cargo.toml that contains a version.
@@ -81,11 +81,11 @@ class CargoVersionCommand(VersionCommand):
             # Set the version for all members of the workspace. Members of the
             # workspace should use `version.workspace=true` in the 'package' table,
             # if they are released together with the parent crate.
-            project["workspace"]["package"]["version"] = str(new_version)  # type: ignore[index] # noqa: E501
+            project["workspace"]["package"]["version"] = str(new_version)  # type: ignore[index]
 
         if self.__has_package_version(project):
             # Set the 'version' of the 'package' table for the parent crate
-            project["package"]["version"] = str(new_version)  # type: ignore[index] # noqa: E501
+            project["package"]["version"] = str(new_version)  # type: ignore[index]
 
         project_path.write_text(tomlkit.dumps(project))
         return VersionUpdate(
@@ -113,7 +113,7 @@ class CargoVersionCommand(VersionCommand):
         return self.versioning_scheme.from_version(current_version)
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         current_version = self.get_current_version()
 

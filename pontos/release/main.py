@@ -27,7 +27,7 @@ def main(
         logging.disable()
     else:
         term = RichTerminal()  # type: ignore[assignment]
-        error_terminal = RichTerminal(file=sys.stderr)  # type: ignore[assignment] # noqa: E501
+        error_terminal = RichTerminal(file=sys.stderr)  # type: ignore[assignment]
 
     try:
         retval = parsed_args.func(

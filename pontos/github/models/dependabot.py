@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
@@ -115,7 +114,7 @@ class Vulnerability(GitHubModel):
     package: VulnerablePackage
     severity: Severity
     vulnerable_version_range: str
-    first_patched_version: Optional[PatchedVersion] = None
+    first_patched_version: PatchedVersion | None = None
 
 
 @dataclass
@@ -132,7 +131,7 @@ class Dependency(GitHubModel):
 
     package: VulnerablePackage
     manifest_path: str
-    scope: Optional[DependencyScope] = None
+    scope: DependencyScope | None = None
 
 
 @dataclass
@@ -147,7 +146,7 @@ class CVSS(GitHubModel):
     """
 
     score: float
-    vector_string: Optional[str] = None
+    vector_string: str | None = None
 
 
 @dataclass
@@ -223,8 +222,8 @@ class SecurityAdvisory(GitHubModel):
     references: list[Reference]
     published_at: datetime
     updated_at: datetime
-    cve_id: Optional[str] = None
-    withdrawn_at: Optional[datetime] = None
+    cve_id: str | None = None
+    withdrawn_at: datetime | None = None
 
 
 @dataclass
@@ -264,10 +263,10 @@ class DependabotAlert(GitHubModel):
     html_url: str
     created_at: datetime
     updated_at: datetime
-    repository: Optional[Repository] = None
-    dismissed_at: Optional[datetime] = None
-    dismissed_by: Optional[User] = None
-    dismissed_reason: Optional[DismissedReason] = None
-    dismissed_comment: Optional[str] = None
-    fixed_at: Optional[datetime] = None
-    auto_dismissed_at: Optional[datetime] = None
+    repository: Repository | None = None
+    dismissed_at: datetime | None = None
+    dismissed_by: User | None = None
+    dismissed_reason: DismissedReason | None = None
+    dismissed_comment: str | None = None
+    fixed_at: datetime | None = None
+    auto_dismissed_at: datetime | None = None
