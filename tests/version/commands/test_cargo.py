@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import unittest
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
 
 import tomlkit
 

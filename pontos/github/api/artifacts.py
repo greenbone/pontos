@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import AsyncContextManager, AsyncIterator, Optional, Union
+from collections.abc import AsyncIterator
+from contextlib import AbstractAsyncContextManager
 
 from pontos.github.api.client import GitHubAsyncREST, Params
 from pontos.github.models.artifact import Artifact
@@ -12,7 +13,7 @@ from pontos.helper import AsyncDownloadProgressIterable, download_async
 
 class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
     def _get_paged_artifacts(
-        self, api, *, params: Optional[Params] = None
+        self, api, *, params: Params | None = None
     ) -> AsyncIterator[Artifact]:
         return self._get_paged_items(
             api,
@@ -49,7 +50,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         api = f"/repos/{repo}/actions/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def get(self, repo: str, artifact: Union[str, int]) -> Artifact:
+    async def get(self, repo: str, artifact: str | int) -> Artifact:
         """
         Get a single artifact of a repository
 
@@ -81,7 +82,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         return Artifact.from_dict(response.json())
 
     def get_workflow_run_artifacts(
-        self, repo: str, run: Union[str, int]
+        self, repo: str, run: str | int
     ) -> AsyncIterator[Artifact]:
         # pylint: disable=line-too-long
         """
@@ -108,11 +109,11 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
                 async with GitHubAsyncRESTApi(token) as api:
                     async for artifact in api.artifacts.get_workflow_run_artifacts("foo/bar", 234):
                         print(artifact)
-        """  # noqa: E501
+        """
         api = f"/repos/{repo}/actions/runs/{run}/artifacts"
         return self._get_paged_artifacts(api)
 
-    async def delete(self, repo: str, artifact: Union[str, int]) -> None:
+    async def delete(self, repo: str, artifact: str | int) -> None:
         """
         Delete an artifact of a repository
 
@@ -139,8 +140,8 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         response.raise_for_status()
 
     def download(
-        self, repo: str, artifact: Union[str, int]
-    ) -> AsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
+        self, repo: str, artifact: str | int
+    ) -> AbstractAsyncContextManager[AsyncDownloadProgressIterable[bytes]]:
         """
         Download a repository artifact zip file
 

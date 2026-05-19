@@ -6,23 +6,21 @@
 import asyncio
 import time
 from abc import ABC
-from datetime import datetime, timezone
-from types import TracebackType
-from typing import (
-    Any,
+from collections.abc import (
     AsyncIterable,
     AsyncIterator,
     Awaitable,
     Callable,
-    Dict,
     Generator,
-    Generic,
     Iterator,
-    Optional,
     Sequence,
-    Type,
+)
+from datetime import datetime, timezone
+from types import TracebackType
+from typing import (
+    Any,
+    Generic,
     TypeVar,
-    Union,
 )
 
 from httpx import URL, AsyncClient, Response, Timeout
@@ -35,17 +33,17 @@ DEFAULT_TIMEOUT = 180.0  # three minutes
 DEFAULT_TIMEOUT_CONFIG = Timeout(DEFAULT_TIMEOUT)  # three minutes
 RETRY_DELAY = 2.0  # in seconds
 
-Headers = Dict[str, str]
-Params = Dict[str, Union[str, int]]
-JSON = dict[str, Union[int, str, dict[str, Any]]]
+Headers = dict[str, str]
+Params = dict[str, str | int]
+JSON = dict[str, int | str | dict[str, Any]]
 
 __all__ = (
+    "NVDApi",
+    "NVDResults",
     "convert_camel_case",
     "format_date",
     "now",
     "return_or_raise",
-    "NVDApi",
-    "NVDResults",
 )
 
 
@@ -81,7 +79,7 @@ def format_date(
     return date.isoformat(timespec=timespec)
 
 
-def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
+def convert_camel_case(dct: dict[str, Any]) -> dict[str, Any]:
     """
     Convert camel case keys into snake case keys
 
@@ -97,13 +95,13 @@ def convert_camel_case(dct: Dict[str, Any]) -> Dict[str, Any]:
     return converted
 
 
-class NoMoreResults(PontosError):
+class NoMoreResults(PontosError):  # noqa: N818
     """
     Raised if the NVD API has no more results to consume
     """
 
 
-class InvalidState(PontosError):
+class InvalidState(PontosError):  # noqa: N818
     """
     Raised if the state of the NVD API is invalid
     """
@@ -150,18 +148,18 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
         params: Params,
         result_func: result_iterator_func,
         *,
-        request_results: Optional[int] = None,
-        results_per_page: Optional[int] = None,
+        request_results: int | None = None,
+        results_per_page: int | None = None,
         start_index: int = 0,
         return_exceptions: bool = False,
     ) -> None:
         self._api = api
         self._params = params
-        self._url: Optional[URL] = None
+        self._url: URL | None = None
 
-        self._data: Optional[JSON] = None
-        self._it: Optional[Iterator[T]] = None
-        self._total_results: Optional[int] = None
+        self._data: JSON | None = None
+        self._it: Iterator[T] | None = None
+        self._total_results: int | None = None
         self._downloaded_results: int = 0
 
         self._start_index = start_index
@@ -219,7 +217,7 @@ class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
             except NoMoreResults:
                 return
 
-    async def json(self) -> Optional[JSON]:
+    async def json(self) -> JSON | None:
         """
         Return the result from the NVD API request as JSON
 
@@ -378,8 +376,8 @@ class NVDApi(ABC):
         self,
         url: str,
         *,
-        token: Optional[str] = None,
-        timeout: Optional[Timeout] = DEFAULT_TIMEOUT_CONFIG,
+        token: str | None = None,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
         rate_limit: bool = True,
         request_attempts: int = 1,
     ) -> None:
@@ -404,7 +402,7 @@ class NVDApi(ABC):
         self._client = AsyncClient(http2=True, timeout=timeout)
 
         if rate_limit:
-            self._rate_limit: Optional[int] = 50 if token else 5
+            self._rate_limit: int | None = 50 if token else 5
         else:
             self._rate_limit = None
 
@@ -445,7 +443,7 @@ class NVDApi(ABC):
     async def _get(
         self,
         *,
-        params: Optional[Params] = None,
+        params: Params | None = None,
     ) -> Response:
         """
         A request against the NIST NVD REST API.
@@ -474,10 +472,10 @@ class NVDApi(ABC):
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
         return await self._client.__aexit__(  # type: ignore
             exc_type, exc_value, traceback
         )

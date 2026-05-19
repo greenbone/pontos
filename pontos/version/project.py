@@ -4,7 +4,8 @@
 #
 
 
-from typing import Iterable, Literal, Optional, Type, Union
+from collections.abc import Iterable
+from typing import Literal
 
 from ._errors import ProjectError
 from ._version import Version, VersionUpdate
@@ -29,9 +30,9 @@ class Project:
 
     def __init__(
         self,
-        versioning_scheme: Union[VersioningScheme, Type[VersioningScheme]],
+        versioning_scheme: VersioningScheme | type[VersioningScheme],
         *,
-        project_types: Optional[Iterable[ProjectType]] = None,
+        project_types: Iterable[ProjectType] | None = None,
     ) -> None:
         """
         Creates a new project instance
@@ -48,7 +49,7 @@ class Project:
         self._commands = self._gather_commands(project_types)
 
     def _gather_commands(
-        self, project_type: Optional[Iterable[ProjectType]]
+        self, project_type: Iterable[ProjectType] | None
     ) -> list[VersionCommand]:
         """
         Initialize the project with the fitting VersionCommands of the current
@@ -98,9 +99,7 @@ class Project:
         """
         return self._commands[0].get_current_version()
 
-    def verify_version(
-        self, version: Union[Literal["current"], Version]
-    ) -> None:
+    def verify_version(self, version: Literal["current"] | Version) -> None:
         """
         Verify the current version of this project
 

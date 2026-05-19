@@ -4,10 +4,11 @@
 #
 
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any
 
 
 class PullRequestState(Enum):
@@ -64,16 +65,16 @@ class GitHubPullRequestEvent:
         head: Head reference of the pull request (source branch)
     """
 
-    draft: Optional[bool]
-    number: Optional[int]
-    labels: Optional[Iterable[str]]
-    title: Optional[str]
-    merged: Optional[bool]
+    draft: bool | None
+    number: int | None
+    labels: Iterable[str] | None
+    title: str | None
+    merged: bool | None
     state: PullRequestState
     base: Ref
     head: Ref
 
-    def __init__(self, pull_request_data: Dict[str, Any]):
+    def __init__(self, pull_request_data: dict[str, Any]):
         """
         Derive the pull request information from the pull request data of a
         GitHub event.
@@ -85,7 +86,7 @@ class GitHubPullRequestEvent:
 
         self.draft = data.get("draft")
         self.number = data.get("number")
-        self.labels = [Label(label.get("name")) for label in data.get("labels")]  # type: ignore #pylint: disable=line-too-long # noqa: E501
+        self.labels = [Label(label.get("name")) for label in data.get("labels")]  # type: ignore #pylint: disable=line-too-long
         self.title = data.get("title")
         self.merged = data.get("merged")
         self.state = PullRequestState(data.get("state"))

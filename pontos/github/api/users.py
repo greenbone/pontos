@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import AsyncIterator, Union
+from collections.abc import AsyncIterator
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -198,7 +198,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             for email in response.json():
                 yield EmailInformation.from_dict(email)
 
-    async def key(self, key_id: Union[str, int]) -> SSHPublicKeyExtended:
+    async def key(self, key_id: str | int) -> SSHPublicKeyExtended:
         """
         View extended details for a single public SSH key
 
@@ -228,7 +228,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
         response.raise_for_status()
         return SSHPublicKeyExtended.from_dict(response.json())
 
-    async def delete_key(self, key_id: Union[str, int]) -> None:
+    async def delete_key(self, key_id: str | int) -> None:
         """
         Removes a public SSH key from the authenticated user's GitHub account
 

@@ -16,15 +16,15 @@ from .event import (
 from .main import main
 
 __all__ = (
-    "GitHubActionsError",
     "ActionIO",
     "ActionOutput",
     "Console",
+    "GitHubActionsError",
     "GitHubEnvironment",
     "GitHubEvent",
-    "Label",
-    "Ref",
-    "PullRequestState",
     "GitHubPullRequestEvent",
+    "Label",
+    "PullRequestState",
+    "Ref",
     "main",
 )

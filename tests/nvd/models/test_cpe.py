@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # pylint: disable=line-too-long
-# ruff: noqa: E501
 
 import unittest
 from datetime import datetime, timezone

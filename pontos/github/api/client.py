@@ -4,18 +4,10 @@
 #
 
 
+from collections.abc import AsyncIterator, Mapping
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import (
-    Any,
-    AsyncContextManager,
-    AsyncIterator,
-    Dict,
-    Mapping,
-    Optional,
-    Type,
-    Union,
-)
+from typing import Any
 
 import httpx
 
@@ -29,7 +21,7 @@ from pontos.github.api.helper import (
 from pontos.github.models.base import GitHubModel
 
 Headers = Mapping[str, str]
-ParamValue = Union[str, None]
+ParamValue = str | None
 Params = Mapping[str, ParamValue]
 
 # supported GitHub API version
@@ -55,10 +47,10 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
     def __init__(
         self,
-        token: Optional[str] = None,
-        url: Optional[str] = DEFAULT_GITHUB_API_URL,
+        token: str | None = None,
+        url: str | None = DEFAULT_GITHUB_API_URL,
         *,
-        timeout: Optional[httpx.Timeout] = DEFAULT_TIMEOUT_CONFIG,
+        timeout: httpx.Timeout | None = DEFAULT_TIMEOUT_CONFIG,
     ) -> None:
         self.token = token
         self.url = url
@@ -67,14 +59,14 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
     def _request_headers(
         self,
         *,
-        accept: Optional[str] = None,
-        content_type: Optional[str] = None,
-        content_length: Optional[int] = None,
+        accept: str | None = None,
+        content_type: str | None = None,
+        content_length: int | None = None,
     ) -> Headers:
         """
         Get the default request headers
         """
-        headers: Dict[str, str] = {
+        headers: dict[str, str] = {
             "Accept": accept or DEFAULT_ACCEPT_HEADER,
             "X-GitHub-Api-Version": GITHUB_API_VERSION,
         }
@@ -88,7 +80,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         return headers
 
     def _request_kwargs(
-        self, *, json: Optional[JSON] = None, content: Optional[Any] = None
+        self, *, json: JSON | None = None, content: Any | None = None
     ) -> JSON:
         """
         Get the default request arguments
@@ -114,7 +106,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        params: Optional[Params] = None,
+        params: Params | None = None,
     ) -> httpx.Response:
         """
         Get request to a GitHub API
@@ -138,7 +130,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        params: Optional[Params] = None,
+        params: Params | None = None,
     ) -> AsyncIterator[httpx.Response]:
         """
         Get paginated content of a get GitHub API request
@@ -165,7 +157,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             next_url = _get_next_url(response)
 
     async def delete(
-        self, api: str, *, params: Optional[Params] = None
+        self, api: str, *, params: Params | None = None
     ) -> httpx.Response:
         """
         Delete request to a GitHub API
@@ -182,11 +174,11 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        data: Optional[JSON] = None,
-        params: Optional[Params] = None,
-        content: Optional[str] = None,
-        content_type: Optional[str] = None,
-        content_length: Optional[int] = None,
+        data: JSON | None = None,
+        params: Params | None = None,
+        content: str | None = None,
+        content_type: str | None = None,
+        content_length: int | None = None,
     ) -> httpx.Response:
         """
         Post request to a GitHub API
@@ -208,10 +200,10 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        data: Optional[JSON] = None,
-        params: Optional[Params] = None,
-        content: Optional[str] = None,
-        content_type: Optional[str] = None,
+        data: JSON | None = None,
+        params: Params | None = None,
+        content: str | None = None,
+        content_type: str | None = None,
     ) -> httpx.Response:
         """
         Put request to a GitHub API
@@ -231,10 +223,10 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        data: Optional[JSON] = None,
-        params: Optional[Params] = None,
-        content: Optional[str] = None,
-        content_type: Optional[str] = None,
+        data: JSON | None = None,
+        params: Params | None = None,
+        content: str | None = None,
+        content_type: str | None = None,
     ) -> httpx.Response:
         """
         Patch request to a GitHub API
@@ -254,8 +246,8 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         self,
         api: str,
         *,
-        accept: Optional[str] = None,
-    ) -> AsyncContextManager[httpx.Response]:
+        accept: str | None = None,
+    ) -> AbstractAsyncContextManager[httpx.Response]:
         """
         Stream data from a GitHub API
 
@@ -276,10 +268,10 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
         return await self._client.__aexit__(  # type: ignore
             exc_type, exc_value, traceback
         )
@@ -297,9 +289,9 @@ class GitHubAsyncREST:
         self,
         api: str,
         name: str,
-        model_cls: Type[GitHubModel],
+        model_cls: type[GitHubModel],
         *,
-        params: Optional[Params] = None,
+        params: Params | None = None,
     ) -> AsyncIterator[GitHubModel]:
         """
         Internal method to get the paged items information from different REST

@@ -10,11 +10,11 @@ from ._main import main
 from ._version import ParseVersionFuncType, Version, VersionUpdate
 
 __all__ = (
-    "__version__",
-    "VersionError",
     "ParseVersionFuncType",
     "Version",
     "VersionCalculator",
+    "VersionError",
     "VersionUpdate",
+    "__version__",
     "main",
 )

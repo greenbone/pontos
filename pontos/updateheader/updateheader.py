@@ -11,10 +11,10 @@ Also it appends a header if it is missing in the file.
 import io
 import re
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Optional, Sequence, Union
 
 from pontos.errors import PontosError
 from pontos.git import Git
@@ -62,7 +62,7 @@ OLD_LINES = [
     "You should have received a copy of the GNU General Public License",
     "along with this program.  If not, see <http://www.gnu.org/licenses/>.",
     "along with this program; if not, write to the Free Software",
-    "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",  # noqa: E501
+    "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",
 ]
 
 
@@ -79,14 +79,14 @@ def _get_modified_year(f: Path) -> str:
 @dataclass
 class CopyrightMatch:
     creation_year: str
-    modification_year: Optional[str]
+    modification_year: str | None
     company: str
 
 
 def _find_copyright(
     line: str,
     copyright_regex: re.Pattern,
-) -> tuple[bool, Union[CopyrightMatch, None]]:
+) -> tuple[bool, CopyrightMatch | None]:
     """Match the line for the copyright_regex"""
     copyright_match = re.search(copyright_regex, line)
     if copyright_match:
@@ -104,7 +104,7 @@ def _find_copyright(
 
 def _add_header(
     suffix: str, license_id: str, company: str, year: str
-) -> Union[str, None]:
+) -> str | None:
     """Tries to add the header to the file.
     Requirements:
       - file type must be supported
@@ -127,7 +127,7 @@ def _add_header(
 
 def _remove_outdated_lines(
     content: str, cleanup_regexes: list[re.Pattern]
-) -> Optional[str]:
+) -> str | None:
     """Remove lines that contain outdated copyright header ..."""
     changed = False
     splitted_lines = content.splitlines()
@@ -372,7 +372,7 @@ def _compile_copyright_regex() -> re.Pattern:
     return re.compile(rf"{c_str}.*? {d_str}?-? ?{d_str}? (.+)")
 
 
-def main(args: Optional[Sequence[str]] = None) -> None:
+def main(args: Sequence[str] | None = None) -> None:
     parsed_args = parse_args(args)
     exclude_list = []
     year: str = parsed_args.year
@@ -384,7 +384,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     single_year: bool = parsed_args.single_year
 
     if quiet:
-        term: Union[NullTerminal, RichTerminal] = NullTerminal()
+        term: NullTerminal | RichTerminal = NullTerminal()
     else:
         term = RichTerminal()
 

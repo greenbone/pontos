@@ -6,7 +6,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Literal
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -37,7 +37,7 @@ class JavaVersionCommand(VersionCommand):
         return self.versioning_scheme.parse_version(last_version)
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         file_versions = self._read_versions_from_files()
 
@@ -72,10 +72,10 @@ class JavaVersionCommand(VersionCommand):
     def parse_line(self, version_line: str):
         return re.match(self.VERSION_PATTERN, version_line, re.DOTALL)
 
-    def _update_version_files(self, new_version) -> List[Path]:
+    def _update_version_files(self, new_version) -> list[Path]:
         config = self._load_config()
 
-        changed_files: List[Path] = []
+        changed_files: list[Path] = []
         for file_config in config["files"]:
             file_path = file_config["path"]
             with (Path.cwd() / file_path).open("r") as input_file_handle:
@@ -103,7 +103,7 @@ class JavaVersionCommand(VersionCommand):
                 changed_files.append(Path(file_config["path"]))
         return changed_files
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         version_config_file = Path.cwd() / "upgradeVersion.json"
         if not version_config_file.exists():
             raise VersionError(
@@ -116,7 +116,7 @@ class JavaVersionCommand(VersionCommand):
             config = json.loads(json_string)
             return config
 
-    def _read_versions_from_files(self) -> Dict[str, str]:
+    def _read_versions_from_files(self) -> dict[str, str]:
         config = self._load_config()
 
         file_versions = {}
@@ -147,7 +147,7 @@ class JavaVersionCommand(VersionCommand):
                 file_versions[file_path] = matches.group("version")
         return file_versions
 
-    def _verify_version(self, file_versions: Dict[str, str]) -> str:
+    def _verify_version(self, file_versions: dict[str, str]) -> str:
         last_version = ""
         last_file_name = ""
         for file_name, version in file_versions.items():

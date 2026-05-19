@@ -5,20 +5,19 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from pontos.github.models.base import Event, GitHubModel, User
 from pontos.models import StrEnum
 
 __all__ = (
     "Workflow",
-    "WorkflowState",
     "WorkflowRun",
     "WorkflowRunCommit",
     "WorkflowRunCommitUser",
     "WorkflowRunRepository",
     "WorkflowRunStatus",
     "WorkflowRunWorkflow",
+    "WorkflowState",
 )
 
 
@@ -54,8 +53,8 @@ class WorkflowRunCommit(GitHubModel):
     tree_id: str
     message: str
     timestamp: datetime
-    author: Optional[WorkflowRunCommitUser] = None
-    committer: Optional[WorkflowRunCommitUser] = None
+    author: WorkflowRunCommitUser | None = None
+    committer: WorkflowRunCommitUser | None = None
 
 
 class WorkflowState(StrEnum):
@@ -106,7 +105,7 @@ class Workflow(GitHubModel):
     url: str
     html_url: str
     badge_url: str
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
 
 
 @dataclass
@@ -169,50 +168,50 @@ class WorkflowRunRepository(GitHubModel):
     url: str
     name: str
     node_id: str
-    full_name: Optional[str] = None
-    owner: Optional[User] = None
-    private: Optional[bool] = None
-    html_url: Optional[str] = None
-    description: Optional[str] = None
-    fork: Optional[bool] = None
-    archive_url: Optional[str] = None
-    assignees_url: Optional[str] = None
-    blobs_url: Optional[str] = None
-    branches_url: Optional[str] = None
-    collaborators_url: Optional[str] = None
-    comments_url: Optional[str] = None
-    commits_url: Optional[str] = None
-    compare_url: Optional[str] = None
-    contents_url: Optional[str] = None
-    contributors_url: Optional[str] = None
-    deployments_url: Optional[str] = None
-    downloads_url: Optional[str] = None
-    events_url: Optional[str] = None
-    forks_url: Optional[str] = None
-    git_commits_url: Optional[str] = None
-    git_refs_url: Optional[str] = None
-    git_tags_url: Optional[str] = None
-    git_url: Optional[str] = None
-    issue_comment_url: Optional[str] = None
-    issue_events_url: Optional[str] = None
-    issues_url: Optional[str] = None
-    keys_url: Optional[str] = None
-    labels_url: Optional[str] = None
-    languages_url: Optional[str] = None
-    merges_url: Optional[str] = None
-    milestones_url: Optional[str] = None
-    notifications_url: Optional[str] = None
-    pulls_url: Optional[str] = None
-    releases_url: Optional[str] = None
-    ssh_url: Optional[str] = None
-    stargazers_url: Optional[str] = None
-    statuses_url: Optional[str] = None
-    subscribers_url: Optional[str] = None
-    subscription_url: Optional[str] = None
-    tags_url: Optional[str] = None
-    teams_url: Optional[str] = None
-    trees_url: Optional[str] = None
-    hooks_url: Optional[str] = None
+    full_name: str | None = None
+    owner: User | None = None
+    private: bool | None = None
+    html_url: str | None = None
+    description: str | None = None
+    fork: bool | None = None
+    archive_url: str | None = None
+    assignees_url: str | None = None
+    blobs_url: str | None = None
+    branches_url: str | None = None
+    collaborators_url: str | None = None
+    comments_url: str | None = None
+    commits_url: str | None = None
+    compare_url: str | None = None
+    contents_url: str | None = None
+    contributors_url: str | None = None
+    deployments_url: str | None = None
+    downloads_url: str | None = None
+    events_url: str | None = None
+    forks_url: str | None = None
+    git_commits_url: str | None = None
+    git_refs_url: str | None = None
+    git_tags_url: str | None = None
+    git_url: str | None = None
+    issue_comment_url: str | None = None
+    issue_events_url: str | None = None
+    issues_url: str | None = None
+    keys_url: str | None = None
+    labels_url: str | None = None
+    languages_url: str | None = None
+    merges_url: str | None = None
+    milestones_url: str | None = None
+    notifications_url: str | None = None
+    pulls_url: str | None = None
+    releases_url: str | None = None
+    ssh_url: str | None = None
+    stargazers_url: str | None = None
+    statuses_url: str | None = None
+    subscribers_url: str | None = None
+    subscription_url: str | None = None
+    tags_url: str | None = None
+    teams_url: str | None = None
+    trees_url: str | None = None
+    hooks_url: str | None = None
 
 
 class WorkflowRunStatus(StrEnum):
@@ -265,7 +264,7 @@ class WorkflowRunWorkflow(GitHubModel):
 
     path: str
     sha: str
-    ref: Optional[str] = None
+    ref: str | None = None
 
 
 @dataclass
@@ -331,22 +330,22 @@ class WorkflowRun(GitHubModel):
     url: str
     workflow_id: int
     workflow_url: str
-    actor: Optional[User] = None
-    check_suite_id: Optional[int] = None
-    check_suite_node_id: Optional[str] = None
-    conclusion: Optional[str] = None
-    display_title: Optional[str] = None
-    head_branch: Optional[str] = None
-    head_commit: Optional[WorkflowRunCommit] = None
-    head_repository_id: Optional[int] = None
-    name: Optional[str] = None
-    path: Optional[str] = None
-    previous_attempt_url: Optional[str] = None
-    pull_requests: List[Dict] = field(default_factory=list)
-    referenced_workflows: List[WorkflowRunWorkflow] = field(
+    actor: User | None = None
+    check_suite_id: int | None = None
+    check_suite_node_id: str | None = None
+    conclusion: str | None = None
+    display_title: str | None = None
+    head_branch: str | None = None
+    head_commit: WorkflowRunCommit | None = None
+    head_repository_id: int | None = None
+    name: str | None = None
+    path: str | None = None
+    previous_attempt_url: str | None = None
+    pull_requests: list[dict] = field(default_factory=list)
+    referenced_workflows: list[WorkflowRunWorkflow] = field(
         default_factory=list
     )
-    run_attempt: Optional[int] = None
-    run_started_at: Optional[datetime] = None
-    status: Optional[WorkflowRunStatus] = None
-    triggering_actor: Optional[User] = None
+    run_attempt: int | None = None
+    run_started_at: datetime | None = None
+    status: WorkflowRunStatus | None = None
+    triggering_actor: User | None = None

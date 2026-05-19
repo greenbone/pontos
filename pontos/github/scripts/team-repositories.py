@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Greenbone AG
+# SPDX-FileCopyrightText: 2022-2023 Greenbone AG  # noqa: N999
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -10,7 +10,6 @@ This script adds team(s) to a list of repositories of an organization
 import asyncio
 from argparse import ArgumentParser, FileType, Namespace
 from io import TextIOWrapper
-from typing import Set, Union
 
 from httpx import HTTPStatusError
 
@@ -18,7 +17,7 @@ from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.models.base import Permission
 
 
-def permission_type(value: Union[str, Permission]) -> Permission:
+def permission_type(value: str | Permission) -> Permission:
     return value if isinstance(value, Permission) else Permission[value.upper()]
 
 
@@ -85,7 +84,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             asyncio.FIRST_EXCEPTION if args.failfast else asyncio.ALL_COMPLETED
         ),
     )
-    pending: Set[asyncio.Task]
+    pending: set[asyncio.Task]
 
     # if pending contains tasks an error occurred and fail fast was set.
     # therefore cancel pending tasks.

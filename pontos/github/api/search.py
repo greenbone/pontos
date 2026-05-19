@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import AsyncIterator, Iterable, Union
+from collections.abc import AsyncIterator, Iterable
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.organization import Repository
@@ -17,8 +17,8 @@ class GitHubAsyncRESTSearch(GitHubAsyncREST):
         *,
         keywords: Iterable[str],
         qualifiers: Iterable[Qualifier],
-        order: Union[str, SortOrder] = SortOrder.DESC,
-        sort: Union[str, RepositorySort, None] = None,
+        order: str | SortOrder = SortOrder.DESC,
+        sort: str | RepositorySort | None = None,
     ) -> AsyncIterator[Repository]:
         """
         Search for repositories

@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from dataclasses import dataclass
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel
 
@@ -18,10 +17,10 @@ class ActionsMinutesUsedBreakdown(GitHubModel):
         total: Total minutes used on all runner machines
     """
 
-    UBUNTU: Optional[int] = None
-    MACOS: Optional[int] = None
-    WINDOWS: Optional[int] = None
-    total: Optional[int] = None
+    UBUNTU: int | None = None
+    MACOS: int | None = None
+    WINDOWS: int | None = None
+    total: int | None = None
 
 
 @dataclass

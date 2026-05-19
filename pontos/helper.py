@@ -7,7 +7,12 @@ import os
 import re
 import sys
 import warnings
-from contextlib import asynccontextmanager, contextmanager
+from collections.abc import AsyncIterator, Callable, Generator, Iterator
+from contextlib import (
+    AbstractAsyncContextManager,
+    asynccontextmanager,
+    contextmanager,
+)
 from datetime import timedelta
 from enum import Enum
 from functools import wraps
@@ -15,18 +20,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import (
     Any,
-    AsyncContextManager,
-    AsyncIterator,
-    Callable,
-    Dict,
-    Generator,
     Generic,
-    Iterator,
-    Optional,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
 )
 
 import httpx
@@ -39,8 +34,8 @@ __all__ = (
     "DownloadProgressIterable",
     "add_sys_path",
     "deprecated",
-    "download_async",
     "download",
+    "download_async",
     "ensure_unload_module",
     "enum_or_value",
     "parse_timedelta",
@@ -83,7 +78,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
         *,
         content_iterator: AsyncIterator[T],
         url: SupportsStr,
-        length: Optional[int],
+        length: int | None,
     ):
         """
         Create a new AsyncDownloadProgressIterable instance
@@ -99,7 +94,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
         self._length = None if length is None else int(length)
 
     @property
-    def length(self) -> Optional[int]:
+    def length(self) -> int | None:
         """
         Size in bytes of the to be downloaded file or None if the size is not
         available
@@ -113,14 +108,14 @@ class AsyncDownloadProgressIterable(Generic[T]):
         """
         return self._url
 
-    async def _download(self) -> AsyncIterator[Tuple[T, Optional[float]]]:
+    async def _download(self) -> AsyncIterator[tuple[T, float | None]]:
         dl = 0
         async for content in self._content_iterator:
             dl += len(content)
             progress = dl / self._length * 100 if self._length else None
             yield content, progress
 
-    def __aiter__(self) -> AsyncIterator[Tuple[T, Optional[float]]]:
+    def __aiter__(self) -> AsyncIterator[tuple[T, float | None]]:
         """
         Returns an async iterator yielding a tuple of content and progress.
         The progress is expressed as percent of the content length.
@@ -130,11 +125,11 @@ class AsyncDownloadProgressIterable(Generic[T]):
 
 @asynccontextmanager
 async def download_async(
-    stream: AsyncContextManager[httpx.Response],
+    stream: AbstractAsyncContextManager[httpx.Response],
     *,
-    content_length: Optional[int] = None,
+    content_length: int | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
-    url: Optional[str] = None,
+    url: str | None = None,
 ) -> AsyncIterator[AsyncDownloadProgressIterable[bytes]]:
     """
     An async context manager that returns an AsyncDownloadProgressIterable.
@@ -201,7 +196,7 @@ class DownloadProgressIterable:
         content_iterator: Iterator[bytes],
         url: str,
         destination: Path,
-        length: Optional[int],
+        length: int | None,
     ) -> None:
         """
         Create a new DownloadProgressIterable instance
@@ -218,7 +213,7 @@ class DownloadProgressIterable:
         self._length = None if length is None else int(length)
 
     @property
-    def length(self) -> Optional[int]:
+    def length(self) -> int | None:
         """
         Size in bytes of the to be downloaded file or None if the size is not
         available
@@ -236,7 +231,7 @@ class DownloadProgressIterable:
     def url(self) -> str:
         return self._url
 
-    def _download(self) -> Iterator[Optional[float]]:
+    def _download(self) -> Iterator[float | None]:
         dl = 0
         with self._destination.open("wb") as f:
             for content in self._content_iterator:
@@ -244,7 +239,7 @@ class DownloadProgressIterable:
                 f.write(content)
                 yield dl / self._length if self._length else None
 
-    def __iter__(self) -> Iterator[Optional[float]]:
+    def __iter__(self) -> Iterator[float | None]:
         return self._download()
 
     def run(self):
@@ -262,10 +257,10 @@ class DownloadProgressIterable:
 @contextmanager
 def download(
     url: str,
-    destination: Optional[Union[Path, str]] = None,
+    destination: Path | str | None = None,
     *,
-    headers: Optional[Dict[str, Any]] = None,
-    params: Optional[Dict[str, Any]] = None,
+    headers: dict[str, Any] | None = None,
+    params: dict[str, Any] | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     timeout: int = DEFAULT_TIMEOUT,
 ) -> Generator[DownloadProgressIterable, None, None]:
@@ -322,10 +317,10 @@ def download(
 
 
 def deprecated(
-    _func_or_cls: Union[str, Callable, Type, None] = None,
+    _func_or_cls: str | Callable | type | None = None,
     *,
-    since: Optional[str] = None,
-    reason: Optional[str] = None,
+    since: str | None = None,
+    reason: str | None = None,
 ):
     """
     A decorator to mark functions, classes and methods as deprecated
@@ -396,7 +391,7 @@ def deprecated(
 
 @contextmanager
 def add_sys_path(
-    directory: Union[str, os.PathLike],
+    directory: str | os.PathLike,
 ) -> Generator[None, None, None]:
     """
     Context Manager to add a directory path to the module search path aka.
@@ -428,7 +423,7 @@ def add_sys_path(
             pass
 
 
-def unload_module(module: Union[str, ModuleType]) -> None:
+def unload_module(module: str | ModuleType) -> None:
     """
     Unload a Python module
 
@@ -444,7 +439,7 @@ def unload_module(module: Union[str, ModuleType]) -> None:
 
 @contextmanager
 def ensure_unload_module(
-    module: Union[str, ModuleType],
+    module: str | ModuleType,
 ) -> Generator[None, None, None]:
     """
     A context manager to ensure that a module gets removed even if an error
@@ -488,7 +483,7 @@ def snake_case(value: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def enum_or_value(value: Union[Enum, Any]) -> Any:
+def enum_or_value(value: Enum | Any) -> Any:
     """
     Return the value of an Enum or the value if it isn't an Enum
     """

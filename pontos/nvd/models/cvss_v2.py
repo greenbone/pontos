@@ -4,7 +4,6 @@
 #
 
 from dataclasses import dataclass
-from typing import Optional
 
 from pontos.models import Model, StrEnum
 
@@ -91,19 +90,19 @@ class CVSSData(Model):
     version: str
     vector_string: str
     base_score: float
-    access_vector: Optional[AccessVector] = None
-    access_complexity: Optional[AccessComplexity] = None
-    authentication: Optional[Authentication] = None
-    confidentiality_impact: Optional[Impact] = None
-    integrity_impact: Optional[Impact] = None
-    availability_impact: Optional[Impact] = None
-    exploitability: Optional[Exploitability] = None
-    remediation_level: Optional[RemediationLevel] = None
-    report_confidence: Optional[ReportConfidence] = None
-    temporal_score: Optional[float] = None
-    collateral_damage_potential: Optional[CollateralDamagePotential] = None
-    target_distribution: Optional[TargetDistribution] = None
-    confidentiality_requirement: Optional[Requirement] = None
-    integrity_requirement: Optional[Requirement] = None
-    availability_requirement: Optional[Requirement] = None
-    environmental_score: Optional[float] = None
+    access_vector: AccessVector | None = None
+    access_complexity: AccessComplexity | None = None
+    authentication: Authentication | None = None
+    confidentiality_impact: Impact | None = None
+    integrity_impact: Impact | None = None
+    availability_impact: Impact | None = None
+    exploitability: Exploitability | None = None
+    remediation_level: RemediationLevel | None = None
+    report_confidence: ReportConfidence | None = None
+    temporal_score: float | None = None
+    collateral_damage_potential: CollateralDamagePotential | None = None
+    target_distribution: TargetDistribution | None = None
+    confidentiality_requirement: Requirement | None = None
+    integrity_requirement: Requirement | None = None
+    availability_requirement: Requirement | None = None
+    environmental_score: float | None = None

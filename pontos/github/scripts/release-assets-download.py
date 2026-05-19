@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Greenbone AG
+# SPDX-FileCopyrightText: 2022-2023 Greenbone AG  # noqa: N999
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #

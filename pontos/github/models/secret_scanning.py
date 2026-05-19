@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Union
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.github.models.organization import Repository
@@ -91,15 +90,15 @@ class SecretScanningAlert(GitHubModel):
     secret_type_display_name: str
     secret: str
     created_at: datetime
-    repository: Optional[Repository] = None
-    updated_at: Optional[datetime] = None
-    resolution: Optional[Resolution] = None
-    resolved_at: Optional[datetime] = None
-    resolved_by: Optional[User] = None
-    push_protection_bypassed: Optional[bool] = None
-    push_protection_bypassed_by: Optional[User] = None
-    push_protection_bypassed_at: Optional[datetime] = None
-    resolution_comment: Optional[str] = None
+    repository: Repository | None = None
+    updated_at: datetime | None = None
+    resolution: Resolution | None = None
+    resolved_at: datetime | None = None
+    resolved_by: User | None = None
+    push_protection_bypassed: bool | None = None
+    push_protection_bypassed_by: User | None = None
+    push_protection_bypassed_at: datetime | None = None
+    resolution_comment: str | None = None
 
 
 @dataclass
@@ -181,9 +180,9 @@ class AlertLocation(GitHubModel):
     """
 
     type: LocationType
-    details: Union[
-        CommitLocation,
-        IssueTitleLocation,
-        IssueBodyLocation,
-        IssueCommentLocation,
-    ]
+    details: (
+        CommitLocation
+        | IssueTitleLocation
+        | IssueBodyLocation
+        | IssueCommentLocation
+    )

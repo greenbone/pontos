@@ -5,7 +5,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel
 from pontos.models import StrEnum
@@ -115,8 +114,8 @@ class Verification(GitHubModel):
 
     verified: bool
     reason: VerificationReason
-    payload: Optional[str] = None
-    signature: Optional[str] = None
+    payload: str | None = None
+    signature: str | None = None
 
 
 @dataclass
@@ -142,7 +141,7 @@ class Tag(GitHubModel):
     message: str
     tagger: Tagger
     object: GitObject
-    verification: Optional[Verification] = None
+    verification: Verification | None = None
 
 
 @dataclass

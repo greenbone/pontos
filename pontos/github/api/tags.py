@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, Optional, Union
+from typing import Any
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.tag import GitObjectType, RepositoryTag, Tag
@@ -21,10 +22,8 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
         email: str,
         git_object: str,
         *,
-        git_object_type: Optional[
-            Union[GitObjectType, str]
-        ] = GitObjectType.COMMIT,
-        date: Optional[datetime] = None,
+        git_object_type: GitObjectType | str | None = GitObjectType.COMMIT,
+        date: datetime | None = None,
     ) -> Tag:
         """
         Create a new Git tag
@@ -116,7 +115,7 @@ class GitHubAsyncRESTTags(GitHubAsyncREST):
                     )
         """
 
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "ref": f"refs/tags/{tag}",
             "sha": sha,
         }

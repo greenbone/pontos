@@ -6,8 +6,9 @@
 # pylint: disable=protected-access
 
 import unittest
+from collections.abc import Iterator
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from httpx import AsyncClient, Response
@@ -22,7 +23,7 @@ from pontos.nvd.api import (
     format_date,
     return_or_raise,
 )
-from tests import IsolatedAsyncioTestCase, aiter, anext
+from tests import IsolatedAsyncioTestCase
 
 
 class ConvertCamelCaseTestCase(unittest.TestCase):

@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+from collections.abc import Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Iterator
 
 
 class Status(Enum):
@@ -58,7 +58,7 @@ class StatusEntry:
         return f"{self.index.value}{self.working_tree.value} {self.path}"
 
     def __repr__(self) -> str:
-        return f"<StatusEntry {str(self)}>"
+        return f"<StatusEntry {self!s}>"
 
     def __fspath__(self):
         return self.path.__fspath__()

@@ -5,7 +5,7 @@
 
 import sys
 from enum import IntEnum, auto
-from typing import List, NoReturn, Optional
+from typing import NoReturn
 
 from pontos.errors import PontosError
 
@@ -23,7 +23,7 @@ class VersionExitCode(IntEnum):
     NEXT_VERSION_ERROR = auto()
 
 
-def main(args: Optional[List[str]] = None) -> NoReturn:
+def main(args: list[str] | None = None) -> NoReturn:
     parsed_args = parse_args(args)
 
     try:

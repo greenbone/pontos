@@ -11,8 +11,8 @@ from argparse import (
     BooleanOptionalAction,
     Namespace,
 )
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
 
 import shtab
 
@@ -291,8 +291,8 @@ def add_show_parser(
 
 
 def parse_args(
-    args: Optional[Sequence[str]] = None,
-) -> Tuple[Optional[str], Optional[str], Namespace]:
+    args: Sequence[str] | None = None,
+) -> tuple[str | None, str | None, Namespace]:
     """
     Return user, token, parsed arguments
     """

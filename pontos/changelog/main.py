@@ -4,7 +4,8 @@
 #
 
 import sys
-from typing import NoReturn, Optional, Sequence
+from collections.abc import Sequence
+from typing import NoReturn
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
@@ -15,7 +16,7 @@ from pontos.version.helper import get_last_release_version
 from ._parser import parse_args
 
 
-def main(args: Optional[Sequence[str]] = None) -> NoReturn:
+def main(args: Sequence[str] | None = None) -> NoReturn:
     parsed_args = parse_args(args)
 
     term = NullTerminal() if parsed_args.quiet else RichTerminal()

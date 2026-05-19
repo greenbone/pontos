@@ -5,7 +5,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from pontos.github.models.base import GitHubModel
 
@@ -61,7 +60,7 @@ class Artifact(GitHubModel):
     url: str
     archive_download_url: str
     expired: bool
-    created_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    workflow_run: Optional[ArtifactWorkflowRun] = None
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
+    updated_at: datetime | None = None
+    workflow_run: ArtifactWorkflowRun | None = None

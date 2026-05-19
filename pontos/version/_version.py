@@ -4,9 +4,10 @@
 #
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 
 class Version(ABC):
@@ -56,17 +57,17 @@ class Version(ABC):
 
     @property
     @abstractmethod
-    def pre(self) -> Optional[tuple[str, int]]:
+    def pre(self) -> tuple[str, int] | None:
         """The pre-release segment of the version."""
 
     @property
     @abstractmethod
-    def dev(self) -> Optional[int]:
+    def dev(self) -> int | None:
         """The development number of the version."""
 
     @property
     @abstractmethod
-    def local(self) -> Optional[tuple[str, int]]:
+    def local(self) -> tuple[str, int] | None:
         """The local version segment of the version."""
 
     @property
@@ -187,7 +188,7 @@ class VersionUpdate:
             )
     """
 
-    previous: Optional[Version]
+    previous: Version | None
     new: Version
     changed_files: list[Path] = field(default_factory=list)
 

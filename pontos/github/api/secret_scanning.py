@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import AsyncIterator, Iterable, Optional, Union
+from collections.abc import AsyncIterator, Iterable
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.models.base import SortOrder
@@ -26,11 +26,11 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
         self,
         api: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        secret_types: Union[Iterable[str], None] = None,
-        resolutions: Union[Iterable[str], None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        secret_types: Iterable[str] | None = None,
+        resolutions: Iterable[str] | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[SecretScanningAlert]:
         params = {"per_page": "100"}
 
@@ -57,11 +57,11 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
         self,
         enterprise: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        secret_types: Union[Iterable[str], None] = None,
-        resolutions: Union[Iterable[str], None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        secret_types: Iterable[str] | None = None,
+        resolutions: Iterable[str] | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[SecretScanningAlert]:
         """
         Get the list of secret scanning alerts for all repositories of a GitHub
@@ -113,11 +113,11 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        secret_types: Union[Iterable[str], None] = None,
-        resolutions: Union[Iterable[str], None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        secret_types: Iterable[str] | None = None,
+        resolutions: Iterable[str] | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[SecretScanningAlert]:
         """
         Get the list of secret scanning alerts for all repositories of a GitHub
@@ -169,11 +169,11 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
         self,
         repo: str,
         *,
-        state: Union[AlertState, str, None] = None,
-        secret_types: Union[Iterable[str], None] = None,
-        resolutions: Union[Iterable[str], None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        state: AlertState | str | None = None,
+        secret_types: Iterable[str] | None = None,
+        resolutions: Iterable[str] | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[SecretScanningAlert]:
         """
         Get the list of secret scanning alerts for a repository
@@ -223,7 +223,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
     async def alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
+        alert_number: str | int,
     ) -> SecretScanningAlert:
         """
         Get a single secret scanning alert
@@ -258,11 +258,11 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
     async def update_alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
-        state: Union[AlertState, str],
+        alert_number: str | int,
+        state: AlertState | str,
         *,
-        resolution: Union[Resolution, str, None] = None,
-        resolution_comment: Optional[str] = None,
+        resolution: Resolution | str | None = None,
+        resolution_comment: str | None = None,
     ) -> SecretScanningAlert:
         """
         Update a single secret scanning alert
@@ -319,7 +319,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
     async def locations(
         self,
         repo: str,
-        alert_number: Union[str, int],
+        alert_number: str | int,
     ) -> AsyncIterator[AlertLocation]:
         """
         Lists all locations for a given secret scanning alert for an eligible

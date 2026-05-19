@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Greenbone AG
+# SPDX-FileCopyrightText: 2022-2023 Greenbone AG  # noqa: N999
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -9,7 +9,6 @@ This script creates a new repository with default settings
 
 import shutil
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
-from typing import Union
 
 from pontos.git import Git, MergeStrategy
 from pontos.github.api import GitHubAsyncRESTApi
@@ -26,7 +25,7 @@ TEMPLATES = {
 GITIGNORE = {"python": GitIgnoreTemplate.PYTHON, "go": GitIgnoreTemplate.GO}
 
 
-def license_type(value: Union[str, LicenseType]) -> LicenseType:
+def license_type(value: str | LicenseType) -> LicenseType:
     if isinstance(value, LicenseType):
         return value
 

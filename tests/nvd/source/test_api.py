@@ -4,7 +4,7 @@
 
 
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from httpx import AsyncClient, Response
@@ -12,12 +12,12 @@ from httpx import AsyncClient, Response
 from pontos.models import ModelError
 from pontos.nvd.models.source import AcceptanceLevel
 from pontos.nvd.source.api import MAX_SOURCES_PER_PAGE, SourceApi
-from tests import AsyncMock, IsolatedAsyncioTestCase, aiter, anext
+from tests import AsyncMock, IsolatedAsyncioTestCase
 from tests.nvd import get_source_data
 
 
 def create_source_response(
-    name: str, update: Optional[dict[str, Any]] = None
+    name: str, update: dict[str, Any] | None = None
 ) -> MagicMock:
     data = {
         "sources": [get_source_data({"name": name})],

@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import ArgumentParser, Namespace
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import shtab
 
 
-def cpe_matches_parse(args: Optional[Sequence[str]] = None) -> Namespace:
+def cpe_matches_parse(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser()
     shtab.add_argument_to(parser)
     parser.add_argument("--token", help="API key to use for querying.")
@@ -25,7 +25,7 @@ def cpe_matches_parse(args: Optional[Sequence[str]] = None) -> Namespace:
     return parser.parse_args(args)
 
 
-def cpe_match_parse(args: Optional[Sequence[str]] = None) -> Namespace:
+def cpe_match_parse(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser()
     shtab.add_argument_to(parser)
     parser.add_argument("--token", help="API key to use for querying.")

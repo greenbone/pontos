@@ -19,7 +19,7 @@ from pontos.github.api.organizations import (
     MemberRole,
 )
 from pontos.github.models.organization import RepositoryType
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 here = Path(__file__).parent

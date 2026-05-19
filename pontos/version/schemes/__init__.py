@@ -11,10 +11,10 @@ from ._semantic import SemanticVersioningScheme
 
 __all__ = (
     "VERSIONING_SCHEMES",
-    "versioning_scheme_argument_type",
-    "VersioningScheme",
     "PEP440VersioningScheme",
     "SemanticVersioningScheme",
+    "VersioningScheme",
+    "versioning_scheme_argument_type",
 )
 
 #: Dictionary with available versioning schemes

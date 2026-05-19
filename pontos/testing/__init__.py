@@ -9,16 +9,11 @@ A module containing classes and functions mostly useful for creating unit tests
 
 import os
 import tempfile
+from collections.abc import AsyncIterator, Awaitable, Generator, Iterable
 from contextlib import contextmanager
 from pathlib import Path
 from typing import (
     Any,
-    AsyncIterator,
-    Awaitable,
-    Generator,
-    Iterable,
-    Optional,
-    Union,
 )
 
 from pontos.git._git import exec_git
@@ -144,7 +139,7 @@ def temp_git_repository(
 
 @contextmanager
 def temp_file(
-    content: Optional[Union[str, bytes]] = None,
+    content: str | bytes | None = None,
     *,
     name: str = "test.toml",
     change_into: bool = False,

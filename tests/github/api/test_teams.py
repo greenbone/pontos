@@ -11,7 +11,7 @@ import httpx
 
 from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy, TeamRole
 from pontos.github.models.base import Permission
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 

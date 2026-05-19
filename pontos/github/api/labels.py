@@ -4,7 +4,7 @@
 #
 
 
-from typing import AsyncIterator, Iterable, Union
+from collections.abc import AsyncIterator, Iterable
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON
@@ -14,7 +14,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
     async def get_all(
         self,
         repo: str,
-        issue: Union[int, str],
+        issue: int | str,
     ) -> AsyncIterator[str]:
         """
         Get all labels that are set in the issue/pr
@@ -45,7 +45,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
             for label in data:
                 yield label["name"]  # type: ignore
 
-    async def delete_all(self, repo: str, issue: Union[int, str]) -> None:
+    async def delete_all(self, repo: str, issue: int | str) -> None:
         """
         Deletes all labels in the issue/pr.
 
@@ -66,7 +66,7 @@ class GitHubAsyncRESTLabels(GitHubAsyncREST):
         response.raise_for_status()
 
     async def set_all(
-        self, repo: str, issue: Union[int, str], labels: Iterable[str]
+        self, repo: str, issue: int | str, labels: Iterable[str]
     ) -> None:
         """
         Set labels in the issue/pr.

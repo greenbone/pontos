@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 from uuid import UUID
 
 from pontos.models import Model
@@ -49,12 +49,12 @@ class CPEMatchString(Model):
     status: str
     created: datetime
     last_modified: datetime
-    cpe_last_modified: Optional[datetime] = None
-    matches: List[CPEMatch] = field(default_factory=list)
-    version_start_including: Optional[str] = None
-    version_start_excluding: Optional[str] = None
-    version_end_including: Optional[str] = None
-    version_end_excluding: Optional[str] = None
+    cpe_last_modified: datetime | None = None
+    matches: list[CPEMatch] = field(default_factory=list)
+    version_start_including: str | None = None
+    version_start_excluding: str | None = None
+    version_end_including: str | None = None
+    version_end_excluding: str | None = None
 
     @classmethod
     def from_dict_with_cache(
@@ -75,7 +75,7 @@ class CPEMatchString(Model):
         new_match_string = cls.from_dict(data)
 
         for i, match in enumerate(new_match_string.matches):
-            cached_match: Optional[CPEMatch] = cpe_match_cache.get(
+            cached_match: CPEMatch | None = cpe_match_cache.get(
                 match.cpe_name_id
             )
             if cached_match and cached_match.cpe_name == match.cpe_name:

@@ -4,8 +4,8 @@
 
 import base64
 import gzip
+from collections.abc import AsyncIterator, Iterable
 from datetime import datetime
-from typing import AsyncIterator, Iterable, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -33,14 +33,14 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         self,
         api: str,
         *,
-        tool_name: Optional[str] = None,
-        tool_guid: Optional[str] = "",
-        severity: Union[Severity, str, None] = None,
-        state: Union[AlertState, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        tool_name: str | None = None,
+        tool_guid: str | None = "",
+        severity: Severity | str | None = None,
+        state: AlertState | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[CodeScanningAlert]:
-        params: dict[str, Union[str, None]] = {"per_page": "100"}
+        params: dict[str, str | None] = {"per_page": "100"}
 
         if tool_name:
             params["tool_name"] = tool_name
@@ -65,12 +65,12 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         self,
         organization: str,
         *,
-        tool_name: Optional[str] = None,
-        tool_guid: Optional[str] = "",
-        severity: Union[Severity, str, None] = None,
-        state: Union[AlertState, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        tool_name: str | None = None,
+        tool_guid: str | None = "",
+        severity: Severity | str | None = None,
+        state: AlertState | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[CodeScanningAlert]:
         """
         Get the list of code scanning alerts for all repositories of a GitHub
@@ -130,12 +130,12 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         self,
         repo: str,
         *,
-        tool_name: Optional[str] = None,
-        tool_guid: Optional[str] = "",
-        severity: Union[Severity, str, None] = None,
-        state: Union[AlertState, str, None] = None,
-        sort: Union[AlertSort, str] = AlertSort.CREATED,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        tool_name: str | None = None,
+        tool_guid: str | None = "",
+        severity: Severity | str | None = None,
+        state: AlertState | str | None = None,
+        sort: AlertSort | str = AlertSort.CREATED,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[CodeScanningAlert]:
         """
         Get the list of code scanning alerts for a repository
@@ -179,7 +179,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
+        alert_number: str | int,
     ) -> CodeScanningAlert:
         """
         Get a single code scanning alert
@@ -214,11 +214,11 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def update_alert(
         self,
         repo: str,
-        alert_number: Union[str, int],
-        state: Union[AlertState, str],
+        alert_number: str | int,
+        state: AlertState | str,
         *,
-        dismissed_reason: Union[DismissedReason, str, None] = None,
-        dismissed_comment: Optional[str] = None,
+        dismissed_reason: DismissedReason | str | None = None,
+        dismissed_comment: str | None = None,
     ) -> CodeScanningAlert:
         """
         Update a single code scanning alert
@@ -274,9 +274,9 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def instances(
         self,
         repo: str,
-        alert_number: Union[str, int],
+        alert_number: str | int,
         *,
-        ref: Optional[str] = None,
+        ref: str | None = None,
     ) -> AsyncIterator[Instance]:
         """
         Lists all instances of the specified code scanning alert
@@ -325,11 +325,11 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         self,
         repo: str,
         *,
-        tool_name: Optional[str] = None,
-        tool_guid: Optional[str] = "",
-        ref: Optional[str] = None,
-        sarif_id: Optional[str] = None,
-        direction: Union[str, SortOrder] = SortOrder.DESC,
+        tool_name: str | None = None,
+        tool_guid: str | None = "",
+        ref: str | None = None,
+        sarif_id: str | None = None,
+        direction: str | SortOrder = SortOrder.DESC,
     ) -> AsyncIterator[Analysis]:
         """
         Lists the details of all code scanning analyses for a repository,
@@ -372,7 +372,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         """
 
         api = f"/repos/{repo}/code-scanning/analyses"
-        params: dict[str, Union[str, None]] = {"per_page": "100"}
+        params: dict[str, str | None] = {"per_page": "100"}
 
         if tool_name:
             params["tool_name"] = tool_name
@@ -394,7 +394,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def analysis(
         self,
         repo: str,
-        analysis_id: Union[int, str],
+        analysis_id: int | str,
     ) -> Analysis:
         """
         Gets a specified code scanning analysis for a repository
@@ -432,7 +432,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def delete_analysis(
         self,
         repo: str,
-        analysis_id: Union[int, str],
+        analysis_id: int | str,
     ) -> dict[str, str]:
         """
         Delete a specified code scanning analysis from a repository
@@ -584,9 +584,9 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
     async def update_default_setup(
         self,
         repo: str,
-        state: Union[str, DefaultSetupState],
-        query_suite: Union[str, QuerySuite],
-        languages: Iterable[Union[str, Language]],
+        state: str | DefaultSetupState,
+        query_suite: str | QuerySuite,
+        languages: Iterable[str | Language],
     ) -> dict[str, str]:
         """
         Updates a code scanning default setup configuration
@@ -643,10 +643,10 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
         ref: str,
         sarif: bytes,
         *,
-        checkout_uri: Optional[str] = None,
-        started_at: Optional[datetime] = None,
-        tool_name: Optional[str] = None,
-        validate: Optional[bool] = None,
+        checkout_uri: str | None = None,
+        started_at: datetime | None = None,
+        tool_name: str | None = None,
+        validate: bool | None = None,
     ) -> dict[str, str]:
         """
         Upload SARIF data containing the results of a code scanning analysis to

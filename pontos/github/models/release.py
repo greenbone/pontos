@@ -5,7 +5,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 from pontos.github.models.base import GitHubModel, User
 from pontos.models import StrEnum
@@ -63,8 +62,8 @@ class ReleaseAsset(GitHubModel):
     download_count: int
     created_at: datetime
     updated_at: datetime
-    label: Optional[str] = None
-    uploader: Optional[User] = None
+    label: str | None = None
+    uploader: User | None = None
 
 
 @dataclass
@@ -135,15 +134,15 @@ class Release(GitHubModel):
     target_commitish: str
     upload_url: str
     url: str
-    assets: List[ReleaseAsset] = field(default_factory=list)
-    author: Optional[User] = None
-    body_html: Optional[str] = None
-    body_text: Optional[str] = None
-    body: Optional[str] = None
-    discussion_url: Optional[str] = None
-    mentions_count: Optional[int] = None
-    name: Optional[str] = None
-    published_at: Optional[datetime] = None
-    reactions: Optional[ReleaseReactions] = None
-    tarball_url: Optional[str] = None
-    zipball_url: Optional[str] = None
+    assets: list[ReleaseAsset] = field(default_factory=list)
+    author: User | None = None
+    body_html: str | None = None
+    body_text: str | None = None
+    body: str | None = None
+    discussion_url: str | None = None
+    mentions_count: int | None = None
+    name: str | None = None
+    published_at: datetime | None = None
+    reactions: ReleaseReactions | None = None
+    tarball_url: str | None = None
+    zipball_url: str | None = None

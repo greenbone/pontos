@@ -26,7 +26,7 @@ sys.path.insert(0, source_directory)
 # -- Project information -----------------------------------------------------
 
 project = "pontos"
-copyright = "2022-2023, Greenbone AG <info@greenbone.net>"
+copyright = "2022-2023, Greenbone AG <info@greenbone.net>"  # noqa: A001
 author = "Greenbone AG <info@greenbone.net>"
 
 # The full version, including alpha/beta/rc tags

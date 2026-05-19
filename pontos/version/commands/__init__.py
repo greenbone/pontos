@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import Iterable, Optional, Type
+from collections.abc import Iterable
 
 from pontos.enum import StrEnum
 
@@ -16,14 +16,14 @@ from ._javascript import JavaScriptVersionCommand
 from ._python import PythonVersionCommand
 
 __all__ = (
-    "VersionCommand",
     "CMakeVersionCommand",
+    "CargoVersionCommand",
     "GoVersionCommand",
     "JavaScriptVersionCommand",
     "JavaVersionCommand",
-    "PythonVersionCommand",
-    "CargoVersionCommand",
     "ProjectType",
+    "PythonVersionCommand",
+    "VersionCommand",
     "get_commands",
 )
 
@@ -37,7 +37,7 @@ class ProjectType(StrEnum):
     PYPROJECT = "pyproject"
 
 
-_COMMANDS: dict[ProjectType, Type[VersionCommand]] = {
+_COMMANDS: dict[ProjectType, type[VersionCommand]] = {
     ProjectType.CMAKE: CMakeVersionCommand,
     ProjectType.CARGO: CargoVersionCommand,
     ProjectType.GO: GoVersionCommand,
@@ -48,8 +48,8 @@ _COMMANDS: dict[ProjectType, Type[VersionCommand]] = {
 
 
 def get_commands(
-    names: Optional[Iterable[ProjectType]] = None,
-) -> list[Type[VersionCommand]]:
+    names: Iterable[ProjectType] | None = None,
+) -> list[type[VersionCommand]]:
     """
     Returns the available VersionCommands
     """

@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from typing import IO, Any, Callable, Iterable, Optional
+from collections.abc import Callable, Iterable
+from typing import IO, Any
 
 from rich.console import Console, RenderableType
 from rich.padding import Padding
@@ -58,7 +59,7 @@ class RichTerminal(Terminal):
 
     def __init__(
         self,
-        file: Optional[IO[str]] = None,
+        file: IO[str] | None = None,
     ) -> None:
         """
         Create a new RichTerminal
@@ -96,8 +97,8 @@ class RichTerminal(Terminal):
     def progress(
         self,
         *,
-        columns: Optional[Iterable[ProgressColumn]] = None,
-        additional_columns: Optional[Iterable[ProgressColumn]] = None,
+        columns: Iterable[ProgressColumn] | None = None,
+        additional_columns: Iterable[ProgressColumn] | None = None,
         **kwargs,
     ) -> Progress:
         kwargs["console"] = self._console
@@ -148,7 +149,7 @@ class RichTerminal(Terminal):
                     task_description, total=progress.length
                 )
                 for percent in progress:
-                    rich_progress.advance(task_id, percent)  # type: ignore[arg-type] # noqa: E501
+                    rich_progress.advance(task_id, percent)  # type: ignore[arg-type]
             else:
                 task_id = rich_progress.add_task(task_description, total=None)
                 for _ in progress:

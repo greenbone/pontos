@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 from pontos.models import Model
 
@@ -19,9 +18,9 @@ class AcceptanceLevel(Model):
 class Source(Model):
     last_modified: datetime
     created: datetime
-    name: Optional[str] = None
-    source_identifiers: List[str] = field(default_factory=list)
-    contact_email: Optional[str] = None
-    v2_acceptance_level: Optional[AcceptanceLevel] = None
-    v3_acceptance_level: Optional[AcceptanceLevel] = None
-    cwe_acceptance_level: Optional[AcceptanceLevel] = None
+    name: str | None = None
+    source_identifiers: list[str] = field(default_factory=list)
+    contact_email: str | None = None
+    v2_acceptance_level: AcceptanceLevel | None = None
+    v3_acceptance_level: AcceptanceLevel | None = None
+    cwe_acceptance_level: AcceptanceLevel | None = None

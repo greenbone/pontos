@@ -5,7 +5,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal
 
 from .._version import Version, VersionUpdate
 from ..schemes import VersioningScheme
@@ -18,7 +18,7 @@ class VersionCommand(ABC):
     project_file_name: str
 
     def __init__(
-        self, versioning_scheme: Union[VersioningScheme, type[VersioningScheme]]
+        self, versioning_scheme: VersioningScheme | type[VersioningScheme]
     ) -> None:
         self.project_file_path = Path.cwd() / self.project_file_name
         self.versioning_scheme = versioning_scheme
@@ -29,7 +29,7 @@ class VersionCommand(ABC):
 
     @abstractmethod
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         """
         Verify the current version of this project

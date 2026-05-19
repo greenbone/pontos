@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
-from typing import NamedTuple, Optional, TypedDict, Union
+from typing import NamedTuple, TypedDict
 
 import tomlkit
 
@@ -61,7 +61,7 @@ class ConventionalCommits:
 
     def __init__(
         self,
-        config: Optional[Path] = None,
+        config: Path | None = None,
     ) -> None:
         """
         Create a new ConventionalCommits instance for collecting conventional
@@ -84,7 +84,7 @@ class ConventionalCommits:
 
     def get_commits(
         self,
-        from_ref: Optional[SupportsStr] = None,
+        from_ref: SupportsStr | None = None,
         to_ref: SupportsStr = "HEAD",
     ) -> dict[str, list[CommitLogEntry]]:
         """
@@ -108,7 +108,7 @@ class ConventionalCommits:
         return self._config.get("commit_types", [])
 
     def _get_git_log(
-        self, from_ref: Optional[SupportsStr], to_ref: SupportsStr = "HEAD"
+        self, from_ref: SupportsStr | None, to_ref: SupportsStr = "HEAD"
     ) -> list[str]:
         """Getting the git log for the a range of commits.
 
@@ -206,8 +206,8 @@ class ChangelogBuilder:
         self,
         *,
         repository: str,
-        git_tag_prefix: Optional[str] = "v",
-        config: Optional[Path] = None,
+        git_tag_prefix: str | None = "v",
+        config: Path | None = None,
     ) -> None:
         """
         Create a new ChangelogBuilder instance.
@@ -226,8 +226,8 @@ class ChangelogBuilder:
     def create_changelog(
         self,
         *,
-        last_version: Optional[SupportsStr] = None,
-        next_version: Optional[SupportsStr] = None,
+        last_version: SupportsStr | None = None,
+        next_version: SupportsStr | None = None,
     ) -> str:
         """
         Create a changelog
@@ -249,10 +249,10 @@ class ChangelogBuilder:
 
     def create_changelog_file(
         self,
-        output: Union[str, Path],
+        output: str | Path,
         *,
-        last_version: Optional[SupportsStr] = None,
-        next_version: Optional[SupportsStr] = None,
+        last_version: SupportsStr | None = None,
+        next_version: SupportsStr | None = None,
     ) -> None:
         """
         Create a changelog and write the changelog to a file
@@ -279,8 +279,8 @@ class ChangelogBuilder:
 
     def _build_changelog(
         self,
-        last_version: Optional[SupportsStr],
-        next_version: Optional[SupportsStr],
+        last_version: SupportsStr | None,
+        next_version: SupportsStr | None,
         commit_dict: dict[str, list[CommitLogEntry]],
     ) -> str:
         """
@@ -339,9 +339,7 @@ class ChangelogBuilder:
 
         return "\n".join(changelog)
 
-    def _write_changelog_file(
-        self, changelog: str, output: Union[str, Path]
-    ) -> None:
+    def _write_changelog_file(self, changelog: str, output: str | Path) -> None:
         """
         Write changelog to an output file
 

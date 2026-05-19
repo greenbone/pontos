@@ -8,10 +8,11 @@ import hashlib
 import subprocess
 from argparse import Namespace
 from asyncio.subprocess import Process
+from contextlib import AbstractAsyncContextManager
 from enum import IntEnum, auto
 from os import PathLike
 from pathlib import Path
-from typing import AsyncContextManager, Optional, SupportsInt, Union
+from typing import SupportsInt
 
 import httpx
 from rich.progress import Progress as RichProgress
@@ -49,7 +50,7 @@ class SignatureError(PontosError):
     """
 
 
-async def cmd_runner(*args: Union[str, PathLike[str]]) -> Process:
+async def cmd_runner(*args: str | PathLike[str]) -> Process:
     return await asyncio.create_subprocess_exec(
         *args,
         stdout=subprocess.PIPE,
@@ -124,7 +125,9 @@ class SignCommand(AsyncCommand):
         self,
         rich_progress: RichProgress,
         name: str,
-        download_cm: AsyncContextManager[AsyncDownloadProgressIterable[bytes]],
+        download_cm: AbstractAsyncContextManager[
+            AsyncDownloadProgressIterable[bytes]
+        ],
     ) -> Path:
         file_path = Path(name)
         async with download_cm as iterator:
@@ -134,7 +137,7 @@ class SignCommand(AsyncCommand):
         return file_path
 
     async def sign_file(
-        self, file_path: Path, signing_key: str, passphrase: Optional[str]
+        self, file_path: Path, signing_key: str, passphrase: str | None
     ) -> None:
         self.terminal.info(f"Signing {file_path}")
 
@@ -178,10 +181,10 @@ class SignCommand(AsyncCommand):
         versioning_scheme: VersioningScheme,
         signing_key: str,
         passphrase: str,
-        dry_run: Optional[bool] = False,
-        git_tag_prefix: Optional[str],
-        release_version: Optional[Version],
-        release_series: Optional[str] = None,
+        dry_run: bool | None = False,
+        git_tag_prefix: str | None,
+        release_version: Version | None,
+        release_series: str | None = None,
     ) -> SignReturnValue:
         """
         Sign a release
@@ -289,7 +292,7 @@ class SignCommand(AsyncCommand):
                 async for (
                     name,
                     download_cm,
-                ) in github.releases.download_release_assets(  # noqa: E501
+                ) in github.releases.download_release_assets(
                     repository,
                     git_version,
                 ):
@@ -339,7 +342,7 @@ class SignCommand(AsyncCommand):
                 return SignReturnValue.SUCCESS
 
             upload_files = [
-                (Path(f"{str(p)}.asc"), "application/pgp-signature")
+                (Path(f"{p!s}.asc"), "application/pgp-signature")
                 for p in file_paths
             ]
             self.terminal.info(
@@ -350,7 +353,7 @@ class SignCommand(AsyncCommand):
                 # pylint: disable=line-too-long
                 async for (
                     uploaded_file
-                ) in github.releases.upload_release_assets(  # noqa: E501
+                ) in github.releases.upload_release_assets(
                     repository, git_version, upload_files
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")
@@ -366,7 +369,7 @@ def sign(
     *,
     terminal: Terminal,
     error_terminal: Terminal,
-    token: Optional[str],
+    token: str | None,
     **_kwargs,
 ) -> SupportsInt:
     return SignCommand(terminal=terminal, error_terminal=error_terminal).run(

@@ -8,7 +8,6 @@
 import unittest
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from typing import Dict, List, Optional, Union
 
 from pontos.models import Model, ModelAttribute, ModelError, dotted_attributes
 
@@ -72,7 +71,7 @@ class ExampleModelTestCase(unittest.TestCase):
         @dataclass
         class ExampleModel(Model):
             foo: str
-            bar: Optional[OtherModel] = None
+            bar: OtherModel | None = None
 
         model = ExampleModel.from_dict({"foo": "abc"})
 
@@ -81,7 +80,7 @@ class ExampleModelTestCase(unittest.TestCase):
     def test_list(self):
         @dataclass
         class ExampleModel(Model):
-            foo: List[str]
+            foo: list[str]
 
         model = ExampleModel.from_dict({"foo": ["a", "b", "c"]})
         self.assertEqual(model.foo, ["a", "b", "c"])
@@ -89,7 +88,7 @@ class ExampleModelTestCase(unittest.TestCase):
     def test_list_with_default(self):
         @dataclass
         class ExampleModel(Model):
-            foo: List[str] = field(default_factory=list)
+            foo: list[str] = field(default_factory=list)
 
         model = ExampleModel.from_dict({})
         self.assertEqual(model.foo, [])
@@ -138,7 +137,7 @@ class ExampleModelTestCase(unittest.TestCase):
     def test_union(self):
         @dataclass
         class ExampleModel(Model):
-            foo: Union[str, int]
+            foo: str | int
 
         model = ExampleModel.from_dict({"foo": "123"})
 
@@ -154,7 +153,7 @@ class ExampleModelTestCase(unittest.TestCase):
 
         @dataclass
         class ExampleModel(Model):
-            foo: Optional[OtherModel] = None
+            foo: OtherModel | None = None
 
         model = ExampleModel.from_dict({"foo": {"bar": "baz"}})
         self.assertEqual(model.foo.bar, "baz")
@@ -168,9 +167,9 @@ class ExampleModelTestCase(unittest.TestCase):
         class ExampleModel(Model):
             foo: str
             bar: datetime
-            id: Union[str, int]
-            baz: List[str] = field(default_factory=list)
-            ipsum: Optional[OtherModel] = None
+            id: str | int
+            baz: list[str] = field(default_factory=list)
+            ipsum: OtherModel | None = None
 
         model = ExampleModel.from_dict(
             {
@@ -194,7 +193,7 @@ class ExampleModelTestCase(unittest.TestCase):
     def test_list_with_dict(self):
         @dataclass
         class ExampleModel(Model):
-            foo: List[Dict]
+            foo: list[dict]
 
         model = ExampleModel.from_dict({"foo": [{"a": 1}, {"b": 2}, {"c": 3}]})
         self.assertEqual(model.foo, [{"a": 1}, {"b": 2}, {"c": 3}])
@@ -202,7 +201,7 @@ class ExampleModelTestCase(unittest.TestCase):
     def test_model_error(self):
         @dataclass
         class ExampleModel(Model):
-            foo: Optional[str] = None
+            foo: str | None = None
 
         with self.assertRaisesRegex(
             ModelError,
@@ -218,7 +217,7 @@ class ExampleModelTestCase(unittest.TestCase):
 
         @dataclass
         class ExampleModel(Model):
-            foo: Optional[OtherModel]
+            foo: OtherModel | None
 
         with self.assertRaisesRegex(
             ModelError,

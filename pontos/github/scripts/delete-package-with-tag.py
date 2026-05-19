@@ -1,6 +1,6 @@
 """
 This script delete a package from a repository, if it contains the specified tag.
-"""
+"""  # noqa: N999
 
 from argparse import ArgumentParser, Namespace
 

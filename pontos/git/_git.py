@@ -4,16 +4,9 @@
 #
 
 import subprocess
+from collections.abc import Collection, Iterable, Iterator, Sequence
 from os import PathLike, fspath
 from pathlib import Path
-from typing import (
-    Collection,
-    Iterable,
-    Iterator,
-    Optional,
-    Sequence,
-    Union,
-)
 
 from pontos.enum import StrEnum
 from pontos.errors import PontosError
@@ -41,14 +34,14 @@ class GitError(subprocess.CalledProcessError, PontosError):
         cmd = " ".join(self.cmd)
         return (
             f"Git command '{cmd}' returned "
-            f"non-zero exit status {str(self.returncode)}"
+            f"non-zero exit status {self.returncode!s}"
         )
 
 
 def exec_git(
     *args: str,
-    ignore_errors: Optional[bool] = False,
-    cwd: Optional[PathLike] = None,
+    ignore_errors: bool | None = False,
+    cwd: PathLike | None = None,
 ) -> str:
     """
     Internal module function to abstract calling git via subprocess. Most of the
@@ -70,7 +63,7 @@ def exec_git(
     try:
         cmd_args = ["git"]
         cmd_args.extend(args)
-        output = subprocess.run(
+        output = subprocess.run(  # noqa: UP022
             cmd_args,
             cwd=fspath(cwd) if cwd else None,
             check=True,
@@ -151,7 +144,7 @@ class Git:
     Run git commands as subprocesses
     """
 
-    def __init__(self, cwd: Optional[Path] = None) -> None:
+    def __init__(self, cwd: Path | None = None) -> None:
         """
         Create a new Git instance
 
@@ -161,7 +154,7 @@ class Git:
         self._cwd = cwd.absolute() if cwd else None
 
     @property
-    def cwd(self) -> Optional[Path]:
+    def cwd(self) -> Path | None:
         """
         Get the current working directory as Path
         """
@@ -185,7 +178,7 @@ class Git:
     def exec(self, *args: str) -> str:
         return exec_git(*args, cwd=self._cwd)
 
-    def init(self, *, bare: Optional[bool] = False) -> None:
+    def init(self, *, bare: bool | None = False) -> None:
         """
         Init a git repository
 
@@ -200,7 +193,7 @@ class Git:
         self.exec(*args)
 
     def create_branch(
-        self, branch: str, *, start_point: Optional[str] = None
+        self, branch: str, *, start_point: str | None = None
     ) -> None:
         """
         Create a new branch
@@ -220,9 +213,9 @@ class Git:
         self,
         base: str,
         *,
-        head: Optional[str] = None,
-        onto: Optional[str] = None,
-        strategy: Optional[MergeStrategy] = None,
+        head: str | None = None,
+        onto: str | None = None,
+        strategy: MergeStrategy | None = None,
     ) -> None:
         """
         Rebase a branch
@@ -257,9 +250,9 @@ class Git:
         repo_url: str,
         destination: Path,
         *,
-        branch: Optional[str] = None,
-        remote: Optional[str] = None,
-        depth: Optional[int] = None,
+        branch: str | None = None,
+        remote: str | None = None,
+        depth: int | None = None,
     ) -> None:
         """
         Clone a repository
@@ -283,13 +276,13 @@ class Git:
 
     def push(
         self,
-        refspec: Optional[Union[str, Iterable[str]]] = None,
+        refspec: str | Iterable[str] | None = None,
         *,
-        remote: Optional[str] = None,
-        branch: Optional[str] = None,
+        remote: str | None = None,
+        branch: str | None = None,
         follow_tags: bool = False,
-        force: Optional[bool] = None,
-        delete: Optional[bool] = None,
+        force: bool | None = None,
+        delete: bool | None = None,
     ) -> None:
         """
         Push changes to remote repository
@@ -326,9 +319,9 @@ class Git:
     def config(
         self,
         key: str,
-        value: Optional[str] = None,
+        value: str | None = None,
         *,
-        scope: Optional[Union[ConfigScope, str]] = None,
+        scope: ConfigScope | str | None = None,
     ) -> str:
         """
         Get and set a git config
@@ -349,7 +342,7 @@ class Git:
 
         return self.exec(*args)
 
-    def cherry_pick(self, commits: Union[str, list[str]]) -> None:
+    def cherry_pick(self, commits: str | list[str]) -> None:
         """
         Apply changes of a commit(s) to the current branch
 
@@ -368,9 +361,9 @@ class Git:
     def list_tags(
         self,
         *,
-        sort: Optional[Union[TagSort, str]] = None,
-        tag_name: Optional[str] = None,
-        sort_suffix: Optional[list[str]] = None,
+        sort: TagSort | str | None = None,
+        tag_name: str | None = None,
+        sort_suffix: list[str] | None = None,
     ) -> list[str]:
         """
         List all available tags
@@ -401,7 +394,7 @@ class Git:
 
     def add(
         self,
-        files: Union[str, PathLike[str], Sequence[Union[PathLike[str], str]]],
+        files: str | PathLike[str] | Sequence[PathLike[str] | str],
     ) -> None:
         """
         Add files to the git staging area
@@ -421,9 +414,9 @@ class Git:
         self,
         message: str,
         *,
-        verify: Optional[bool] = None,
-        gpg_sign: Optional[bool] = None,
-        gpg_signing_key: Optional[str] = None,
+        verify: bool | None = None,
+        gpg_sign: bool | None = None,
+        gpg_signing_key: str | None = None,
     ) -> None:
         """
         Create a new commit
@@ -450,10 +443,10 @@ class Git:
         self,
         tag: str,
         *,
-        gpg_key_id: Optional[str] = None,
-        message: Optional[str] = None,
-        force: Optional[bool] = False,
-        sign: Optional[bool] = None,
+        gpg_key_id: str | None = None,
+        message: str | None = None,
+        force: bool | None = False,
+        sign: bool | None = None,
     ) -> None:
         """
         Create a Tag
@@ -498,8 +491,8 @@ class Git:
 
     def fetch(
         self,
-        remote: Optional[str] = None,
-        refspec: Optional[str] = None,
+        remote: str | None = None,
+        refspec: str | None = None,
         *,
         verbose: bool = False,
     ) -> None:
@@ -547,9 +540,7 @@ class Git:
         args = ["remote", "get-url", remote]
         return self.exec(*args)
 
-    def checkout(
-        self, branch: str, *, start_point: Optional[str] = None
-    ) -> None:
+    def checkout(self, branch: str, *, start_point: str | None = None) -> None:
         """
         Checkout a branch
 
@@ -569,8 +560,8 @@ class Git:
     def log(
         self,
         *log_args: str,
-        oneline: Optional[bool] = None,
-        format: Optional[str] = None,
+        oneline: bool | None = None,
+        format: str | None = None,  # noqa: A002
     ) -> list[str]:
         """
         Get log of a git repository
@@ -596,11 +587,11 @@ class Git:
     def show(
         self,
         *show_args: str,
-        format: Optional[str] = None,
-        oneline: Optional[bool] = None,
-        patch: Optional[bool] = None,
-        objects: Union[str, Collection[str], None] = None,
-    ) -> Union[str, list[str]]:
+        format: str | None = None,  # noqa: A002
+        oneline: bool | None = None,
+        patch: bool | None = None,
+        objects: str | Collection[str] | None = None,
+    ) -> str | list[str]:
         """
         Show various types of git objects
 
@@ -645,8 +636,8 @@ class Git:
     def rev_list(
         self,
         *commit: str,
-        max_parents: Optional[int] = None,
-        abbrev_commit: Optional[bool] = False,
+        max_parents: int | None = None,
+        abbrev_commit: bool | None = False,
     ) -> list[str]:
         """
         Lists commit objects in reverse chronological order
@@ -701,7 +692,7 @@ class Git:
 
     def status(
         self,
-        files: Optional[Iterable[PathLike]] = None,
+        files: Iterable[PathLike] | None = None,
     ) -> Iterator[StatusEntry]:
         """Get information about the current git status.
 
@@ -731,7 +722,7 @@ class Git:
         self,
         commit,
         *,
-        mode: Union[ResetMode, str],
+        mode: ResetMode | str,
     ) -> None:
         """
         Reset the git history

@@ -5,7 +5,7 @@
 
 import importlib.util
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal
 
 import tomlkit
 
@@ -43,11 +43,11 @@ class PythonVersionCommand(VersionCommand):
 
         if (
             "tool" in self.pyproject_toml
-            and "poetry" in self.pyproject_toml["tool"]  # type: ignore[operator] # noqa: E501
-            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore[operator,index] # noqa: E501
+            and "poetry" in self.pyproject_toml["tool"]  # type: ignore[operator]
+            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore[operator,index]
         ):
             return PEP440VersioningScheme.parse_version(
-                str(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore[index] # noqa: E501
+                str(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore[index]
             )
 
         raise VersionError(
@@ -117,14 +117,14 @@ class PythonVersionCommand(VersionCommand):
         if (
             "tool" not in self.pyproject_toml
             or "pontos" not in self.pyproject_toml["tool"]  # type: ignore
-            or "version" not in self.pyproject_toml["tool"]["pontos"]  # type: ignore # pylint: disable=line-too-long # noqa: E501
+            or "version" not in self.pyproject_toml["tool"]["pontos"]  # type: ignore # pylint: disable=line-too-long
         ):
             raise VersionError(
                 "[tool.pontos.version] section missing "
                 f"in {self.project_file_path}."
             )
 
-        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][  # type: ignore # pylint: disable=line-too-long # noqa: E501
+        pontos_version_settings = self.pyproject_toml["tool"]["pontos"][  # type: ignore # pylint: disable=line-too-long
             "version"
         ]
 
@@ -136,13 +136,14 @@ class PythonVersionCommand(VersionCommand):
         except tomlkit.exceptions.NonExistentKey:
             raise VersionError(
                 "version-module-file key not set in [tool.pontos.version] "
-                f"section of {str(self.project_file_path)}."
+                f"section of {self.project_file_path!s}."
             ) from None
 
     def get_current_version(self) -> Version:
         version_module_name = self.version_file_path.stem
-        module_parts = list(self.version_file_path.parts[:-1]) + [
-            version_module_name
+        module_parts = [
+            *list(self.version_file_path.parts[:-1]),
+            version_module_name,
         ]
         module_name = ".".join(module_parts)
         try:
@@ -170,7 +171,7 @@ class PythonVersionCommand(VersionCommand):
             ) from None
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         current_version = self.get_current_version()
         pyproject_version = self._get_version_from_pyproject_toml()
@@ -178,7 +179,7 @@ class PythonVersionCommand(VersionCommand):
         if pyproject_version != current_version:
             raise VersionError(
                 f"The version {pyproject_version} in "
-                f"{str(self.project_file_path)} doesn't match the current "
+                f"{self.project_file_path!s} doesn't match the current "
                 f"version {current_version}."
             )
 

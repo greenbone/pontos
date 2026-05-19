@@ -4,8 +4,8 @@
 #
 
 from collections import defaultdict
+from collections.abc import AsyncIterator, Iterable
 from pathlib import Path
-from typing import AsyncIterator, Dict, Iterable, List, Optional, Union
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -18,7 +18,7 @@ from pontos.github.models.pull_request import (
 
 
 class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
-    async def exists(self, repo: str, pull_request: Union[int, str]) -> bool:  # type: ignore[return]
+    async def exists(self, repo: str, pull_request: int | str) -> bool:  # type: ignore[return]
         """
         Check if a single branch in a repository exists
 
@@ -48,9 +48,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
 
         response.raise_for_status()
 
-    async def get(
-        self, repo: str, pull_request: Union[int, str]
-    ) -> PullRequest:
+    async def get(self, repo: str, pull_request: int | str) -> PullRequest:
         """
         Get information about a pull request
 
@@ -81,7 +79,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return PullRequest.from_dict(response.json())
 
     async def commits(
-        self, repo: str, pull_request: Union[int, str]
+        self, repo: str, pull_request: int | str
     ) -> AsyncIterator[PullRequestCommit]:
         """
         Get all commit information of a pull request
@@ -172,11 +170,11 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
     async def update(
         self,
         repo: str,
-        pull_request: Union[int, str],
+        pull_request: int | str,
         *,
-        base_branch: Optional[str] = None,
-        title: Optional[str] = None,
-        body: Optional[str] = None,
+        base_branch: str | None = None,
+        title: str | None = None,
+        body: str | None = None,
     ) -> PullRequest:
         """
         Update a Pull Request on GitHub
@@ -225,7 +223,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return PullRequest.from_dict(response.json())
 
     async def add_comment(
-        self, repo: str, pull_request: Union[int, str], comment: str
+        self, repo: str, pull_request: int | str, comment: str
     ) -> Comment:
         """
         Add a comment to a pull request on GitHub
@@ -259,7 +257,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return Comment.from_dict(response.json())
 
     async def update_comment(
-        self, repo: str, comment_id: Union[str, int], comment: str
+        self, repo: str, comment_id: str | int, comment: str
     ) -> Comment:
         """
         Update a comment to a pull request on GitHub
@@ -293,7 +291,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         return Comment.from_dict(response.json())
 
     async def comments(
-        self, repo: str, pull_request: Union[int, str]
+        self, repo: str, pull_request: int | str
     ) -> AsyncIterator[Comment]:
         """
         Get all comments of a pull request on GitHub
@@ -331,10 +329,10 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
     async def files(
         self,
         repo: str,
-        pull_request: Union[int, str],
+        pull_request: int | str,
         *,
-        status_list: Optional[Iterable[FileStatus]] = None,
-    ) -> Dict[FileStatus, Iterable[Path]]:
+        status_list: Iterable[FileStatus] | None = None,
+    ) -> dict[FileStatus, Iterable[Path]]:
         """
         Get files of a pull request
 
@@ -366,7 +364,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
         # possible to receive 100
         params = {"per_page": "100"}
         api = f"/repos/{repo}/pulls/{pull_request}/files"
-        file_dict: Dict[FileStatus, List[Path]] = defaultdict(list)
+        file_dict: dict[FileStatus, list[Path]] = defaultdict(list)
 
         async for response in self._client.get_all(api, params=params):
             response.raise_for_status()

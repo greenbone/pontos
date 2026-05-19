@@ -4,14 +4,12 @@
 #
 
 
-from typing import Optional
-
 from pontos.github.api.client import GitHubAsyncREST
 
 
 class GitHubAsyncRESTContent(GitHubAsyncREST):
     async def path_exists(
-        self, repo: str, path: str, *, branch: Optional[str] = None
+        self, repo: str, path: str, *, branch: str | None = None
     ) -> bool:
         """
         Check if a path (file or directory) exists in a branch of a repository

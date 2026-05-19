@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Greenbone AG
+# SPDX-FileCopyrightText: 2022-2023 Greenbone AG  # noqa: N999
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -11,7 +11,7 @@ import csv
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
-from typing import Collection, Optional, Union
+from collections.abc import Collection
 
 from rich.console import Console
 from rich.table import Table
@@ -36,7 +36,7 @@ def lower(value: str) -> str:
     return value.lower()
 
 
-def order_type(value: Union[str, SortOrder]) -> SortOrder:
+def order_type(value: str | SortOrder) -> SortOrder:
     if isinstance(value, SortOrder):
         return value
     try:
@@ -45,7 +45,7 @@ def order_type(value: Union[str, SortOrder]) -> SortOrder:
         raise ArgumentTypeError(f"Invalid value {value}.") from None
 
 
-def sort_type(value: Union[str, RepositorySort]) -> RepositorySort:
+def sort_type(value: str | RepositorySort) -> RepositorySort:
     if isinstance(value, RepositorySort):
         return value
     try:
@@ -130,7 +130,7 @@ class Format(ABC):
         self.columns = columns
 
     @abstractmethod
-    def add_row(self, **kwargs: Optional[str]) -> None:
+    def add_row(self, **kwargs: str | None) -> None:
         pass
 
     def finish(self) -> None:
@@ -142,7 +142,7 @@ class CSVFormat(Format):
         super().__init__(columns)
         self.csv_writer = csv.DictWriter(sys.stdout, fieldnames=self.columns)
 
-    def add_row(self, **kwargs: Optional[str]) -> None:
+    def add_row(self, **kwargs: str | None) -> None:
         row = {}
         for column in self.columns:
             row[column] = kwargs[column]
@@ -158,7 +158,7 @@ class ConsoleFormat(Format):
         for column in self.columns:
             self.table.add_column(column)
 
-    def add_row(self, **kwargs: Optional[str]) -> None:
+    def add_row(self, **kwargs: str | None) -> None:
         row = []
         for column in self.columns:
             value = kwargs[column]

@@ -4,7 +4,7 @@
 #
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from pontos.models import Model, StrEnum
 
@@ -209,7 +209,7 @@ class App(GitHubModel):
     html_url: str
     created_at: str
     updated_at: str
-    events: List[str]
+    events: list[str]
 
 
 class Event(StrEnum):

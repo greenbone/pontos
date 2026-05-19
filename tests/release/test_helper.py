@@ -7,8 +7,8 @@ import contextlib
 import os
 import subprocess
 import unittest
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 from unittest.mock import MagicMock, patch
 
 from pontos.git import ConfigScope, Git, GitError

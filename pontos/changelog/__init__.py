@@ -8,9 +8,9 @@ from .errors import ChangelogBuilderError, ChangelogError
 from .main import main
 
 __all__ = (
-    "ChangelogError",
-    "ChangelogBuilderError",
     "ChangelogBuilder",
+    "ChangelogBuilderError",
+    "ChangelogError",
     "ConventionalCommits",
     "main",
 )

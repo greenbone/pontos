@@ -5,7 +5,8 @@
 
 
 import re
-from typing import Iterator, Literal, Optional, Tuple, Union
+from collections.abc import Iterator
+from typing import Literal
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -48,7 +49,7 @@ class CMakeVersionCommand(VersionCommand):
         return self.versioning_scheme.from_version(current_version)
 
     def verify_version(
-        self, version: Union[Literal["current"], Version, None]
+        self, version: Literal["current"] | Version | None
     ) -> None:
         current_version = self.get_current_version()
 
@@ -126,9 +127,9 @@ class CMakeVersionParser:
     def update_version(self, new_version: Version) -> str:
         if new_version.is_dev_release:
             new_version = PEP440VersioningScheme.parse_version(
-                f"{str(new_version.major)}."
-                f"{str(new_version.minor)}."
-                f"{str(new_version.patch)}"
+                f"{new_version.major!s}."
+                f"{new_version.minor!s}."
+                f"{new_version.patch!s}"
             )
             develop = True
         else:
@@ -152,18 +153,18 @@ class CMakeVersionParser:
 
     def _find_version_in_cmake(
         self, content: str
-    ) -> Tuple[int, str, Optional[int], Optional[str]]:
+    ) -> tuple[int, str, int | None, str | None]:
         in_project = False
         in_version = False
 
-        version_line_no: Optional[int] = None
-        version: Optional[str] = None
+        version_line_no: int | None = None
+        version: str | None = None
 
         in_set = False
         in_project_dev_version = False
 
-        project_dev_version_line_no: Optional[int] = None
-        project_dev_version: Optional[str] = None
+        project_dev_version_line_no: int | None = None
+        project_dev_version: str | None = None
 
         for lineno, token_type, value in self._tokenize(content):
             if token_type == "word" and value == "project":
@@ -214,7 +215,7 @@ class CMakeVersionParser:
 
     def _tokenize(  # type: ignore
         self, content: str
-    ) -> Iterator[Tuple[int, str, str]]:
+    ) -> Iterator[tuple[int, str, str]]:
         toks, remainder = self.__cmake_scanner.scan(content)
         if remainder != "":
             print(f"WARNING: unrecognized cmake tokens: {remainder}")

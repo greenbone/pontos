@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# ruff: noqa:E501
 
 from pontos.github.api.dependabot import GitHubAsyncRESTDependabot
 from pontos.github.models.base import SortOrder
@@ -13,7 +12,7 @@ from pontos.github.models.dependabot import (
     DismissedReason,
     Severity,
 )
-from tests import AsyncIteratorMock, aiter, anext
+from tests import AsyncIteratorMock
 from tests.github.api import GitHubAsyncRESTTestCase, create_response
 
 ALERTS = [

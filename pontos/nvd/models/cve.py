@@ -5,18 +5,18 @@
 
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import List, Optional
 
 from pontos.models import Model, StrEnum
 from pontos.nvd.models.cvss_v2 import CVSSData as CVSSv2Data
 from pontos.nvd.models.cvss_v3 import CVSSData as CVSSv3Data
 
 __all__ = (
-    "Configuration",
+    "CVE",
     "CPEMatch",
     "CVSSType",
     "CVSSv2Metric",
     "CVSSv3Metric",
+    "Configuration",
     "Description",
     "Metrics",
     "Node",
@@ -24,7 +24,6 @@ __all__ = (
     "Reference",
     "VendorComment",
     "Weakness",
-    "CVE",
 )
 
 
@@ -77,14 +76,14 @@ class CVSSv2Metric(Model):
     source: str
     type: CVSSType
     cvss_data: CVSSv2Data
-    base_severity: Optional[str] = None
-    exploitability_score: Optional[float] = None
-    impact_score: Optional[float] = None
-    ac_insuf_info: Optional[bool] = None
-    obtain_all_privilege: Optional[bool] = None
-    obtain_user_privilege: Optional[bool] = None
-    obtain_other_privilege: Optional[bool] = None
-    user_interaction_required: Optional[bool] = None
+    base_severity: str | None = None
+    exploitability_score: float | None = None
+    impact_score: float | None = None
+    ac_insuf_info: bool | None = None
+    obtain_all_privilege: bool | None = None
+    obtain_user_privilege: bool | None = None
+    obtain_other_privilege: bool | None = None
+    user_interaction_required: bool | None = None
 
 
 @dataclass
@@ -103,8 +102,8 @@ class CVSSv3Metric(Model):
     source: str
     type: CVSSType
     cvss_data: CVSSv3Data
-    exploitability_score: Optional[float] = None
-    impact_score: Optional[float] = None
+    exploitability_score: float | None = None
+    impact_score: float | None = None
 
 
 @dataclass
@@ -118,9 +117,9 @@ class Metrics(Model):
         cvss_metric_v2: A list of CVSSv2 metrics
     """
 
-    cvss_metric_v31: List[CVSSv3Metric] = field(default_factory=list)
-    cvss_metric_v30: List[CVSSv3Metric] = field(default_factory=list)
-    cvss_metric_v2: List[CVSSv2Metric] = field(default_factory=list)
+    cvss_metric_v31: list[CVSSv3Metric] = field(default_factory=list)
+    cvss_metric_v30: list[CVSSv3Metric] = field(default_factory=list)
+    cvss_metric_v2: list[CVSSv2Metric] = field(default_factory=list)
 
 
 @dataclass
@@ -135,8 +134,8 @@ class Reference(Model):
     """
 
     url: str
-    source: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
+    source: str | None = None
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -150,7 +149,7 @@ class Weakness(Model):
 
     source: str
     type: str
-    description: List[Description] = field(default_factory=list)
+    description: list[Description] = field(default_factory=list)
 
 
 @dataclass
@@ -202,10 +201,10 @@ class CPEMatch(Model):
     vulnerable: bool
     criteria: str
     match_criteria_id: str
-    version_start_excluding: Optional[str] = None
-    version_start_including: Optional[str] = None
-    version_end_excluding: Optional[str] = None
-    version_end_including: Optional[str] = None
+    version_start_excluding: str | None = None
+    version_start_including: str | None = None
+    version_end_excluding: str | None = None
+    version_end_including: str | None = None
 
 
 @dataclass
@@ -221,8 +220,8 @@ class Node(Model):
     """
 
     operator: Operator
-    cpe_match: Optional[List[CPEMatch]] = None
-    negate: Optional[bool] = None
+    cpe_match: list[CPEMatch] | None = None
+    negate: bool | None = None
 
 
 @dataclass
@@ -236,9 +235,9 @@ class Configuration(Model):
         negate:
     """
 
-    nodes: List[Node]
-    operator: Optional[Operator] = None
-    negate: Optional[bool] = None
+    nodes: list[Node]
+    operator: Operator | None = None
+    negate: bool | None = None
 
 
 @dataclass
@@ -270,18 +269,18 @@ class CVE(Model):
     id: str
     published: datetime
     last_modified: datetime
-    descriptions: List[Description]
-    references: List[Reference]
-    source_identifier: Optional[str] = None
-    vuln_status: Optional[str] = None
-    weaknesses: List[Weakness] = field(default_factory=list)
-    configurations: List[Configuration] = field(default_factory=list)
-    vendor_comments: List[VendorComment] = field(default_factory=list)
-    metrics: Optional[Metrics] = None
-    evaluator_comment: Optional[str] = None
-    evaluator_solution: Optional[str] = None
-    evaluator_impact: Optional[str] = None
-    cisa_exploit_add: Optional[date] = None
-    cisa_action_due: Optional[date] = None
-    cisa_required_action: Optional[str] = None
-    cisa_vulnerability_name: Optional[str] = None
+    descriptions: list[Description]
+    references: list[Reference]
+    source_identifier: str | None = None
+    vuln_status: str | None = None
+    weaknesses: list[Weakness] = field(default_factory=list)
+    configurations: list[Configuration] = field(default_factory=list)
+    vendor_comments: list[VendorComment] = field(default_factory=list)
+    metrics: Metrics | None = None
+    evaluator_comment: str | None = None
+    evaluator_solution: str | None = None
+    evaluator_impact: str | None = None
+    cisa_exploit_add: date | None = None
+    cisa_action_due: date | None = None
+    cisa_required_action: str | None = None
+    cisa_vulnerability_name: str | None = None
