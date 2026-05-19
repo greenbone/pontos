@@ -65,12 +65,11 @@ class VersionCalculator(ABC):
         ):
             if current_version.dev is None:
                 release_version = cls.version_from_string(
-                    f"{current_year}.{today.month}."
-                    f"{current_version.patch + 1}"
+                    f"{current_year}.{today.month}.{current_version.patch + 1}"
                 )
             else:
                 release_version = cls.version_from_string(
-                    f"{current_year}.{today.month}." f"{current_version.patch}"
+                    f"{current_year}.{today.month}.{current_version.patch}"
                 )
             return release_version
         else:

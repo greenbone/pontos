@@ -15,7 +15,10 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
         self, api, *, params: Optional[Params] = None
     ) -> AsyncIterator[Artifact]:
         return self._get_paged_items(
-            api, "artifacts", Artifact, params=params  # type: ignore
+            api,
+            "artifacts",
+            Artifact,
+            params=params,  # type: ignore
         )
 
     def get_all(self, repo: str) -> AsyncIterator[Artifact]:

@@ -273,8 +273,9 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             if match_pattern and not Path(name).match(match_pattern):
                 continue
 
-            yield name, download_async(
-                self._client.stream(asset_url), url=asset_url
+            yield (
+                name,
+                download_async(self._client.stream(asset_url), url=asset_url),
             )
 
     async def upload_release_assets(

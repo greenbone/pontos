@@ -222,7 +222,6 @@ def update_file(
 
             # replace found header and write it to file
             if copyright_match:
-
                 # use different target license formats depending on provided single_year argument
                 if single_year:
                     copyright_term = (
@@ -419,7 +418,6 @@ def main(args: Optional[Sequence[str]] = None) -> None:
         sys.exit(1)
 
     for file in files:
-
         try:
             if file.absolute() in exclude_list:
                 term.warning(f"{file}: Ignoring file from exclusion list.")

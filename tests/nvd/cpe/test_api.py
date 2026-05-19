@@ -460,9 +460,9 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
     async def test_cpes_broken_response_return_exceptions(self):
         uuid = uuid4()
         responses = create_cpes_responses(uuid, 3)
-        responses[1].json.return_value["products"][0]["cpe"][
-            "cpe_name_id"
-        ] = "I'm an invalid UUID"
+        responses[1].json.return_value["products"][0]["cpe"]["cpe_name_id"] = (
+            "I'm an invalid UUID"
+        )
         self.http_client.get.side_effect = responses
 
         it = aiter(self.api.cpes(return_exceptions=True))
@@ -482,9 +482,9 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
     async def test_cpes_broken_response(self):
         uuid = uuid4()
         responses = create_cpes_responses(uuid, 3)
-        responses[1].json.return_value["products"][0]["cpe"][
-            "cpe_name_id"
-        ] = "I'm an invalid UUID"
+        responses[1].json.return_value["products"][0]["cpe"]["cpe_name_id"] = (
+            "I'm an invalid UUID"
+        )
         self.http_client.get.side_effect = responses
 
         it = aiter(self.api.cpes(return_exceptions=False))
