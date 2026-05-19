@@ -158,7 +158,7 @@ class ConventionalCommits:
         expressions = [
             (
                 commit_type["group"],
-                re.compile(rf'{commit_type["message"]}\s?[:|-]', flags=re.I),
+                re.compile(rf"{commit_type['message']}\s?[:|-]", flags=re.I),
             )
             for commit_type in self.commit_types()
         ]
@@ -309,7 +309,7 @@ class ChangelogBuilder:
                 for log_entry in commit_dict[commit_type["group"]]:
                     commit_id, commit_message = log_entry
                     commit_link = (
-                        f"{ADDRESS}{self._repository}/" f"commit/{commit_id}"
+                        f"{ADDRESS}{self._repository}/commit/{commit_id}"
                     )
                     msg = f"{commit_message} [{commit_id}]({commit_link})"
                     changelog.append(f"* {msg}")

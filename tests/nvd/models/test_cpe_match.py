@@ -14,7 +14,6 @@ from tests.nvd import get_cpe_match_data
 
 
 class CPEMatchTestCase(unittest.TestCase):
-
     def test_required_only(self):
         """
         Test the required attributes of a CPEMatchString

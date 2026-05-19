@@ -198,9 +198,9 @@ class SourceApiTestCase(IsolatedAsyncioTestCase):
 
     async def test_sources_broken_response_return_exceptions(self):
         responses = create_source_responses(3)
-        responses[1].json.return_value["sources"][0][
-            "last_modified"
-        ] = "I'm an invalid date"
+        responses[1].json.return_value["sources"][0]["last_modified"] = (
+            "I'm an invalid date"
+        )
         self.http_client.get.side_effect = responses
 
         it = aiter(self.api.sources(return_exceptions=True))
@@ -219,9 +219,9 @@ class SourceApiTestCase(IsolatedAsyncioTestCase):
 
     async def test_sources_broken_response(self):
         responses = create_source_responses(3)
-        responses[1].json.return_value["sources"][0][
-            "last_modified"
-        ] = "I'm an invalid date"
+        responses[1].json.return_value["sources"][0]["last_modified"] = (
+            "I'm an invalid date"
+        )
         self.http_client.get.side_effect = responses
 
         it = aiter(self.api.sources(return_exceptions=False))

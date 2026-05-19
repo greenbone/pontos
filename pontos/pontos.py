@@ -80,8 +80,7 @@ def main() -> None:
         term.info("pontos also comes with git and GitHub APIs")
         with term.indent():
             term.print(
-                'Accessible with "import pontos.git" '
-                'and "import pontos.github"'
+                'Accessible with "import pontos.git" and "import pontos.github"'
             )
 
     term.print()

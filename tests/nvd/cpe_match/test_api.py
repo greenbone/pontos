@@ -31,7 +31,9 @@ def uuid_replace(uuid: UUID, iteration: int, number: int) -> UUID:
 
 
 def generate_cpe_name(iteration: int, number: int) -> str:
-    return f"cpe:2.3:a:acme:test-app:1.{iteration-1}.{number-1}:*:*:*:*:*:*:*"
+    return (
+        f"cpe:2.3:a:acme:test-app:1.{iteration - 1}.{number - 1}:*:*:*:*:*:*:*"
+    )
 
 
 def create_cpe_match_response(

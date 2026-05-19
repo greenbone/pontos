@@ -376,9 +376,7 @@ class CreateReleaseCommand(AsyncCommand):
                     self.print_error(
                         f"Error while updating version after release. {e}"
                     )
-                    return (
-                        CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
-                    )
+                    return CreateReleaseReturnValue.UPDATE_VERSION_AFTER_RELEASE_ERROR
 
                 for f in updated.changed_files:
                     self.terminal.info(f"Adding changes of {f}")

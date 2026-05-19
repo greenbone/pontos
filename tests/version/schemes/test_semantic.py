@@ -857,7 +857,7 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):
             calculator.next_calendar_version(
-                Version.from_string(f"{year_short  + 1}.1.0")
+                Version.from_string(f"{year_short + 1}.1.0")
             )
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):

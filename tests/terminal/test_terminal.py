@@ -140,7 +140,7 @@ class TerminalTestCase(unittest.TestCase):
     @patch("sys.stdout", new_callable=StringIO)
     def test_print(self, mock_stdout):
         expected_msg = (
-            self.reset(f'{self.white(" ")} foo bar').styled_string + "\n"
+            self.reset(f"{self.white(' ')} foo bar").styled_string + "\n"
         )
 
         self.term.print("foo bar")
@@ -153,7 +153,7 @@ class TerminalTestCase(unittest.TestCase):
     @patch("sys.stdout", new_callable=StringIO)
     def test_with_indent(self, mock_stdout):
         expected_msg = (
-            self.reset(f'{self.white(" ")}   foo').styled_string + "\n"
+            self.reset(f"{self.white(' ')}   foo").styled_string + "\n"
         )
 
         with self.term.indent(2):
@@ -168,7 +168,7 @@ class TerminalTestCase(unittest.TestCase):
         mock_stdout.truncate(0)
         mock_stdout.seek(0)
 
-        expected_msg = self.reset(f'{self.white(" ")} bar').styled_string + "\n"
+        expected_msg = self.reset(f"{self.white(' ')} bar").styled_string + "\n"
         self.term.print("bar")
 
         ret = mock_stdout.getvalue()
@@ -185,7 +185,7 @@ class TerminalTestCase(unittest.TestCase):
         )
         expected_msg = (
             self.reset(
-                f'{self.white(" ")} Lorem ipsum dolor sit amet, consetetur '
+                f"{self.white(' ')} Lorem ipsum dolor sit amet, consetetur "
                 "sadipscing elitr, sed diam nonumy eirmo\n  d tempor invidunt "
                 "ut labore et dolore magna aliquyam erat, sed diam voluptua."
             ).styled_string

@@ -475,7 +475,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -515,7 +514,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -555,7 +553,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -583,7 +580,6 @@ foo.baz(bar.boing)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.sh") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -613,7 +609,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.xml") as tmp:
-
             update_file(
                 tmp,
                 year,
@@ -643,7 +638,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.xml") as tmp:
-
             update_file(
                 tmp,
                 year,

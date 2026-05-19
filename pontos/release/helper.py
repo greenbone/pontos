@@ -136,6 +136,6 @@ def repository_split(repository: str) -> tuple[str, str]:
     splitted_repo = repository.split("/")
     if len(splitted_repo) != 2:
         raise ValueError(
-            f"Invalid repository {repository}. Format must be " "owner/name."
+            f"Invalid repository {repository}. Format must be owner/name."
         )
     return splitted_repo[0], splitted_repo[1]

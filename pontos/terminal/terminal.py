@@ -236,7 +236,7 @@ class ConsoleTerminal(Terminal):
             formatted_message += f"{part}"
 
             if len(message) > 0:
-                formatted_message += f'\n{" " * offset}'
+                formatted_message += f"\n{' ' * offset}"
 
         formatted_message += f"{message}"
 
@@ -281,7 +281,7 @@ class ConsoleTerminal(Terminal):
             for percent in progress:
                 done = int(50 * percent) if percent else 0
                 self.out(
-                    f"\r[{'=' * done}{' ' * (50-done)}]", end="", flush=True
+                    f"\r[{'=' * done}{' ' * (50 - done)}]", end="", flush=True
                 )
         else:
             i = 0
