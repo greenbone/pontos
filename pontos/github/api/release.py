@@ -219,7 +219,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to use
             tag: The git tag for the release
             match_pattern: Optional pattern which the name of the available
-                artifact must match. For example "*.zip". Allows to download
+                artifact must match. For example "\\*.zip". Allows to download
                 only specific artifacts.
 
         Raises:
