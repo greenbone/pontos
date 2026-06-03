@@ -243,7 +243,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
                     tasks = []
                     async for name, download_cm in api.releases.download_release_assets(
-                        "foo/bar, "v1.2.3",
+                        "foo/bar", "v1.2.3",
                     ):
                         tasks.append(asyncio.create_task(
                             download_asset(name, download_cm)
