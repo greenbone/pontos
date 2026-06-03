@@ -81,14 +81,17 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                 ) of repositories to add the team to.
             privacy: The level of privacy this team should have. The options
                 are:
+
                     For a non-nested team:
                         * secret - only visible to organization owners and members
                             of this team.
                         * closed - visible to all members of this organization.
+
                     Default: secret
 
                     For a parent or child team:
                         * closed - visible to all members of this organization.
+
                     Default for child team: closed
             parent_team_id: The ID of a team to set as the parent team.
 
@@ -182,14 +185,17 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             description: The description of the team.
             privacy: The level of privacy this team should have. The options
                 are:
+
                     For a non-nested team:
                         * secret - only visible to organization owners and members
                             of this team.
                         * closed - visible to all members of this organization.
+
                     Default: secret
 
                     For a parent or child team:
                         * closed - visible to all members of this organization.
+
                     Default for child team: closed
             parent_team_id: The ID of a team to set as the parent team.
 
