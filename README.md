@@ -44,7 +44,9 @@ Python 3.10 and later is supported.
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pipx]
 
-    python3 -m pipx install pontos
+```sh
+python3 -m pipx install pontos
+```
 
 ### Install using pip
 
@@ -56,7 +58,9 @@ Package Index (pypi) using [pipx]
 You can install the latest stable release of **pontos** from the Python
 Package Index (pypi) using [pip]
 
-    python3 -m pip install --user pontos
+```sh
+python3 -m pip install --user pontos
+```
 
 ### Install using poetry
 
@@ -67,7 +71,9 @@ strongly recommend using [poetry].
 You can install the latest stable release of **pontos** and add it as
 a dependency for your current project using [poetry]
 
-    poetry add pontos
+```sh
+poetry add pontos
+```
 
 ## Command Completion
 
@@ -104,7 +110,6 @@ the eval function of your zsh shell:
 eval "$(pontos-release --print-completion zsh)"
 ```
 
-
 ## Development
 
 **pontos** uses [poetry] for its own dependency management and build
@@ -112,11 +117,15 @@ process.
 
 First install poetry via [pipx]
 
-    python3 -m pipx install poetry
+```sh
+python3 -m pipx install poetry
+```
 
 Afterwards run
 
-    poetry install
+```sh
+poetry install
+```
 
 in the checkout directory of **pontos** (the directory containing the
 `pyproject.toml` file) to install all dependencies including the packages only
@@ -125,11 +134,15 @@ required for development.
 Afterwards activate the git hooks for auto-formatting and linting via
 [autohooks].
 
-    poetry run autohooks activate
+```sh
+poetry run autohooks activate
+```
 
 Validate the activated git hooks by running
 
-    poetry run autohooks check
+```sh
+poetry run autohooks check
+```
 
 ## Maintainer
 
@@ -145,7 +158,7 @@ first.
 
 ## License
 
-Copyright (C) 2020-2024 [Greenbone AG][Greenbone]
+Copyright (C) 2020-2026 [Greenbone AG][Greenbone]
 
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
