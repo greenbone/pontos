@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Literal
 
 import tomlkit
+import tomlkit.exceptions
 
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
@@ -24,8 +25,8 @@ __version__ = "{}"\n"""
 # This class is used for Python Version command(s)
 class PythonVersionCommand(VersionCommand):
     project_file_name = "pyproject.toml"
-    _version_file_path = None
-    _pyproject_toml = None
+    _version_file_path: Path | None = None
+    _pyproject_toml: tomlkit.TOMLDocument | None = None
 
     def _get_version_from_pyproject_toml(self) -> Version:
         """

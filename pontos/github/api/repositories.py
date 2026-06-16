@@ -536,9 +536,9 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                     )
         """
         api = f"/repos/{repo}/topics"
-        data = {"names": list(new_topics)}
+        data: dict[str, Any] = {"names": list(new_topics)}
         response = await self._client.put(api, data=data)  # type: ignore[arg-type]
         response.raise_for_status()
 
-        data: dict[str, Any] = response.json()
+        data = response.json()
         return data.get("names", [])

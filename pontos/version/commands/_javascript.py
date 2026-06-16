@@ -17,7 +17,7 @@ from ._command import VersionCommand
 class JavaScriptVersionCommand(VersionCommand):
     project_file_name = "package.json"
     version_file_paths = (Path("src", "version.js"), Path("src", "version.ts"))
-    _package = None
+    _package: dict[str, Any] | None = None
 
     @property
     def package(self) -> dict[str, Any]:
@@ -30,6 +30,7 @@ class JavaScriptVersionCommand(VersionCommand):
         try:
             with self.project_file_path.open(mode="r", encoding="utf-8") as fp:
                 self._package = json.load(fp)
+            self._package: dict[str, Any]  # set type for mypy explicitly
         except OSError as e:
             raise VersionError(
                 "No version tag found. Maybe this "

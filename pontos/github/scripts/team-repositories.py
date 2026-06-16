@@ -84,7 +84,7 @@ async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
             asyncio.FIRST_EXCEPTION if args.failfast else asyncio.ALL_COMPLETED
         ),
     )
-    pending: set[asyncio.Task]
+    pending: set[asyncio.Task]  # type: ignore[no-redef]
 
     # if pending contains tasks an error occurred and fail fast was set.
     # therefore cancel pending tasks.
