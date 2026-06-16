@@ -1,18 +1,14 @@
-[tool.poetry]
+[project]
+authors = [{ name = "Greenbone AG", email = "info@greenbone.net" }]
 name = "pontos"
 version = "26.5.1.dev1"
 description = "Common utilities and tools maintained by Greenbone AG"
-authors = ["Greenbone AG <info@greenbone.net>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://github.com/greenbone/pontos/"
-repository = "https://github.com/greenbone/pontos/"
-documentation = "https://greenbone.github.io/pontos/"
-
 classifiers = [
   # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
   "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)", # pylint: disable=line-too-long
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3.10",
@@ -24,24 +20,50 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+requires-python = ">=3.10,<4.0"
+dependencies = [
+  "colorful >=0.5.4",
+  "tomlkit >=0.5.11",
+  "packaging >=20.3",
+  "httpx[http2] >=0.23",
+  "rich >=12.4.4",
+  "python-dateutil >=2.8.2",
+  "semver >=2.13",
+  "lxml >=4.9.0",
+  "shtab >=1.7.0",
+]
+
+[project.urls]
+homepage = "https://github.com/greenbone/pontos/"
+repository = "https://github.com/greenbone/pontos/"
+documentation = "https://greenbone.github.io/pontos/"
+
+[project.scripts]
+pontos = 'pontos:main'
+pontos-version = 'pontos.version:main'
+pontos-release = 'pontos.release:main'
+pontos-update-header = 'pontos.updateheader:main'
+pontos-changelog = 'pontos.changelog:main'
+pontos-github = 'pontos.github:main'
+pontos-github-actions = 'pontos.github.actions:main'
+pontos-github-script = 'pontos.github.script:main'
+pontos-nvd-cve = 'pontos.nvd.cve:cve_main'
+pontos-nvd-cves = 'pontos.nvd.cve:cves_main'
+pontos-nvd-cve-changes = 'pontos.nvd.cve_changes:main'
+pontos-nvd-cpe = 'pontos.nvd.cpe:cpe_main'
+pontos-nvd-cpes = 'pontos.nvd.cpe:cpes_main'
+pontos-nvd-cpe-match = 'pontos.nvd.cpe_matches:cpe_match_main'
+pontos-nvd-cpe-matches = 'pontos.nvd.cpe_matches:cpe_matches_main'
+pontos-nvd-sources = 'pontos.nvd.source:main'
+
+[tool.poetry]
+requires-poetry = ">=2.0"
 packages = [
   { include = "pontos" },
   { include = "tests", format = "sdist" },
   { include = "poetry.lock", format = "sdist" },
 ]
 include = ["pontos/updateheader/templates/", "pontos/github/pr_template.md"]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-colorful = ">=0.5.4"
-tomlkit = ">=0.5.11"
-packaging = ">=20.3"
-httpx = { extras = ["http2"], version = ">=0.23" }
-rich = ">=12.4.4"
-python-dateutil = ">=2.8.2"
-semver = ">=2.13"
-lxml = ">=4.9.0"
-shtab = ">=1.7.0"
 
 [tool.poetry.group.dev.dependencies]
 autohooks-plugin-ruff = ">=23.6.1"
@@ -88,28 +110,9 @@ branch = true
 omit = ["tests/*", "pontos/github/scripts/*", "*/__init__.py"]
 source = ["pontos"]
 
-[tool.poetry.scripts]
-pontos = 'pontos:main'
-pontos-version = 'pontos.version:main'
-pontos-release = 'pontos.release:main'
-pontos-update-header = 'pontos.updateheader:main'
-pontos-changelog = 'pontos.changelog:main'
-pontos-github = 'pontos.github:main'
-pontos-github-actions = 'pontos.github.actions:main'
-pontos-github-script = 'pontos.github.script:main'
-pontos-nvd-cve = 'pontos.nvd.cve:cve_main'
-pontos-nvd-cves = 'pontos.nvd.cve:cves_main'
-pontos-nvd-cve-changes = 'pontos.nvd.cve_changes:main'
-pontos-nvd-cpe = 'pontos.nvd.cpe:cpe_main'
-pontos-nvd-cpes = 'pontos.nvd.cpe:cpes_main'
-pontos-nvd-cpe-match = 'pontos.nvd.cpe_matches:cpe_match_main'
-pontos-nvd-cpe-matches = 'pontos.nvd.cpe_matches:cpe_matches_main'
-pontos-nvd-sources = 'pontos.nvd.source:main'
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.git-cliff.changelog]
 # template for the changelog header
