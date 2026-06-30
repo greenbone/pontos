@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, RemoteProtocolError, Response
 
 from pontos.nvd.api import (
     JSON,
@@ -205,6 +205,43 @@ class NVDApiTestCase(IsolatedAsyncioTestCase):
 
         sleep_mock.assert_not_called()
         self.assertFalse(result.is_server_error)
+
+    @patch("pontos.nvd.api.asyncio.sleep", autospec=True)
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_exceed_attempts(
+        self,
+        async_client: MagicMock,
+        sleep_mock: MagicMock,
+    ):
+        response_mocks = [
+            RemoteProtocolError("RIP connection"),
+            MagicMock(spec=Response, is_server_error=True),
+        ]
+        http_client = AsyncMock()
+        http_client.get.side_effect = response_mocks
+        async_client.return_value = http_client
+
+        api = NVDApi("https://foo.bar/baz", request_attempts=2)
+
+        result = await api._get()
+
+        calls = [call(2.0)]
+        sleep_mock.assert_has_calls(calls)
+        self.assertIsInstance(result, Response)
+
+    @patch("pontos.nvd.api.AsyncClient", spec=AsyncClient)
+    async def test_remote_protocol_error(
+        self,
+        async_client: MagicMock,
+    ):
+        http_client = AsyncMock()
+        http_client.get.side_effect = RemoteProtocolError("RIP connection")
+        async_client.return_value = http_client
+
+        api = NVDApi("https://foo.bar/baz")
+
+        with self.assertRaises(RemoteProtocolError):
+            await api._get()
 
 
 class Result:
