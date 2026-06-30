@@ -64,6 +64,7 @@ packages = [
   { include = "poetry.lock", format = "sdist" },
 ]
 include = ["pontos/updateheader/templates/", "pontos/github/pr_template.md"]
+version = "26.6.0"
 
 [tool.poetry.group.dev.dependencies]
 autohooks-plugin-ruff = ">=23.6.1"
