@@ -456,7 +456,7 @@ class NVDApi(ABC):
         """
         headers = self._request_headers()
 
-        latest_after_error: Response | RemoteProtocolError
+        latest_error: Response | RemoteProtocolError
 
         for attempt in range(self._request_attempts):
             if attempt > 0:
@@ -471,19 +471,19 @@ class NVDApi(ABC):
                 )
 
                 if response.is_server_error:
-                    latest_after_error = response
+                    latest_error = response
                     continue
 
                 return response
 
             except RemoteProtocolError as e:
-                latest_after_error = e
+                latest_error = e
                 continue
 
-        if isinstance(latest_after_error, RemoteProtocolError):
-            raise latest_after_error
+        if isinstance(latest_error, RemoteProtocolError):
+            raise latest_error
 
-        return latest_after_error
+        return latest_error
 
     async def __aenter__(self) -> "NVDApi":
         # reset rate limit counter
