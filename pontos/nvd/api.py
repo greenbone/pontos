@@ -23,7 +23,13 @@ from typing import (
     TypeVar,
 )
 
-from httpx import URL, AsyncClient, Response, Timeout
+from httpx import (
+    URL,
+    AsyncClient,
+    RemoteProtocolError,
+    Response,
+    Timeout,
+)
 
 from pontos.errors import PontosError
 from pontos.helper import snake_case
@@ -450,19 +456,34 @@ class NVDApi(ABC):
         """
         headers = self._request_headers()
 
+        latest_after_error: Response | RemoteProtocolError
+
         for attempt in range(self._request_attempts):
             if attempt > 0:
                 delay = RETRY_DELAY**attempt
                 await asyncio.sleep(delay)
 
             await self._consider_rate_limit()
-            response = await self._client.get(
-                self._url, headers=headers, params=params
-            )
-            if not response.is_server_error:
-                break
 
-        return response
+            try:
+                response = await self._client.get(
+                    self._url, headers=headers, params=params
+                )
+
+                if response.is_server_error:
+                    latest_after_error = response
+                    continue
+
+                return response
+
+            except RemoteProtocolError as e:
+                latest_after_error = e
+                continue
+
+        if isinstance(latest_after_error, RemoteProtocolError):
+            raise latest_after_error
+
+        return latest_after_error
 
     async def __aenter__(self) -> "NVDApi":
         # reset rate limit counter
