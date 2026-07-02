@@ -75,7 +75,9 @@ class PythonVersionCommand(VersionCommand):
         )
 
         poetry_lock_file_path = self.project_file_path.parent / "poetry.lock"
-        if poetry_lock_file_path.exists():
+        if poetry_lock_file_path.exists() and "project" not in pyproject_toml:
+            # only create [tool.poetry] section if poetry.lock exists and [project] section does not exist
+            # otherwise use [project] section as it is the standard for PEP 621
             if "tool" not in pyproject_toml:
                 tool_table = tomlkit.table()
                 pyproject_toml["tool"] = tool_table
@@ -84,13 +86,32 @@ class PythonVersionCommand(VersionCommand):
                 poetry_table = tomlkit.table()
                 pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
 
-            pyproject_toml["tool"]["poetry"]["version"] = str(new_version)  # type: ignore
+            if (
+                pyproject_toml.get("tool", {}).get("poetry", {}).get("version")
+                is None
+                and pyproject_toml.get("project", {}).get("version") is None
+            ):
+                # ensure the version is available in the [tool.poetry] section
+                pyproject_toml["tool"]["poetry"]["version"] = str(new_version)
         else:
+            # create [project] section if it does not exist and set the version
             if "project" not in pyproject_toml:
                 project_table = tomlkit.table()
                 pyproject_toml["project"] = project_table
 
-            pyproject_toml["project"]["version"] = str(new_version)  # type: ignore
+            # ensure the version is available in the [project] section
+            pyproject_toml["project"]["version"] = str(new_version)
+
+        if (
+            pyproject_toml.get("tool", {}).get("poetry", {}).get("version")
+            is not None
+        ):
+            # update the version in the [tool.poetry] section if it exists
+            pyproject_toml["tool"]["poetry"]["version"] = str(new_version)
+
+        if pyproject_toml.get("project", {}).get("version") is not None:
+            # update the version in the [project] section if it exists
+            pyproject_toml["project"]["version"] = str(new_version)
 
         self.project_file_path.write_text(
             tomlkit.dumps(pyproject_toml), encoding="utf-8"
