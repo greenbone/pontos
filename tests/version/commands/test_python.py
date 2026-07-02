@@ -228,6 +228,127 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(toml["project"]["version"], "22.2")
 
+    def test_update_both_versions(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_poetry_lock = temp.parent / "poetry.lock"
+            tmp_poetry_lock.touch()
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[project]\nversion = "1.2.3"\n'
+                '[tool.poetry]\nversion = "1.2.4"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = tmp_file.read_text(encoding="utf8")
+
+            toml = tomlkit.parse(text)
+
+            self.assertEqual(toml["project"]["version"], "22.2")
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+
+    def test_should_prefer_project_version_if_poetry_version_is_not_set(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_poetry_lock = temp.parent / "poetry.lock"
+            tmp_poetry_lock.touch()
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[project]\nversion = "1.2.3"\n'
+                "[tool.poetry]\n"
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = tmp_file.read_text(encoding="utf8")
+
+            toml = tomlkit.parse(text)
+
+            self.assertEqual(toml["project"]["version"], "22.2")
+            self.assertIsNone(
+                toml.get("tool", {}).get("poetry", {}).get("version")
+            )
+
+    def test_create_project_version_if_poetry_lock_does_not_exist(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = tmp_file.read_text(encoding="utf8")
+
+            toml = tomlkit.parse(text)
+
+            self.assertEqual(toml["project"]["version"], "22.2")
+            self.assertIsNone(
+                toml.get("tool", {}).get("poetry", {}).get("version")
+            )
+
+    def test_not_create_poetry_version_if_project_version_exists(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            tmp_poetry_lock = temp.parent / "poetry.lock"
+            tmp_poetry_lock.touch()
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[project]\nversion = "1.2.3"\n'
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+            previous_version = PEP440VersioningScheme.parse_version("1.2.3")
+            updated = cmd.update_version(new_version)
+
+            self.assertEqual(updated.new, new_version)
+            self.assertEqual(updated.previous, previous_version)
+            self.assertEqual(
+                updated.changed_files, [Path("foo.py"), tmp_file.resolve()]
+            )
+
+            text = tmp_file.read_text(encoding="utf8")
+
+            toml = tomlkit.parse(text)
+
+            self.assertEqual(toml["project"]["version"], "22.2")
+            self.assertIsNone(
+                toml.get("tool", {}).get("poetry", {}).get("version")
+            )
+
     def test_override_existing_version(self):
         content = "__version__ = '1.2.3'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
