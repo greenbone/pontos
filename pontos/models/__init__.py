@@ -115,7 +115,7 @@ def _get_value_from_model_field_cls(
         if isinstance(value, dict):
             value = model_field_cls(**value)
         else:
-            value = model_field_cls(value) # type: ignore
+            value = model_field_cls(value)  # type: ignore
     return value
 
 
