@@ -626,14 +626,14 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
-        ):
-            with self.assertRaisesRegex(
+            self.assertRaisesRegex(
                 VersionError,
                 "Provided version .* does not match the current version .*.",
-            ):
-                cmd = PythonVersionCommand(PEP440VersioningScheme)
-                version = PEP440VersioningScheme.parse_version("1.2.4")
-                cmd.verify_version(version)
+            ),
+        ):
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = PEP440VersioningScheme.parse_version("1.2.4")
+            cmd.verify_version(version)
 
     def test_provided_version_mismatch_with_poetry_version(self):
         fake_version_py = Path("foo.py")
@@ -656,14 +656,14 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
-        ):
-            with self.assertRaisesRegex(
+            self.assertRaisesRegex(
                 VersionError,
                 "Provided version .* does not match the current version .*.",
-            ):
-                cmd = PythonVersionCommand(PEP440VersioningScheme)
-                version = PEP440VersioningScheme.parse_version("1.2.4")
-                cmd.verify_version(version)
+            ),
+        ):
+            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            version = PEP440VersioningScheme.parse_version("1.2.4")
+            cmd.verify_version(version)
 
     def test_verify_success_with_project_version(self):
         fake_version_py = Path("foo.py")

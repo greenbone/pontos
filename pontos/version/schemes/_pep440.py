@@ -182,54 +182,54 @@ class PEP440Version(Version):
         new_version._parsed_version = version.parsed_version
         return new_version
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if other is None:
             return False
         if isinstance(other, str):
             # allow to compare against "current" for now
             return False
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version == other._version
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         if other is None:
             return True
         if isinstance(other, str):
             # allow to compare against "current" for now
             return True
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version != other._version
 
     def __gt__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version > other._version
 
     def __ge__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version >= other._version
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version < other._version
 
     def __le__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self._version <= other._version

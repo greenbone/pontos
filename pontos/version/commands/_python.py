@@ -205,12 +205,11 @@ class PythonVersionCommand(VersionCommand):
                 f"version {current_version}."
             )
 
-        if version and version != "current":
-            if version != current_version:
-                raise VersionError(
-                    f"Provided version {version} does not match the "
-                    f"current version {current_version}."
-                )
+        if version and version != "current" and version != current_version:
+            raise VersionError(
+                f"Provided version {version} does not match the "
+                f"current version {current_version}."
+            )
 
     def update_version(
         self, new_version: Version, *, force: bool = False

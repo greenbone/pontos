@@ -8,6 +8,7 @@ from datetime import datetime
 from types import TracebackType
 
 from httpx import Timeout
+from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -19,7 +20,6 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
-    return_or_raise,
 )
 from pontos.nvd.models.cve import CVE
 from pontos.nvd.models.cvss_v2 import Severity as CVSSv2Severity
@@ -36,10 +36,13 @@ def _result_iterator(
 ) -> Iterator[CVE | Exception]:
     vulnerabilities: Iterable = data.get("vulnerabilities", [])  # type: ignore
     for vulnerability in vulnerabilities:
-        yield return_or_raise(
-            lambda: CVE.from_dict(vulnerability["cve"]),
-            return_exceptions,
-        )
+        try:
+            yield CVE.from_dict(vulnerability["cve"])
+        except Exception as exception:
+            if return_exceptions:
+                yield exception
+            else:
+                raise
 
 
 class CVEApi(NVDApi):
@@ -298,7 +301,7 @@ class CVEApi(NVDApi):
         vulnerability = vulnerabilities[0]
         return CVE.from_dict(vulnerability["cve"])
 
-    async def __aenter__(self) -> "CVEApi":
+    async def __aenter__(self) -> Self:
         await super().__aenter__()
         return self
 

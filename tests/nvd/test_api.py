@@ -254,7 +254,7 @@ def result_func(
     data: JSON, return_exceptions: bool
 ) -> Iterator[Result | Exception]:
     for value in data["values"]:  # type: ignore
-        yield return_or_raise(lambda: Result(value), return_exceptions)  # type: ignore
+        yield return_or_raise(lambda: Result(value), return_exceptions)  # type: ignore  # noqa: B023
 
 
 class NVDResultsTestCase(IsolatedAsyncioTestCase):
@@ -574,7 +574,7 @@ class NVDResultsTestCase(IsolatedAsyncioTestCase):
 
         api_mock.reset_mock()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             json = await nvd_results.json()
 
         api_mock._get.assert_called_once_with(

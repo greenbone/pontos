@@ -19,7 +19,7 @@ This modules verifies different Cargo.toml configuration scenarios.
 
 EXAMPLE 1:
     The root Cargo.toml configures a package that has also a workspace and members
-    with independent versions in its members Cargo.toml files. Pontos will only 
+    with independent versions in its members Cargo.toml files. Pontos will only
     update the version of the root Cargo.toml ([package.version]).
 EXAMPLE 2:
     The root Cargo.toml configures a workspace only, members and a version for those
@@ -142,25 +142,27 @@ class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
             ("0.2.0", WORKSPACE_EXAMPLE_3, PACKAGE_EXAMPLE_3),
         ]
         for version, cargo_toml, member_cargo_toml in examples:
-            with self.subTest(
-                version=version,
-                cargo_toml=cargo_toml,
-                member_cargo_toml=member_cargo_toml,
-            ):
-                with self.__create_cargo_layout(
+            with (
+                self.subTest(
+                    version=version,
+                    cargo_toml=cargo_toml,
+                    member_cargo_toml=member_cargo_toml,
+                ),
+                self.__create_cargo_layout(
                     workspace_toml=cargo_toml,
                     member_toml=member_cargo_toml,
-                ) as temp_dir:
-                    cargo = CargoVersionCommand(PEP440VersioningScheme)
-                    previous = PEP440VersioningScheme.parse_version(version)
-                    new_version = PEP440VersioningScheme.parse_version("23.4.1")
-                    updated = cargo.update_version(new_version)
-                    self.assertEqual(updated.previous, previous)
-                    self.assertEqual(updated.new, new_version)
-                    self.assertEqual(
-                        updated.changed_files,
-                        [(temp_dir / "Cargo.toml").resolve()],
-                    )
+                ) as temp_dir,
+            ):
+                cargo = CargoVersionCommand(PEP440VersioningScheme)
+                previous = PEP440VersioningScheme.parse_version(version)
+                new_version = PEP440VersioningScheme.parse_version("23.4.1")
+                updated = cargo.update_version(new_version)
+                self.assertEqual(updated.previous, previous)
+                self.assertEqual(updated.new, new_version)
+                self.assertEqual(
+                    updated.changed_files,
+                    [(temp_dir / "Cargo.toml").resolve()],
+                )
 
     def test_failure(self):
         examples = [
@@ -169,25 +171,27 @@ class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
             ("0.2.0", WORKSPACE_EXAMPLE_3, PACKAGE_EXAMPLE_3),
         ]
         for version, cargo_toml, member_cargo_toml in examples:
-            with self.subTest(
-                version=version,
-                cargo_toml=cargo_toml,
-                member_cargo_toml=member_cargo_toml,
-            ):
-                with self.__create_cargo_layout(
+            with (
+                self.subTest(
+                    version=version,
+                    cargo_toml=cargo_toml,
+                    member_cargo_toml=member_cargo_toml,
+                ),
+                self.__create_cargo_layout(
                     workspace_toml=cargo_toml,
                     member_toml=member_cargo_toml,
-                ):
-                    cargo = CargoVersionCommand(PEP440VersioningScheme)
-                    previous = PEP440VersioningScheme.parse_version(version)
-                    new_version = PEP440VersioningScheme.parse_version(version)
-                    updated = cargo.update_version(new_version)
-                    self.assertEqual(updated.previous, previous)
-                    self.assertEqual(updated.new, new_version)
-                    self.assertEqual(
-                        updated.changed_files,
-                        [],
-                    )
+                ),
+            ):
+                cargo = CargoVersionCommand(PEP440VersioningScheme)
+                previous = PEP440VersioningScheme.parse_version(version)
+                new_version = PEP440VersioningScheme.parse_version(version)
+                updated = cargo.update_version(new_version)
+                self.assertEqual(updated.previous, previous)
+                self.assertEqual(updated.new, new_version)
+                self.assertEqual(
+                    updated.changed_files,
+                    [],
+                )
 
 
 class VerifyCargoVersionCommandTestCase(unittest.TestCase):
@@ -198,17 +202,17 @@ class VerifyCargoVersionCommandTestCase(unittest.TestCase):
             ("0.2.0", WORKSPACE_EXAMPLE_3),
         ]
         for version, cargo_toml in examples:
-            with self.subTest(version=version, cargo_toml=cargo_toml):
-                with temp_file(
+            with (
+                self.subTest(version=version, cargo_toml=cargo_toml),
+                temp_file(
                     cargo_toml,
                     name="Cargo.toml",
                     change_into=True,
-                ):
-                    pep440_version = PEP440VersioningScheme.parse_version(
-                        version
-                    )
-                    cargo = CargoVersionCommand(PEP440VersioningScheme)
-                    cargo.verify_version(pep440_version)
+                ),
+            ):
+                pep440_version = PEP440VersioningScheme.parse_version(version)
+                cargo = CargoVersionCommand(PEP440VersioningScheme)
+                cargo.verify_version(pep440_version)
 
     def test_verify_failure(self):
         examples = [
@@ -217,19 +221,19 @@ class VerifyCargoVersionCommandTestCase(unittest.TestCase):
             ("0.2.0", WORKSPACE_EXAMPLE_3),
         ]
         for version, cargo_toml in examples:
-            with self.subTest(version=version, cargo_toml=cargo_toml):
-                with temp_file(
+            with (
+                self.subTest(version=version, cargo_toml=cargo_toml),
+                temp_file(
                     cargo_toml,
                     name="Cargo.toml",
                     change_into=True,
+                ),
+            ):
+                pep440_version = PEP440VersioningScheme.parse_version("2.3.4")
+                cargo = CargoVersionCommand(PEP440VersioningScheme)
+                with self.assertRaisesRegex(
+                    VersionError,
+                    "Provided version 2.3.4 does not match the "
+                    f"current version {version}.",
                 ):
-                    pep440_version = PEP440VersioningScheme.parse_version(
-                        "2.3.4"
-                    )
-                    cargo = CargoVersionCommand(PEP440VersioningScheme)
-                    with self.assertRaisesRegex(
-                        VersionError,
-                        "Provided version 2.3.4 does not match the "
-                        f"current version {version}.",
-                    ):
-                        cargo.verify_version(pep440_version)
+                    cargo.verify_version(pep440_version)

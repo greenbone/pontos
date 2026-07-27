@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-# ruff: noqa: F403
 
 from pontos.github.models.artifact import *
 from pontos.github.models.base import *

@@ -10,6 +10,7 @@ from types import TracebackType
 from typing import Any
 
 import httpx
+from typing_extensions import Self
 
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
@@ -262,7 +263,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
             "GET", url, headers=headers, follow_redirects=True
         )
 
-    async def __aenter__(self) -> "GitHubAsyncRESTClient":
+    async def __aenter__(self) -> Self:
         await self._client.__aenter__()
         return self
 

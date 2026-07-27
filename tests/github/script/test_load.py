@@ -40,11 +40,13 @@ class LoadScriptTestCase(unittest.TestCase):
             self.assertEqual(module.foo(), 1)
 
     def test_load_script_failure(self):
-        with self.assertRaisesRegex(
-            ModuleNotFoundError, "No module named 'baz'"
+        with (
+            self.assertRaisesRegex(
+                ModuleNotFoundError, "No module named 'baz'"
+            ),
+            load_script("foo/bar/baz.py"),
         ):
-            with load_script("foo/bar/baz.py"):
-                pass
+            pass
 
 
 class RunAddArgumentsFunction(unittest.TestCase):
@@ -96,9 +98,9 @@ class RunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
                 name="foo.py",
             ) as f,
             load_script(f) as module,
+            self.assertRaises(GitHubScriptError),
         ):
-            with self.assertRaises(GitHubScriptError):
-                run_github_script_function(module, "123", 123, {})
+            run_github_script_function(module, "123", 123, {})
 
     def test_no_github_script_function(self):
         with (
@@ -107,6 +109,6 @@ class RunGithubScriptFunctionTestCase(IsolatedAsyncioTestCase):
                 name="foo.py",
             ) as f,
             load_script(f) as module,
+            self.assertRaises(GitHubScriptError),
         ):
-            with self.assertRaises(GitHubScriptError):
-                run_github_script_function(module, "123", 123, {})
+            run_github_script_function(module, "123", 123, {})

@@ -48,7 +48,7 @@ class SplitCpeTestCase(unittest.TestCase):
         self.assertEqual(parts[11], "*")
         self.assertEqual(parts[12], "*")
 
-        parts = split_cpe("cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
+        parts = split_cpe(r"cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
 
         self.assertEqual(len(parts), 13)
         self.assertEqual(parts[0], "cpe")
@@ -108,14 +108,14 @@ class UnbindValueFromFormattedStringTestCase(unittest.TestCase):
         with self.assertRaisesRegex(
             CPEParsingError,
             "An unquoted asterisk must appear at the beginning or end of "
-            "'foo\*bar'",
+            r"'foo\*bar'",
         ):
             unbind_value_from_formatted_string("foo*bar")
 
         with self.assertRaisesRegex(
             CPEParsingError,
             "An unquoted asterisk must appear at the beginning or end of "
-            "'\*\*foo'",
+            r"'\*\*foo'",
         ):
             unbind_value_from_formatted_string("**foo")
 
@@ -129,7 +129,7 @@ class UnbindValueFromFormattedStringTestCase(unittest.TestCase):
         with self.assertRaisesRegex(
             CPEParsingError,
             "An unquoted question mark must appear at the beginning or end, "
-            "or in a leading or trailing sequence 'foo\?bar'",
+            r"or in a leading or trailing sequence 'foo\?bar'",
         ):
             unbind_value_from_formatted_string("foo?bar")
 
@@ -223,7 +223,7 @@ class CPETestCase(unittest.TestCase):
         )
         self.assertEqual(
             cpe.as_formatted_string_binding(),
-            "cpe:2.3:a:foo\\\\bar:big\$money_manager_2010:*:*:*:*:special:ipod_touch:80gb:*",
+            "cpe:2.3:a:foo\\\\bar:big\\$money_manager_2010:*:*:*:*:special:ipod_touch:80gb:*",
         )
         self.assertTrue(cpe.is_uri_binding())
         self.assertFalse(cpe.is_formatted_string_binding())
@@ -279,7 +279,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="microsoft",
             product="internet_explorer",
-            version="8\.0\.6001",
+            version=r"8\.0\.6001",
             update="beta",
             edition=ANY,
         )
@@ -293,7 +293,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="microsoft",
             product="internet_explorer",
-            version="8\.*",
+            version=r"8\.*",
             update="sp?",
         )
         self.assertEqual(
@@ -306,7 +306,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="hp",
             product="insight_diagnostics",
-            version="7\.4\.0\.1570",
+            version=r"7\.4\.0\.1570",
             update=NA,
             sw_edition="online",
             target_sw="win2003",
@@ -322,7 +322,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="hp",
             product="openview_network_manager",
-            version="7\.51",
+            version=r"7\.51",
             target_sw="linux",
         )
         self.assertEqual(
@@ -334,7 +334,7 @@ class CPETestCase(unittest.TestCase):
         cpe = CPE(
             part=Part.APPLICATION,
             vendor="foo\\\\bar",
-            product="big\$money_manager_2010",
+            product=r"big\$money_manager_2010",
             sw_edition="special",
             target_sw="ipod_touch",
             target_hw="80gb",
@@ -487,7 +487,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="microsoft",
             product="internet_explorer",
-            version="8\.0\.6001",
+            version=r"8\.0\.6001",
             update="beta",
             edition=ANY,
         )
@@ -501,7 +501,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="microsoft",
             product="internet_explorer",
-            version="8\.*",
+            version=r"8\.*",
             update="sp?",
             edition=ANY,
         )
@@ -514,12 +514,12 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="microsoft",
             product="internet_explorer",
-            version="8\.\*",
+            version=r"8\.\*",
             update="sp?",
         )
         self.assertEqual(
             cpe.as_formatted_string_binding(),
-            "cpe:2.3:a:microsoft:internet_explorer:8.\*:sp?:*:*:*:*:*:*",
+            r"cpe:2.3:a:microsoft:internet_explorer:8.\*:sp?:*:*:*:*:*:*",
         )
 
         # example 3
@@ -527,7 +527,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="hp",
             product="insight",
-            version="7\.4\.0\.1570",
+            version=r"7\.4\.0\.1570",
             update=NA,
             sw_edition="online",
             target_sw="win2003",
@@ -543,7 +543,7 @@ class CPETestCase(unittest.TestCase):
             part=Part.APPLICATION,
             vendor="hp",
             product="openview_network_manager",
-            version="7\.51",
+            version=r"7\.51",
             target_sw="linux",
         )
         self.assertEqual(
@@ -555,14 +555,14 @@ class CPETestCase(unittest.TestCase):
         cpe = CPE(
             part=Part.APPLICATION,
             vendor="foo\\\\bar",
-            product="big\$money_2010",
+            product=r"big\$money_2010",
             sw_edition="special",
             target_sw="ipod_touch",
             target_hw="80gb",
         )
         self.assertEqual(
             cpe.as_formatted_string_binding(),
-            "cpe:2.3:a:foo\\\\bar:big\$money_2010:*:*:*:*:special:ipod_touch:80gb:*",
+            "cpe:2.3:a:foo\\\\bar:big\\$money_2010:*:*:*:*:special:ipod_touch:80gb:*",
         )
 
     def test_formatted_unbind_examples(self):
@@ -634,7 +634,7 @@ class CPETestCase(unittest.TestCase):
 
         # example 4
         cpe = CPE.from_string(
-            "cpe:2.3:a:foo\\\\bar:big\$money:2010:*:*:*:special:ipod_touch:80gb:*"
+            "cpe:2.3:a:foo\\\\bar:big\\$money:2010:*:*:*:special:ipod_touch:80gb:*"
         )
         self.assertFalse(cpe.is_uri_binding())
         self.assertTrue(cpe.is_formatted_string_binding())
@@ -650,7 +650,7 @@ class CPETestCase(unittest.TestCase):
         self.assertEqual(cpe.target_hw, "80gb")
         self.assertEqual(cpe.other, ANY)
 
-        cpe = CPE.from_string("cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
+        cpe = CPE.from_string(r"cpe:2.3:a:foo:bar\:mumble:1.0:*:*:*:*:*:*:*")
         self.assertFalse(cpe.is_uri_binding())
         self.assertTrue(cpe.is_formatted_string_binding())
         self.assertEqual(cpe.part, Part.APPLICATION)
@@ -672,7 +672,7 @@ class CPETestCase(unittest.TestCase):
             "cpe:/a:microsoft:internet_explorer:8.%02:sp%01",
         )
 
-        cpe = CPE.from_string("cpe:2.3:a:cgiirc:cgi\:irc:0.5.7:*:*:*:*:*:*:*")
+        cpe = CPE.from_string(r"cpe:2.3:a:cgiirc:cgi\:irc:0.5.7:*:*:*:*:*:*:*")
         self.assertEqual(
             cpe.as_uri_binding(),
             "cpe:/a:cgiirc:cgi%3airc:0.5.7",

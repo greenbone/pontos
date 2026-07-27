@@ -147,7 +147,7 @@ class Model:
                 })
         """
         if not isinstance(data, dict):
-            raise ValueError(
+            raise TypeError(
                 f"Invalid data for creating an instance of {cls.__name__} "
                 f"model. Data is {data!r}"
             )

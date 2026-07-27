@@ -6,7 +6,7 @@
 
 import re
 from collections import defaultdict
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import NamedTuple, TypedDict
 
@@ -158,7 +158,9 @@ class ConventionalCommits:
         expressions = [
             (
                 commit_type["group"],
-                re.compile(rf"{commit_type['message']}\s?[:|-]", flags=re.I),
+                re.compile(
+                    rf"{commit_type['message']}\s?[:|-]", flags=re.IGNORECASE
+                ),
             )
             for commit_type in self.commit_types()
         ]
@@ -297,14 +299,14 @@ class ChangelogBuilder:
         changelog = []
         if next_version:
             changelog.append(
-                f"## [{next_version}] - {date.today().isoformat()}"
+                f"## [{next_version}] - {datetime.now(tz=timezone.utc).date().isoformat()}"
             )
         else:
             changelog.append("## [Unreleased]")
 
         # changelog entries
         for commit_type in self._conventional_commits.commit_types():
-            if commit_type["group"] in commit_dict.keys():
+            if commit_type["group"] in commit_dict:
                 changelog.append(f"\n## {commit_type['group']}")
                 for log_entry in commit_dict[commit_type["group"]]:
                     commit_id, commit_message = log_entry

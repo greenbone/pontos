@@ -446,7 +446,7 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         self.http_client.get.reset_mock()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             cve = await anext(it)
 
     async def test_context_manager(self):

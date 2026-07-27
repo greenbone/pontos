@@ -36,7 +36,7 @@ DEFAULT_SIGNING_KEY = "0ED1E580"
 
 class ReleaseVersionAction(argparse._StoreAction):
     def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, "release_type", ReleaseType.VERSION)
+        namespace.release_type = ReleaseType.VERSION
         setattr(namespace, self.dest, values)
 
 

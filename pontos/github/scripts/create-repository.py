@@ -33,13 +33,7 @@ def license_type(value: str | LicenseType) -> LicenseType:
 
 
 def possible_license_types() -> str:
-    return ", ".join(
-        [
-            LicenseType.GNU_GENERAL_PUBLIC_LICENSE_2_0.value,
-            LicenseType.GNU_GENERAL_PUBLIC_LICENSE_3_0.value,
-            LicenseType.GNU_AFFERO_GENERAL_PUBLIC_LICENSE_3_0.value,
-        ]
-    )
+    return f"{LicenseType.GNU_GENERAL_PUBLIC_LICENSE_2_0.value}, {LicenseType.GNU_GENERAL_PUBLIC_LICENSE_3_0.value}, {LicenseType.GNU_AFFERO_GENERAL_PUBLIC_LICENSE_3_0.value}"
 
 
 def add_script_arguments(parser: ArgumentParser) -> None:
@@ -85,7 +79,7 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     organization = args.organization
     repository = args.name
-    private = True if args.visibility == "private" else False
+    private = args.visibility == "private"
     gitignore_template = GITIGNORE.get(args.template)
     license_template = args.license
     description = args.description

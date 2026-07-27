@@ -225,8 +225,9 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
             self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_create_file_update_version(self):
-        with temp_file(name="go.mod", change_into=True):
-            with patch.object(
+        with (
+            temp_file(name="go.mod", change_into=True),
+            patch.object(
                 GoVersionCommand,
                 "get_current_version",
                 MagicMock(
@@ -234,23 +235,24 @@ class UpdateGoVersionCommandTestCase(unittest.TestCase):
                         "21.0.1"
                     )
                 ),
-            ):
-                version = SemanticVersioningScheme.parse_version("22.2.2")
-                cmd = GoVersionCommand(SemanticVersioningScheme)
-                updated = cmd.update_version(version)
+            ),
+        ):
+            version = SemanticVersioningScheme.parse_version("22.2.2")
+            cmd = GoVersionCommand(SemanticVersioningScheme)
+            updated = cmd.update_version(version)
 
-                version_file_path = Path(VERSION_FILE_PATH)
-                content = version_file_path.read_text(encoding="utf-8")
+            version_file_path = Path(VERSION_FILE_PATH)
+            content = version_file_path.read_text(encoding="utf-8")
 
-                self.assertIn(str(version), content)
-                version_file_path.unlink()
+            self.assertIn(str(version), content)
+            version_file_path.unlink()
 
-                self.assertEqual(updated.new, version)
-                self.assertEqual(
-                    updated.previous,
-                    SemanticVersioningScheme.parse_version("21.0.1"),
-                )
-                self.assertEqual(updated.changed_files, [version_file_path])
+            self.assertEqual(updated.new, version)
+            self.assertEqual(
+                updated.previous,
+                SemanticVersioningScheme.parse_version("21.0.1"),
+            )
+            self.assertEqual(updated.changed_files, [version_file_path])
 
     def test_no_update(self):
         with temp_file(name="go.mod", change_into=True):

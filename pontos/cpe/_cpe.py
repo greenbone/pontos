@@ -5,7 +5,6 @@
 import re
 import urllib.parse
 from dataclasses import dataclass
-from typing import Any
 
 from pontos.errors import PontosError
 from pontos.models import StrEnum
@@ -748,7 +747,7 @@ class CPE:
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, CPE):
             return False
         return str(self) == str(other)

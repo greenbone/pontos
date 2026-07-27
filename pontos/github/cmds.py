@@ -239,7 +239,7 @@ async def repos(terminal: Terminal, args: Namespace):
 
             if args.path:
                 repo_info = Path(args.path)
-                with repo_info.open(encoding="utf-8", mode="w") as fp:
+                with repo_info.open(encoding="utf-8", mode="w") as fp:  # noqa: ASYNC230
                     async for repo in api.organizations.get_repositories(
                         organization=args.orga, repository_type=args.type
                     ):

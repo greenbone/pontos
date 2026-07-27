@@ -57,7 +57,6 @@ class Qualifier(ABC):
     term: str
 
     def __str__(self) -> str:
-        """ """
         return f"{self.operator}:{self.term}"
 
 

@@ -57,7 +57,7 @@ class ModelTestCase(unittest.TestCase):
 
     def test_from_dict_failure(self):
         with self.assertRaisesRegex(
-            ValueError, "Invalid data for creating an instance of.*"
+            TypeError, "Invalid data for creating an instance of.*"
         ):
             Model.from_dict("foo")
 

@@ -63,7 +63,7 @@ def add_script_arguments(parser: ArgumentParser) -> None:
 async def github_script(api: GitHubAsyncRESTApi, args: Namespace) -> int:
     if args.file:
         file: TextIOWrapper = args.file
-        repositories = [line.strip() for line in file.readlines()]
+        repositories = [line.strip() for line in file]
     else:
         repositories = args.repositories
 

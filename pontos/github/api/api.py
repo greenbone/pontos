@@ -7,6 +7,7 @@ from contextlib import AbstractAsyncContextManager
 from types import TracebackType
 
 import httpx
+from typing_extensions import Self
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.github.api.billing import GitHubAsyncRESTBilling
@@ -206,7 +207,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         """
         return GitHubAsyncRESTUsers(self._client)
 
-    async def __aenter__(self) -> "GitHubAsyncRESTApi":
+    async def __aenter__(self) -> Self:
         await self._client.__aenter__()
         return self
 
