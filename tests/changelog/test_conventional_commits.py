@@ -5,7 +5,7 @@
 
 import unittest
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -27,7 +27,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_with_config(self, git_mock: MagicMock):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
@@ -88,7 +88,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_commits(self, git_mock: MagicMock):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
@@ -114,7 +114,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_changelog_builder_no_last_version(self, git_mock: MagicMock):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
@@ -287,7 +287,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
     def test_changelog_builder_no_conventional_commits(
         self, git_mock: MagicMock
     ):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"
@@ -331,7 +331,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
     def test_changelog_builder_with_default_changelog_config(
         self, git_mock: MagicMock
     ):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
@@ -383,7 +383,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
     def test_changelog_builder_with_empty_git_tag_prefix(
         self, git_mock: MagicMock
     ):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         git_mock.return_value.log.return_value = [
             "1234567 Add: foo bar",
@@ -430,7 +430,7 @@ class ChangelogBuilderTestCase(unittest.TestCase):
 
     @patch("pontos.changelog.conventional_commits.Git", autospec=True)
     def test_write_changelog_to_file(self, git_mock: MagicMock):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
         own_path = Path(__file__).absolute().parent
         config_toml = own_path / "changelog.toml"

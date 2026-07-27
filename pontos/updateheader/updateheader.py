@@ -41,18 +41,18 @@ SUPPORTED_FILE_TYPES = [
     ".xsl",
 ]
 OLD_LINES = [
-    "# \-\*\- coding: utf\-8 \-\*\-",
+    r"# \-\*\- coding: utf\-8 \-\*\-",
     "This program is free software: you can redistribute it and/or modify",
     "it under the terms of the GNU Affero General Public License as",
     "published by the Free Software Foundation, either version 3 of the",
-    "License, or \(at your option\) any later version.",
+    r"License, or \(at your option\) any later version.",
     "This program is free software; you can redistribute it and/or",
     "modify it under the terms of the GNU General Public License",
     "version 2 as published by the Free Software Foundation.",
     "This program is free software: you can redistribute it and/or modify",
     "it under the terms of the GNU General Public License as published by",
     "the Free Software Foundation, either version 3 of the License, or",
-    "\(at your option\) any later version.",
+    r"\(at your option\) any later version.",
     "This program is distributed in the hope that it will be useful,",
     "but WITHOUT ANY WARRANTY; without even the implied warranty of",
     "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
@@ -62,7 +62,7 @@ OLD_LINES = [
     "You should have received a copy of the GNU General Public License",
     "along with this program.  If not, see <http://www.gnu.org/licenses/>.",
     "along with this program; if not, write to the Free Software",
-    "Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",
+    r"Foundation, Inc\., 51 Franklin St, Fifth Floor, Boston, MA 02110\-1301 USA\.",
 ]
 
 
@@ -89,16 +89,19 @@ def _find_copyright(
 ) -> tuple[bool, CopyrightMatch | None]:
     """Match the line for the copyright_regex"""
     copyright_match = re.search(copyright_regex, line)
-    if copyright_match:
-        if copyright_match.group(2) and copyright_match.group(4):
-            return (
-                True,
-                CopyrightMatch(
-                    creation_year=copyright_match.group(2),
-                    modification_year=copyright_match.group(3),
-                    company=copyright_match.group(4),
-                ),
-            )
+    if (
+        copyright_match
+        and copyright_match.group(2)
+        and copyright_match.group(4)
+    ):
+        return (
+            True,
+            CopyrightMatch(
+                creation_year=copyright_match.group(2),
+                modification_year=copyright_match.group(3),
+                company=copyright_match.group(4),
+            ),
+        )
     return False, None
 
 
@@ -119,8 +122,8 @@ def _add_header(
                 .replace("<company>", company)
                 .replace("<year>", year)
             )
-        except FileNotFoundError as e:
-            raise e
+        except FileNotFoundError:  # noqa: TRY203
+            raise
     else:
         raise ValueError
 
@@ -194,9 +197,7 @@ def update_file(
                         first_line = fp.readline()
 
                         # first line is a shebang or XML declaration, leave it
-                        if first_line.startswith("#!") or first_line.startswith(
-                            "<?xml"
-                        ):
+                        if first_line.startswith(("#!", "<?xml")):
                             rest_of_file = fp.read()
                             fp.seek(0)
                             fp.write(first_line + header + "\n" + rest_of_file)
@@ -284,12 +285,12 @@ def update_file(
                 else:
                     print(f"{file}: License Header is ok.")
 
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"{file}: File is not existing.")
-        raise e
-    except UnicodeDecodeError as e:
+        raise
+    except UnicodeDecodeError:
         print(f"{file}: Ignoring binary file.")
-        raise e
+        raise
     # old header existing - cleanup?
     if cleanup_regexes:
         old_content = file.read_text(encoding="utf-8")

@@ -693,7 +693,7 @@ Initial commit"""
     def test_version_runs(self):
         """Getting the git version should not raise an error"""
         git = Git()
-        git.version
+        git.version  # noqa: B018
 
     @patch("pontos.git._git.exec_git")
     def test_show_with_online_and_objects(self, exec_git_mock: MagicMock):

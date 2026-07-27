@@ -5,7 +5,7 @@
 
 from argparse import ArgumentParser, FileType, Namespace
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import datetime, timezone
 
 import shtab
 
@@ -53,7 +53,7 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser.add_argument(
         "-y",
         "--year",
-        default=str(datetime.now().year),
+        default=str(datetime.now(tz=timezone.utc).year),
         help=(
             "If year is set, modified year will be "
             "set to the specified year. Default is %(default)s."

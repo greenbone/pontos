@@ -524,17 +524,17 @@ class EnsureUnloadModuleTestCase(unittest.TestCase):
             import bar  # noqa: F401
 
     def test_ensure_unload_module_exception(self):
-        with self.assertRaisesRegex(ValueError, "Ipsum"):
-            with (
-                temp_python_module(
-                    "def func():\n  raise ValueError('Ipsum')", name="bar"
-                ),
-                ensure_unload_module("bar"),
-            ):
-                # pylint: disable=import-error,import-outside-toplevel,unused-import
-                import bar
+        with (
+            self.assertRaisesRegex(ValueError, "Ipsum"),
+            temp_python_module(
+                "def func():\n  raise ValueError('Ipsum')", name="bar"
+            ),
+            ensure_unload_module("bar"),
+        ):
+            # pylint: disable=import-error,import-outside-toplevel,unused-import
+            import bar
 
-                bar.func()
+            bar.func()
 
         with self.assertRaises(ImportError):
             # pylint: disable=import-error,import-outside-toplevel,unused-import

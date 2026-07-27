@@ -30,6 +30,7 @@ from httpx import (
     Response,
     Timeout,
 )
+from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.helper import snake_case
@@ -138,10 +139,10 @@ def return_or_raise(
         if return_exceptions:
             return exception
 
-        raise exception
+        raise
 
 
-class NVDResults(Generic[T], AsyncIterable[T], Awaitable["NVDResults"]):
+class NVDResults(AsyncIterable[T], Awaitable["NVDResults"], Generic[T]):
     """
     A generic object for accessing the results of a NVD API response
 
@@ -485,7 +486,7 @@ class NVDApi(ABC):
 
         return latest_error
 
-    async def __aenter__(self) -> "NVDApi":
+    async def __aenter__(self) -> Self:
         # reset rate limit counter
         self._request_count = 0
         await self._client.__aenter__()

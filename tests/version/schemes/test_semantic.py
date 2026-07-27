@@ -4,7 +4,7 @@
 #
 
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pontos.version._errors import VersionError
 from pontos.version.schemes._pep440 import PEP440Version
@@ -235,7 +235,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) == version2)
 
     def test_equal_pep440_version(self):
@@ -312,7 +312,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) != version2)
 
     def test_greater_then(self):
@@ -387,7 +387,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) > version2)
 
     def test_greater_or_equal_then(self):
@@ -462,7 +462,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) >= version2)
 
     def test_less_then(self):
@@ -539,7 +539,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) < version2)
 
     def test_less_or_equal_then(self):
@@ -615,7 +615,7 @@ class SemanticVersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) <= version2)
 
     def test_is_dev_release(self):
@@ -824,7 +824,7 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_versions(self):
         calculator = VersionCalculator()
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         year_short = today.year % 100
 
         current_versions = [
@@ -852,7 +852,7 @@ class SemanticVersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_version_error(self):
         calculator = VersionCalculator()
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         year_short = today.year % 100
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):

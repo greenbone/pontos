@@ -4,7 +4,7 @@
 #
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ._errors import VersionError
 from ._version import Version
@@ -42,7 +42,7 @@ class VersionCalculator(ABC):
         Raises:
             VersionError: If version is invalid.
         """
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         current_year_short = today.year % 100
 
         if current_version.major > 2000:

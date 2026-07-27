@@ -151,22 +151,26 @@ boing"""
     def test_out(self):
         with temp_directory() as temp_dir:
             outfile = temp_dir / "github.output"
-            with patch.dict(
-                "os.environ",
-                {"GITHUB_OUTPUT": str(outfile.absolute())},
-                clear=True,
+            with (
+                patch.dict(
+                    "os.environ",
+                    {"GITHUB_OUTPUT": str(outfile.absolute())},
+                    clear=True,
+                ),
+                ActionIO.out() as output,
             ):
-                with ActionIO.out() as output:
-                    output.write("foo", "bar")
+                output.write("foo", "bar")
 
             self.assertEqual(outfile.read_text(encoding="utf8"), "foo=bar\n")
 
     @patch.dict("os.environ", {}, clear=True)
     def test_out_failure(self):
-        with self.assertRaisesRegex(
-            GitHubActionsError,
-            "GITHUB_OUTPUT environment variable not set. Can't write "
-            "action output.",
+        with (
+            self.assertRaisesRegex(
+                GitHubActionsError,
+                "GITHUB_OUTPUT environment variable not set. Can't write "
+                "action output.",
+            ),
+            ActionIO.out(),
         ):
-            with ActionIO.out():
-                pass
+            pass

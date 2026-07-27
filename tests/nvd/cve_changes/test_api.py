@@ -296,8 +296,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_range_too_long(self):
         with self.assertRaises(PontosError):
             self.api.changes(
-                change_start_date=datetime(2023, 1, 1),
-                change_end_date=datetime(2023, 5, 2),
+                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
+                change_end_date=datetime(2023, 5, 2, tzinfo=timezone.utc),
             )
 
     async def test_cve_changes_request_results(self):

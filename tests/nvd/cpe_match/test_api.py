@@ -404,7 +404,7 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         )
         self.http_client.get.assert_not_called()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             cpe_match = await anext(it)
 
     async def test_cpe_match_caching(self):
@@ -536,7 +536,7 @@ class CPEMatchApiWithTokenTestCase(IsolatedAsyncioTestCase):
         )
         self.http_client.get.assert_not_called()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             cpe_match = await anext(it)
 
     @patch("pontos.nvd.api.time.monotonic", autospec=True)

@@ -5,7 +5,7 @@
 
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
-from datetime import datetime
+from datetime import datetime, timezone
 from io import StringIO
 
 from pontos.testing import temp_directory
@@ -293,7 +293,7 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(out.getvalue(), "1.2.4-rc1\n")
 
     def test_next_calendar(self):
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         with (
             temp_directory(change_into=True) as temp_dir,
             redirect_stdout(StringIO()) as out,

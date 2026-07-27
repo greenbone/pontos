@@ -137,14 +137,14 @@ class SemanticVersion(Version):
         """The third item of :attr:`release` or ``0`` if unavailable."""
         return self._version_info.patch
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if other is None:
             return False
         if isinstance(other, str):
             # allow to compare against "current" for now
             return False
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
@@ -153,12 +153,12 @@ class SemanticVersion(Version):
             and self._version_info.build == other._version_info.build
         )
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
     def __gt__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
 
@@ -194,29 +194,25 @@ class SemanticVersion(Version):
             # other is a dev release
             return True
 
-        if other.is_dev_release or other.is_pre_release:
-            return True
-
-        # both are equal
-        return False
+        return other.is_dev_release or other.is_pre_release
 
     def __ge__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return self > other or self == other
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return (not self > other) and self != other
 
     def __le__(self, other: Any) -> bool:
         if not isinstance(other, Version):
-            raise ValueError(f"Can't compare {type(self)} with {type(other)}")
+            raise TypeError(f"Can't compare {type(self)} with {type(other)}")
         if not isinstance(other, type(self)):
             other = self.from_version(other)
         return not self > other or self == other

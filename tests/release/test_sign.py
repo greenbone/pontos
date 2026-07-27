@@ -73,7 +73,7 @@ class SignTestCase(unittest.TestCase):
                 ]
             )
 
-            setattr(args, "repository", "foo_bar")
+            args.repository = "foo_bar"
 
             result = sign(
                 terminal=mock_terminal(),

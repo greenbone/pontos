@@ -26,10 +26,10 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(SemanticVersion("22.2.2"), PEP440Version("22.2.2"))
 
     def test_equal_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.assertNotEqual(SemanticVersion("22.2.2"), 22)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             self.assertNotEqual(PEP440Version("22.2.2"), 22)
 
     def test_hash(self):

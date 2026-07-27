@@ -459,7 +459,7 @@ import bar
 foo.baz(bar.boing)
 """
 
-        expected_content = f"""# SPDX-FileCopyrightText: 2021-{datetime.datetime.now().year!s} Greenbone AG
+        expected_content = f"""# SPDX-FileCopyrightText: 2021-{datetime.datetime.now(tz=datetime.timezone.utc).year!s} Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
@@ -471,7 +471,7 @@ foo.baz(bar.boing)
 """
 
         company = "Greenbone AG"
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
@@ -499,7 +499,7 @@ foo.baz(bar.boing)
 """
 
         expected_content = f"""
-# SPDX-FileCopyrightText: 2021-{datetime.datetime.now().year!s} Greenbone AG
+# SPDX-FileCopyrightText: 2021-{datetime.datetime.now(tz=datetime.timezone.utc).year!s} Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -510,7 +510,7 @@ foo.baz(bar.boing)
 """
 
         company = "Greenbone AG"
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
@@ -538,7 +538,7 @@ foo.baz(bar.boing)
 """
 
         expected_content = f"""
-# SPDX-FileCopyrightText: 2021-{datetime.datetime.now().year!s} ACME Inc.
+# SPDX-FileCopyrightText: 2021-{datetime.datetime.now(tz=datetime.timezone.utc).year!s} ACME Inc.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -549,7 +549,7 @@ foo.baz(bar.boing)
 """
 
         company = "ACME Inc."
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.py") as tmp:
@@ -569,14 +569,14 @@ foo.baz(bar.boing)
 """
 
         expected_content = f"""#!/bin/bash
-# SPDX-FileCopyrightText: {datetime.datetime.now().year!s} Greenbone AG
+# SPDX-FileCopyrightText: {datetime.datetime.now(tz=datetime.timezone.utc).year!s} Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
 
         company = "Greenbone AG"
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.sh") as tmp:
@@ -597,7 +597,7 @@ foo.baz(bar.boing)
 
         expected_content = f"""<?xml version="1.0"?>
 <!--
-SPDX-FileCopyrightText: {datetime.datetime.now().year!s} Greenbone AG
+SPDX-FileCopyrightText: {datetime.datetime.now(tz=datetime.timezone.utc).year!s} Greenbone AG
 
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
@@ -605,7 +605,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
         company = "Greenbone AG"
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.xml") as tmp:
@@ -625,7 +625,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
         expected_content = f"""<!--
-SPDX-FileCopyrightText: {datetime.datetime.now().year!s} Greenbone AG
+SPDX-FileCopyrightText: {datetime.datetime.now(tz=datetime.timezone.utc).year!s} Greenbone AG
 
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
@@ -634,7 +634,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 """
 
         company = "Greenbone AG"
-        year = str(datetime.datetime.now().year)
+        year = str(datetime.datetime.now(tz=datetime.timezone.utc).year)
         license_id = "GPL-3.0-or-later"
 
         with temp_file(content=test_content, name="foo.xml") as tmp:
@@ -667,7 +667,9 @@ class ParseArgsTestCase(TestCase):
         self.assertEqual(args.directories, ["."])
         self.assertEqual(args.company, "Greenbone AG")
         self.assertTrue(args.changed)
-        self.assertEqual(args.year, str(datetime.datetime.now().year))
+        self.assertEqual(
+            args.year, str(datetime.datetime.now(tz=datetime.timezone.utc).year)
+        )
         self.assertEqual(args.license_id, "AGPL-3.0-or-later")
 
     def test_defaults(self):
@@ -677,7 +679,9 @@ class ParseArgsTestCase(TestCase):
         self.assertFalse(args.quiet)
         self.assertIsNone(args.log_file)
         self.assertFalse(args.changed)
-        self.assertEqual(args.year, str(datetime.date.today().year))
+        self.assertEqual(
+            args.year, str(datetime.datetime.now(tz=datetime.timezone.utc).year)
+        )
         self.assertEqual(args.license_id, "GPL-3.0-or-later")
         self.assertEqual(args.company, "Greenbone AG")
         self.assertEqual(args.files, ["foo.txt"])

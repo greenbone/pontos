@@ -898,7 +898,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cve.id, "CVE-2-2")
         self.http_client.get.assert_not_called()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             cve = await anext(it)
 
     async def test_context_manager(self):

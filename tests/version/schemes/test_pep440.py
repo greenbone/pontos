@@ -4,7 +4,7 @@
 #
 
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pontos.version._errors import VersionError
 from pontos.version.schemes._pep440 import PEP440Version as Version
@@ -157,7 +157,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", 1),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) == version2)
 
     def test_equal_with_semantic_version(self):
@@ -255,7 +255,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) != version2)
 
     def test_greater_then(self):
@@ -330,7 +330,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) > version2)
 
     def test_greater_or_equal_then(self):
@@ -405,7 +405,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) >= version2)
 
     def test_less_then(self):
@@ -480,7 +480,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) < version2)
 
     def test_less_or_equal_then(self):
@@ -555,7 +555,7 @@ class PEP440VersionTestCase(unittest.TestCase):
             ("1.0.0", True),
         ]
         for version1, version2 in versions:
-            with self.assertRaisesRegex(ValueError, "Can't compare"):
+            with self.assertRaisesRegex(TypeError, "Can't compare"):
                 self.assertFalse(Version.from_string(version1) <= version2)
 
     def test_is_dev_release(self):
@@ -752,7 +752,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_versions(self):
         calculator = VersionCalculator()
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         year_short = today.year % 100
 
         current_versions = [
@@ -788,7 +788,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_version_error(self):
         calculator = VersionCalculator()
-        today = datetime.today()
+        today = datetime.now(tz=timezone.utc)
         year_short = today.year % 100
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):

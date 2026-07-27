@@ -6,6 +6,7 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime
 
 from httpx import Timeout
+from typing_extensions import Self
 
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
@@ -15,7 +16,6 @@ from pontos.nvd.api import (
     Params,
     format_date,
     now,
-    return_or_raise,
 )
 from pontos.nvd.models.source import Source
 
@@ -32,10 +32,13 @@ def _result_iterator(
 ) -> Iterator[Source | Exception]:
     sources: Iterable = data.get("sources", [])  # type: ignore
     for source in sources:
-        yield return_or_raise(
-            lambda: Source.from_dict(source),
-            return_exceptions,
-        )
+        try:
+            yield Source.from_dict(source)
+        except Exception as exception:
+            if return_exceptions:
+                yield exception
+            else:
+                raise
 
 
 class SourceApi(NVDApi):
@@ -153,6 +156,6 @@ class SourceApi(NVDApi):
             return_exceptions=return_exceptions,
         )
 
-    async def __aenter__(self) -> "SourceApi":
+    async def __aenter__(self) -> Self:
         await super().__aenter__()
         return self

@@ -10,6 +10,7 @@ from typing import (
 )
 
 from httpx import Timeout
+from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -21,7 +22,6 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
-    return_or_raise,
 )
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 
@@ -174,12 +174,15 @@ class CPEMatchApi(NVDApi):
         """
         results: list[dict[str, Any]] = data.get("match_strings", [])  # type: ignore
         for result in results:
-            yield return_or_raise(
-                lambda: CPEMatchString.from_dict_with_cache(
+            try:
+                yield CPEMatchString.from_dict_with_cache(
                     result["match_string"], self._cpe_match_cache
-                ),
-                return_exceptions,
-            )
+                )
+            except Exception as exception:
+                if return_exceptions:
+                    yield exception
+                else:
+                    raise
 
     async def cpe_match(self, match_criteria_id: str) -> CPEMatchString:
         """
@@ -223,7 +226,7 @@ class CPEMatchApi(NVDApi):
             match_string["match_string"], self._cpe_match_cache
         )
 
-    async def __aenter__(self) -> "CPEMatchApi":
+    async def __aenter__(self) -> Self:
         await super().__aenter__()
         return self
 

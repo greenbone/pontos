@@ -12,7 +12,7 @@ from tests import AsyncMock, IsolatedAsyncioTestCase
 
 
 def create_response(*args, **kwargs) -> MagicMock:
-    return MagicMock(spec=httpx.Response, *args, **kwargs)
+    return MagicMock(spec=httpx.Response, *args, **kwargs)  # noqa: B026
 
 
 class GitHubAsyncRESTTestCase(IsolatedAsyncioTestCase):

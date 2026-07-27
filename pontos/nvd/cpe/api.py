@@ -13,6 +13,7 @@ from typing import (
 from uuid import UUID
 
 from httpx import Timeout
+from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -24,7 +25,6 @@ from pontos.nvd.api import (
     convert_camel_case,
     format_date,
     now,
-    return_or_raise,
 )
 from pontos.nvd.models.cpe import CPE
 
@@ -37,10 +37,13 @@ def _result_iterator(
 ) -> Iterator[CPE | Exception]:
     results: list[dict[str, Any]] = data.get("products", [])  # type: ignore
     for result in results:
-        yield return_or_raise(
-            lambda: CPE.from_dict(result["cpe"]),
-            return_exceptions,
-        )
+        try:
+            yield CPE.from_dict(result["cpe"])
+        except Exception as exception:
+            if return_exceptions:
+                yield exception
+            else:
+                raise
 
 
 class CPEApi(NVDApi):
@@ -220,7 +223,7 @@ class CPEApi(NVDApi):
             return_exceptions=return_exceptions,
         )
 
-    async def __aenter__(self) -> "CPEApi":
+    async def __aenter__(self) -> Self:
         await super().__aenter__()
         return self
 
