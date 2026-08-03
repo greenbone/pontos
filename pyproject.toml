@@ -30,7 +30,7 @@ dependencies = [
   "python-dateutil >=2.8.2",
   "semver >=2.13",
   "lxml >=4.9.0",
-  "shtab >=1.8.1",
+  "shtab >=1.9.2",
 ]
 
 [project.urls]
