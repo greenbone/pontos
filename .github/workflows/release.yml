@@ -35,7 +35,7 @@ jobs:
           git config --global user.name "${{ secrets.GREENBONE_BOT }}"
           git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
           git remote set-url origin https://${{ secrets.GREENBONE_BOT_TOKEN }}@github.com/${{ github.repository }}
-      - uses: greenbone/actions/poetry@v3
+      - uses: greenbone/actions/poetry@v3.36.12
       - name: Determine release versions
         id: release-version
         run: |

@@ -16,7 +16,7 @@ jobs:
       contents: write
     steps:
       - name: Run update header
-        uses: greenbone/actions/update-header@v3
+        uses: greenbone/actions/update-header@v3.36.12
         with:
           directories: pontos tests
           target: main
