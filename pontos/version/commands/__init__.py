@@ -13,7 +13,9 @@ from ._command import VersionCommand
 from ._go import GoVersionCommand
 from ._java import JavaVersionCommand
 from ._javascript import JavaScriptVersionCommand
+from ._poetry import PoetryVersionCommand
 from ._python import PythonVersionCommand
+from ._uv import UvVersionCommand
 
 __all__ = (
     "CMakeVersionCommand",
@@ -21,8 +23,10 @@ __all__ = (
     "GoVersionCommand",
     "JavaScriptVersionCommand",
     "JavaVersionCommand",
+    "PoetryVersionCommand",
     "ProjectType",
     "PythonVersionCommand",
+    "UvVersionCommand",
     "VersionCommand",
     "get_commands",
 )
@@ -35,6 +39,8 @@ class ProjectType(StrEnum):
     JAVA = "java"
     NPM = "npm"
     PYPROJECT = "pyproject"
+    POETRY = "poetry"
+    UV = "uv"
 
 
 _COMMANDS: dict[ProjectType, type[VersionCommand]] = {
@@ -43,7 +49,9 @@ _COMMANDS: dict[ProjectType, type[VersionCommand]] = {
     ProjectType.GO: GoVersionCommand,
     ProjectType.JAVA: JavaVersionCommand,
     ProjectType.NPM: JavaScriptVersionCommand,
-    ProjectType.PYPROJECT: PythonVersionCommand,
+    ProjectType.PYPROJECT: PoetryVersionCommand,  # legacy project type for poetry projects
+    ProjectType.POETRY: PoetryVersionCommand,
+    ProjectType.UV: UvVersionCommand,
 }
 
 
@@ -54,5 +62,10 @@ def get_commands(
     Returns the available VersionCommands
     """
     if not names:
-        return list(_COMMANDS.values())
+        return [
+            command
+            for name, command in _COMMANDS.items()
+            # don't include poetry command twice
+            if name != ProjectType.PYPROJECT
+        ]
     return [command for name, command in _COMMANDS.items() if name in names]

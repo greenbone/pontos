@@ -35,6 +35,7 @@ class ProjectTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
+            (temp_module.parent / "poetry.lock").touch()
 
             project = Project(PEP440VersioningScheme)
             self.assertEqual(project.get_current_version(), current_version)
@@ -120,6 +121,7 @@ class ProjectTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
+            (temp_module.parent / "poetry.lock").touch()
 
             go_mod_file = temp_dir / "go.mod"
             go_mod_file.touch()

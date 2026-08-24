@@ -4,6 +4,7 @@
 #
 
 import importlib.util
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Literal
 
@@ -11,7 +12,7 @@ import tomlkit
 import tomlkit.exceptions
 
 from .._errors import VersionError
-from .._version import Version, VersionUpdate
+from .._version import Version
 from ..schemes import PEP440VersioningScheme
 from ._command import VersionCommand
 
@@ -23,98 +24,32 @@ __version__ = "{}"\n"""
 
 
 # This class is used for Python Version command(s)
-class PythonVersionCommand(VersionCommand):
+class PythonVersionCommand(VersionCommand, ABC):
     project_file_name = "pyproject.toml"
     _version_file_path: Path | None = None
     _pyproject_toml: tomlkit.TOMLDocument | None = None
 
-    def _get_version_from_pyproject_toml(self) -> Version:
+    @abstractmethod
+    def get_version_from_pyproject_toml(self) -> Version:
         """
-        Return the version information from the [tool.poetry] section of the
-        pyproject.toml file. The version may be in non standardized form.
+        Return the version information from the pyproject.toml file.
         """
 
-        if (
-            "project" in self.pyproject_toml
-            and "version" in self.pyproject_toml["project"]  # type: ignore[operator]
-        ):
-            return PEP440VersioningScheme.parse_version(
-                str(self.pyproject_toml["project"]["version"])  # type: ignore[operator, index]
-            )
-
-        if (
-            "tool" in self.pyproject_toml
-            and "poetry" in self.pyproject_toml["tool"]  # type: ignore[operator]
-            and "version" in self.pyproject_toml["tool"]["poetry"]  # type: ignore[operator,index]
-        ):
-            return PEP440VersioningScheme.parse_version(
-                str(self.pyproject_toml["tool"]["poetry"]["version"])  # type: ignore[index]
-            )
-
-        raise VersionError(
-            f"Version information not found in {self.project_file_path} file."
-        )
-
-    def _update_version_file(self, new_version: Version) -> None:
-        """
-        Update the version file with the new version
-        """
-        self.version_file_path.write_text(
-            TEMPLATE.format(str(new_version)), encoding="utf-8"
-        )
-
-    def _update_pyproject_version(
+    @abstractmethod
+    def update_pyproject_version(
         self,
         new_version: Version,
     ) -> None:
         """
         Update the version in the pyproject.toml file
         """
-        pyproject_toml = tomlkit.parse(
-            self.project_file_path.read_text(encoding="utf-8")
-        )
 
-        poetry_lock_file_path = self.project_file_path.parent / "poetry.lock"
-        if poetry_lock_file_path.exists() and "project" not in pyproject_toml:
-            # only create [tool.poetry] section if poetry.lock exists and [project] section does not exist
-            # otherwise use [project] section as it is the standard for PEP 621
-            if "tool" not in pyproject_toml:
-                tool_table = tomlkit.table()
-                pyproject_toml["tool"] = tool_table
-
-            if "poetry" not in pyproject_toml["tool"]:  # type: ignore
-                poetry_table = tomlkit.table()
-                pyproject_toml["tool"].add("poetry", poetry_table)  # type: ignore
-
-            if (
-                pyproject_toml.get("tool", {}).get("poetry", {}).get("version")
-                is None
-                and pyproject_toml.get("project", {}).get("version") is None
-            ):
-                # ensure the version is available in the [tool.poetry] section
-                pyproject_toml["tool"]["poetry"]["version"] = str(new_version)
-        else:
-            # create [project] section if it does not exist and set the version
-            if "project" not in pyproject_toml:
-                project_table = tomlkit.table()
-                pyproject_toml["project"] = project_table
-
-            # ensure the version is available in the [project] section
-            pyproject_toml["project"]["version"] = str(new_version)
-
-        if (
-            pyproject_toml.get("tool", {}).get("poetry", {}).get("version")
-            is not None
-        ):
-            # update the version in the [tool.poetry] section if it exists
-            pyproject_toml["tool"]["poetry"]["version"] = str(new_version)
-
-        if pyproject_toml.get("project", {}).get("version") is not None:
-            # update the version in the [project] section if it exists
-            pyproject_toml["project"]["version"] = str(new_version)
-
-        self.project_file_path.write_text(
-            tomlkit.dumps(pyproject_toml), encoding="utf-8"
+    def update_version_file(self, new_version: Version) -> None:
+        """
+        Update the version file with the new version
+        """
+        self.version_file_path.write_text(
+            TEMPLATE.format(str(new_version)), encoding="utf-8"
         )
 
     @property
@@ -196,7 +131,7 @@ class PythonVersionCommand(VersionCommand):
         self, version: Literal["current"] | Version | None
     ) -> None:
         current_version = self.get_current_version()
-        pyproject_version = self._get_version_from_pyproject_toml()
+        pyproject_version = self.get_version_from_pyproject_toml()
 
         if pyproject_version != current_version:
             raise VersionError(
@@ -210,50 +145,3 @@ class PythonVersionCommand(VersionCommand):
                 f"Provided version {version} does not match the "
                 f"current version {current_version}."
             )
-
-    def update_version(
-        self, new_version: Version, *, force: bool = False
-    ) -> VersionUpdate:
-        new_pep440_version = PEP440VersioningScheme.from_version(new_version)
-
-        try:
-            try:
-                current_version = self.get_current_version()
-            except VersionError:
-                # maybe no version module exists yet. fallback to version from
-                # pyproject.toml
-                current_version = self._get_version_from_pyproject_toml()
-
-            current_converted_version = self.versioning_scheme.from_version(
-                current_version
-            )
-
-            if not force and new_pep440_version == current_version:
-                return VersionUpdate(
-                    previous=current_converted_version, new=new_version
-                )
-        except VersionError:
-            # just ignore current version and override it
-            current_converted_version = None
-
-        try:
-            self._update_pyproject_version(new_version=new_pep440_version)
-        except OSError as e:
-            raise VersionError(
-                "Unable to update version in "
-                f"{self.project_file_path.absolute()}. Error was {e}"
-            ) from e
-
-        try:
-            self._update_version_file(new_version=new_pep440_version)
-        except OSError as e:
-            raise VersionError(
-                "Unable to update version in "
-                f"{self.version_file_path.absolute()}. Error was {e}"
-            ) from e
-
-        return VersionUpdate(
-            previous=current_converted_version,
-            new=new_version,
-            changed_files=[self.version_file_path, self.project_file_path],
-        )

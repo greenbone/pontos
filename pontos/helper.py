@@ -24,6 +24,11 @@ from typing import (
     TypeVar,
 )
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 import httpx
 
 from pontos.errors import PontosError
@@ -38,6 +43,7 @@ __all__ = (
     "download_async",
     "ensure_unload_module",
     "enum_or_value",
+    "override",
     "parse_timedelta",
     "snake_case",
     "unload_module",
