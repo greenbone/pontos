@@ -23,6 +23,7 @@ classifiers = [
 requires-python = ">=3.10,<4.0"
 dependencies = [
   "colorful >=0.5.4",
+  "typing-extensions >=4.0; python_version < '3.12'",
   "tomlkit >=0.15.1",
   "packaging >=26.3",
   "httpx[http2] >=0.23",

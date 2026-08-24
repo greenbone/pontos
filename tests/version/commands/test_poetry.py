@@ -13,14 +13,14 @@ import tomlkit
 
 from pontos.testing import temp_directory, temp_file, temp_python_module
 from pontos.version import VersionError
-from pontos.version.commands._python import PythonVersionCommand
+from pontos.version.commands._poetry import PoetryVersionCommand
 from pontos.version.schemes import (
     PEP440VersioningScheme,
     SemanticVersioningScheme,
 )
 
 
-class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
+class GetCurrentPoetryVersionCommandTestCase(unittest.TestCase):
     def test_missing_tool_pontos_version_section(self):
         with (
             temp_file("[tool.pontos]", name="pyproject.toml", change_into=True),
@@ -29,7 +29,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 r"^\[tool\.pontos\.version\] section missing in .*\.$",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_missing_version_module_file_key(self):
@@ -45,7 +45,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 r"section .*\.$",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_version_file_path(self):
@@ -54,7 +54,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             name="pyproject.toml",
             change_into=True,
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
 
             self.assertEqual(
                 cmd.version_file_path, Path("foo") / "__version__.py"
@@ -67,7 +67,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 VersionError, "pyproject.toml file not found."
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_no_version_module(self):
@@ -82,7 +82,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 r"Could not load version from 'foo'\. .* not found.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.get_current_version()
 
     def test_get_current_version(self):
@@ -95,7 +95,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = cmd.get_current_version()
 
             self.assertEqual(
@@ -112,7 +112,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(SemanticVersioningScheme)
+            cmd = PoetryVersionCommand(SemanticVersioningScheme)
             version = cmd.get_current_version()
 
             self.assertEqual(
@@ -121,7 +121,7 @@ class GetCurrentPythonVersionCommandTestCase(unittest.TestCase):
             self.assertIsInstance(version, PEP440VersioningScheme.version_cls)
 
 
-class UpdatePythonVersionTestCase(unittest.TestCase):
+class UpdatePoetryVersionTestCase(unittest.TestCase):
     def test_update_version_file(self):
         content = "__version__ = '21.1'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
@@ -132,7 +132,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 encoding="utf8",
             )
 
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("21.1")
 
@@ -158,7 +158,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
             cmd.update_version(new_version)
 
@@ -170,7 +170,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 r"\[tool.pontos.version\] section missing in .*pyproject\.toml\.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.1.2")
             cmd.update_version(new_version)
 
@@ -185,7 +185,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("22.1")
             updated = cmd.update_version(new_version)
@@ -202,6 +202,61 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
 
             self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
 
+    def test_create_tool_section_if_poetry_lock_exists(self):
+        content = "__version__ = '22.1'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            temp.parent.joinpath("poetry.lock").touch()
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+
+            cmd.update_version(new_version)
+
+            toml = tomlkit.parse(tmp_file.read_text(encoding="utf8"))
+
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+
+    def test_update_version_wraps_project_file_os_error(self):
+        with temp_directory(change_into=True):
+            Path("pyproject.toml").write_text(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            command = PoetryVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+
+            with (
+                patch.object(
+                    command,
+                    "update_pyproject_version",
+                    side_effect=OSError("write"),
+                ),
+                self.assertRaisesRegex(VersionError, "pyproject.toml"),
+            ):
+                command.update_version(new_version)
+
+    def test_update_version_wraps_version_file_os_error(self):
+        with temp_directory(change_into=True):
+            Path("pyproject.toml").write_text(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            command = PoetryVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+
+            with (
+                patch.object(command, "update_pyproject_version"),
+                patch.object(
+                    command, "update_version_file", side_effect=OSError("write")
+                ),
+                self.assertRaisesRegex(VersionError, "version"),
+            ):
+                command.update_version(new_version)
+
     def test_empty_project_section(self):
         content = "__version__ = '22.1'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
@@ -211,7 +266,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("22.1")
             updated = cmd.update_version(new_version)
@@ -240,7 +295,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -270,7 +325,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -298,7 +353,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -329,7 +384,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -359,7 +414,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -377,6 +432,29 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
             self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
             self.assertIsNone(toml.get("project", {}).get("version"))
 
+    def test_create_poetry_table_if_tool_exists_without_poetry(self):
+        content = "__version__ = '1.2.3'"
+        with temp_python_module(content, name="foo", change_into=True) as temp:
+            temp_poetry_lock = temp.parent / "poetry.lock"
+            temp_poetry_lock.touch()
+            tmp_file = temp.parent / "pyproject.toml"
+            tmp_file.write_text(
+                '[tool.pontos.version]\nversion-module-file = "foo.py"',
+                encoding="utf8",
+            )
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
+            new_version = PEP440VersioningScheme.parse_version("22.2")
+
+            cmd.update_version(new_version)
+
+            toml = tomlkit.parse(tmp_file.read_text(encoding="utf8"))
+
+            self.assertEqual(toml["tool"]["poetry"]["version"], "22.2")
+            self.assertEqual(
+                toml["tool"]["pontos"]["version"]["version-module-file"],
+                "foo.py",
+            )
+
     def test_override_existing_version(self):
         content = "__version__ = '1.2.3'"
         with temp_python_module(content, name="foo", change_into=True) as temp:
@@ -386,7 +464,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -412,7 +490,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("22.2.dev1")
             previous_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
@@ -438,7 +516,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version)
 
@@ -455,7 +533,7 @@ class UpdatePythonVersionTestCase(unittest.TestCase):
                 '[tool.pontos.version]\nversion-module-file = "foo.py"',
                 encoding="utf8",
             )
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             new_version = PEP440VersioningScheme.parse_version("1.2.3")
             updated = cmd.update_version(new_version, force=True)
 
@@ -477,14 +555,14 @@ class VerifyVersionTestCase(unittest.TestCase):
         fake_version_py = Path("foo.py")
         with (
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
@@ -493,7 +571,7 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "The version .* in .* doesn't match the current version .*.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.3")
             cmd.verify_version(version)
 
@@ -507,19 +585,19 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
     def test_current_version_with_poetry_version(self):
@@ -532,19 +610,19 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
     def test_current_failure_with_project_version(self):
@@ -557,14 +635,14 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
@@ -573,7 +651,7 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "The version .* in .* doesn't match the current version .*.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
     def test_current_failure_with_poetry_version(self):
@@ -586,14 +664,14 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
@@ -602,7 +680,7 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "The version .* in .* doesn't match the current version .*.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             cmd.verify_version("current")
 
     def test_provided_version_mismatch_with_project_version(self):
@@ -615,14 +693,14 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
@@ -631,7 +709,7 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "Provided version .* does not match the current version .*.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.4")
             cmd.verify_version(version)
 
@@ -645,14 +723,14 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
@@ -661,7 +739,7 @@ class VerifyVersionTestCase(unittest.TestCase):
                 "Provided version .* does not match the current version .*.",
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.4")
             cmd.verify_version(version)
 
@@ -675,19 +753,19 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.3")
 
             cmd.verify_version(version)
@@ -702,33 +780,34 @@ class VerifyVersionTestCase(unittest.TestCase):
         with (
             temp_file(content, name="pyproject.toml", change_into=True),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "get_current_version",
                 MagicMock(
                     return_value=PEP440VersioningScheme.parse_version("1.2.3")
                 ),
             ),
             patch.object(
-                PythonVersionCommand,
+                PoetryVersionCommand,
                 "version_file_path",
                 new=PropertyMock(return_value=fake_version_py),
             ),
         ):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
             version = PEP440VersioningScheme.parse_version("1.2.3")
 
             cmd.verify_version(version)
 
 
-class ProjectFilePythonVersionCommandTestCase(unittest.TestCase):
+class ProjectFilePoetryVersionCommandTestCase(unittest.TestCase):
     def test_project_file_not_found(self):
         with temp_directory(change_into=True):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
 
             self.assertFalse(cmd.project_found())
 
     def test_project_file_found(self):
         with temp_file(name="pyproject.toml", change_into=True):
-            cmd = PythonVersionCommand(PEP440VersioningScheme)
+            Path("poetry.lock").touch()
+            cmd = PoetryVersionCommand(PEP440VersioningScheme)
 
             self.assertTrue(cmd.project_found())
