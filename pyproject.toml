@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 authors = [{ name = "Greenbone AG", email = "info@greenbone.net" }]
 name = "pontos"
@@ -19,7 +23,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-
 requires-python = ">=3.10,<4.0"
 dependencies = [
   "colorful >=0.5.4",
@@ -40,51 +43,61 @@ repository = "https://github.com/greenbone/pontos/"
 documentation = "https://greenbone.github.io/pontos/"
 
 [project.scripts]
-pontos = 'pontos:main'
-pontos-version = 'pontos.version:main'
-pontos-release = 'pontos.release:main'
-pontos-update-header = 'pontos.updateheader:main'
-pontos-changelog = 'pontos.changelog:main'
-pontos-github = 'pontos.github:main'
-pontos-github-actions = 'pontos.github.actions:main'
-pontos-github-script = 'pontos.github.script:main'
-pontos-nvd-cve = 'pontos.nvd.cve:cve_main'
-pontos-nvd-cves = 'pontos.nvd.cve:cves_main'
-pontos-nvd-cve-changes = 'pontos.nvd.cve_changes:main'
-pontos-nvd-cpe = 'pontos.nvd.cpe:cpe_main'
-pontos-nvd-cpes = 'pontos.nvd.cpe:cpes_main'
-pontos-nvd-cpe-match = 'pontos.nvd.cpe_matches:cpe_match_main'
-pontos-nvd-cpe-matches = 'pontos.nvd.cpe_matches:cpe_matches_main'
-pontos-nvd-sources = 'pontos.nvd.source:main'
+pontos = "pontos:main"
+pontos-version = "pontos.version:main"
+pontos-release = "pontos.release:main"
+pontos-update-header = "pontos.updateheader:main"
+pontos-changelog = "pontos.changelog:main"
+pontos-github = "pontos.github:main"
+pontos-github-actions = "pontos.github.actions:main"
+pontos-github-script = "pontos.github.script:main"
+pontos-nvd-cve = "pontos.nvd.cve:cve_main"
+pontos-nvd-cves = "pontos.nvd.cve:cves_main"
+pontos-nvd-cve-changes = "pontos.nvd.cve_changes:main"
+pontos-nvd-cpe = "pontos.nvd.cpe:cpe_main"
+pontos-nvd-cpes = "pontos.nvd.cpe:cpes_main"
+pontos-nvd-cpe-match = "pontos.nvd.cpe_matches:cpe_match_main"
+pontos-nvd-cpe-matches = "pontos.nvd.cpe_matches:cpe_matches_main"
+pontos-nvd-sources = "pontos.nvd.source:main"
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [
-  { include = "pontos" },
-  { include = "tests", format = "sdist" },
-  { include = "poetry.lock", format = "sdist" },
+[dependency-groups]
+dev = [
+  "autohooks-plugin-ruff>=23.6.1",
+  "autohooks-plugin-mypy>=23.3.0",
+  "rope>=1.9.0",
+  "coverage>=7.15.4",
+  "git-cliff>=2.13.1,<3",
 ]
-include = ["pontos/updateheader/templates/", "pontos/github/pr_template.md"]
-version = "26.8.1.dev1"
+docs = [
+  "myst-parser>=0.19.1",
+  "Sphinx>=7.0.1",
+  "furo>=2023.5.20",
+  "sphinx-autobuild>=2021.3.14",
+]
 
-[tool.poetry.group.dev.dependencies]
-autohooks-plugin-ruff = ">=23.6.1"
-autohooks-plugin-mypy = ">=23.3.0"
-rope = ">=1.9.0"
-coverage = ">=7.15.4"
-myst-parser = ">=0.19.1"
-Sphinx = ">=7.0.1"
-furo = ">=2023.5.20"
-sphinx-autobuild = ">=2021.3.14"
-git-cliff = "^2.13.1"
+[tool.uv]
+default-groups = "all"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pontos"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "pontos",
+  "docs",
+  "tests",
+  "uv.lock",
+  "pontos/updateheader/templates/**",
+  "pontos/github/pr_template.md",
+]
 
 [tool.autohooks]
 pre-commit = [
+  'autohooks.plugins.mypy',
   'autohooks.plugins.ruff.check',
   'autohooks.plugins.ruff.format',
-  'autohooks.plugins.mypy',
 ]
-mode = "poetry"
+mode = "uv"
 
 [tool.ruff]
 line-length = 80
@@ -111,10 +124,6 @@ version-module-file = "pontos/version/__version__.py"
 branch = true
 omit = ["tests/*", "pontos/github/scripts/*", "*/__init__.py"]
 source = ["pontos"]
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.git-cliff.changelog]
 # template for the changelog header

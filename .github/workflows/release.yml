@@ -35,21 +35,21 @@ jobs:
           git config --global user.name "${{ secrets.GREENBONE_BOT }}"
           git config --global user.email "${{ secrets.GREENBONE_BOT_MAIL }}"
           git remote set-url origin https://${{ secrets.GREENBONE_BOT_TOKEN }}@github.com/${{ github.repository }}
-      - uses: greenbone/actions/poetry@v3
+      - uses: greenbone/actions/uv@v3
       - name: Determine release versions
         id: release-version
         run: |
-          poetry run pontos-release show --release-type calendar --output-format env --versioning-scheme pep440
-          poetry run pontos-release show --release-type calendar --output-format github-action --versioning-scheme pep440
+          uv run pontos-release show --release-type calendar --output-format env --versioning-scheme pep440
+          uv run pontos-release show --release-type calendar --output-format github-action --versioning-scheme pep440
       - name: Determine changelog
         env:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          poetry run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
+          uv run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
       - name: Create release
         run: |
-          poetry run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release_version }}
+          uv run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release_version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
@@ -60,7 +60,7 @@ jobs:
           rm tmp.file
       - name: Sign assets for released version
         run: |
-          poetry run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release_version }}
+          uv run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release_version }}
         env:
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
