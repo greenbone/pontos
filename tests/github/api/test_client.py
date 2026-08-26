@@ -93,6 +93,54 @@ class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
             ]
         )
 
+    async def test_get_all_with_params(self):
+        next_url = (
+            "https://example.com/resources?state=active&per_page=100&page=2"
+        )
+        response1 = MagicMock(links={"next": {"url": next_url}})
+        response2 = MagicMock(links=None)
+
+        self.http_client.get.side_effect = [
+            response1,
+            response2,
+        ]
+        it = aiter(
+            self.client.get_all(
+                "/resources", params={"state": "active", "per_page": "100"}
+            )
+        )
+
+        await anext(it)
+        await anext(it)
+
+        with self.assertRaises(StopAsyncIteration):
+            await anext(it)
+
+        self.http_client.get.assert_has_awaits(
+            [
+                call(
+                    f"{DEFAULT_GITHUB_API_URL}/resources",
+                    headers={
+                        "Accept": DEFAULT_ACCEPT_HEADER,
+                        "Authorization": "token token",
+                        "X-GitHub-Api-Version": GITHUB_API_VERSION,
+                    },
+                    params={"state": "active", "per_page": "100"},
+                    follow_redirects=True,
+                ),
+                call(
+                    next_url,
+                    headers={
+                        "Accept": DEFAULT_ACCEPT_HEADER,
+                        "Authorization": "token token",
+                        "X-GitHub-Api-Version": GITHUB_API_VERSION,
+                    },
+                    params=None,
+                    follow_redirects=True,
+                ),
+            ]
+        )
+
     async def test_delete(self):
         await self.client.delete("/foo/bar")
 
