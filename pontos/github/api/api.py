@@ -7,7 +7,6 @@ from contextlib import AbstractAsyncContextManager
 from types import TracebackType
 
 import httpx
-from typing_extensions import Self
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.github.api.billing import GitHubAsyncRESTBilling
@@ -33,6 +32,7 @@ from pontos.github.api.teams import GitHubAsyncRESTTeams
 from pontos.github.api.users import GitHubAsyncRESTUsers
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
 from pontos.helper import deprecated
+from pontos.typing import Self
 
 
 class GitHubAsyncRESTApi(AbstractAsyncContextManager):

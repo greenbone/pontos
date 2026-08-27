@@ -10,7 +10,6 @@ from typing import (
 )
 
 from httpx import Timeout
-from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -24,6 +23,7 @@ from pontos.nvd.api import (
     now,
 )
 from pontos.nvd.models.cpe_match_string import CPEMatchString
+from pontos.typing import Self
 
 __all__ = ("CPEMatchApi",)
 

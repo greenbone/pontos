@@ -13,7 +13,6 @@ from typing import (
 from uuid import UUID
 
 from httpx import Timeout
-from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -27,6 +26,7 @@ from pontos.nvd.api import (
     now,
 )
 from pontos.nvd.models.cpe import CPE
+from pontos.typing import Self
 
 DEFAULT_NIST_NVD_CPES_URL = "https://services.nvd.nist.gov/rest/json/cpes/2.0"
 MAX_CPES_PER_PAGE = 10000

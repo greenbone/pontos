@@ -7,7 +7,7 @@ from pathlib import Path
 
 import tomlkit
 
-from ...helper import override
+from ...typing import override
 from .._errors import VersionError
 from .._version import Version, VersionUpdate
 from ..schemes import PEP440VersioningScheme

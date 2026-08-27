@@ -6,7 +6,6 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime
 
 from httpx import Timeout
-from typing_extensions import Self
 
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,
@@ -18,6 +17,7 @@ from pontos.nvd.api import (
     now,
 )
 from pontos.nvd.models.source import Source
+from pontos.typing import Self
 
 __all__ = ("SourceApi",)
 
