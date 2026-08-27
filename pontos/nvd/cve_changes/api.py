@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from httpx import Timeout
-from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -20,6 +19,7 @@ from pontos.nvd.api import (
     now,
 )
 from pontos.nvd.models.cve_change import CVEChange, EventName
+from pontos.typing import Self
 
 __all__ = ("CVEChangesApi",)
 

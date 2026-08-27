@@ -8,7 +8,6 @@ from datetime import datetime
 from types import TracebackType
 
 from httpx import Timeout
-from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (
@@ -24,6 +23,7 @@ from pontos.nvd.api import (
 from pontos.nvd.models.cve import CVE
 from pontos.nvd.models.cvss_v2 import Severity as CVSSv2Severity
 from pontos.nvd.models.cvss_v3 import Severity as CVSSv3Severity
+from pontos.typing import Self
 
 __all__ = ("CVEApi",)
 

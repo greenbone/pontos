@@ -10,7 +10,6 @@ from types import TracebackType
 from typing import Any
 
 import httpx
-from typing_extensions import Self
 
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
@@ -20,6 +19,7 @@ from pontos.github.api.helper import (
     _get_next_url,
 )
 from pontos.github.models.base import GitHubModel
+from pontos.typing import Self
 
 Headers = Mapping[str, str]
 ParamValue = str | None

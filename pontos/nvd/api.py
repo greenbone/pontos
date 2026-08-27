@@ -30,10 +30,10 @@ from httpx import (
     Response,
     Timeout,
 )
-from typing_extensions import Self
 
 from pontos.errors import PontosError
 from pontos.helper import snake_case
+from pontos.typing import Self
 
 SLEEP_TIMEOUT = 30.0  # in seconds
 DEFAULT_TIMEOUT = 180.0  # three minutes
