@@ -93,6 +93,32 @@ class CargoVersionCommand(VersionCommand):
             tomlkit.dumps(cargo_toml), encoding="utf-8"
         )
 
+    def _get_project_names(self) -> set[str]:
+        """Get package names whose lock-file versions belong to this project."""
+        cargo_toml = self.cargo_toml
+        project_name = cargo_toml.get("package", {}).get("name")
+        if project_name:
+            return {str(project_name)}
+
+        project_names = set()
+        members = cargo_toml.get("workspace", {}).get("members", [])
+        for member in members:
+            for member_path in self.project_file_path.parent.glob(str(member)):
+                member_toml_path = member_path / self.project_file_name
+                if not member_toml_path.exists():
+                    continue
+
+                member_toml = tomlkit.parse(
+                    member_toml_path.read_text(encoding="utf-8")
+                )
+                version = member_toml.get("package", {}).get("version")
+                if isinstance(version, dict) and version.get("workspace"):
+                    package_name = member_toml["package"].get("name")
+                    if package_name:
+                        project_names.add(str(package_name))
+
+        return project_names
+
     def _update_cargo_lock_file(self, new_version: Version) -> None:
         """
         Update the Cargo.lock file with the new version.
@@ -111,16 +137,10 @@ class CargoVersionCommand(VersionCommand):
                 f"[[package]] entries not found in {self.cargo_lock_file_path}. "
                 "Cannot update version."
             )
-        project_name = self.cargo_toml.get("package", {}).get("name")
-        if project_name is None:
-            raise VersionError(
-                f"Project name not found in {self.project_file_path}. Cannot update version."
-            )
-
-        if "package" in cargo_lock:
-            for package in cargo_lock["package"]:
-                if package.get("name") == project_name:
-                    package["version"] = str(new_version)
+        project_names = self._get_project_names()
+        for package in cargo_lock["package"]:
+            if package.get("name") in project_names:
+                package["version"] = str(new_version)
 
         self.cargo_lock_file_path.write_text(
             tomlkit.dumps(cargo_lock), encoding="utf-8"
@@ -154,7 +174,10 @@ class CargoVersionCommand(VersionCommand):
         return VersionUpdate(
             previous=previous_version,
             new=new_version,
-            changed_files=[self.project_file_path],
+            changed_files=[
+                self.project_file_path,
+                self.cargo_lock_file_path,
+            ],
         )
 
     def get_current_version(self) -> Version:
