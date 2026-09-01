@@ -204,7 +204,9 @@ class CargoFileCommandTestCase(unittest.TestCase):
     ):
         with temp_directory(change_into=True) as temp_dir:
             Path("Cargo.toml").write_text(
-                '[workspace]\nmembers = ["client", "server"]\n\n'
+                "[workspace]\n"
+                'members = ["client", "server", "without-manifest", '
+                '"independent", "without-name"]\n\n'
                 '[workspace.package]\nversion = "1.0.0"\n'
             )
             for member in ("client", "server"):
@@ -212,10 +214,20 @@ class CargoFileCommandTestCase(unittest.TestCase):
                 (Path(member) / "Cargo.toml").write_text(
                     f'[package]\nname = "{member}"\nversion.workspace = true\n'
                 )
+            Path("without-manifest").mkdir()
+            Path("independent").mkdir()
+            (Path("independent") / "Cargo.toml").write_text(
+                '[package]\nname = "independent"\nversion = "3.0.0"\n'
+            )
+            Path("without-name").mkdir()
+            (Path("without-name") / "Cargo.toml").write_text(
+                "[package]\nversion.workspace = true\n"
+            )
             Path("Cargo.lock").write_text(
                 '[[package]]\nname = "other"\nversion = "9.9.9"\n\n'
                 '[[package]]\nname = "client"\nversion = "1.0.0"\n\n'
-                '[[package]]\nname = "server"\nversion = "1.0.0"\n'
+                '[[package]]\nname = "server"\nversion = "1.0.0"\n\n'
+                '[[package]]\nname = "independent"\nversion = "3.0.0"\n'
             )
             command = CargoVersionCommand(SemanticVersioningScheme)
             new_version = SemanticVersioningScheme.parse_version("2.0.0")
@@ -230,6 +242,7 @@ class CargoFileCommandTestCase(unittest.TestCase):
             self.assertEqual(lock["package"][0]["version"], "9.9.9")
             self.assertEqual(lock["package"][1]["version"], "2.0.0")
             self.assertEqual(lock["package"][2]["version"], "2.0.0")
+            self.assertEqual(lock["package"][3]["version"], "3.0.0")
             self.assertEqual(
                 updated.changed_files,
                 [
@@ -258,6 +271,26 @@ class CargoFileCommandTestCase(unittest.TestCase):
             )
             self.assertEqual(lock["package"][0]["version"], "9.9.9")
             self.assertEqual(lock["package"][1]["version"], "2.0.0")
+
+    def test_update_version_uses_no_previous_version_when_unavailable(self):
+        with temp_file(
+            '[package]\nname = "example"\nversion = "1.0.0"',
+            name="Cargo.toml",
+            change_into=True,
+        ):
+            Path("Cargo.lock").write_text(
+                '[[package]]\nname = "example"\nversion = "1.0.0"'
+            )
+            command = CargoVersionCommand(SemanticVersioningScheme)
+            new_version = SemanticVersioningScheme.parse_version("2.0.0")
+
+            with patch.object(
+                command, "get_current_version", side_effect=VersionError
+            ):
+                updated = command.update_version(new_version)
+
+            self.assertIsNone(updated.previous)
+            self.assertEqual(updated.new, new_version)
 
     def test_update_version_wraps_cargo_toml_os_error(self):
         with temp_file(
@@ -415,6 +448,7 @@ class VerifyCargoVersionCommandTestCase(unittest.TestCase):
                     version
                 )
                 cargo = CargoVersionCommand(SemanticVersioningScheme)
+                cargo.verify_version(None)
                 cargo.verify_version(semantic_version)
 
     def test_verify_failure(self):
