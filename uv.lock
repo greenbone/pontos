@@ -1185,7 +1185,7 @@ wheels = [
 
 [[package]]
 name = "pontos"
-version = "26.8.5.dev1"
+version = "26.9.0"
 source = { editable = "." }
 dependencies = [
     { name = "colorful" },
