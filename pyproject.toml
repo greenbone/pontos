@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 authors = [{ name = "Greenbone AG", email = "info@greenbone.net" }]
 name = "pontos"
-version = "26.9.0"
+version = "26.9.1.dev1"
 description = "Common utilities and tools maintained by Greenbone AG"
 license = "GPL-3.0-or-later"
 readme = "README.md"
