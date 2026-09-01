@@ -30,9 +30,7 @@ class UvVersionCommand(PythonVersionCommand):
         if self._uv_lock_file_path:
             return self._uv_lock_file_path
 
-        self._uv_lock_file_path = (
-            self.project_file_path.parent / self.uv_lock_file_name
-        )
+        self._uv_lock_file_path = self.project_file_path.parent / "uv.lock"
         return self._uv_lock_file_path
 
     @override
