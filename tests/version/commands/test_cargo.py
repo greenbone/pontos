@@ -199,20 +199,44 @@ class CargoFileCommandTestCase(unittest.TestCase):
             with self.assertRaisesRegex(VersionError, r"\[\[package\]\]"):
                 command._update_cargo_lock_file(new_version)
 
-    def test_lock_file_requires_project_name(self):
-        with temp_file(
-            '[package]\nversion = "1.0.0"',
-            name="Cargo.toml",
-            change_into=True,
-        ):
+    def test_update_version_updates_virtual_workspace_members_in_lock_file(
+        self,
+    ):
+        with temp_directory(change_into=True) as temp_dir:
+            Path("Cargo.toml").write_text(
+                '[workspace]\nmembers = ["client", "server"]\n\n'
+                '[workspace.package]\nversion = "1.0.0"\n'
+            )
+            for member in ("client", "server"):
+                Path(member).mkdir()
+                (Path(member) / "Cargo.toml").write_text(
+                    f'[package]\nname = "{member}"\nversion.workspace = true\n'
+                )
             Path("Cargo.lock").write_text(
-                '[[package]]\nname = "example"\nversion = "1.0.0"'
+                '[[package]]\nname = "other"\nversion = "9.9.9"\n\n'
+                '[[package]]\nname = "client"\nversion = "1.0.0"\n\n'
+                '[[package]]\nname = "server"\nversion = "1.0.0"\n'
             )
             command = CargoVersionCommand(SemanticVersioningScheme)
             new_version = SemanticVersioningScheme.parse_version("2.0.0")
 
-            with self.assertRaisesRegex(VersionError, "Project name not found"):
-                command._update_cargo_lock_file(new_version)
+            updated = command.update_version(new_version)
+
+            cargo_toml = tomlkit.parse(Path("Cargo.toml").read_text())
+            lock = tomlkit.parse(Path("Cargo.lock").read_text())
+            self.assertEqual(
+                cargo_toml["workspace"]["package"]["version"], "2.0.0"
+            )
+            self.assertEqual(lock["package"][0]["version"], "9.9.9")
+            self.assertEqual(lock["package"][1]["version"], "2.0.0")
+            self.assertEqual(lock["package"][2]["version"], "2.0.0")
+            self.assertEqual(
+                updated.changed_files,
+                [
+                    (temp_dir / "Cargo.toml").resolve(),
+                    (temp_dir / "Cargo.lock").resolve(),
+                ],
+            )
 
     def test_lock_file_updates_matching_package_only(self):
         with temp_file(
@@ -332,7 +356,10 @@ class VerifyCargoUpdateCommandTestCase(unittest.TestCase):
                 self.assertEqual(updated.new, new_version)
                 self.assertEqual(
                     updated.changed_files,
-                    [(temp_dir / "Cargo.toml").resolve()],
+                    [
+                        (temp_dir / "Cargo.toml").resolve(),
+                        (temp_dir / "Cargo.lock").resolve(),
+                    ],
                 )
                 lock = tomlkit.parse((temp_dir / "Cargo.lock").read_text())
                 self.assertEqual(lock["package"][0]["version"], "9.9.9")
