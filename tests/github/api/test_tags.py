@@ -98,6 +98,7 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
         )
 
         verification = tag.verification
+        self.assertIsNotNone(verification)
         self.assertFalse(verification.verified)
         self.assertEqual(verification.reason, VerificationReason.UNSIGNED)
         self.assertIsNone(verification.payload)
