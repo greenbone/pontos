@@ -167,7 +167,10 @@ async def download_async(
         response.raise_for_status()
 
         if not content_length:
-            content_length = response.headers.get("content-length")
+            try:
+                content_length = int(response.headers.get("content-length", 0))
+            except (TypeError, ValueError):
+                content_length = None
 
         yield AsyncDownloadProgressIterable(
             url=url if url else response.url,
@@ -306,7 +309,10 @@ def download(
     ) as response:
         response.raise_for_status()
 
-        total_length = response.headers.get("content-length")
+        try:
+            total_length = int(response.headers.get("content-length", 0))
+        except (TypeError, ValueError):
+            total_length = None
 
         yield DownloadProgressIterable(
             url=url,

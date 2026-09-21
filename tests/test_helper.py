@@ -282,7 +282,7 @@ class DownloadTestCase(unittest.TestCase):
                 headers=None,
                 params=None,
             )
-            response_headers.get.assert_called_once_with("content-length")
+            response_headers.get.assert_called_once_with("content-length", 0)
 
             self.assertIsNone(download_progress.length)
             self.assertEqual(
@@ -333,7 +333,7 @@ class DownloadTestCase(unittest.TestCase):
                 headers=None,
                 params=None,
             )
-            response_headers.get.assert_called_once_with("content-length")
+            response_headers.get.assert_called_once_with("content-length", 0)
 
             self.assertEqual(download_progress.length, 9)
 
