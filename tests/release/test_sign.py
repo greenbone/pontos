@@ -9,7 +9,7 @@ from asyncio.subprocess import Process
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
-import httpx
+from httpx2 import HTTPStatusError, Request, Response
 
 from pontos.release.main import parse_args
 from pontos.release.sign import SignReturnValue, sign
@@ -667,10 +667,10 @@ class SignTestCase(unittest.TestCase):
             )
         )
         github_releases_mock.upload_release_assets.side_effect = (
-            httpx.HTTPStatusError(
+            HTTPStatusError(
                 "An error",
-                request=MagicMock(spec=httpx.Request),
-                response=MagicMock(spec=httpx.Response),
+                request=MagicMock(spec=Request),
+                response=MagicMock(spec=Response),
             )
         )
         process = AsyncMock(spec=Process, returncode=0)

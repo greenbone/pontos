@@ -10,7 +10,7 @@ from enum import Enum
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.errors import PontosError
 from pontos.helper import (
@@ -151,13 +151,13 @@ class DownloadAsyncTestCase(IsolatedAsyncioTestCase):
 
     async def test_download_async_failure(self):
         response = create_response()
-        response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        response.raise_for_status.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
         stream = AsyncMock()
         stream.__aenter__.return_value = response
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             async with download_async(stream, content_length=2):
                 pass
 
@@ -257,7 +257,7 @@ class DownloadProgressIterableTestCase(unittest.TestCase):
 
 
 class DownloadTestCase(unittest.TestCase):
-    @patch("pontos.github.api.api.httpx.stream")
+    @patch("pontos.helper.stream")
     def test_download_without_destination(
         self,
         requests_mock: MagicMock,
@@ -303,7 +303,7 @@ class DownloadTestCase(unittest.TestCase):
             download_progress.destination.unlink()
 
     @patch("pontos.helper.Path")
-    @patch("pontos.github.api.api.httpx.stream")
+    @patch("pontos.helper.stream")
     def test_download_with_content_length(
         self, requests_mock: MagicMock, path_mock: MagicMock
     ):

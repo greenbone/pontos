@@ -24,7 +24,7 @@ from typing import (
     TypeVar,
 )
 
-import httpx
+from httpx2 import Response, stream
 
 from pontos.errors import PontosError
 from pontos.typing import SupportsStr
@@ -125,7 +125,7 @@ class AsyncDownloadProgressIterable(Generic[T]):
 
 @asynccontextmanager
 async def download_async(
-    stream: AbstractAsyncContextManager[httpx.Response],
+    stream: AbstractAsyncContextManager[Response],
     *,
     content_length: int | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
@@ -152,11 +152,11 @@ async def download_async(
     Example:
         .. code-block:: python
 
-            import httpx
+            import httpx2
             from pontos.helper import download_async
 
-            client = httpx.AsyncClient(...)
-            stream = client.stream("GET, "https://foo.bar/baz.zip)
+            client = httpx2.AsyncClient(...)
+            stream = client.stream("GET", "https://foo.bar/baz.zip)
 
             async with download_async(stream) as download:
                 async for content, progress in download:
@@ -296,7 +296,7 @@ def download(
         Path(url.split("/")[-1]) if not destination else Path(destination)
     )
 
-    with httpx.stream(
+    with stream(
         "GET",
         url,
         timeout=timeout,

@@ -27,7 +27,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to use
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -57,7 +57,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 `main.yml`.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -102,7 +102,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 when inputs are omitted.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Example:
@@ -110,7 +110,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
 
                 from pontos.github.api import GitHubAsyncRESTApi
 
-                with GitHubAsyncRESTApi(token) as api:
+                async with GitHubAsyncRESTApi(token) as api:
                     await api.workflows.create_workflow_dispatch(
                         "foo/bar", "ci.yml", ref="main"
                     )
@@ -165,7 +165,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 response.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -218,7 +218,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             run: The ID of the workflow run
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:

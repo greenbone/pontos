@@ -5,7 +5,7 @@
 from collections.abc import Iterable, Iterator
 from datetime import datetime
 
-from httpx import Timeout
+from httpx2 import Timeout
 
 from pontos.nvd.api import (
     DEFAULT_TIMEOUT_CONFIG,

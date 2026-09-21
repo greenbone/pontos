@@ -64,7 +64,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             repository_type: Only list repositories of this type.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Return:
             An async iterator yielding the repositories
@@ -106,7 +106,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             role: Filter members by their role.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding users
@@ -167,7 +167,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
                 to.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -209,7 +209,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
                 organization.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -239,7 +239,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
             member_filter: Filter the list of outside collaborators.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding users
@@ -282,7 +282,7 @@ class GitHubAsyncRESTOrganizations(GitHubAsyncREST):
                 organization.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `httpx2.HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python

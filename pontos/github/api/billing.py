@@ -21,7 +21,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -51,7 +51,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -82,7 +82,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:

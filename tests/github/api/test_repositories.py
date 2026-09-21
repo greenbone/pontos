@@ -7,7 +7,7 @@
 
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.repositories import (
     GitHubAsyncRESTRepositories,
@@ -510,11 +510,11 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get("foo/bar")
 
         self.client.get.assert_awaited_once_with("/repos/foo/bar")
@@ -529,11 +529,11 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_delete_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.delete("foo/bar")
 
         self.client.delete.assert_awaited_once_with("/repos/foo/bar")
@@ -638,11 +638,11 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_archive_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.archive("foo/bar")
 
         self.client.post.assert_awaited_once_with(
@@ -736,11 +736,11 @@ class GitHubAsyncRESTRepositoriesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.update("foo/bar")
 
         self.client.post.assert_awaited_once_with(

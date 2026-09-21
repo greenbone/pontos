@@ -14,7 +14,7 @@ from os import PathLike
 from pathlib import Path
 from typing import SupportsInt
 
-import httpx
+from httpx2 import HTTPStatusError
 from rich.progress import Progress as RichProgress
 from rich.progress import TextColumn
 
@@ -357,7 +357,7 @@ class SignCommand(AsyncCommand):
                     repository, git_version, upload_files
                 ):
                     self.terminal.ok(f"Uploaded: {uploaded_file}")
-            except httpx.HTTPStatusError as e:
+            except HTTPStatusError as e:
                 self.print_error(f"Failed uploading asset {e}.")
                 return SignReturnValue.UPLOAD_ASSET_ERROR
 
