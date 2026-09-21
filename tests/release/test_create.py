@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
-from httpx import HTTPStatusError, Request, Response
+from httpx2 import HTTPStatusError, Request, Response
 
 from pontos.git import ConfigScope, Git, ResetMode, StatusEntry
 from pontos.github.actions.errors import GitHubActionsError

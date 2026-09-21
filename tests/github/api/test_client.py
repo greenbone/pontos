@@ -17,7 +17,7 @@ from tests import AsyncMock, IsolatedAsyncioTestCase
 
 
 class GitHubAsyncRESTClientTestCase(IsolatedAsyncioTestCase):
-    @patch("pontos.github.api.client.httpx.AsyncClient")
+    @patch("pontos.github.api.client.AsyncClient")
     def setUp(self, async_client: MagicMock) -> None:
         self.http_client = AsyncMock()
         async_client.return_value = self.http_client

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
-from httpx import AsyncClient, RemoteProtocolError, Response
+from httpx2 import AsyncClient, RemoteProtocolError, Response
 
 from pontos.nvd.api import (
     JSON,

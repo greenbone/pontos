@@ -7,7 +7,7 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime
 from types import TracebackType
 
-from httpx import Timeout
+from httpx2 import Timeout
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (

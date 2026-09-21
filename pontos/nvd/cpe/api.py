@@ -12,7 +12,7 @@ from typing import (
 )
 from uuid import UUID
 
-from httpx import Timeout
+from httpx2 import Timeout
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (

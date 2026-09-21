@@ -10,7 +10,7 @@ from enum import IntEnum, auto
 from pathlib import Path
 from typing import Literal, SupportsInt
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.changelog.conventional_commits import ChangelogBuilder
 from pontos.errors import PontosError
@@ -354,7 +354,7 @@ class CreateReleaseCommand(AsyncCommand):
                 )
 
                 self.terminal.ok(f"Created release {release_version}")
-            except httpx.HTTPStatusError as e:
+            except HTTPStatusError as e:
                 self.print_error(str(e))
                 # revert commit and tag
                 self.git.delete_tag(git_version)

@@ -5,7 +5,7 @@
 
 from unittest.mock import MagicMock
 
-from httpx import HTTPStatusError
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.packages import GitHubAsyncRESTPackages
 from pontos.github.models.packages import (

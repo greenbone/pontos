@@ -85,7 +85,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -146,7 +146,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -206,7 +206,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -253,7 +253,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
                 repository
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -297,7 +297,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
                 the alert
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:

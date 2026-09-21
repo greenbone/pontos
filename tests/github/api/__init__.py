@@ -5,14 +5,14 @@
 
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import Response
 
 from pontos.github.api.client import GitHubAsyncREST, GitHubAsyncRESTClient
 from tests import AsyncMock, IsolatedAsyncioTestCase
 
 
 def create_response(*args, **kwargs) -> MagicMock:
-    return MagicMock(spec=httpx.Response, *args, **kwargs)  # noqa: B026
+    return MagicMock(spec=Response, *args, **kwargs)  # noqa: B026
 
 
 class GitHubAsyncRESTTestCase(IsolatedAsyncioTestCase):

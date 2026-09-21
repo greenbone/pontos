@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from httpx import HTTPStatusError
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.branch import (
     GitHubAsyncRESTBranches,

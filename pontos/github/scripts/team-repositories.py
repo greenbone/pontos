@@ -11,7 +11,7 @@ import asyncio
 from argparse import ArgumentParser, FileType, Namespace
 from io import TextIOWrapper
 
-from httpx import HTTPStatusError
+from httpx2 import HTTPStatusError
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.github.models.base import Permission

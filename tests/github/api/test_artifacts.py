@@ -8,7 +8,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from tests import AsyncIteratorMock, AsyncMock
@@ -53,11 +53,11 @@ class GitHubAsyncRESTArtifactsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get("foo/bar", "123")
 
         self.client.get.assert_awaited_once_with(
@@ -254,11 +254,11 @@ class GitHubAsyncRESTArtifactsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_delete_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.delete("foo/bar", "123")
 
         self.client.delete.assert_awaited_once_with(

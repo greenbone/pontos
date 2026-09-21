@@ -8,7 +8,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock, call
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.release import GitHubAsyncRESTReleases
 from tests import AsyncIteratorMock, AsyncMock
@@ -118,14 +118,12 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_exists_error(self):
         response = create_response(is_success=False, status_code=403)
-        error = httpx.HTTPStatusError(
-            "403", request=MagicMock(), response=response
-        )
+        error = HTTPStatusError("403", request=MagicMock(), response=response)
         response.raise_for_status.side_effect = error
 
         self.client.get.return_value = response
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.exists("foo/bar", "v1.2.3")
         self.client.get.assert_awaited_once_with(
             "/repos/foo/bar/releases/tags/v1.2.3"
@@ -181,11 +179,11 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_create_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.create(
                 "foo/bar",
                 "v1.2.3",
@@ -223,11 +221,11 @@ class GitHubAsyncRESTReleasesTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get(
                 "foo/bar",
                 "v1.2.3",

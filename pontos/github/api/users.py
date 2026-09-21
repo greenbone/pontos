@@ -24,7 +24,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             username: The handle for the GitHub user account
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -58,7 +58,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             username: The handle for the GitHub user account
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -85,7 +85,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
         https://docs.github.com/en/rest/users/users#get-the-authenticated-user
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -115,7 +115,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             username: The handle for the GitHub user account
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -145,7 +145,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
         https://docs.github.com/en/rest/users/keys#list-public-ssh-keys-for-the-authenticated-user
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -175,7 +175,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
         https://docs.github.com/en/rest/users/emails#list-email-addresses-for-the-authenticated-user
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -208,7 +208,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             key_id: The unique identifier of the key
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -238,7 +238,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             key_id: The unique identifier of the key
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Example:
@@ -264,7 +264,7 @@ class GitHubAsyncRESTUsers(GitHubAsyncREST):
             key: The public SSH key to add to your GitHub account
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:

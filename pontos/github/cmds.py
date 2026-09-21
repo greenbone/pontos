@@ -7,7 +7,7 @@ import sys
 from argparse import Namespace
 from pathlib import Path
 
-import httpx
+from httpx2 import HTTPError
 
 from pontos.github.api import GitHubAsyncRESTApi
 from pontos.terminal import Terminal
@@ -40,7 +40,7 @@ async def create_tag(terminal: Terminal, args: Namespace) -> None:
                 repo=args.repo, tag=args.tag, sha=new_tag.sha
             )
 
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -76,7 +76,7 @@ async def create_release(terminal: Terminal, args: Namespace) -> None:
             )
 
             terminal.ok("Release created.")
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -120,7 +120,7 @@ async def create_pull_request(terminal: Terminal, args: Namespace):
             )
 
             terminal.ok("Pull Request created.")
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -151,7 +151,7 @@ async def update_pull_request(terminal: Terminal, args: Namespace):
             )
 
             terminal.ok("Pull Request updated.")
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -187,7 +187,7 @@ async def file_status(terminal: Terminal, args: Namespace):
                 if args.output:
                     args.output.write("\n".join(files) + "\n")
 
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -219,7 +219,7 @@ async def labels(terminal: Terminal, args: Namespace):
             await api.labels.set_all(
                 repo=args.repo, issue=args.issue, labels=issue_labels
             )
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)
 
@@ -251,6 +251,6 @@ async def repos(terminal: Terminal, args: Namespace):
                 ):
                     terminal.print(repo)
 
-        except httpx.HTTPError as e:
+        except HTTPError as e:
             terminal.error(str(e))
             sys.exit(1)

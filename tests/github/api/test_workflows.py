@@ -8,7 +8,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.workflows import GitHubAsyncRESTWorkflows
 from tests import AsyncIteratorMock
@@ -46,11 +46,11 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get("foo/bar", "ci.yml")
 
         self.client.get.assert_awaited_once_with(
@@ -1754,11 +1754,11 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_workflow_run_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get_workflow_run("foo/bar", "123")
 
         self.client.get.assert_awaited_once_with(
@@ -1782,13 +1782,13 @@ class GitHubAsyncRESTWorkflowsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_create_workflow_dispatch_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
         input_dict = {"foo": "bar"}
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.create_workflow_dispatch(
                 "foo/bar", "ci.yml", ref="stable", inputs=input_dict
             )

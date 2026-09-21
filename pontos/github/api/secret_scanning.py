@@ -80,7 +80,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -136,7 +136,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -191,7 +191,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -236,7 +236,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 its repository
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -280,7 +280,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 Cannot be updated or deleted.
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -333,7 +333,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 its repository
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
+            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
                 failed.
 
         Returns:

@@ -7,7 +7,7 @@
 
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.labels import GitHubAsyncRESTLabels
 from tests import AsyncIteratorMock
@@ -68,11 +68,11 @@ class GitHubAsyncRESTLabelsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_set_labels_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.set_all("foo/bar", 123, ["a", "b"])
 
         self.client.post.assert_awaited_once_with(

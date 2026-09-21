@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from datetime import datetime, timedelta
 from typing import Any
 
-from httpx import Timeout
+from httpx2 import Timeout
 
 from pontos.errors import PontosError
 from pontos.nvd.api import (

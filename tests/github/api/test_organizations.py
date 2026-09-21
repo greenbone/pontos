@@ -9,7 +9,7 @@ from copy import deepcopy
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.errors import GitHubApiError
 from pontos.github.api.organizations import (
@@ -166,14 +166,12 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_exists_error(self):
         response = create_response(is_success=False, status_code=403)
-        error = httpx.HTTPStatusError(
-            "403", request=MagicMock(), response=response
-        )
+        error = HTTPStatusError("403", request=MagicMock(), response=response)
         response.raise_for_status.side_effect = error
 
         self.client.get.return_value = response
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.exists("foo")
         self.client.get.assert_awaited_once_with("/orgs/foo")
 
@@ -411,11 +409,11 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_remove_member_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.remove_member("foo", "bar")
 
         self.client.delete.assert_awaited_once_with(
@@ -498,11 +496,11 @@ class GitHubAsyncRESTOrganizationsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_remove_outside_collaborator_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.remove_outside_collaborator("foo", "bar")
 
         self.client.delete.assert_awaited_once_with(

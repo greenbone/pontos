@@ -33,7 +33,7 @@ import json
 import sys
 from argparse import ArgumentParser
 
-import httpx
+from httpx2 import HTTPStatusError, ResponseNotRead
 
 from pontos.errors import PontosError
 
@@ -75,7 +75,7 @@ def main():
         sys.exit(retval)
     except KeyboardInterrupt:
         sys.exit(1)
-    except httpx.HTTPStatusError as e:
+    except HTTPStatusError as e:
         try:
             error = e.response.json()
             message = error.get("message")
@@ -88,7 +88,7 @@ def main():
         except json.JSONDecodeError:
             # not a json response
             print(e, file=sys.stderr)
-        except httpx.ResponseNotRead:
+        except ResponseNotRead:
             # a streaming response failed
             print(e, file=sys.stderr)
 

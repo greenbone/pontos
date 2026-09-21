@@ -7,7 +7,7 @@
 
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.teams import GitHubAsyncRESTTeams, TeamPrivacy, TeamRole
 from pontos.github.models.base import Permission
@@ -132,11 +132,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_create_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.create(
                 "foo",
                 "bar",
@@ -187,11 +187,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get("foo", "bar")
 
         self.client.get.assert_awaited_once_with(
@@ -239,11 +239,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.update(
                 "foo",
                 "bar",
@@ -275,11 +275,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_delete_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.delete("foo", "bar")
 
         self.client.delete.assert_awaited_once_with(
@@ -398,11 +398,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_member_failure(self):
         response = create_response()
-        self.client.put.side_effect = httpx.HTTPStatusError(
+        self.client.put.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.update_member("foo", "bar", "baz")
 
         self.client.put.assert_awaited_once_with(
@@ -421,11 +421,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_remove_member_failure(self):
         response = create_response()
-        self.client.delete.side_effect = httpx.HTTPStatusError(
+        self.client.delete.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.remove_member("foo", "bar", "baz")
 
         self.client.delete.assert_awaited_once_with(
@@ -767,11 +767,11 @@ class GitHubAsyncRESTTeamsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_update_permissions_failure(self):
         response = create_response()
-        self.client.put.side_effect = httpx.HTTPStatusError(
+        self.client.put.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.update_permission(
                 "foo", "bar", "baz", Permission.TRIAGE
             )
