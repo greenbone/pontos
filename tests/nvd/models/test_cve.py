@@ -8,7 +8,7 @@
 import unittest
 from datetime import date, datetime, timezone
 
-from pontos.nvd.models import cvss_v2, cvss_v3
+from pontos.nvd.models import cvss_v2, cvss_v3, cvss_v4
 from pontos.nvd.models.cve import CVE, CVSSType, Operator
 from tests.nvd import get_cve_data
 
@@ -201,6 +201,7 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(len(cve.metrics.cvss_metric_v2), 1)
         self.assertEqual(len(cve.metrics.cvss_metric_v30), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v31), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v40), 0)
 
         cvss_metric = cve.metrics.cvss_metric_v2[0]
         self.assertEqual(cvss_metric.source, "nvd@nist.gov")
@@ -271,6 +272,7 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(len(cve.metrics.cvss_metric_v2), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v30), 1)
         self.assertEqual(len(cve.metrics.cvss_metric_v31), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v40), 0)
 
         cvss_metric = cve.metrics.cvss_metric_v30[0]
         self.assertEqual(cvss_metric.source, "nvd@nist.gov")
@@ -354,6 +356,7 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(len(cve.metrics.cvss_metric_v2), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v30), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v31), 1)
+        self.assertEqual(len(cve.metrics.cvss_metric_v40), 0)
 
         cvss_metric = cve.metrics.cvss_metric_v31[0]
         self.assertEqual(cvss_metric.source, "nvd@nist.gov")
@@ -437,6 +440,7 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(len(cve.metrics.cvss_metric_v2), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v30), 0)
         self.assertEqual(len(cve.metrics.cvss_metric_v31), 1)
+        self.assertEqual(len(cve.metrics.cvss_metric_v40), 0)
 
         cvss_metric = cve.metrics.cvss_metric_v31[0]
         self.assertEqual(cvss_metric.source, "nvd@nist.gov")
@@ -484,6 +488,121 @@ class CVETestCase(unittest.TestCase):
         self.assertIsNone(cvss_data.modified_availability_impact)
         self.assertIsNone(cvss_data.environmental_score)
         self.assertIsNone(cvss_data.environmental_severity)
+
+    def test_metrics_v40(self):
+        cve = CVE.from_dict(
+            get_cve_data(
+                {
+                    "metrics": {
+                        "cvss_metric_v40": [
+                            {
+                                "source": "nvd@nist.gov",
+                                "type": "Secondary",
+                                "cvss_data": {
+                                    "version": "4.0",
+                                    "vector_string": "CVSS:4.0/AV:A/AC:L/AT:P/PR:L/UI:P/VC:H/VI:H/VA:L/SC:L/SI:L/SA:N/E:A/S:N/AU:Y/R:U/V:C/RE:M/U:Amber",
+                                    "base_score": 5.3,
+                                    "base_severity": "MEDIUM",
+                                    "attack_vector": "ADJACENT",
+                                    "attack_complexity": "LOW",
+                                    "attack_requirements": "PRESENT",
+                                    "privileges_required": "LOW",
+                                    "user_interaction": "PASSIVE",
+                                    "vuln_confidentiality_impact": "HIGH",
+                                    "vuln_integrity_impact": "HIGH",
+                                    "vuln_availability_impact": "LOW",
+                                    "sub_confidentiality_impact": "LOW",
+                                    "sub_integrity_impact": "LOW",
+                                    "sub_availability_impact": "NONE",
+                                    "exploit_maturity": "ATTACKED",
+                                    "safety": "NEGLIGIBLE",
+                                    "automatable": "YES",
+                                    "recovery": "USER",
+                                    "value_density": "CONCENTRATED",
+                                    "vulnerability_response_effort": "MODERATE",
+                                    "provider_urgency": "AMBER",
+                                },
+                            }
+                        ]
+                    },
+                }
+            )
+        )
+
+        self.assertEqual(len(cve.metrics.cvss_metric_v2), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v30), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v31), 0)
+        self.assertEqual(len(cve.metrics.cvss_metric_v40), 1)
+
+        cvss_metric = cve.metrics.cvss_metric_v40[0]
+        self.assertEqual(cvss_metric.source, "nvd@nist.gov")
+        self.assertEqual(cvss_metric.type, CVSSType.SECONDARY)
+
+        cvss_data = cvss_metric.cvss_data
+        self.assertEqual(cvss_data.base_score, 5.3)
+        self.assertEqual(cvss_data.base_severity, cvss_v4.Severity.MEDIUM)
+        self.assertEqual(cvss_data.attack_vector, cvss_v4.AttackVector.ADJACENT)
+        self.assertEqual(
+            cvss_data.attack_complexity, cvss_v4.AttackComplexity.LOW
+        )
+        self.assertEqual(
+            cvss_data.attack_requirements, cvss_v4.AttackRequirements.PRESENT
+        )
+        self.assertEqual(
+            cvss_data.privileges_required, cvss_v4.PrivilegesRequired.LOW
+        )
+        self.assertEqual(
+            cvss_data.user_interaction, cvss_v4.UserInteraction.PASSIVE
+        )
+        self.assertEqual(
+            cvss_data.vuln_confidentiality_impact, cvss_v4.VulnCiaImpact.HIGH
+        )
+        self.assertEqual(
+            cvss_data.vuln_integrity_impact, cvss_v4.VulnCiaImpact.HIGH
+        )
+        self.assertEqual(
+            cvss_data.vuln_availability_impact, cvss_v4.VulnCiaImpact.LOW
+        )
+        self.assertEqual(
+            cvss_data.sub_confidentiality_impact, cvss_v4.SubCiaImpact.LOW
+        )
+        self.assertEqual(
+            cvss_data.sub_integrity_impact, cvss_v4.SubCiaImpact.LOW
+        )
+        self.assertEqual(
+            cvss_data.sub_availability_impact, cvss_v4.SubCiaImpact.NONE
+        )
+        self.assertEqual(
+            cvss_data.exploit_maturity, cvss_v4.ExploitMaturity.ATTACKED
+        )
+        self.assertEqual(cvss_data.safety, cvss_v4.Safety.NEGLIGIBLE)
+        self.assertEqual(cvss_data.automatable, cvss_v4.Automatability.YES)
+        self.assertEqual(cvss_data.recovery, cvss_v4.Recovery.USER)
+        self.assertEqual(
+            cvss_data.value_density, cvss_v4.ValueDensity.CONCENTRATED
+        )
+        self.assertEqual(
+            cvss_data.vulnerability_response_effort,
+            cvss_v4.VulnerabilityResponseEffort.MODERATE,
+        )
+        self.assertEqual(
+            cvss_data.provider_urgency, cvss_v4.ProviderUrgency.AMBER
+        )
+
+        self.assertIsNone(cvss_data.confidentiality_requirement)
+        self.assertIsNone(cvss_data.integrity_requirement)
+        self.assertIsNone(cvss_data.availability_requirement)
+        self.assertIsNone(cvss_data.modified_attack_vector)
+        self.assertIsNone(cvss_data.modified_attack_complexity)
+        self.assertIsNone(cvss_data.modified_attack_requirements)
+        self.assertIsNone(cvss_data.modified_privileges_required)
+        self.assertIsNone(cvss_data.modified_user_interaction)
+        self.assertIsNone(cvss_data.modified_vuln_integrity_impact)
+        self.assertIsNone(cvss_data.modified_vuln_availability_impact)
+        self.assertIsNone(cvss_data.modified_vuln_confidentiality_impact)
+        self.assertIsNone(cvss_data.modified_sub_integrity_impact)
+        self.assertIsNone(cvss_data.modified_sub_availability_impact)
+        self.assertIsNone(cvss_data.modified_sub_confidentiality_impact)
 
     def test_vendor_comments(self):
         cve = CVE.from_dict(
