@@ -9,6 +9,7 @@ from datetime import date, datetime
 from pontos.models import Model, StrEnum
 from pontos.nvd.models.cvss_v2 import CVSSData as CVSSv2Data
 from pontos.nvd.models.cvss_v3 import CVSSData as CVSSv3Data
+from pontos.nvd.models.cvss_v4 import CVSSData as CVSSv4Data
 
 __all__ = (
     "CVE",
@@ -16,6 +17,7 @@ __all__ = (
     "CVSSType",
     "CVSSv2Metric",
     "CVSSv3Metric",
+    "CVSSv4Metric",
     "Configuration",
     "Description",
     "Metrics",
@@ -107,16 +109,34 @@ class CVSSv3Metric(Model):
 
 
 @dataclass
+class CVSSv4Metric(Model):
+    """
+    A CVSSv4 metric
+
+    Attributes:
+        source: The source of the CVSS
+        type: The CVSS type
+        cvss_data: The actual CVSSv3 data
+    """
+
+    source: str
+    type: CVSSType
+    cvss_data: CVSSv4Data
+
+
+@dataclass
 class Metrics(Model):
     """
     CVE metrics
 
     Attributes:
+        cvss_metric_v40: A list of CVSSv4.0 metrics
         cvss_metric_v31: A list of CVSSv3.1 metrics
         cvss_metric_v30: A list of CVSSv3.0 metrics
         cvss_metric_v2: A list of CVSSv2 metrics
     """
 
+    cvss_metric_v40: list[CVSSv4Metric] = field(default_factory=list)
     cvss_metric_v31: list[CVSSv3Metric] = field(default_factory=list)
     cvss_metric_v30: list[CVSSv3Metric] = field(default_factory=list)
     cvss_metric_v2: list[CVSSv2Metric] = field(default_factory=list)
