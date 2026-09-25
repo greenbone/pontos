@@ -3,11 +3,23 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from .api import NVDApi, NVDResults, convert_camel_case, format_date, now
+from .api import (
+    NVDApi,
+    NVDResults,
+    RemoteProtocolError,
+    Response,
+    Timeout,
+    convert_camel_case,
+    format_date,
+    now,
+)
 
 __all__ = (
     "NVDApi",
     "NVDResults",
+    "RemoteProtocolError",
+    "Response",
+    "Timeout",
     "convert_camel_case",
     "format_date",
     "now",
