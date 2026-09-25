@@ -27,8 +27,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to use
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding workflows
@@ -57,8 +56,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 `main.yml`.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the workflow
@@ -102,8 +100,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 when inputs are omitted.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Example:
             .. code-block:: python
@@ -165,8 +162,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
                 response.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding workflow runs
@@ -218,8 +214,7 @@ class GitHubAsyncRESTWorkflows(GitHubAsyncREST):
             run: The ID of the workflow run
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the workflow run

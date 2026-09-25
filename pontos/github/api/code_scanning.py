@@ -96,8 +96,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the code scanning alerts
@@ -146,8 +145,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             repo: GitHub repository (owner/name)
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the code scanning alerts
@@ -192,8 +190,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
                 its repository
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Code scanning alert information
@@ -235,8 +232,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
                 dismissal of the alert.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Code scanning alert information
@@ -293,8 +289,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
                 refs/pull/<number>/merge.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the code scanning alert instances
@@ -353,8 +348,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             sarif_id: Filter analyses belonging to the same SARIF upload
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the code scanning alert analysis data
@@ -406,8 +400,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             analysis_id: The ID of the analysis
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Code scanning alert analysis data
@@ -444,8 +437,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             analysis_id: The ID of the analysis
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             See the GitHub documentation for the response object
@@ -479,8 +471,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             repo: GitHub repository (owner/name)
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the code scanning codeql database
@@ -522,8 +513,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             language: The language of the CodeQL database
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Code scanning CodeQL database information
@@ -558,8 +548,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             repo: GitHub repository (owner/name)
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Code scanning default setup
@@ -601,8 +590,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             languages: CodeQL languages to be analyzed
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             See the GitHub documentation for the response object
@@ -670,8 +658,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
                 code scanning specifications
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             See the GitHub documentation for the response object
@@ -727,8 +714,7 @@ class GitHubAsyncRESTCodeScanning(GitHubAsyncREST):
             sarif_id: The SARIF ID obtained after uploading
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the SARIF upload

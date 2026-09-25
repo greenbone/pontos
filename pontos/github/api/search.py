@@ -34,7 +34,7 @@ class GitHubAsyncRESTSearch(GitHubAsyncREST):
             sort: Sort the found repositories by this criteria.
 
         Raises:
-            `httpx2.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding repositories

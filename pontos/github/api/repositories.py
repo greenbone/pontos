@@ -32,8 +32,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to request
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the repository
@@ -60,8 +59,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to delete
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Example:
             .. code-block:: python
@@ -189,8 +187,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 Can be one of: "PR_BODY", "PR_TITLE", "BLANK"
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Example:
             .. code-block:: python
@@ -281,8 +278,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to update
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Example:
             .. code-block:: python
@@ -327,7 +323,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
         web_commit_signoff_required: bool | None = False,
     ) -> Repository:
         """
-        Create a new repository at GitHub
+        Update a repository at GitHub
 
         https://docs.github.com/en/rest/repos/repos#update-a-repository
 
@@ -403,8 +399,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
                 contributors to sign off on web-based commits. Default: False.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             The updated repository
@@ -487,8 +482,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to list the topics for
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An iterable of topics as string
@@ -519,8 +513,7 @@ class GitHubAsyncRESTRepositories(GitHubAsyncREST):
             new_topics: Iterable of new topics to set on the repository
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An iterable of topics as string

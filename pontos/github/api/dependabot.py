@@ -85,8 +85,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the dependabot alerts
@@ -146,8 +145,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the dependabot alerts
@@ -206,8 +204,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the dependabot alerts
@@ -253,8 +250,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
                 repository
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Dependabot alert information
@@ -297,8 +293,7 @@ class GitHubAsyncRESTDependabot(GitHubAsyncREST):
                 the alert
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Dependabot alert information

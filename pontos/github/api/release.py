@@ -43,7 +43,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             prerelease: If the release is a pre release. False by default.
 
         Raises:
-            httpx2.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
@@ -116,7 +116,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            httpx2.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Returns:
             Information about the release
@@ -147,7 +147,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            httpx2.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python

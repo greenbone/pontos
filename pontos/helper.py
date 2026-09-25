@@ -7,7 +7,13 @@ import os
 import re
 import sys
 import warnings
-from collections.abc import AsyncIterator, Callable, Generator, Iterator
+from collections.abc import (
+    AsyncGenerator,
+    AsyncIterator,
+    Callable,
+    Generator,
+    Iterator,
+)
 from contextlib import (
     AbstractAsyncContextManager,
     asynccontextmanager,
@@ -130,7 +136,7 @@ async def download_async(
     content_length: int | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     url: str | None = None,
-) -> AsyncIterator[AsyncDownloadProgressIterable[bytes]]:
+) -> AsyncGenerator[AsyncDownloadProgressIterable[bytes]]:
     """
     An async context manager that returns an AsyncDownloadProgressIterable.
 
