@@ -80,8 +80,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the secret scanning alerts
@@ -136,8 +135,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the secret scanning alerts
@@ -191,8 +189,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
             direction: The direction to sort the results by. Default is desc.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the secret scanning alerts
@@ -236,8 +233,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 its repository
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Secret scanning alert information
@@ -280,8 +276,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 Cannot be updated or deleted.
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Secret scanning alert information
@@ -333,8 +328,7 @@ class GitHubAsyncRESTSecretScanning(GitHubAsyncREST):
                 its repository
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator yielding the secret scanning alert locations

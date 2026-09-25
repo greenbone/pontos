@@ -32,8 +32,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             repo: GitHub repository (owner/name) to use
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator for the received artifacts
@@ -61,7 +60,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             artifact: ID of the artifact
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
+            HTTPStatusError: A HTTPStatusError is raised if the request
                 failed.
 
         Returns:
@@ -95,8 +94,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             run: The unique identifier of the workflow run
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             An async iterator for the received artifacts
@@ -124,8 +122,7 @@ class GitHubAsyncRESTArtifacts(GitHubAsyncREST):
             artifact: ID of the artifact
 
         Raises:
-            HTTPStatusError: A httpx2.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Example:
             .. code-block:: python
