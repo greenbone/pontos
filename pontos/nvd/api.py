@@ -23,7 +23,7 @@ from typing import (
     TypeVar,
 )
 
-from httpx import (
+from httpx2 import (
     URL,
     AsyncClient,
     RemoteProtocolError,

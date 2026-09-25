@@ -29,7 +29,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             organization: GitHub organization to use
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding teams
@@ -96,7 +96,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             parent_team_id: The ID of a team to set as the parent team.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             A new team
@@ -143,7 +143,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The team slug of the team.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             Information about the team
@@ -200,7 +200,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             parent_team_id: The ID of a team to set as the parent team.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             The updated team
@@ -245,7 +245,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -275,7 +275,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding users
@@ -321,7 +321,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
                 Default: member. Can be one of: member, maintainer.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -362,7 +362,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             username: The handle for the GitHub user account.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -396,7 +396,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             team: The slug of the team name.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding repositories
@@ -439,7 +439,7 @@ class GitHubAsyncRESTTeams(GitHubAsyncREST):
             permission: The permission to grant the team on the repository.
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python

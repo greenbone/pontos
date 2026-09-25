@@ -56,7 +56,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             package_name: Name of the package to get
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             Package information
@@ -95,7 +95,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
 
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding packages information
@@ -139,7 +139,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             version: Version of the package to get
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             Package version information
@@ -181,7 +181,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             package_name: Name of the package to get
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             An async iterator yielding package versions
@@ -227,7 +227,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             version: Version of the package to get
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Returns:
             List of tags for the package version
@@ -268,7 +268,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             package_name: Name of the package to delete
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -306,7 +306,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             version: Version of the package to delete
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python
@@ -344,7 +344,7 @@ class GitHubAsyncRESTPackages(GitHubAsyncREST):
             tag: Tag of the package to delete
 
         Raises:
-            `httpx.HTTPStatusError`: If there was an error in the request
+            `HTTPStatusError`: If there was an error in the request
 
         Example:
             .. code-block:: python

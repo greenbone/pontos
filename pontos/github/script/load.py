@@ -12,7 +12,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
 
-from httpx import Timeout
+from httpx2 import Timeout
 
 from pontos.github.api.api import GitHubAsyncRESTApi
 from pontos.github.script.errors import GitHubScriptError

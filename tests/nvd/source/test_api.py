@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from httpx import AsyncClient, Response
+from httpx2 import AsyncClient, Response
 
 from pontos.models import ModelError
 from pontos.nvd.models.source import AcceptanceLevel

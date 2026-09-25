@@ -6,7 +6,7 @@
 from contextlib import AbstractAsyncContextManager
 from types import TracebackType
 
-import httpx
+from httpx2 import Timeout
 
 from pontos.github.api.artifacts import GitHubAsyncRESTArtifacts
 from pontos.github.api.billing import GitHubAsyncRESTBilling
@@ -55,7 +55,7 @@ class GitHubAsyncRESTApi(AbstractAsyncContextManager):
         token: str | None = None,
         url: str | None = DEFAULT_GITHUB_API_URL,
         *,
-        timeout: httpx.Timeout | None = DEFAULT_TIMEOUT_CONFIG,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
     ) -> None:
         """
         Args:

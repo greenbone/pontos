@@ -8,7 +8,7 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import httpx
+from httpx2 import HTTPStatusError
 
 from pontos.github.api.tags import GitHubAsyncRESTTags
 from pontos.github.models.tag import GitObjectType, Tag, VerificationReason
@@ -98,6 +98,7 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
         )
 
         verification = tag.verification
+        self.assertIsNotNone(verification)
         self.assertFalse(verification.verified)
         self.assertEqual(verification.reason, VerificationReason.UNSIGNED)
         self.assertIsNone(verification.payload)
@@ -135,11 +136,11 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_create_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.create(
                 "octocat/Hello-World",
                 "v0.0.1",
@@ -181,11 +182,11 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_create_tag_reference_failure(self):
         response = create_response()
-        self.client.post.side_effect = httpx.HTTPStatusError(
+        self.client.post.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.create_tag_reference(
                 "foo/bar", "v1.0.0", "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
             )
@@ -213,11 +214,11 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
 
     async def test_get_failure(self):
         response = create_response()
-        self.client.get.side_effect = httpx.HTTPStatusError(
+        self.client.get.side_effect = HTTPStatusError(
             "404", request=MagicMock(), response=response
         )
 
-        with self.assertRaises(httpx.HTTPStatusError):
+        with self.assertRaises(HTTPStatusError):
             await self.api.get("octocat/Hello-World", "v0.0.1")
 
         self.client.get.assert_awaited_once_with(

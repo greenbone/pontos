@@ -7,7 +7,13 @@ import os
 import re
 import sys
 import warnings
-from collections.abc import AsyncIterator, Callable, Generator, Iterator
+from collections.abc import (
+    AsyncGenerator,
+    AsyncIterator,
+    Callable,
+    Generator,
+    Iterator,
+)
 from contextlib import (
     AbstractAsyncContextManager,
     asynccontextmanager,
@@ -24,7 +30,7 @@ from typing import (
     TypeVar,
 )
 
-import httpx
+from httpx2 import Response, stream
 
 from pontos.errors import PontosError
 from pontos.typing import SupportsStr
@@ -125,12 +131,12 @@ class AsyncDownloadProgressIterable(Generic[T]):
 
 @asynccontextmanager
 async def download_async(
-    stream: AbstractAsyncContextManager[httpx.Response],
+    stream: AbstractAsyncContextManager[Response],
     *,
     content_length: int | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     url: str | None = None,
-) -> AsyncIterator[AsyncDownloadProgressIterable[bytes]]:
+) -> AsyncGenerator[AsyncDownloadProgressIterable[bytes]]:
     """
     An async context manager that returns an AsyncDownloadProgressIterable.
 
@@ -152,11 +158,11 @@ async def download_async(
     Example:
         .. code-block:: python
 
-            import httpx
+            import httpx2
             from pontos.helper import download_async
 
-            client = httpx.AsyncClient(...)
-            stream = client.stream("GET, "https://foo.bar/baz.zip)
+            client = httpx2.AsyncClient(...)
+            stream = client.stream("GET", "https://foo.bar/baz.zip)
 
             async with download_async(stream) as download:
                 async for content, progress in download:
@@ -167,7 +173,10 @@ async def download_async(
         response.raise_for_status()
 
         if not content_length:
-            content_length = response.headers.get("content-length")
+            try:
+                content_length = int(response.headers.get("content-length", 0))
+            except (TypeError, ValueError):
+                content_length = None
 
         yield AsyncDownloadProgressIterable(
             url=url if url else response.url,
@@ -296,7 +305,7 @@ def download(
         Path(url.split("/")[-1]) if not destination else Path(destination)
     )
 
-    with httpx.stream(
+    with stream(
         "GET",
         url,
         timeout=timeout,
@@ -306,7 +315,10 @@ def download(
     ) as response:
         response.raise_for_status()
 
-        total_length = response.headers.get("content-length")
+        try:
+            total_length = int(response.headers.get("content-length", 0))
+        except (TypeError, ValueError):
+            total_length = None
 
         yield DownloadProgressIterable(
             url=url,

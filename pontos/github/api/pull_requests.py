@@ -62,7 +62,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             Information about the pull request
 
         Raises:
-            httpx.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
@@ -137,7 +137,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             body: Description for the pull request. Can be formatted in Markdown
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            HTTPStatusError if the request was invalid
 
         Returns:
             A new pull request
@@ -191,7 +191,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             body: Description for the pull request. Can be formatted in
                 Markdown. Leave empty for keeping the current one.
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            HTTPStatusError if the request was invalid
 
         Returns:
             Updated pull request
@@ -236,7 +236,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             comment: The actual comment message. Can be formatted in Markdown.
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            HTTPStatusError if the request was invalid
 
         Example:
             .. code-block:: python
@@ -270,7 +270,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             comment: The actual comment message. Can be formatted in Markdown.
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            HTTPStatusError if the request was invalid
 
         Example:
             .. code-block:: python
@@ -303,7 +303,7 @@ class GitHubAsyncRESTPullRequests(GitHubAsyncREST):
             pull_request: Pull request number where to add a comment
 
         Raises:
-            httpx.HTTPStatusError if the request was invalid
+            HTTPStatusError if the request was invalid
 
         Example:
             .. code-block:: python

@@ -9,7 +9,7 @@ from contextlib import AbstractAsyncContextManager
 from types import TracebackType
 from typing import Any
 
-import httpx
+from httpx2 import AsyncClient, Response, Timeout
 
 from pontos.github.api.helper import (
     DEFAULT_GITHUB_API_URL,
@@ -51,11 +51,11 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         token: str | None = None,
         url: str | None = DEFAULT_GITHUB_API_URL,
         *,
-        timeout: httpx.Timeout | None = DEFAULT_TIMEOUT_CONFIG,
+        timeout: Timeout | None = DEFAULT_TIMEOUT_CONFIG,
     ) -> None:
         self.token = token
         self.url = url
-        self._client = httpx.AsyncClient(timeout=timeout, http2=True)
+        self._client = AsyncClient(timeout=timeout, http2=True)
 
     def _request_headers(
         self,
@@ -108,7 +108,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         api: str,
         *,
         params: Params | None = None,
-    ) -> httpx.Response:
+    ) -> Response:
         """
         Get request to a GitHub API
 
@@ -132,7 +132,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         api: str,
         *,
         params: Params | None = None,
-    ) -> AsyncIterator[httpx.Response]:
+    ) -> AsyncIterator[Response]:
         """
         Get paginated content of a get GitHub API request
 
@@ -155,7 +155,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
 
     async def delete(
         self, api: str, *, params: Params | None = None
-    ) -> httpx.Response:
+    ) -> Response:
         """
         Delete request to a GitHub API
 
@@ -176,7 +176,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         content: str | None = None,
         content_type: str | None = None,
         content_length: int | None = None,
-    ) -> httpx.Response:
+    ) -> Response:
         """
         Post request to a GitHub API
 
@@ -201,7 +201,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         params: Params | None = None,
         content: str | None = None,
         content_type: str | None = None,
-    ) -> httpx.Response:
+    ) -> Response:
         """
         Put request to a GitHub API
 
@@ -224,7 +224,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         params: Params | None = None,
         content: str | None = None,
         content_type: str | None = None,
-    ) -> httpx.Response:
+    ) -> Response:
         """
         Patch request to a GitHub API
 
@@ -244,7 +244,7 @@ class GitHubAsyncRESTClient(AbstractAsyncContextManager):
         api: str,
         *,
         accept: str | None = None,
-    ) -> AbstractAsyncContextManager[httpx.Response]:
+    ) -> AbstractAsyncContextManager[Response]:
         """
         Stream data from a GitHub API
 

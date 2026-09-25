@@ -8,7 +8,7 @@ from collections.abc import AsyncIterator, Iterable
 from contextlib import AbstractAsyncContextManager
 from pathlib import Path
 
-import httpx
+from httpx2 import Response
 
 from pontos.github.api.client import GitHubAsyncREST
 from pontos.github.api.helper import JSON_OBJECT
@@ -43,7 +43,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             prerelease: If the release is a pre release. False by default.
 
         Raises:
-            httpx.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Example:
             .. code-block:: python
@@ -116,7 +116,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
             tag: The git tag for the release
 
         Raises:
-            httpx.HTTPStatusError: If the request was invalid
+            HTTPStatusError: If the request was invalid
 
         Returns:
             Information about the release
@@ -324,7 +324,7 @@ class GitHubAsyncRESTReleases(GitHubAsyncREST):
 
         async def upload_file(
             file_path: Path, content_type: str
-        ) -> tuple[httpx.Response, Path]:
+        ) -> tuple[Response, Path]:
             response = await self._client.post(
                 asset_url,
                 params={"name": file_path.name},

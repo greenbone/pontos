@@ -21,8 +21,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the Actions billing
@@ -51,8 +50,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the Packages billing
@@ -82,8 +80,7 @@ class GitHubAsyncRESTBilling(GitHubAsyncREST):
             organization: The organization name
 
         Raises:
-            HTTPStatusError: A httpx.HTTPStatusError is raised if the request
-                failed.
+            HTTPStatusError: A HTTPStatusError is raised if the request failed.
 
         Returns:
             Information about the storage billing
