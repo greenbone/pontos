@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-from httpx2 import HTTPStatusError, Response
+from httpx2 import HTTPError, HTTPStatusError, Request, Response
 
 from .api import GitHubAsyncRESTApi, Timeout
 from .artifacts import GitHubAsyncRESTArtifacts
@@ -49,7 +49,9 @@ __all__ = [
     "GitHubAsyncRESTTags",
     "GitHubAsyncRESTTeams",
     "GitHubAsyncRESTWorkflows",
+    "HTTPError",
     "HTTPStatusError",
+    "Request",
     "Response",
     "Timeout",
     "update_from_applied_settings",
