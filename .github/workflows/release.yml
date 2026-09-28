@@ -46,7 +46,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          uv run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
+          uv run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag v${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
       - name: Create release
         run: |
           uv run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release_version }}
