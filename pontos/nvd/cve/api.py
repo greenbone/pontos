@@ -291,7 +291,7 @@ class CVEApi(NVDApi):
         if not cve_id:
             raise PontosError("Missing CVE ID.")
 
-        response = await self._get(params={"cveId": cve_id})
+        response = await self._get(params={"cveIds": cve_id})
         response.raise_for_status()
         data = response.json(object_hook=convert_camel_case)
         vulnerabilities = data["vulnerabilities"]
