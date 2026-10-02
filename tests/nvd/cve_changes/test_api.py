@@ -163,7 +163,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 0,
-                "cveId": "CVE-1",
+                "cveIds": "CVE-1",
                 "resultsPerPage": MAX_CVE_CHANGES_PER_PAGE,
             },
         )
@@ -178,7 +178,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
             headers={"apiKey": "token"},
             params={
                 "startIndex": 1,
-                "cveId": "CVE-1",
+                "cveIds": "CVE-1",
                 "resultsPerPage": 1,
             },
         )
