@@ -161,7 +161,7 @@ class CVEChangesApi(NVDApi):
             params["changeEndDate"] = format_date(change_end_date)
 
         if cve_id:
-            params["cveId"] = cve_id
+            params["cveIds"] = cve_id
 
         if event_name:
             params["eventName"] = event_name
