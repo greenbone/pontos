@@ -94,7 +94,7 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.assert_awaited_once_with(
             "https://services.nvd.nist.gov/rest/json/cves/2.0",
             headers={"apiKey": "token"},
-            params={"cveId": "FOO-BAR"},
+            params={"cveIds": "FOO-BAR"},
         )
 
         self.assertEqual(cve.id, "CVE-2022-45536")
