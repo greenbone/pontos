@@ -95,3 +95,14 @@ jobs:
       - name: Check version
         run: |
           uv run pontos-version verify current
+
+  all-python-ci-jobs-passed:
+    name: All Python CI jobs passed
+    needs: [linting, test, mypy, codecov, check-version]
+    if: ${{ always() }}
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Require all CI jobs to succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: jq -e 'all(.[]; .result == "success")' <<<"$NEEDS"
