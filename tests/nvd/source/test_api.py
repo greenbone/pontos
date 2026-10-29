@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -65,25 +65,25 @@ class SourceApiTestCase(IsolatedAsyncioTestCase):
         )
         self.assertEqual(
             source.last_modified,
-            datetime(2019, 9, 9, 16, 18, 45, 930000, tzinfo=timezone.utc),
+            datetime(2019, 9, 9, 16, 18, 45, 930000, tzinfo=UTC),
         )
         self.assertEqual(
             source.created,
-            datetime(2019, 9, 9, 16, 18, 45, 930000, tzinfo=timezone.utc),
+            datetime(2019, 9, 9, 16, 18, 45, 930000, tzinfo=UTC),
         )
         self.assertIsNone(source.v2_acceptance_level)
         self.assertEqual(
             source.v3_acceptance_level,
             AcceptanceLevel(
                 "Contributor",
-                datetime(2025, 1, 30, 0, 0, 20, 107000, tzinfo=timezone.utc),
+                datetime(2025, 1, 30, 0, 0, 20, 107000, tzinfo=UTC),
             ),
         )
         self.assertEqual(
             source.cwe_acceptance_level,
             AcceptanceLevel(
                 "Reference",
-                datetime(2025, 1, 24, 0, 0, 0, 43000, tzinfo=timezone.utc),
+                datetime(2025, 1, 24, 0, 0, 0, 43000, tzinfo=UTC),
             ),
         )
 
@@ -114,12 +114,8 @@ class SourceApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.sources(
-                last_modified_start_date=datetime(
-                    2025, 1, 1, tzinfo=timezone.utc
-                ),
-                last_modified_end_date=datetime(
-                    2025, 1, 31, tzinfo=timezone.utc
-                ),
+                last_modified_start_date=datetime(2025, 1, 1, tzinfo=UTC),
+                last_modified_end_date=datetime(2025, 1, 31, tzinfo=UTC),
             )
         )
         source = await anext(it)

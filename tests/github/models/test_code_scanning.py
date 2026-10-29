@@ -4,7 +4,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.code_scanning import (
     AlertState,
@@ -260,7 +260,7 @@ class CodeScanningAlertTestCase(unittest.TestCase):
         self.assertEqual(alert.number, 3)
         self.assertEqual(
             alert.created_at,
-            datetime(2020, 2, 13, 12, 29, 18, tzinfo=timezone.utc),
+            datetime(2020, 2, 13, 12, 29, 18, tzinfo=UTC),
         )
         self.assertEqual(
             alert.url,
@@ -273,7 +273,7 @@ class CodeScanningAlertTestCase(unittest.TestCase):
         self.assertEqual(alert.state, AlertState.DISMISSED)
         self.assertEqual(
             alert.dismissed_at,
-            datetime(2020, 2, 14, 12, 29, 18, tzinfo=timezone.utc),
+            datetime(2020, 2, 14, 12, 29, 18, tzinfo=UTC),
         )
         self.assertEqual(alert.dismissed_by.login, "octocat")
         self.assertEqual(
@@ -333,7 +333,7 @@ class AnalysisTestCase(unittest.TestCase):
         )
         self.assertEqual(
             analysis.created_at,
-            datetime(2020, 8, 27, 15, 5, 21, tzinfo=timezone.utc),
+            datetime(2020, 8, 27, 15, 5, 21, tzinfo=UTC),
         )
         self.assertEqual(analysis.results_count, 17)
         self.assertEqual(analysis.rules_count, 49)
@@ -395,11 +395,11 @@ class CodeQLDatabaseTestCase(unittest.TestCase):
         self.assertEqual(db.size, 1024)
         self.assertEqual(
             db.created_at,
-            datetime(2022, 9, 12, 12, 14, 32, tzinfo=timezone.utc),
+            datetime(2022, 9, 12, 12, 14, 32, tzinfo=UTC),
         )
         self.assertEqual(
             db.updated_at,
-            datetime(2022, 9, 12, 12, 14, 32, tzinfo=timezone.utc),
+            datetime(2022, 9, 12, 12, 14, 32, tzinfo=UTC),
         )
         self.assertEqual(
             db.url,
@@ -425,7 +425,7 @@ class DefaultSetupTestCase(unittest.TestCase):
         self.assertEqual(setup.query_suite, QuerySuite.DEFAULT)
         self.assertEqual(
             setup.updated_at,
-            datetime(2023, 1, 19, 11, 21, 34, tzinfo=timezone.utc),
+            datetime(2023, 1, 19, 11, 21, 34, tzinfo=UTC),
         )
         self.assertEqual(setup.schedule, "weekly")
 

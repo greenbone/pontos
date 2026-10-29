@@ -5,7 +5,7 @@
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from itertools import repeat
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -121,11 +121,11 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
         self.assertFalse(cpe.deprecated)
         self.assertEqual(
             cpe.last_modified,
-            datetime(2022, 12, 9, 18, 15, 16, 973000, tzinfo=timezone.utc),
+            datetime(2022, 12, 9, 18, 15, 16, 973000, tzinfo=UTC),
         )
         self.assertEqual(
             cpe.created,
-            datetime(2022, 12, 9, 16, 20, 6, 943000, tzinfo=timezone.utc),
+            datetime(2022, 12, 9, 16, 20, 6, 943000, tzinfo=UTC),
         )
 
         self.assertEqual(cpe.refs, [])
@@ -159,14 +159,12 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
     @patch("pontos.nvd.cpe.api.now", spec=now)
     async def test_cves_last_modified_start_date(self, now_mock: MagicMock):
         uuid = uuid4()
-        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=UTC)
         self.http_client.get.side_effect = create_cpes_responses(uuid)
 
         it = aiter(
             self.api.cpes(
-                last_modified_start_date=datetime(
-                    2022, 12, 1, tzinfo=timezone.utc
-                )
+                last_modified_start_date=datetime(2022, 12, 1, tzinfo=UTC)
             )
         )
         cve = await anext(it)
@@ -208,12 +206,8 @@ class CPEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cpes(
-                last_modified_start_date=datetime(
-                    2022, 12, 1, tzinfo=timezone.utc
-                ),
-                last_modified_end_date=datetime(
-                    2022, 12, 31, tzinfo=timezone.utc
-                ),
+                last_modified_start_date=datetime(2022, 12, 1, tzinfo=UTC),
+                last_modified_end_date=datetime(2022, 12, 31, tzinfo=UTC),
             )
         )
         cve = await anext(it)

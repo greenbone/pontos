@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 from uuid import UUID
@@ -63,7 +63,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cve_change.source_identifier, "nvd@nist.gov")
         self.assertEqual(
             cve_change.created,
-            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=timezone.utc),
+            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=UTC),
         )
         self.assertEqual(
             cve_change.details,
@@ -114,8 +114,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.changes(
-                change_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc),
-                change_end_date=datetime(2022, 12, 31, tzinfo=timezone.utc),
+                change_start_date=datetime(2022, 12, 1, tzinfo=UTC),
+                change_end_date=datetime(2022, 12, 31, tzinfo=UTC),
             )
         )
         cve_changes = await anext(it)
@@ -223,13 +223,11 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
 
     @patch("pontos.nvd.cve_changes.api.now", spec=now)
     async def test_cve_changes_calculate_end_date(self, now_mock: MagicMock):
-        now_mock.return_value = datetime(2023, 1, 2, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2023, 1, 2, tzinfo=UTC)
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.changes(
-                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
-            )
+            self.api.changes(change_start_date=datetime(2023, 1, 1, tzinfo=UTC))
         )
 
         await anext(it)
@@ -249,13 +247,11 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_calculate_end_date_with_limit(
         self, now_mock: MagicMock
     ):
-        now_mock.return_value = datetime(2023, 5, 2, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2023, 5, 2, tzinfo=UTC)
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.changes(
-                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
-            )
+            self.api.changes(change_start_date=datetime(2023, 1, 1, tzinfo=UTC))
         )
 
         await anext(it)
@@ -275,9 +271,7 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
         self.http_client.get.side_effect = create_cve_changes_responses()
 
         it = aiter(
-            self.api.changes(
-                change_end_date=datetime(2023, 5, 1, tzinfo=timezone.utc)
-            )
+            self.api.changes(change_end_date=datetime(2023, 5, 1, tzinfo=UTC))
         )
 
         await anext(it)
@@ -296,8 +290,8 @@ class CVEChangesApiTestCase(IsolatedAsyncioTestCase):
     async def test_cve_changes_range_too_long(self):
         with self.assertRaises(PontosError):
             self.api.changes(
-                change_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc),
-                change_end_date=datetime(2023, 5, 2, tzinfo=timezone.utc),
+                change_start_date=datetime(2023, 1, 1, tzinfo=UTC),
+                change_end_date=datetime(2023, 5, 2, tzinfo=UTC),
             )
 
     async def test_cve_changes_request_results(self):

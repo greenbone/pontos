@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.release import Release, ReleaseAssetState
 
@@ -129,11 +129,11 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertFalse(release.prerelease)
         self.assertEqual(
             release.created_at,
-            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=UTC),
         )
         self.assertEqual(
             release.published_at,
-            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=UTC),
         )
 
         user = release.author
@@ -202,11 +202,11 @@ class ReleaseTestCase(unittest.TestCase):
         self.assertEqual(asset.download_count, 42)
         self.assertEqual(
             asset.created_at,
-            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=UTC),
         )
         self.assertEqual(
             asset.updated_at,
-            datetime(2013, 2, 27, 19, 35, 32, tzinfo=timezone.utc),
+            datetime(2013, 2, 27, 19, 35, 32, tzinfo=UTC),
         )
 
         user = asset.uploader

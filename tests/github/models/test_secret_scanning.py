@@ -4,7 +4,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.secret_scanning import (
     AlertState,
@@ -161,7 +161,7 @@ class SecretScanningAlertTestCase(unittest.TestCase):
         self.assertEqual(alert.repository.id, 1296269)
         self.assertEqual(
             alert.created_at,
-            datetime(2020, 11, 6, 18, 48, 51, tzinfo=timezone.utc),
+            datetime(2020, 11, 6, 18, 48, 51, tzinfo=UTC),
         )
         self.assertIsNone(alert.updated_at)
 
@@ -169,7 +169,7 @@ class SecretScanningAlertTestCase(unittest.TestCase):
         self.assertEqual(alert.resolution_comment, "Example comment")
         self.assertEqual(
             alert.resolved_at,
-            datetime(2020, 11, 7, 2, 47, 13, tzinfo=timezone.utc),
+            datetime(2020, 11, 7, 2, 47, 13, tzinfo=UTC),
         )
         self.assertEqual(alert.resolved_by.login, "monalisa")
 
@@ -177,5 +177,5 @@ class SecretScanningAlertTestCase(unittest.TestCase):
         self.assertEqual(alert.push_protection_bypassed_by.login, "monalisa")
         self.assertEqual(
             alert.push_protection_bypassed_at,
-            datetime(2020, 11, 6, 21, 48, 51, tzinfo=timezone.utc),
+            datetime(2020, 11, 6, 21, 48, 51, tzinfo=UTC),
         )

@@ -7,7 +7,7 @@
 
 import unittest
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 
 from pontos.models import Model, ModelAttribute, ModelError, dotted_attributes
 
@@ -99,19 +99,13 @@ class ExampleModelTestCase(unittest.TestCase):
             foo: datetime
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00.000"})
-        self.assertEqual(
-            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
-        )
+        self.assertEqual(model.foo, datetime(1988, 10, 1, 4, tzinfo=UTC))
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00Z"})
-        self.assertEqual(
-            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
-        )
+        self.assertEqual(model.foo, datetime(1988, 10, 1, 4, tzinfo=UTC))
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00+00:00"})
-        self.assertEqual(
-            model.foo, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
-        )
+        self.assertEqual(model.foo, datetime(1988, 10, 1, 4, tzinfo=UTC))
 
         model = ExampleModel.from_dict({"foo": "1988-10-01T04:00:00+01:00"})
         self.assertEqual(
@@ -122,7 +116,7 @@ class ExampleModelTestCase(unittest.TestCase):
         model = ExampleModel.from_dict({"foo": "2021-06-06T11:15:10.213"})
         self.assertEqual(
             model.foo,
-            datetime(2021, 6, 6, 11, 15, 10, 213000, tzinfo=timezone.utc),
+            datetime(2021, 6, 6, 11, 15, 10, 213000, tzinfo=UTC),
         )
 
     def test_date(self):
@@ -182,9 +176,7 @@ class ExampleModelTestCase(unittest.TestCase):
         )
 
         self.assertEqual(model.foo, "abc")
-        self.assertEqual(
-            model.bar, datetime(1988, 10, 1, 4, tzinfo=timezone.utc)
-        )
+        self.assertEqual(model.bar, datetime(1988, 10, 1, 4, tzinfo=UTC))
         self.assertEqual(model.id, 123)
         self.assertEqual(model.baz, ["a", "b", "c"])
         self.assertIsNotNone(model.ipsum)
