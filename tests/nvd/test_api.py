@@ -21,6 +21,7 @@ from pontos.nvd.api import (
     NVDResults,
     convert_camel_case,
     format_date,
+    now,
     return_or_raise,
 )
 from tests import IsolatedAsyncioTestCase
@@ -39,6 +40,9 @@ class ConvertCamelCaseTestCase(unittest.TestCase):
 
 
 class FormatDateTestCase(unittest.TestCase):
+    def test_now(self):
+        self.assertEqual(now().tzinfo, UTC)
+
     def test_format_date(self):
         dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=UTC)
         fd = format_date(dt)
