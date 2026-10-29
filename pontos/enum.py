@@ -4,18 +4,10 @@
 
 from argparse import ArgumentTypeError
 from collections.abc import Callable
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TypeVar
 
-
-class StrEnum(str, Enum):
-    # Should be replaced by enum.StrEnum when we require Python >= 3.11
-    """
-    An Enum that provides str like behavior
-    """
-
-    def __str__(self) -> str:
-        return self.value
+__all__ = ("StrEnum", "enum_choice", "enum_type", "to_choices")
 
 
 def enum_choice(enum: type[Enum]) -> list[str]:

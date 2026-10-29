@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long, too-many-lines
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.base import Permission, TeamPrivacy
 from pontos.github.models.pull_request import (
@@ -595,16 +595,16 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertEqual(pr.body, "Please pull these awesome changes in!")
         self.assertEqual(pr.active_lock_reason, "too heated")
         self.assertEqual(
-            pr.created_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+            pr.created_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC)
         )
         self.assertEqual(
-            pr.updated_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+            pr.updated_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC)
         )
         self.assertEqual(
-            pr.closed_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+            pr.closed_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC)
         )
         self.assertEqual(
-            pr.merged_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc)
+            pr.merged_at, datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC)
         )
         self.assertEqual(
             pr.merge_commit_sha, "e5bd3914e2e596debea16f433f57875b5b90bcd6"
@@ -708,19 +708,19 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertEqual(milestone.closed_issues, 8)
         self.assertEqual(
             milestone.created_at,
-            datetime(2011, 4, 10, 20, 9, 31, tzinfo=timezone.utc),
+            datetime(2011, 4, 10, 20, 9, 31, tzinfo=UTC),
         )
         self.assertEqual(
             milestone.updated_at,
-            datetime(2014, 3, 3, 18, 58, 10, tzinfo=timezone.utc),
+            datetime(2014, 3, 3, 18, 58, 10, tzinfo=UTC),
         )
         self.assertEqual(
             milestone.closed_at,
-            datetime(2013, 2, 12, 13, 22, 1, tzinfo=timezone.utc),
+            datetime(2013, 2, 12, 13, 22, 1, tzinfo=UTC),
         )
         self.assertEqual(
             milestone.due_on,
-            datetime(2012, 10, 9, 23, 39, 1, tzinfo=timezone.utc),
+            datetime(2012, 10, 9, 23, 39, 1, tzinfo=UTC),
         )
 
         creator = milestone.creator
@@ -1221,15 +1221,15 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertFalse(repo.disabled)
         self.assertEqual(
             repo.pushed_at,
-            datetime(2011, 1, 26, 19, 6, 43, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 6, 43, tzinfo=UTC),
         )
         self.assertEqual(
             repo.created_at,
-            datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC),
         )
         self.assertEqual(
             repo.updated_at,
-            datetime(2011, 1, 26, 19, 14, 43, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 14, 43, tzinfo=UTC),
         )
         self.assertTrue(repo.allow_rebase_merge)
         self.assertTrue(repo.allow_squash_merge)
@@ -1535,15 +1535,15 @@ class PullRequestTestCase(unittest.TestCase):
         self.assertFalse(repo.disabled)
         self.assertEqual(
             repo.pushed_at,
-            datetime(2011, 1, 26, 19, 6, 43, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 6, 43, tzinfo=UTC),
         )
         self.assertEqual(
             repo.created_at,
-            datetime(2011, 1, 26, 19, 1, 12, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 1, 12, tzinfo=UTC),
         )
         self.assertEqual(
             repo.updated_at,
-            datetime(2011, 1, 26, 19, 14, 43, tzinfo=timezone.utc),
+            datetime(2011, 1, 26, 19, 14, 43, tzinfo=UTC),
         )
         self.assertTrue(repo.allow_rebase_merge)
         self.assertTrue(repo.allow_squash_merge)

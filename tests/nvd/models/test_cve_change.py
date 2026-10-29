@@ -5,7 +5,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pontos.nvd.models.cve_change import CVEChange, Detail, EventName
@@ -25,7 +25,7 @@ class CVEChangeTestCase(unittest.TestCase):
         self.assertEqual(cve_change.source_identifier, "nvd@nist.gov")
         self.assertEqual(
             cve_change.created,
-            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=timezone.utc),
+            datetime(2022, 3, 18, 20, 13, 8, 123000, tzinfo=UTC),
         )
         self.assertEqual(
             cve_change.details,

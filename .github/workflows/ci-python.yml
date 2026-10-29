@@ -16,11 +16,11 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
+          - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Format and Lint
@@ -38,11 +38,11 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
+          - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install python, uv and dependencies
@@ -58,11 +58,11 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
+          - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install python, uv and dependencies
@@ -81,7 +81,7 @@ jobs:
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v3
         with:
-          python-version: "3.14"
+          python-version: "3.15"
           package-manager: uv
           token: ${{ secrets.CODECOV_TOKEN }}
 

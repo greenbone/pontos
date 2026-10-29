@@ -5,7 +5,7 @@
 
 # pylint: disable=too-many-lines, redefined-builtin, line-too-long
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 from httpx2 import HTTPStatusError
@@ -84,7 +84,7 @@ class GitHubAsyncRESTTagsTestCase(GitHubAsyncRESTTestCase):
         self.assertEqual(tagger.name, "Monalisa Octocat")
         self.assertEqual(tagger.email, "octocat@github.com")
         self.assertEqual(
-            tagger.date, datetime(2014, 11, 7, 22, 1, 45, tzinfo=timezone.utc)
+            tagger.date, datetime(2014, 11, 7, 22, 1, 45, tzinfo=UTC)
         )
 
         tag_object = tag.object

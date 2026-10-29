@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.tag import GitObjectType, Tag, VerificationReason
 
@@ -55,7 +55,7 @@ class TagModelTestCase(unittest.TestCase):
         self.assertEqual(tagger.name, "Monalisa Octocat")
         self.assertEqual(tagger.email, "octocat@github.com")
         self.assertEqual(
-            tagger.date, datetime(2014, 11, 7, 22, 1, 45, tzinfo=timezone.utc)
+            tagger.date, datetime(2014, 11, 7, 22, 1, 45, tzinfo=UTC)
         )
 
         tag_object = tag.object

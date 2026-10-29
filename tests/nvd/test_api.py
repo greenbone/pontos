@@ -7,7 +7,7 @@
 
 import unittest
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
@@ -40,13 +40,13 @@ class ConvertCamelCaseTestCase(unittest.TestCase):
 
 class FormatDateTestCase(unittest.TestCase):
     def test_format_date(self):
-        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=timezone.utc)
+        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=UTC)
         fd = format_date(dt)
 
         self.assertEqual(fd, "2022-12-10T10:00:12.000+00:00")
 
     def test_format_date_timespec_microseconds(self):
-        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=timezone.utc)
+        dt = datetime(2022, 12, 10, 10, 0, 12, 123, tzinfo=UTC)
         fd = format_date(dt, timespec="microseconds")
 
         self.assertEqual(fd, "2022-12-10T10:00:12.000123+00:00")

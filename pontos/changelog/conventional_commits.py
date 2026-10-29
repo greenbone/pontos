@@ -6,7 +6,7 @@
 
 import re
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import NamedTuple, TypedDict
 
@@ -299,7 +299,7 @@ class ChangelogBuilder:
         changelog = []
         if next_version:
             changelog.append(
-                f"## [{next_version}] - {datetime.now(tz=timezone.utc).date().isoformat()}"
+                f"## [{next_version}] - {datetime.now(tz=UTC).date().isoformat()}"
             )
         else:
             changelog.append("## [Unreleased]")
