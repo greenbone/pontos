@@ -4,7 +4,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.dependabot import (
     AlertState,
@@ -179,11 +179,11 @@ class SecurityAdvisoryTestCase(unittest.TestCase):
 
         self.assertEqual(
             advisory.published_at,
-            datetime(2018, 10, 3, 21, 13, 54, tzinfo=timezone.utc),
+            datetime(2018, 10, 3, 21, 13, 54, tzinfo=UTC),
         )
         self.assertEqual(
             advisory.updated_at,
-            datetime(2022, 4, 26, 18, 35, 37, tzinfo=timezone.utc),
+            datetime(2022, 4, 26, 18, 35, 37, tzinfo=UTC),
         )
 
         self.assertIsNone(advisory.withdrawn_at)
@@ -417,11 +417,11 @@ class DependabotAlertTestCase(unittest.TestCase):
 
         self.assertEqual(
             alert.security_advisory.published_at,
-            datetime(2018, 10, 3, 21, 13, 54, tzinfo=timezone.utc),
+            datetime(2018, 10, 3, 21, 13, 54, tzinfo=UTC),
         )
         self.assertEqual(
             alert.security_advisory.updated_at,
-            datetime(2022, 4, 26, 18, 35, 37, tzinfo=timezone.utc),
+            datetime(2022, 4, 26, 18, 35, 37, tzinfo=UTC),
         )
 
         self.assertIsNone(alert.security_advisory.withdrawn_at)
@@ -449,15 +449,15 @@ class DependabotAlertTestCase(unittest.TestCase):
 
         self.assertEqual(
             alert.created_at,
-            datetime(2022, 6, 15, 7, 43, 3, tzinfo=timezone.utc),
+            datetime(2022, 6, 15, 7, 43, 3, tzinfo=UTC),
         )
         self.assertEqual(
             alert.updated_at,
-            datetime(2022, 8, 23, 14, 29, 47, tzinfo=timezone.utc),
+            datetime(2022, 8, 23, 14, 29, 47, tzinfo=UTC),
         )
         self.assertEqual(
             alert.dismissed_at,
-            datetime(2022, 8, 23, 14, 29, 47, tzinfo=timezone.utc),
+            datetime(2022, 8, 23, 14, 29, 47, tzinfo=UTC),
         )
 
         self.assertEqual(alert.dismissed_by.login, "octocat")

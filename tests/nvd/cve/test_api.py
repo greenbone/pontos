@@ -5,7 +5,7 @@
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -101,11 +101,11 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
         self.assertEqual(cve.source_identifier, "cve@mitre.org")
         self.assertEqual(
             cve.published,
-            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=timezone.utc),
+            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=UTC),
         )
         self.assertEqual(
             cve.last_modified,
-            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=timezone.utc),
+            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=UTC),
         )
         self.assertEqual(len(cve.descriptions), 1)
         self.assertEqual(len(cve.references), 2)
@@ -153,14 +153,12 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
     @patch("pontos.nvd.cve.api.now", spec=now)
     async def test_cves_last_modified_start_date(self, now_mock: MagicMock):
-        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=UTC)
         self.http_client.get.side_effect = create_cves_responses()
 
         it = aiter(
             self.api.cves(
-                last_modified_start_date=datetime(
-                    2022, 12, 1, tzinfo=timezone.utc
-                )
+                last_modified_start_date=datetime(2022, 12, 1, tzinfo=UTC)
             )
         )
         cve = await anext(it)
@@ -201,12 +199,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cves(
-                last_modified_start_date=datetime(
-                    2022, 12, 1, tzinfo=timezone.utc
-                ),
-                last_modified_end_date=datetime(
-                    2022, 12, 31, tzinfo=timezone.utc
-                ),
+                last_modified_start_date=datetime(2022, 12, 1, tzinfo=UTC),
+                last_modified_end_date=datetime(2022, 12, 31, tzinfo=UTC),
             )
         )
         cve = await anext(it)
@@ -244,12 +238,12 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
     @patch("pontos.nvd.cve.api.now", spec=now)
     async def test_cves_published_start_date(self, now_mock: MagicMock):
-        now_mock.return_value = datetime(2022, 12, 31, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2022, 12, 31, tzinfo=UTC)
         self.http_client.get.side_effect = create_cves_responses()
 
         it = aiter(
             self.api.cves(
-                published_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc)
+                published_start_date=datetime(2022, 12, 1, tzinfo=UTC)
             )
         )
         cve = await anext(it)
@@ -290,8 +284,8 @@ class CVEApiTestCase(IsolatedAsyncioTestCase):
 
         it = aiter(
             self.api.cves(
-                published_start_date=datetime(2022, 12, 1, tzinfo=timezone.utc),
-                published_end_date=datetime(2022, 12, 31, tzinfo=timezone.utc),
+                published_start_date=datetime(2022, 12, 1, tzinfo=UTC),
+                published_end_date=datetime(2022, 12, 31, tzinfo=UTC),
             )
         )
         cve = await anext(it)

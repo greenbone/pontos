@@ -5,7 +5,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pontos.nvd.models.cpe_match_string import CPEMatch, CPEMatchString
@@ -37,11 +37,11 @@ class CPEMatchTestCase(unittest.TestCase):
             cpe_match_string.status,
         )
         self.assertEqual(
-            datetime(2019, 6, 17, 9, 16, 33, 960000, tzinfo=timezone.utc),
+            datetime(2019, 6, 17, 9, 16, 33, 960000, tzinfo=UTC),
             cpe_match_string.created,
         )
         self.assertEqual(
-            datetime(2019, 6, 17, 9, 16, 44, 0, tzinfo=timezone.utc),
+            datetime(2019, 6, 17, 9, 16, 44, 0, tzinfo=UTC),
             cpe_match_string.last_modified,
         )
 
@@ -58,7 +58,7 @@ class CPEMatchTestCase(unittest.TestCase):
         cpe_match_string = CPEMatchString.from_dict(data)
 
         self.assertEqual(
-            datetime(2019, 7, 22, 16, 37, 38, 133000, tzinfo=timezone.utc),
+            datetime(2019, 7, 22, 16, 37, 38, 133000, tzinfo=UTC),
             cpe_match_string.cpe_last_modified,
         )
 

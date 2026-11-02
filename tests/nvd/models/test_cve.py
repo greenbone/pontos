@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from pontos.nvd.models import cvss_v2, cvss_v3, cvss_v4
 from pontos.nvd.models.cve import CVE, CVSSType, Operator
@@ -21,11 +21,11 @@ class CVETestCase(unittest.TestCase):
         self.assertEqual(cve.source_identifier, "cve@mitre.org")
         self.assertEqual(
             cve.published,
-            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=timezone.utc),
+            datetime(2022, 11, 22, 21, 15, 11, 103000, tzinfo=UTC),
         )
         self.assertEqual(
             cve.last_modified,
-            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=timezone.utc),
+            datetime(2022, 11, 23, 16, 2, 7, 367000, tzinfo=UTC),
         )
         self.assertEqual(len(cve.descriptions), 1)
         self.assertEqual(len(cve.references), 2)
@@ -628,7 +628,7 @@ class CVETestCase(unittest.TestCase):
             "Fixed in Apache HTTP Server 1.3.12:\nhttp://httpd.apache.org/security/vulnerabilities_13.html",
         )
         self.assertEqual(
-            comment.last_modified, datetime(2008, 7, 2, tzinfo=timezone.utc)
+            comment.last_modified, datetime(2008, 7, 2, tzinfo=UTC)
         )
 
     def test_evaluator_comment(self):

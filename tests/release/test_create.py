@@ -9,7 +9,7 @@ import unittest
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
@@ -498,7 +498,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
         gather_commands_mock: MagicMock,
         create_release_mock: AsyncMock,
     ):
-        today = datetime.now(tz=timezone.utc)
+        today = datetime.now(tz=UTC)
         current_version = PEP440Version("0.0.1")
         release_version = PEP440Version(f"{today.year % 100}.{today.month}.0")
         next_version = PEP440Version(f"{today.year % 100}.{today.month}.1.dev1")
@@ -1892,7 +1892,7 @@ class CreateReleaseCommandTestCase(unittest.TestCase):
             "fedcba8 Fix: bar baz fixing",
             "d0c4d0c Doc: bar baz documenting",
         ]
-        today = datetime.now(tz=timezone.utc).date()
+        today = datetime.now(tz=UTC).date()
         expected_changelog = f"""## [0.0.2] - {today}
 
 ## Added
