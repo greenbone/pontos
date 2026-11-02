@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Python 3.9 and later is supported.
+Python 3.11 and later is supported.
 
 ## Using pip
 
