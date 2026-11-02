@@ -21,6 +21,7 @@ from pontos.nvd.api import (
     NVDResults,
     convert_camel_case,
     format_date,
+    now,
     return_or_raise,
 )
 from tests import IsolatedAsyncioTestCase
@@ -36,6 +37,16 @@ class ConvertCamelCaseTestCase(unittest.TestCase):
         converted = convert_camel_case(data)
         self.assertEqual(converted["some_value"], 123)
         self.assertEqual(converted["other_value"], "bar")
+
+
+class NowTestCase(unittest.TestCase):
+    @patch("pontos.nvd.api.datetime", autospec=True)
+    def test_now_uses_utc(self, datetime_mock: MagicMock):
+        expected = datetime(2026, 1, 1, tzinfo=UTC)
+        datetime_mock.now.return_value = expected
+
+        self.assertEqual(now(), expected)
+        datetime_mock.now.assert_called_once_with(tz=UTC)
 
 
 class FormatDateTestCase(unittest.TestCase):
