@@ -15,7 +15,7 @@ from collections.abc import (
     Iterator,
     Sequence,
 )
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from types import TracebackType
 from typing import (
     Any,
@@ -58,13 +58,13 @@ def now() -> datetime:
     """
     Return current datetime with UTC timezone applied
     """
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
 
 
 def format_date(
     date: datetime,
     *,
-    fallback_timezone: timezone = timezone.utc,
+    fallback_timezone: timezone = UTC,
     timespec: str = "milliseconds",
 ) -> str:
     """

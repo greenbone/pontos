@@ -4,7 +4,7 @@
 #
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.version._errors import VersionError
 from pontos.version.schemes._pep440 import PEP440Version as Version
@@ -752,7 +752,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_versions(self):
         calculator = VersionCalculator()
-        today = datetime.now(tz=timezone.utc)
+        today = datetime.now(tz=UTC)
         year_short = today.year % 100
 
         current_versions = [
@@ -788,7 +788,7 @@ class PEP440VersionCalculatorTestCase(unittest.TestCase):
 
     def test_next_calendar_version_error(self):
         calculator = VersionCalculator()
-        today = datetime.now(tz=timezone.utc)
+        today = datetime.now(tz=UTC)
         year_short = today.year % 100
 
         with self.assertRaisesRegex(VersionError, "'.+' is higher than '.+'."):

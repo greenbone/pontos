@@ -4,7 +4,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pontos.github.models.user import (
     EmailInformation,
@@ -45,7 +45,7 @@ class SSHPublicKeyExtendedTestCase(unittest.TestCase):
         self.assertFalse(key.read_only)
         self.assertEqual(
             key.created_at,
-            datetime(2020, 6, 11, 21, 31, 57, tzinfo=timezone.utc),
+            datetime(2020, 6, 11, 21, 31, 57, tzinfo=UTC),
         )
 
 

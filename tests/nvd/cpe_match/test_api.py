@@ -5,7 +5,7 @@
 
 # pylint: disable=line-too-long, arguments-differ, redefined-builtin
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
@@ -156,16 +156,14 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        now_mock.return_value = datetime(2019, 8, 30, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2019, 8, 30, tzinfo=UTC)
         self.http_client.get.side_effect = create_cpe_match_responses(
             match_criteria_id, cpe_name_id
         )
 
         it = aiter(
             self.api.cpe_matches(
-                last_modified_start_date=datetime(
-                    2019, 6, 1, tzinfo=timezone.utc
-                )
+                last_modified_start_date=datetime(2019, 6, 1, tzinfo=UTC)
             )
         )
         cpe_match = await anext(it)
@@ -212,14 +210,14 @@ class CPEMatchApiTestCase(IsolatedAsyncioTestCase):
         match_criteria_id = uuid4()
         cpe_name_id = uuid4()
 
-        now_mock.return_value = datetime(2019, 8, 30, tzinfo=timezone.utc)
+        now_mock.return_value = datetime(2019, 8, 30, tzinfo=UTC)
         self.http_client.get.side_effect = create_cpe_match_responses(
             match_criteria_id, cpe_name_id
         )
 
         it = aiter(
             self.api.cpe_matches(
-                last_modified_end_date=datetime(2019, 8, 1, tzinfo=timezone.utc)
+                last_modified_end_date=datetime(2019, 8, 1, tzinfo=UTC)
             )
         )
         cpe_match = await anext(it)

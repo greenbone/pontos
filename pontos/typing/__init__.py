@@ -5,7 +5,7 @@
 
 import sys
 from abc import abstractmethod
-from typing import Protocol, runtime_checkable
+from typing import Protocol, Self, runtime_checkable
 
 __all__ = (
     "Self",
@@ -29,8 +29,3 @@ if sys.version_info >= (3, 12):
     from typing import override
 else:
     from typing_extensions import override
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self

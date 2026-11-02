@@ -6,7 +6,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 from pontos.github.models.base import Event
 from pontos.github.models.workflow import (
@@ -313,16 +313,16 @@ class WorkflowRunTestCase(unittest.TestCase):
         self.assertEqual(run.pull_requests, [])
         self.assertEqual(
             run.created_at,
-            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=UTC),
         )
         self.assertEqual(
             run.updated_at,
-            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=UTC),
         )
         self.assertEqual(run.run_attempt, 1)
         self.assertEqual(
             run.run_started_at,
-            datetime(2020, 1, 22, 19, 33, 8, tzinfo=timezone.utc),
+            datetime(2020, 1, 22, 19, 33, 8, tzinfo=UTC),
         )
         self.assertEqual(
             run.jobs_url,
@@ -360,7 +360,7 @@ class WorkflowRunTestCase(unittest.TestCase):
         self.assertEqual(commit.message, "Create linter.yaml")
         self.assertEqual(
             commit.timestamp,
-            datetime(2020, 1, 22, 19, 33, 5, tzinfo=timezone.utc),
+            datetime(2020, 1, 22, 19, 33, 5, tzinfo=UTC),
         )
         self.assertEqual(commit.author.name, "Octo Cat")
         self.assertEqual(commit.author.email, "octocat@github.com")

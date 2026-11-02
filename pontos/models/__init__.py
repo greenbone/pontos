@@ -5,7 +5,7 @@
 
 import logging
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from inspect import isclass
 from types import UnionType
 from typing import (
@@ -89,7 +89,7 @@ def _get_value_from_model_field_cls(
         # datetime) and can't really be compared to other times.
         # Let's UTC in these cases:
         if not value.tzinfo:
-            value = value.replace(tzinfo=timezone.utc)
+            value = value.replace(tzinfo=UTC)
     elif isclass(model_field_cls) and issubclass(model_field_cls, date):
         value = date.fromisoformat(value)
     elif get_origin(model_field_cls) is list:

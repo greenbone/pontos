@@ -8,8 +8,8 @@ from enum import Enum
 from typing import TypeVar
 
 
-class StrEnum(str, Enum):
-    # Should be replaced by enum.StrEnum when we require Python >= 3.11
+class StrEnum(str, Enum):  # noqa: UP042
+    # Preserve the existing enum value validation behavior.
     """
     An Enum that provides str like behavior
     """

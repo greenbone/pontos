@@ -5,7 +5,7 @@
 # pylint: disable=line-too-long
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pontos.nvd.models.cpe import CPE, ReferenceType
@@ -26,11 +26,11 @@ class CPETestCase(unittest.TestCase):
         self.assertFalse(cpe.deprecated)
         self.assertEqual(
             cpe.last_modified,
-            datetime(2022, 12, 9, 18, 15, 16, 973000, tzinfo=timezone.utc),
+            datetime(2022, 12, 9, 18, 15, 16, 973000, tzinfo=UTC),
         )
         self.assertEqual(
             cpe.created,
-            datetime(2022, 12, 9, 16, 20, 6, 943000, tzinfo=timezone.utc),
+            datetime(2022, 12, 9, 16, 20, 6, 943000, tzinfo=UTC),
         )
 
         self.assertEqual(cpe.titles, [])
