@@ -23,6 +23,8 @@ jobs:
           - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Format and Lint
         uses: greenbone/actions/lint-python@v3
         with:
@@ -45,6 +47,8 @@ jobs:
           - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install python, uv and dependencies
         uses: greenbone/actions/uv@v3
         with:
@@ -65,6 +69,8 @@ jobs:
           - "3.15"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install python, uv and dependencies
         uses: greenbone/actions/uv@v3
         with:
@@ -78,6 +84,8 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install and calculate and upload coverage to codecov.io
         uses: greenbone/actions/coverage-python@v3
         with:
@@ -90,6 +98,8 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install python, uv and dependencies
         uses: greenbone/actions/uv@v3
       - name: Check version
