@@ -18,11 +18,15 @@ jobs:
     steps:
       - name: Setting the Reference
         id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if [[ "${{ github.event_name }}" = "workflow_dispatch" ]]; then
-            echo "ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          if [[ "$EVENT_NAME" = "workflow_dispatch" ]]; then
+            echo "ref=$REF_NAME" >> "$GITHUB_OUTPUT"
           else
-            echo "ref=${{ github.base_ref }}" >> $GITHUB_OUTPUT
+            echo "ref=$BASE_REF" >> "$GITHUB_OUTPUT"
           fi
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
