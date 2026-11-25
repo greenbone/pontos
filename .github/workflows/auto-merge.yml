@@ -15,4 +15,5 @@ permissions:
 jobs:
   auto-merge:
     uses: greenbone/workflows/.github/workflows/auto-merge.yml@main
-    secrets: inherit
+    secrets:
+      GREENBONE_BOT_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
