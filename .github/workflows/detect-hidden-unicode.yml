@@ -3,6 +3,9 @@ name: Detect hidden unicode
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   detect-hidden-unicode:
     runs-on: ubuntu-latest

@@ -3,6 +3,9 @@ name: Show changelog since last release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   changelog:
     name: Show changelog since last release
