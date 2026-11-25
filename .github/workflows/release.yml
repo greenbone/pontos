@@ -49,12 +49,15 @@ jobs:
         env:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.release_version }}
+          LAST_RELEASE_VERSION: ${{ steps.release-version.outputs.last_release_version }}
         run: |
-          uv run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag v${{ steps.release-version.outputs.release_version }} ${{ steps.release-version.outputs.last_release_version }}..HEAD
+          uv run git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag "v$RELEASE_VERSION" "$LAST_RELEASE_VERSION..HEAD"
       - name: Create release
         run: |
-          uv run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version ${{ steps.release-version.outputs.release_version }}
+          uv run pontos-release create --repository ${{ github.repository }} --release-type calendar --changelog /tmp/changelog.md --release-version "$RELEASE_VERSION"
         env:
+          RELEASE_VERSION: ${{ steps.release-version.outputs.release_version }}
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
       - name: Import gpg key from secrets
@@ -64,7 +67,8 @@ jobs:
           rm tmp.file
       - name: Sign assets for released version
         run: |
-          uv run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version ${{ steps.release-version.outputs.release_version }}
+          uv run pontos-release sign --repository ${{ github.repository }} --signing-key ${{ secrets.GPG_FINGERPRINT }} --passphrase ${{ secrets.GPG_PASSPHRASE }} --release-version "$RELEASE_VERSION"
         env:
+          RELEASE_VERSION: ${{ steps.release-version.outputs.release_version }}
           GITHUB_USER: ${{ secrets.GREENBONE_BOT }}
           GITHUB_TOKEN: ${{ secrets.GREENBONE_BOT_TOKEN }}
