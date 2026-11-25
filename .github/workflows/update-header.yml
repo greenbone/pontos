@@ -12,11 +12,10 @@ jobs:
   update-header:
     name: Update headers
     runs-on: "ubuntu-latest"
-    permissions:
-      contents: write
     steps:
       - name: Run update header
         uses: greenbone/actions/update-header@v3
         with:
+          github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
           directories: pontos tests
           target: main
